@@ -1,9 +1,9 @@
 package main
 
 import (
-        "fmt"
+        "github.com/Molnes/Nyhetsjeger/api"
 )
 
 func main() {
-        fmt.Println("Hello, World!")
+        api.Api()
 }
