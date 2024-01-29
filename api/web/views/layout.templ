@@ -1,0 +1,15 @@
+package layout
+
+templ layout(contents templ.Component) {
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<title>SMP-Nyhetsjeger</title>
+			<link rel="stylesheet" href="../assets/css/tailwind.css"/>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		</head>
+		<body class="bg-white ">
+			@contents
+		</body>
+	</html>
+}
