@@ -1,2 +1,2 @@
-# SMP-Nyhetsjeger
+# Nyhetsjeger
 Bachelor Project for SMP

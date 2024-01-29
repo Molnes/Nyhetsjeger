@@ -1,4 +1,4 @@
-module github.com/Molnes/SMP-Nyhetsjeger
+module github.com/Molnes/Nyhetsjeger
 
 go 1.21.6
 
