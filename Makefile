@@ -1,6 +1,6 @@
 build:
 	templ generate
-	npx tailwindcss -o web/static/css/tailwind.css
+	npx tailwindcss -o assets/css/tailwind.css
 	go build -o bin/main cmd/main.go
 
 run:
