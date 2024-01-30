@@ -17,7 +17,7 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 func Api() {
          e := echo.New()
          e.GET("/", func(c echo.Context) error {
-                 return Render(c, http.StatusOK, views.Layout(views.Index()))
+                 return Render(c, http.StatusOK, views.Index())
          })
 
          // Return static files from the "static" folder.
