@@ -1,9 +1,9 @@
 package main
 
 import (
-        "github.com/Molnes/Nyhetsjeger/api"
+	"github.com/Molnes/Nyhetsjeger/api"
 )
 
 func main() {
-        api.Api()
+	api.Api()
 }

@@ -15,15 +15,13 @@ func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 	return t.Render(ctx.Request().Context(), ctx.Response().Writer)
 }
 func Api() {
-         e := echo.New()
-         e.GET("/", func(c echo.Context) error {
-                 return Render(c, http.StatusOK, views.Index())
-         })
+	e := echo.New()
+	e.GET("/", func(c echo.Context) error {
+		return Render(c, http.StatusOK, views.Index())
+	})
 
-         // Return static files from the "static" folder.
-         e.Static("/static", "assets")
+	// Return static files from the "static" folder.
+	e.Static("/static", "assets")
 
-         e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
-         
-
