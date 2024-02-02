@@ -4,6 +4,8 @@ build:
 	go build -o bin/main cmd/main.go
 
 run:
+	templ generate
+	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/main.go
 
 live_reload:
