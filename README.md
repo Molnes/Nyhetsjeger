@@ -21,4 +21,5 @@ Example:
 ```bash
 make run
 ```
+
 Alternatively, you can check out the commands in the [Makefile](./Makefile) and run them manually.
