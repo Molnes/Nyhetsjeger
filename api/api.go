@@ -1,7 +1,10 @@
 package api
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/Molnes/Nyhetsjeger/api/web/views"
 	"github.com/a-h/templ"
@@ -23,5 +26,12 @@ func Api() {
 	// Return static files from the "static" folder.
 	e.Static("/static", "assets")
 
-	e.Logger.Fatal(e.Start(":8080"))
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		log.Println("No PORT found, using 8080")
+		port = "8080"
+	}
+	address := fmt.Sprint(":", port)
+
+	e.Logger.Fatal(e.Start(address))
 }
