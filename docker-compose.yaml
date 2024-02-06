@@ -11,7 +11,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./db/postgres-data:/var/lib/postgresql/data
+      # - ./db/postgres-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -34,3 +35,7 @@ services:
       - db
     profiles:
       - prod
+
+volumes:
+  db-data:
+    name: nyhetsjeger-postgres-data

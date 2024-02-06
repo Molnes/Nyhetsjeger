@@ -22,6 +22,8 @@ migrate-down:
 	
 
 reset-db:
-	migrate -database $(POSTGRESQL_URL) -path db/migrations down -all
-	migrate -database $(POSTGRESQL_URL) -path db/migrations up
+	docker compose down db
+	docker volume rm nyhetsjeger-postgres-data
+	docker compose up -d db
+	migrate -database $(POSTGRESQL_URL) -path db/migrations up # This is broken in make for some reason
 	go run cmd/db_populator/main.go
