@@ -11,7 +11,7 @@ Run go install github.com/a-h/templ/cmd/templ@latest
 COPY . .
 
 RUN templ generate
-RUN go build -o ./bin/main ./cmd/main.go
+RUN go build -o ./bin/main ./cmd/server/main.go
 
 FROM node:latest
 
