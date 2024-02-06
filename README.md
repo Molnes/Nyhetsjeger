@@ -5,6 +5,12 @@ Bachelor Project for SMP
 In order to run and develop this project, you will need a set of tools.  
 
 - [Golang](https://go.dev/) - the project is primarily written in GO  
+    Remember to add go and go's binaries to your path!  
+    file: *.bashrc*
+    ```bash
+    export PATH=$PATH:/usr/local/go/bin
+    export PATH=$PATH:$HOME/go/bin
+    ```
 - [Templ](https://templ.guide/quick-start/installation) - HTML templating language for Go  
     you need it installed in order to generate go files from templates  
     - You will also need [templ-vscode](https://marketplace.visualstudio.com/items?itemName=a-h.templ) extension, for improved developer experience.  
