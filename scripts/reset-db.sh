@@ -1,6 +1,5 @@
 #!/bin/bash
 source ./.env
-POSTGRESQL_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
 
 docker compose down db
 docker volume rm nyhetsjeger-postgres-data
