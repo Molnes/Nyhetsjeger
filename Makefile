@@ -8,7 +8,7 @@ run: reset-db
 	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
-live_reload: reset-db
+live-reload: reset-db
 	air -c .air.toml
 
 #!make
@@ -22,3 +22,6 @@ migrate-down:
 	
 reset-db:
 	./scripts/reset-db.sh
+
+initialize-docker:
+	docker compose up -d
