@@ -22,6 +22,8 @@ migrate-down:
 	
 reset-db:
 	./scripts/reset-db.sh
-
+	./scripts/add-db-usr.sh
+	go run cmd/db_populator/main.go
+	
 initialize-docker:
 	docker compose up -d

@@ -59,11 +59,11 @@ func get_db_credentials() db_credentials {
 	if !port_ok {
 		log.Fatal("No database port provided")
 	}
-	user, usr_ok := os.LookupEnv("DB_USER")
+	user, usr_ok := os.LookupEnv("DB_USR_APP")
 	if !usr_ok {
 		log.Fatal("No database user provided")
 	}
-	password, pass_ok := os.LookupEnv("DB_PASSWORD")
+	password, pass_ok := os.LookupEnv("DB_PASSWORD_APP")
 	if !pass_ok {
 		log.Fatal("No database password provided")
 	}

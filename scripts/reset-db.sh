@@ -12,5 +12,3 @@ sleep 1;
 
 echo "Running migrate up"
 migrate -database ${POSTGRESQL_URL} -path db/migrations -verbose up
-
-go run cmd/db_populator/main.go
