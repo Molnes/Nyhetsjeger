@@ -1,10 +1,10 @@
 build:
-	templ generate -path ./api/web/
+	templ generate -path ./internal/api/web/
 	npx tailwindcss -o assets/css/tailwind.css
 	go build -o bin/main cmd/server/main.go
 
 run: reset-db
-	templ generate -path ./api/web/
+	templ generate -path ./internal/api/web/
 	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
