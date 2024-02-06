@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Molnes/Nyhetsjeger/api/web/views"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views"
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 )

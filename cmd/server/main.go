@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Molnes/Nyhetsjeger/api"
+	"github.com/Molnes/Nyhetsjeger/internal/api"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/joho/godotenv"
 
