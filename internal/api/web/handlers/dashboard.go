@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -14,5 +14,5 @@ func RegisterDashboardHandlers(e *echo.Echo) {
 }
 
 func dashboardHomePage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, views.DashboardPage())
+	return utils.Render(c, http.StatusOK, pages.DashboardPage())
 }

@@ -5,19 +5,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers"
+	router "github.com/Molnes/Nyhetsjeger/internal/api/web"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func Api() {
 	e := echo.New()
-	e.Pre(middleware.RemoveTrailingSlash())
 
-	handlers.RegisterQuizHandlers(e);
-	handlers.RegisterDashboardHandlers(e);
-	handlers.RegisterResourcesHandlers(e);
-
+	router.SetupRouter(e)
 
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
