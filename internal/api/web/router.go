@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
+// Sets up the router for the web server
+// Takes care of grouping routes, setting up middleware and registering handlers.
 func SetupRouter(e *echo.Echo) {
 	e.Logger.SetLevel(log.DEBUG)
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -25,5 +27,4 @@ func SetupRouter(e *echo.Echo) {
 	api.RegisterAdminApiHandlers(amin_api_group)
 
 	e.Static("/static", "assets")
-
 }

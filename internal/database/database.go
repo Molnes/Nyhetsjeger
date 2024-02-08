@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	// Globally available database connection
 	DB *sql.DB
 )
 

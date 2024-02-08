@@ -8,14 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// func(c echo.Context) error {
-// 	return utils.Render(c, http.StatusOK, views.Index())
-// })
-
+// Registers handlers for quiz related pages
 func RegisterQuizHandlers(e *echo.Echo) {
 	e.GET("/", quizHomePage)
 }
 
+// Renders the quiz home page
 func quizHomePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, pages.QuizHomePage())
 }

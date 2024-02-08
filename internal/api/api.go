@@ -9,6 +9,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Sets up the web server and starts it.
+//
+// Tries reading the PORT environment variable, and falls back to 8080 if it's not found.
 func Api() {
 	e := echo.New()
 
