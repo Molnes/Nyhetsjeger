@@ -13,6 +13,7 @@ func RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/question", GetQuestion)
 	e.GET("/article", GetArticle)
 	e.GET("/articles", GetArticles)
+
 }
 
 func GetQuestion(c echo.Context) error {
