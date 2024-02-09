@@ -1,5 +1,7 @@
 package components
 
+import "os"
+
 // Layout for all pages.
 templ Layout() {
 	<!DOCTYPE html>
@@ -13,6 +15,11 @@ templ Layout() {
 		</head>
 		<body class="bg-gray-900">
         { children... }
+        if os.Getenv("COMPOSE_PROFILES") == "dev" {
+        <script src="/static/js/livereload.js"></script>
+        
+        }
+
 		</body>
 	</html>
 }
