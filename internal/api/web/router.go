@@ -27,4 +27,7 @@ func SetupRouter(e *echo.Echo) {
 	api.RegisterAdminApiHandlers(amin_api_group)
 
 	e.Static("/static", "assets")
+
+    // websocket for live updates
+    e.GET("/ws", handlers.WebsocketHandler)
 }
