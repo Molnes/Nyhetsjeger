@@ -7,6 +7,6 @@ import (
 
 type UserAnsweredQUestion struct {
 	UserID            uuid.UUID
-	Question          questions.Question
+	QuestionID          uuid.UUID
 	ChosenAlternative questions.Alternative
 }
