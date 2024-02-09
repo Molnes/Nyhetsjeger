@@ -6,8 +6,8 @@ import (
 )
 
 type User struct {
-	ID              uuid.UUID
-	Username        string
-	TotalScore      uint
-	CompletedQuizzes []quizzes.Quiz
+	ID                uuid.UUID
+	Username          string
+	TotalScore        uint
+	CompletedQuizzzes []quizzes.Quiz
 }
