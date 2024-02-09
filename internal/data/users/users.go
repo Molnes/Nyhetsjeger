@@ -9,5 +9,5 @@ type User struct {
 	ID              uuid.UUID
 	Username        string
 	TotalScore      uint
-	CompletedQuizes []quizzes.Quiz
+	CompletedQuizzes []quizzes.Quiz
 }
