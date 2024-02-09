@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/data/quizes"
+	quizes "github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/google/uuid"
 )
 

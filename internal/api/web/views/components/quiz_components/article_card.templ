@@ -1,0 +1,15 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
+)
+
+templ ArticleCard(article articles.Article) {
+	<div class="flex flex-row bg-white max-w-screen-sm aspect-[4/1]">
+		<img src="https://unsplash.it/128/128" height="128" width="128" class="object-cover"/>
+		<div class="flex flex-col px-5 py-3 gap-2">
+			<h2 class="font-bold">{ article.Title }</h2>
+			<p>Hello World!</p>
+		</div>
+	</div>
+}
