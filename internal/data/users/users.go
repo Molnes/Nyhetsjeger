@@ -1,7 +1,7 @@
 package users
 
 import (
-	quizes "github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/google/uuid"
 )
 
@@ -9,5 +9,5 @@ type User struct {
 	ID              uuid.UUID
 	Username        string
 	TotalScore      uint
-	CompletedQuizes []quizes.Quiz
+	CompletedQuizes []quizzes.Quiz
 }
