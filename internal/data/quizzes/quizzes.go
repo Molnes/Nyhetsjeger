@@ -1,4 +1,4 @@
-package quizes
+package quizzes
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
