@@ -1,0 +1,38 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/users"
+	"strconv"
+)
+
+templ QuizSummary(summary users.UserQuizSummary) {
+	<div class="flex flex-col justify-start items-center h-full bg-gray-400 px-20 pb-20">
+		<div>
+			<h1>RESULTAT</h1>
+			<div class="rounded-full size-16 bg-gray-200 flex justify-center items-center">
+				<div class="">
+					{ strconv.Itoa(int(summary.AchievedScore)) }/{ strconv.Itoa(int(summary.MaxScore)) }
+				</div>
+			</div>
+			<h2>OPPSUMMERING</h2>
+		</div>
+		<div class="overflow-y-scrolll">
+			for _, aq := range summary.AnsweredQuestions {
+				<p>
+					{ aq.QuestionText }
+				</p>
+				<p class={ "",getColor(aq.ChosenAlternative.IsCorrect) }>
+					{ aq.ChosenAlternative.Text }
+				</p>
+			}
+		</div>
+		<button class="bg-gray-300 text-blackd px-10 py-1 items-end">NESTE</button>
+	</div>
+}
+
+func getColor(correct bool) string {
+	if correct {
+		return "text-blue-950"
+	}
+	return "text-red-600"
+}
