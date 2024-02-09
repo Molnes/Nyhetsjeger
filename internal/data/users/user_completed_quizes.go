@@ -10,11 +10,11 @@ type UserCompletedQuiz struct {
 	AnsweredQuestions []UserAnsweredQUestion
 }
 
-func GetCompletedQuizes(userID uuid.UUID) ([]UserCompletedQuiz, error) {
-	return SampleUserCompletedQuizes, nil
+func GetCompletedQuizzes(userID uuid.UUID) ([]UserCompletedQuiz, error) {
+	return SampleUserCompletedQuizzes, nil
 }
 
-var SampleUserCompletedQuizes []UserCompletedQuiz = []UserCompletedQuiz{
+var SampleUserCompletedQuizzes []UserCompletedQuiz = []UserCompletedQuiz{
 	{
 		Quiz: quizzes.SampleQuiz,
 		AnsweredQuestions: []UserAnsweredQUestion{
