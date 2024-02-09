@@ -2,14 +2,16 @@ package quiz_pages
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 )
 
 // Quiz home page
 templ QuizHomePage() {
 	@components.Layout() {
 		<div class="bg-gray-200 h-screen flex flex-col justify-center items-center gap-1">
-			<h1>Quiz home page</h1>
-			<button class="bg-black text-white px-4 py-2 rounded" hx-get="/api/v1/quiz/articles" hx-swap="outerHTML">Get articles</button>
+			<h1 class="font-bold">Quiz home page</h1>
+			@quiz_components.ArticleList(articles.SampleArticles)
 		</div>
 	}
 }
