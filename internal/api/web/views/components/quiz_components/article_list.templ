@@ -8,8 +8,8 @@ templ ArticleList(articles []articles.Article) {
 	<div class="flex flex-col gap-3">
 		<p>Sjekk ut artiklene som spørsmålene var basert på!</p>
 		<div class="flex flex-col">
-			for article := range articles {
-				ArticleCard(article)
+			for _, article := range articles {
+				@ArticleCard(article)
 			}
 		</div>
 	</div>
