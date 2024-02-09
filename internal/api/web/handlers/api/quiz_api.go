@@ -12,7 +12,6 @@ import (
 func RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/question", GetQuestion)
 	e.GET("/:quizId/summary", GetQuizSummary)
-
 }
 
 func GetQuestion(c echo.Context) error {
