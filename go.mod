@@ -1,6 +1,6 @@
 module github.com/Molnes/Nyhetsjeger
 
-go 1.21.6
+go 1.22.0
 
 require (
 	github.com/a-h/templ v0.2.543 // indirect
