@@ -19,20 +19,20 @@ templ QuizSummary(summary users.UserQuizSummary) {
 		</section>
 		<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
 			<h2 class="font-bold text-2xl">OPPSUMMERING</h2>
-			<div class="overflow-y-auto scrollbar-hide">
+			<ol class="list-none verflow-y-auto scrollbar-hide">
 				// test with more questions
 				// for i := 0; i < 10; i++ {
 				for _, aq := range summary.AnsweredQuestions {
-					<p class="mb-2">
+					<li class="mb-2">
 						{ aq.QuestionText }
 						<br/>
 						<span class={ getColor(aq.ChosenAlternative.IsCorrect), "font-bold pl-3" }>
 							{ aq.ChosenAlternative.Text }
 						</span>
-					</p>
+					</li>
 				}
 				// }
-			</div>
+			</ol>
 		</section>
 		<button class="bg-gray-200 text-blackd px-10 py-1 font-bold">NESTE</button>
 	</div>
