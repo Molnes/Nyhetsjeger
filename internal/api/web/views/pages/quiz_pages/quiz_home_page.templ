@@ -2,6 +2,7 @@ package quiz_pages
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 )
 
 // Quiz home page
@@ -9,18 +10,17 @@ templ QuizHomePage() {
 	@components.Layout() {
 		<div class="bg-white">
 			<div class="flex justify-between items-center p-4">
-				<h2>🔥 9</h2>
-				<h2 class="flex items-center"
-                ><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z"></path></svg> 12398</h2>
+				<h2 class="text-5xl">🔥 9</h2>
+				<h2 class="flex items-center text-5xl"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 18.41L6 17l6-6l6 6l-1.41 1.41L12 13.83zm0-6L6 11l6-6l6 6l-1.41 1.41L12 7.83z"></path></svg> 12398</h2>
 			</div>
-                <div class="flex justify-between items-center p-4">
-                    <h2 class="flex items-center">Aktive quizzer</h2>
-                    </div>
-
-
-
-
-
+			<div class="p-4">
+				<h2 class="flex items-center text-4xl p-4">Aktive quizzer</h2>
+				<div class="grid grid-cols-2 gap-10">
+					for _ = range 4 {
+						@components.Quiz_preview(quizzes.SampleQuiz)
+					}
+				</div>
+			</div>
 		</div>
 	}
 }

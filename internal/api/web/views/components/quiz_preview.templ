@@ -1,0 +1,23 @@
+package components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+)
+
+templ Quiz_preview(quiz quizzes.Quiz) {
+	<div class="bg-gray-200 shadow-md rounded-lg p-4 max-w-sm w-full lg:max-w-full lg:flex">
+		<div class="lg:flex-shrink-0 bg-gray-500">
+			<img src={ quiz.Questions[0].Article.ImgURL.String()  } alt={quiz.Title} class="h-48 w-full object-cover lg:h-auto lg:w-48"/>
+
+		</div>
+		<div class="mt-4 lg:mt-0 lg:ml-4 grid grid-cols-1 gap-4">
+			<h3 class="text-xl font-semibold text-gray-800">{ quiz.Title }</h3>
+			for _, question := range quiz.Questions {
+				<p class="text-gray-600">{ question.Article.Title }</p>
+			}
+			<button class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded bg-center">
+				Spill
+			</button>
+		</div>
+	</div>
+}
