@@ -2,9 +2,11 @@ package quiz_pages
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 )
 
-templ QuizPage() {
+templ QuizPage(quiz questions.Question) {
 	@components.Layout() {
 		<div class="bg-gray-400 w-screen h-screen">
 			<section id="outer-header">
@@ -17,12 +19,7 @@ templ QuizPage() {
 				<p class="w-96 text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis ratione dolores eligendi ducimus, doloribus deleniti delectus? Voluptatum necessitatibus natus dolores libero delectus, tempore consequuntur, ab ipsa, sunt dolorem soluta quam.</p>
 			</section>
 			<section id="answers-outer" class="mt-4 flex justify-center">
-				<div class="flex flex-col [&>*]:mt-4">
-					<button type="button" class="w-96 bg-white text-base">Answer 1</button>
-					<button type="button" class="w-96 bg-white">Answer 2</button>
-					<button type="button" class="w-96 bg-white">Answer 3</button>
-					<button type="button" class="w-96 bg-white">Answer 4</button>
-				</div>
+				@quiz_components.Answers(quiz.Alternatives)
 			</section>
 		</div>
 	}
