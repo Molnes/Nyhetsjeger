@@ -47,7 +47,11 @@ var SampleArticles []Article = []Article{
 			Host:   "www.example.com",
 			Path:   "/test1",
 		},
-		ImgURL: url.URL{},
+		ImgURL: url.URL{
+			Scheme: "https",
+			Host:   "unsplash.it",
+			Path:   "/100/100",
+		},
 	},
 	{
 		ID:    uuid.New(),
@@ -57,6 +61,10 @@ var SampleArticles []Article = []Article{
 			Host:   "www.example.com",
 			Path:   "/test1",
 		},
-		ImgURL: url.URL{},
+		ImgURL: url.URL{
+			Scheme: "https",
+			Host:   "unsplash.it",
+			Path:   "/100/100",
+		},
 	},
 }
