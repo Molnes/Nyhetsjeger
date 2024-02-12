@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/quiz_pages"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -20,5 +21,7 @@ func quizHomePage(c echo.Context) error {
 }
 
 func GetQuizPage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage())
+	sampleQuiz := quizzes.SampleQuiz.Questions[len(quizzes.SampleQuiz.Questions)-1]
+
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(sampleQuiz))
 }
