@@ -1,0 +1,11 @@
+package quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
+
+templ Answers(answers []questions.Alternative) {
+	<div class="flex flex-col [&>*]:mt-4">
+		for _ , answer := range answers {
+			<button type="button" class="w-96 h-16 bg-white">{answer.Text}</button>
+		}
+	</div>
+}
