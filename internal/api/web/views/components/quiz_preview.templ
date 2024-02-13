@@ -15,9 +15,9 @@ templ Quiz_preview(quiz quizzes.Quiz) {
 			for _, question := range quiz.Questions {
 				<p class="text-gray-600">{ question.Article.Title }</p>
 			}
-			<button class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded bg-center">
+			<a class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded bg-center text-center" href={ templ.SafeURL("/quiz/" + quiz.ID.String() )}>
 				Spill
-			</button>
+			</a>
 		</div>
 	</div>
 }
