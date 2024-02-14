@@ -6,20 +6,20 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 )
 
-templ QuizPage(quiz questions.Question) {
+templ QuizPage(quiz questions.Question, title string) {
 	@components.Layout() {
-		<div class="bg-gray-400 w-screen h-screen">
-			<section id="outer-header">
-				<h1 id="text-placeholder" class="text-7xl font-bold text-center">Quiz navn</h1>
-			</section>
-			<section id="outer-image" class="flex content-center justify-center mt-4">
-				<div class="h-96 w-96 bg-gray-800"></div>
-			</section>
-			<section id="outer-text" class="flex justify-center mt-4">
-				<p class="w-96 text-center">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis ratione dolores eligendi ducimus, doloribus deleniti delectus? Voluptatum necessitatibus natus dolores libero delectus, tempore consequuntur, ab ipsa, sunt dolorem soluta quam.</p>
-			</section>
-			<section id="answers-outer" class="mt-4 flex justify-center">
-				@quiz_components.Answers(quiz.Alternatives)
+		<div class="bg-gray-400 w-screen min-h-svh pb-8">
+			<h1 id="title-text" class="text-7xl font-bold text-center">{ title }</h1>
+			<section id="content">
+				<section id="outer-image" class="flex content-center justify-center mt-4">
+					<div class="h-48 w-96 bg-gray-800"></div>
+				</section>
+				<section id="outer-text" class="flex justify-center mt-4">
+					<p class="w-96 text-center">{ quiz.Text }</p>
+				</section>
+				<section id="answers-outer" class="mt-4 flex justify-center">
+					@quiz_components.Answers(quiz.Alternatives)
+				</section>
 			</section>
 		</div>
 	}
