@@ -1,11 +1,41 @@
 package quiz_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
+import "fmt"
 
-templ Answers(answers []questions.Alternative) {
-	<div class="flex flex-col [&>*]:mt-4">
+type Optional struct {
+	correctAnswered []string
+}
+
+type Option func(*Optional) Optional
+
+func CorrectAndAnswered(correct string, answered string) Option {
+	return func(o *Optional) Optional {
+		o.correctAnswered = append(o.correctAnswered, correct, answered)
+		return *o
+	}
+}
+
+func isCorrectOrChosen(id string, option ...Option) string {
+	o := Optional{}
+	for _, opt := range option {
+		o = opt(&o)
+	}
+	for i := 0; i < len(o.correctAnswered); i += 2 {
+		if o.correctAnswered[i] == id {
+			return "bg-green-500"
+		}
+		if o.correctAnswered[i+1] == id {
+			return "bg-red-500"
+		}
+	}
+	return "bg-white"
+}
+
+templ Answers(answers []questions.Alternative, option ...Option) {
+	<div id="answers-wrapper" class="flex flex-col [&>*]:mt-4">
 		for _ , answer := range answers {
-			<button type="button" class="w-96 h-16 bg-white">{answer.Text}</button>
+			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper">{ answer.Text }</button>
 		}
 	</div>
 }
