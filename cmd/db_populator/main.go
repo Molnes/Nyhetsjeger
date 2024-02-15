@@ -9,9 +9,12 @@ import (
 func main() {
 	defer database.DB.Close()
 
-	runQuery("INSERT INTO questions (question, article_id) VALUES ('What is the capital of Norway?', 1)")
+	log.Println("----- Populating database -----")
+	defer log.Println("----- Database populated -----")
 
-	runQuery("INSERT INTO users (email, phone) VALUES ('email@example.com', '00000000')")
+	runQuery("INSERT INTO questions (question) VALUES ('What is the capital of Norway?')")
+
+	runQuery("INSERT INTO users (email, phone, opt_in_ranking) VALUES ('email@example.com', '00000000', true)")
 
 }
 
