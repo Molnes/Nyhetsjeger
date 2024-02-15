@@ -50,12 +50,12 @@ var SampleArticles []Article = []Article{
 		ImgURL: url.URL{
 			Scheme: "https",
 			Host:   "unsplash.it",
-			Path:   "/100/100",
+			Path:   "/200/200",
 		},
 	},
 	{
 		ID:    uuid.New(),
-		Title: "Test article2",
+		Title: "Test article: this is a very long title in order to check how titles look when they are long",
 		ArticleURL: url.URL{
 			Scheme: "https",
 			Host:   "www.example.com",
@@ -64,7 +64,7 @@ var SampleArticles []Article = []Article{
 		ImgURL: url.URL{
 			Scheme: "https",
 			Host:   "unsplash.it",
-			Path:   "/100/100",
+			Path:   "/200/200",
 		},
 	},
 }

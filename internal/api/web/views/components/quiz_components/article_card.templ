@@ -5,8 +5,8 @@ import (
 )
 
 templ ArticleCard(article articles.Article) {
-	<article class="flex flex-row items-center bg-white max-w-screen-sm aspect-[4/1]">
-		<img src={ article.ImgURL.String() } height="128" width="128" class="object-cover"/>
-		<p class="font-bold text-center m-auto p-4 bg-blue-800">{ article.Title }</p>
+	<article class="flex flex-row items-center bg-white max-w-screen-sm aspect-[4/1] overflow-hidden">
+		<img src={ article.ImgURL.String() } height="160" width="160" class="object-cover h-full w-auto"/>
+		<p class="font-bold text-center m-auto p-4">{ article.Title }</p>
 	</article>
 }
