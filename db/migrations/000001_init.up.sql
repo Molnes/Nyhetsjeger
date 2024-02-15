@@ -33,8 +33,10 @@ CREATE TABLE IF NOT EXISTS quizzes (
 CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
+    arrangement INTEGER NOT NULL,
     article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
-    quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE
+    quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE,
+    CONSTRAINT question_arrangement UNIQUE (arrangement, quiz_id)
 );
 
 CREATE TABLE IF NOT EXISTS answer_alternatives (
