@@ -16,6 +16,8 @@ func CorrectAndAnswered(correct string, answered string) Option {
 	}
 }
 
+var answeredCorrectly bool = false
+
 func isCorrectOrChosen(id string, option ...Option) string {
 	o := Optional{}
 	for _, opt := range option {
@@ -23,6 +25,11 @@ func isCorrectOrChosen(id string, option ...Option) string {
 	}
 	for i := 0; i < len(o.correctAnswered); i += 2 {
 		if o.correctAnswered[i] == id {
+
+			if o.correctAnswered[i] == o.correctAnswered[i+1] && o.correctAnswered[i+1] == id {
+				answeredCorrectly = true
+			}
+
 			return "bg-green-500"
 		}
 		if o.correctAnswered[i+1] == id {
@@ -35,7 +42,15 @@ func isCorrectOrChosen(id string, option ...Option) string {
 templ Answers(answers []questions.Alternative, option ...Option) {
 	<div id="answers-wrapper" class="flex flex-col [&>*]:mt-4">
 		for _ , answer := range answers {
-			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper">{ answer.Text }</button>
+			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper">{ answer.Text }</button>
+		}
+		if (option != nil) {
+			if (answeredCorrectly) {
+				<p class="font-bold">Riktig!</p>
+			} else {
+				<p class="font-bold">Feil!</p>
+			}
+			<button id="next-question" type="button" class="w-80 h-16 bg-blue-500" hx-get="/nextquestion" hx-trigger="click" hx-target="#answers-wrapper">Neste spørsmål</button>
 		}
 	</div>
 }
