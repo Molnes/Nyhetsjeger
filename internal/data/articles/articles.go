@@ -59,7 +59,7 @@ var SampleArticles []Article = []Article{
 		ArticleURL: url.URL{
 			Scheme: "https",
 			Host:   "www.example.com",
-			Path:   "/test1",
+			Path:   "/test2",
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
