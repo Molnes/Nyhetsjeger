@@ -23,11 +23,11 @@ func SetupRouter(e *echo.Echo) {
 	quiz_api_group := api_group.Group("/quiz")
 	api.RegisterQuizApiHandlers(quiz_api_group)
 
-	amin_api_group := api_group.Group("/admin")
-	api.RegisterAdminApiHandlers(amin_api_group)
+	admin_api_group := api_group.Group("/admin")
+	api.RegisterAdminApiHandlers(admin_api_group)
 
 	e.Static("/static", "assets")
 
-    // websocket for live updates
-    e.GET("/ws", handlers.WebsocketHandler)
+	// websocket for live updates
+	e.GET("/ws", handlers.WebsocketHandler)
 }
