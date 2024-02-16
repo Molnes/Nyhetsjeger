@@ -5,8 +5,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserAnsweredQUestion struct {
+type UserAnsweredQuestion struct {
 	UserID            uuid.UUID
-	QuestionID          uuid.UUID
+	QuestionID        uuid.UUID
+	QuestionText      string
 	ChosenAlternative questions.Alternative
 }
