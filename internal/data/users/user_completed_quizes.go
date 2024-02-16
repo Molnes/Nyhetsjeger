@@ -7,7 +7,7 @@ import (
 
 type UserCompletedQuiz struct {
 	Quiz              quizzes.Quiz
-	AnsweredQuestions []UserAnsweredQUestion
+	AnsweredQuestions []UserAnsweredQuestion
 }
 
 func GetCompletedQuizzes(userID uuid.UUID) ([]UserCompletedQuiz, error) {
@@ -17,7 +17,7 @@ func GetCompletedQuizzes(userID uuid.UUID) ([]UserCompletedQuiz, error) {
 var SampleUserCompletedQuizzes []UserCompletedQuiz = []UserCompletedQuiz{
 	{
 		Quiz: quizzes.SampleQuiz,
-		AnsweredQuestions: []UserAnsweredQUestion{
+		AnsweredQuestions: []UserAnsweredQuestion{
 			{
 				UserID:            uuid.New(),
 				QuestionID:        uuid.New(),

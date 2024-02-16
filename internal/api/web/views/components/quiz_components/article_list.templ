@@ -1,0 +1,14 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
+)
+
+templ ArticleList(articles []articles.Article) {
+	<p class="text-center my-5">Sjekk ut artiklene som spørsmålene var basert på!</p>
+	<div class="flex flex-col gap-4">
+		for _, article := range articles {
+			@ArticleCard(article)
+		}
+	</div>
+}
