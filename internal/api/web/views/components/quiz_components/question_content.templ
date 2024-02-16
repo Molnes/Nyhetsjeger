@@ -1,0 +1,15 @@
+package quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
+
+templ QuizContrent (question questions.Question) {
+	<section id="outer-image" class="flex content-center justify-center mt-4">
+		<div class="h-48 w-96 bg-gray-800"></div>
+	</section>
+	<section id="outer-text" class="flex justify-center mt-4">
+		<p class="w-96 text-center">{ question.Text }</p>
+	</section>
+	<section id="answers-outer" class="mt-4 flex justify-center">
+		@Answers(question.Alternatives)
+	</section>
+}
