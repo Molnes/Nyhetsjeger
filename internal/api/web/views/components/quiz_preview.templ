@@ -4,18 +4,17 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 )
 
+//{ quiz.Questions[0].Article.ImgURL.String()   }
 templ Quiz_preview(quiz quizzes.Quiz) {
-	<div class="bg-gray-200 shadow-md rounded-lg p-4 max-w-sm w-full lg:max-w-full lg:flex">
-		<div class="lg:flex-shrink-0 bg-gray-500">
-			<img src={ quiz.Questions[0].Article.ImgURL.String()  } alt={quiz.Title} class="h-48 w-full object-cover lg:h-auto lg:w-48"/>
-
-		</div>
+	<div class="bg-gray-200 shadow-md rounded-lg m-10 max-w-sm w-full lg:max-w-full lg:flex">
+			<img
+				src="https://picsum.photos/200/300"
+				alt={ quiz.Title }
+				class="h-48 w-full  bg-gray-500"
+			/>
 		<div class="mt-4 lg:mt-0 lg:ml-4 grid grid-cols-1 gap-4">
-			<h3 class="text-xl font-semibold text-gray-800">{ quiz.Title }</h3>
-			for _, question := range quiz.Questions {
-				<p class="text-gray-600">{ question.Article.Title }</p>
-			}
-			<a class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded bg-center text-center" href={ templ.SafeURL("/quiz/" + quiz.ID.String() )}>
+			<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800">Dagens Nyhets Quiz 15. februar</h3>
+			<a class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-10 mx-10 my-14 rounded bg-center text-center" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
 				Spill
 			</a>
 		</div>
