@@ -42,7 +42,7 @@ func isCorrectOrChosen(id string, option ...Option) string {
 templ Answers(answers []questions.Alternative, option ...Option) {
 	<div id="answers-wrapper" class="flex flex-col [&>*]:mt-4">
 		for _ , answer := range answers {
-			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper">{ answer.Text }</button>
+			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
 		}
 		if (option != nil) {
 			if (answeredCorrectly) {
@@ -50,7 +50,7 @@ templ Answers(answers []questions.Alternative, option ...Option) {
 			} else {
 				<p class="font-bold">Feil!</p>
 			}
-			<button id="next-question" type="button" class="w-80 h-16 bg-blue-500" hx-get="/nextquestion" hx-trigger="click" hx-target="#answers-wrapper">Neste spørsmål</button>
+			<button id="next-question" type="button" class="w-80 h-16 bg-blue-500" hx-post="/nextquestion" hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
 		}
 	</div>
 }
