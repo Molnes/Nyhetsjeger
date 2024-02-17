@@ -33,7 +33,11 @@ func init() {
 
 	sql_db, err := sql.Open("postgres", connection_string)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
+	}
+
+	if err = sql_db.Ping(); err != nil {
+		log.Fatal(err)
 	}
 
 	DB = sql_db
