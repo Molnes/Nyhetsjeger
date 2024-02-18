@@ -72,4 +72,7 @@ func SetupRouter(e *echo.Echo) {
 	// websocket for live updates
 	e.GET("/ws", handlers.WebsocketHandler)
 
+	// authentication routes
+	auth_group := e.Group("/auth")
+	handlers.RegisterAuthHandlers(auth_group)
 }
