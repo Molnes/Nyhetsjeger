@@ -32,21 +32,11 @@ func createSampleQuiz(title string) {
 		log.Println(err)
 	}
 
-	createQuestion(quiz_id, "What is the capital of Norway?", 1,
-		[]answerAlt{
-			{"Oslo", true},
-			{"Bergen", false},
-			{"Trondheim", false},
-			{"Stavanger", false},
-		})
-	createQuestion(quiz_id, "What is the capital of Sweden?", 2,
-		[]answerAlt{
-			{"Stockholm", true},
-			{"Gothenburg", false},
-			{"Malmö", false},
-			{"Uppsala", false},
-		})
-
+	for range 3 {
+		createQuestion(quiz_id, sampleQuestion1)
+		createQuestion(quiz_id, sampleQuestion2)
+		createQuestion(quiz_id, sampleQuestion3)
+	}
 }
 
 type answerAlt struct {
@@ -54,7 +44,12 @@ type answerAlt struct {
 	correct bool
 }
 
-func createQuestion(quiz_id uuid.UUID, question string, arrangement int, answers []answerAlt) {
+type question struct {
+	text        string
+	answer_alts []answerAlt
+}
+
+func createQuestion(quiz_id uuid.UUID, question question) {
 	question_id := uuid.New()
 
 	ctx := context.Background()
@@ -63,11 +58,11 @@ func createQuestion(quiz_id uuid.UUID, question string, arrangement int, answers
 		log.Println(err)
 	}
 	tx.Exec(
-		`INSERT INTO questions (id, question, arrangement, quiz_id)
-		VALUES ($1, $2, $3, $4);`,
-		question_id, question, arrangement, quiz_id)
+		`INSERT INTO questions (id, question, quiz_id)
+		VALUES ($1, $2, $3);`,
+		question_id, question.text, quiz_id)
 
-	for _, a := range answers {
+	for _, a := range question.answer_alts {
 		tx.Exec(
 			`INSERT INTO answer_alternatives (question_id, text, correct)
 			VALUES ($1, $2, $3);`,
@@ -77,4 +72,34 @@ func createQuestion(quiz_id uuid.UUID, question string, arrangement int, answers
 		log.Println(err)
 	}
 
+}
+
+var sampleQuestion1 = question{
+	"What is the capital of Norway?",
+	[]answerAlt{
+		{"Oslo", true},
+		{"Bergen", false},
+		{"Trondheim", false},
+		{"Stavanger", false},
+	},
+}
+
+var sampleQuestion2 = question{
+	"What is the capital of Sweden? This is a longer question text.",
+	[]answerAlt{
+		{"Stockholm", true},
+		{"Gothenburg", false},
+		{"Malmö", false},
+		{"Bergen", false},
+	},
+}
+
+var sampleQuestion3 = question{
+	"What is the capital of Denmark? Long alternatives",
+	[]answerAlt{
+		{"Copenhagen is the capital", true},
+		{"Warsaw is the capital of Denmark", false},
+		{"Oslo", false},
+		{"Copenhagen again to test 2 correct", true},
+	},
 }
