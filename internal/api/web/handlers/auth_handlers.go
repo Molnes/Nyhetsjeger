@@ -32,7 +32,7 @@ func oauthGoogleCallback(c echo.Context) error {
 
 	googleUser, err := auth.GetGoogleUserData(token.AccessToken)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		return fmt.Errorf("failed to get user info: %s", err.Error())
 	}
 
 	// TODO
