@@ -20,6 +20,8 @@ func SetupRouter(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
+	handlers.RegisterPublicPages(e)
+
 	// authentication routes
 	auth_group := e.Group("/auth")
 	handlers.RegisterAuthHandlers(auth_group)

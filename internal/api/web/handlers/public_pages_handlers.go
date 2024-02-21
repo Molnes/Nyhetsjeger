@@ -12,7 +12,6 @@ import (
 func RegisterPublicPages(e *echo.Echo) {
 	e.GET("", homePage)
 	e.GET("/login", loginPage)
-	e.GET("/forbidden", forbiddenPage)
 }
 
 func homePage(c echo.Context) error {
@@ -20,7 +19,7 @@ func homePage(c echo.Context) error {
 }
 
 func loginPage(c echo.Context) error {
-	session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
+	session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
 	if err != nil {
 		return err
 	}
@@ -29,8 +28,4 @@ func loginPage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, public_pages.LoginPage())
-}
-
-func forbiddenPage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, public_pages.ForbiddenPage())
 }
