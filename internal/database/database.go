@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -18,11 +17,6 @@ var (
 //
 // Sets globally available DB to the initialized database connection.
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env")
-	}
-
 	db_url, ok := os.LookupEnv("POSTGRESQL_URL_APP")
 	if !ok {
 		log.Fatal("No database url provided. Expected POSTGRESQL_URL_APP")
