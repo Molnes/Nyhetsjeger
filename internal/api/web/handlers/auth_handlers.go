@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Registers the auth related handlers to the given echo group
 func RegisterAuthHandlers(e *echo.Group) {
 	e.GET("/google/login", oauthGoogleLogin)
 	e.GET("/google/callback", oauthGoogleCallback)
@@ -22,7 +23,7 @@ func RegisterAuthHandlers(e *echo.Group) {
 
 // Redirects the user to the Google OAuth2 login page
 func oauthGoogleLogin(c echo.Context) error {
-	oauthState := auth.GenerateStateOauthCookie(c)
+	oauthState := auth.GenerateAndSetStateOauthCookie(c)
 	url := auth.GoogleOauthConfig.AuthCodeURL(oauthState)
 	return c.Redirect(http.StatusTemporaryRedirect, url)
 }
