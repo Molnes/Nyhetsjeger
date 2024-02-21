@@ -46,7 +46,9 @@ func init() {
 
 }
 
-func GenerateStateOauthCookie(c echo.Context) string {
+// Generates a new state and sets it as a cookie
+// Returns the state so it can be sent to the oauth provider
+func GenerateAndSetStateOauthCookie(c echo.Context) string {
 	state := uuid.New().String()
 	cookie := http.Cookie{
 		Name:   OauthStateCookieName,
@@ -57,6 +59,7 @@ func GenerateStateOauthCookie(c echo.Context) string {
 	return state
 }
 
+// Struct to hold the user data from the Google OAuth2 API
 type googleUser struct {
 	Email          string `json:"email"`
 	ID             string `json:"id"`
@@ -64,6 +67,7 @@ type googleUser struct {
 	Verified_email bool   `json:"verified_email"`
 }
 
+// Gets the user data from the Google OAuth2 API
 func GetGoogleUserData(accessToken string) (googleUser, error) {
 	resp, err := http.Get(GoogleOauthAPIURL + accessToken)
 	if err != nil {
