@@ -16,7 +16,8 @@ func SetupRouter(e *echo.Echo) {
 	e.Use(middleware.Logger())
 
 	handlers.RegisterQuizHandlers(e)
-	handlers.RegisterDashboardHandlers(e)
+	dashboardGroup := e.Group("/dashboard")
+	handlers.RegisterDashboardHandlers(dashboardGroup)
 
 	api_group := e.Group("/api/v1")
 

@@ -9,10 +9,9 @@ import (
 )
 
 // Registers handlers for dashboard related pages
-func RegisterDashboardHandlers(e *echo.Echo) {
-	g := e.Group("/dashboard")
-	g.GET("", dashboardHomePage)
-	e.GET("/dashboard/create-quiz", dashboardCreateQuiz)
+func RegisterDashboardHandlers(e *echo.Group) {
+	e.GET("", dashboardHomePage)
+	e.GET("/create-quiz", dashboardCreateQuiz)
 }
 
 // Renders the dashboard home page
