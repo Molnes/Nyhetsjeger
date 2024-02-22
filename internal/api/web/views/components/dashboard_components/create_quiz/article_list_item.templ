@@ -1,0 +1,11 @@
+package dashboard_components
+
+// An item in the list of articles the quiz questions are based on
+templ ArticleListItem(url string) {
+	<li class="flex flex-row justify-between px-3 py-1">
+		<a target="blank_" href={ templ.SafeURL(url) } class="[&:hover]:underline">
+			{ url }
+		</a>
+		<button>❌</button>
+	</li>
+}
