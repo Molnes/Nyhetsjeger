@@ -37,6 +37,7 @@ func SetupRouter(e *echo.Echo) {
 	// routes requiring admin
 	enforceAdminMiddlewareRedirect :=
 		middlewares.NewAuthorizationMiddleware(
+			databaseConn,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
@@ -60,6 +61,7 @@ func SetupRouter(e *echo.Echo) {
 	admin_api_group := api_group.Group("/admin")
 	enforceAdminMiddleware :=
 		middlewares.NewAuthorizationMiddleware(
+			databaseConn,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
