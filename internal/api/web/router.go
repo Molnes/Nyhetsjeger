@@ -5,6 +5,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers/api"
 	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
+	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -13,6 +14,9 @@ import (
 // Sets up the router for the web server
 // Takes care of grouping routes, setting up middleware and registering handlers.
 func SetupRouter(e *echo.Echo) {
+
+	databaseConn := database.DB
+
 	e.Logger.SetLevel(log.DEBUG)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
@@ -33,6 +37,7 @@ func SetupRouter(e *echo.Echo) {
 	// routes requiring admin
 	enforceAdminMiddlewareRedirect :=
 		middlewares.NewAuthorizationMiddleware(
+			databaseConn,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
@@ -54,6 +59,7 @@ func SetupRouter(e *echo.Echo) {
 	admin_api_group := api_group.Group("/admin")
 	enforceAdminMiddleware :=
 		middlewares.NewAuthorizationMiddleware(
+			databaseConn,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
