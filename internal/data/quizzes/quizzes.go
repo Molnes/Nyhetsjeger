@@ -21,8 +21,8 @@ func GetQuiz(quizID uuid.UUID) (Quiz, error) {
 	return SampleQuiz, nil
 }
 
-// Create a default quiz
-// This function is used to create a new quiz with default values
+// Create a default quiz.
+// This function is used to create a new quiz with default values.
 func CreateDefaultQuiz() (Quiz, error) {
 	return Quiz{
 		ID:             uuid.New(),
