@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - ${DB_PORT:-5432}:5432
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER_ROOT}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_ROOT}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      # - ./db/postgres-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+    depends_on:
+      - db
+    profiles:
+      - dev
+
+  server:
+    build: ./
+    restart: always
+    ports:
+      - 8080:${PORT:-8080}
+    environment:
+      PORT: ${PORT:-8080}
+    depends_on:
+      - db
+    profiles:
+      - prod
+
+volumes:
+  db-data:
+    name: nyhetsjeger-postgres-data
