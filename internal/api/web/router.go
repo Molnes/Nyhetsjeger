@@ -4,6 +4,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers/api"
+	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -30,12 +31,18 @@ func SetupRouter(e *echo.Echo) {
 	handlers.RegisterQuizHandlers(quizGroup)
 
 	// routes requiring admin
+	enforceAdminMiddlewareRedirect :=
+		middlewares.NewAuthorizationMiddleware(
+			[]user_roles.Role{
+				user_roles.QuizAdmin,
+				user_roles.OrganizationAdmin,
+			}, true)
 	dashboardGroup := e.Group("/dashboard")
 	dashboardGroup.Use(authForceWithRedirect.EncofreAuthentication)
-	dashboardGroup.Use(middlewares.IsAdmin)
-
+	dashboardGroup.Use(enforceAdminMiddlewareRedirect.EnforceRole)
 	handlers.RegisterDashboardHandlers(dashboardGroup)
 
+	// api routes, requiring authentication
 	api_group := e.Group("/api/v1")
 	authForce := middlewares.NewAuthenticationMiddleware(false)
 	api_group.Use(authForce.EncofreAuthentication)
@@ -43,8 +50,15 @@ func SetupRouter(e *echo.Echo) {
 	quiz_api_group := api_group.Group("/quiz")
 	api.RegisterQuizApiHandlers(quiz_api_group)
 
+	// admin api routes, requiring admin
 	admin_api_group := api_group.Group("/admin")
-	admin_api_group.Use(middlewares.IsAdmin)
+	enforceAdminMiddleware :=
+		middlewares.NewAuthorizationMiddleware(
+			[]user_roles.Role{
+				user_roles.QuizAdmin,
+				user_roles.OrganizationAdmin,
+			}, false)
+	admin_api_group.Use(enforceAdminMiddleware.EnforceRole)
 	api.RegisterAdminApiHandlers(admin_api_group)
 
 	e.Static("/static", "assets")
