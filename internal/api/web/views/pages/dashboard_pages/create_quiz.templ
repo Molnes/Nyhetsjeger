@@ -2,7 +2,7 @@ package dashboard_pages
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/create_quiz"
 )
 
 // The "Create quiz" page. This page is used to create a new quiz.
@@ -43,16 +43,27 @@ templ CreateQuiz() {
 				<ul class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
 					<li class="flex flex-row justify-between px-3 py-1">Hva er hovedstaden i Italia?<button>✏️</button></li>
 				</ul>
-				<button class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
-				<button class="bg-gray-100 text-red-600 font-bold px-3 py-1 w-40">Slett quiz 🗑️</button>
-				<div class="bg-gray-100 px-3 py-1 w-40 flex flex-row justify-center gap-2">
+				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz 🗑️</button>
+				<div class="bg-gray-100 px-3 py-2 w-40 flex flex-row justify-center gap-2">
 					<label for="quiz-is-hidden">Skjul quiz</label>
 					<input id="quiz-is-hidden" type="checkbox"/>
 				</div>
-				<button class="bg-gray-100 font-bold px-3 py-1 w-40">OK ✅</button>
+				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK ✅</button>
 			</div>
 		</div>
+		@dashboard_components.CreateQuestionModal()
 	}
+	<script>
+		const createQuestionModal = document.getElementById("create-question-modal");
+		const newQuestionButton = document.getElementById("new-question-button");
+		
+		function openCreateQuestionModal() {
+			createQuestionModal.showModal();
+		}
+
+		newQuestionButton.addEventListener("click", openCreateQuestionModal);
+	</script>
 }
