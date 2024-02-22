@@ -127,10 +127,17 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 	}
 
 	cookieRedirectTo, err := c.Cookie(middlewares.REDIRECT_COOKIE_NAME)
-	if err != nil {
-		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
+	redirectTo := "/quiz"
+	if err == nil { // if redirect cookie is set, use it
+		redirectTo = cookieRedirectTo.Value
+		replacementCookie := http.Cookie{
+			Name:   middlewares.REDIRECT_COOKIE_NAME,
+			Path:   "/",
+			Value:  "",
+			MaxAge: -1,
+		}
+		c.SetCookie(&replacementCookie)
 	}
-	redirectTo := cookieRedirectTo.Value
 
 	return c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 }
