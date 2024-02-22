@@ -8,10 +8,10 @@ import (
 
 // The "Create quiz" page. This page is used to create a new quiz.
 // Add title, image, articles, active time, questions and answers.
-templ CreateQuiz() {
+templ EditQuiz() {
 	@components.Layout() {
 		<div class="flex flex-col items-center gap-3 max-w-screen-sm m-auto px-5 py-3">
-			<h1 class="text-2xl">Ny Quiz</h1>
+			<h1 class="text-2xl">Rediger Quiz</h1>
 			@dashboard_components.CreateQuizForm("") {
 				<label for="quiz-title" class="block">Tittel</label>
 				<input id="quiz-title" class="bg-gray-200 w-full px-2 py-1" type="text"/>
@@ -30,8 +30,8 @@ templ CreateQuiz() {
 				</div>
 				<ul id="article-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
 					// If the list is empty, show message: "Ingen artikler lagt til enda."
-					<li class="flex flex-row justify-between px-3 py-1"><a target="_blank" href="https://smp.no" class="[&:hover]:underline">https://smp.no</a><button>❌</button></li>
-					<li class="flex flex-row justify-between px-3 py-1"><a target="_blank" href="https://smp.no" class="[&:hover]:underline">https://smp.no</a><button>❌</button></li>
+					@dashboard_components.ArticleListItem("https://smp.no")
+					@dashboard_components.ArticleListItem("https://vg.no")
 				</ul>
 			}
 			@dashboard_components.CreateQuizForm("") {
