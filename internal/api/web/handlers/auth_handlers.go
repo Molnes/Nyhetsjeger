@@ -63,7 +63,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to get user info: %s", err.Error())
 	}
 
-	user, err := users.GetUserBySsoID(ah.sharedData.DatabaseConn, googleUser.ID)
+	user, err := users.GetUserBySsoID(ah.sharedData.DB, googleUser.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get user from user store: %s", err.Error())
 	}
@@ -90,7 +90,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 			Token_expire:       token.Expiry,
 			RefreshtokenCypher: refreshTokenCypher,
 		}
-		createdUser, err := users.CreateUser(ah.sharedData.DatabaseConn, &newUser)
+		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser)
 		if err != nil {
 			return fmt.Errorf("failed to create user: %s", err.Error())
 		}
@@ -108,7 +108,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 		user.AccessTokenCypher = accessTokenCypher
 		user.Token_expire = token.Expiry
 		user.RefreshtokenCypher = refreshTokenCypher
-		err = users.UpdateUser(ah.sharedData.DatabaseConn, user)
+		err = users.UpdateUser(ah.sharedData.DB, user)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %s", err.Error())
 		}

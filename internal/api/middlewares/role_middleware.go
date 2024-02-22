@@ -41,7 +41,7 @@ func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.Handl
 			return err
 		}
 		user := session.Values["user"].(users.UserSessionData)
-		role, err := users.GetUserRole(am.sharedData.DatabaseConn, user.ID)
+		role, err := users.GetUserRole(am.sharedData.DB, user.ID)
 		if err != nil {
 			return err
 		}

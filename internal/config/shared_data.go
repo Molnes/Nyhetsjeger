@@ -7,7 +7,7 @@ import (
 )
 
 type SharedData struct {
-	DatabaseConn *sql.DB
+	DB           *sql.DB
 	SessionStore *pgstore.PGStore
-	CryptoKey   []byte
+	CryptoKey    []byte
 }

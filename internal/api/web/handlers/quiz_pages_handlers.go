@@ -26,7 +26,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 // Renders the quiz home page
 func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
-	quizzList, err := quizzes.GetQuizzes(qph.sharedData.DatabaseConn)
+	quizzList, err := quizzes.GetQuizzes(qph.sharedData.DB)
 	if err != nil {
 		return err
 	}

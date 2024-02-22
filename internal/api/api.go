@@ -50,7 +50,7 @@ func Api() {
 	}
 
 	sharedData := &config.SharedData{
-		DatabaseConn: databaseConn,
+		DB:           databaseConn,
 		SessionStore: sessionStore,
 		CryptoKey:    cryptoKey,
 	}
