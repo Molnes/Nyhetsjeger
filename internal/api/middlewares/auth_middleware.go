@@ -1,9 +1,11 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/data/sessions"
+	"github.com/Molnes/Nyhetsjeger/internal/data/users"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,6 +15,7 @@ type AuthenticationMiddleware struct {
 
 const (
 	REDIRECT_COOKIE_NAME = "redirect-after-login"
+	USER_ID_KEY          = "userID"
 )
 
 func NewAuthenticationMiddleware(redirectToLogin bool) *AuthenticationMiddleware {
@@ -27,7 +30,8 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 		if err != nil {
 			return err
 		}
-		if session.Values[sessions.USER_DATA_VALUE] == nil {
+		userData := session.Values[sessions.USER_DATA_VALUE]
+		if userData == nil {
 			if am.redirectToLogin {
 				userPath := c.Request().URL.Path
 				cookie := http.Cookie{
@@ -45,7 +49,14 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 				return c.JSON(http.StatusUnauthorized, "Unauthorized")
 			}
 
+		} else {
+			sessiondata, ok := userData.(users.UserSessionData)
+			if !ok {
+				return fmt.Errorf("AuthenticationMiddleware: failed to cast user data to UserSessionData")
+			}
+			userID := sessiondata.ID
+			c.Set(USER_ID_KEY, userID)
+			return next(c)
 		}
-		return next(c)
 	}
 }
