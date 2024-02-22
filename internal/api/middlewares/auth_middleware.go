@@ -33,7 +33,15 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 			return err
 		}
 		userData := session.Values[sessions.USER_DATA_VALUE]
-		if userData == nil {
+		if userData != nil {
+			sessiondata, ok := userData.(users.UserSessionData)
+			if !ok {
+				return fmt.Errorf("AuthenticationMiddleware: failed to cast user data to UserSessionData")
+			}
+			userID := sessiondata.ID
+			c.Set(USER_ID_KEY, userID)
+			return next(c)
+		} else {
 			if am.redirectToLogin {
 				userPath := c.Request().URL.Path
 				cookie := http.Cookie{
@@ -43,22 +51,10 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 					MaxAge: 3600,
 				}
 				c.SetCookie(&cookie)
-				if err != nil {
-					return err
-				}
 				return c.Redirect(http.StatusFound, "/login")
 			} else {
 				return c.JSON(http.StatusUnauthorized, "Unauthorized")
 			}
-
-		} else {
-			sessiondata, ok := userData.(users.UserSessionData)
-			if !ok {
-				return fmt.Errorf("AuthenticationMiddleware: failed to cast user data to UserSessionData")
-			}
-			userID := sessiondata.ID
-			c.Set(USER_ID_KEY, userID)
-			return next(c)
 		}
 	}
 }
