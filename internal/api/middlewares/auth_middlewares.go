@@ -27,6 +27,17 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 		}
 		if session.Values["user"] == nil {
 			if am.redirectToLogin {
+				userPath := c.Request().URL.Path
+				cookie := http.Cookie{
+					Name:   "redirect-after-login",
+					Path:   "/",
+					Value:  userPath,
+					MaxAge: 3600,
+				}
+				c.SetCookie(&cookie)
+				if err != nil {
+					return err
+				}
 				return c.Redirect(http.StatusFound, "/login")
 			} else {
 
