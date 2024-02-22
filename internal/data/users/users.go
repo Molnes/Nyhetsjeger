@@ -22,9 +22,23 @@ type User struct {
 	RefreshtokenCypher []byte
 }
 
+type UserSessionData struct {
+	ID    uuid.UUID
+	SsoID string
+	Email string
+}
+
+func (u *User) IntoSessionData() UserSessionData {
+	return UserSessionData{
+		ID:    u.ID,
+		SsoID: u.SsoID,
+		Email: u.Email,
+	}
+}
+
 func init() {
-	// Register the User struct for gob encoding
-	gob.Register(User{})
+	// Register the UserSessionData struct for gob encoding, needed for session storage
+	gob.Register(UserSessionData{})
 }
 
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
@@ -53,10 +67,19 @@ func CreateUser(db *sql.DB, user *User) (*User, error) {
 	return scanUserFromFullRow(row)
 }
 
+// Returns the role of the user with the ID provided
+func GetUserRole(db *sql.DB, id uuid.UUID) (user_roles.Role, error) {
+	var role string
+	err := db.QueryRow(
+		`SELECT role
+		FROM users
+		WHERE id = $1`,
+		id).Scan(&role)
+	return user_roles.RoleFromString(role), err
+}
+
 // Updates the user with the ID of the user provided
 func UpdateUser(db *sql.DB, user *User) error {
-
-
 
 	_, err := db.Exec(
 		`UPDATE users

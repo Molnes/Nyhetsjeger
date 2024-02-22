@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
 	"github.com/Molnes/Nyhetsjeger/internal/auth"
 	"github.com/Molnes/Nyhetsjeger/internal/data/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/data/users"
@@ -106,13 +107,15 @@ func oauthGoogleCallback(c echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create session: %s", err.Error())
 	}
-	session.Values[sessions.USER_DATA_VALUE] = user
+
+	userSessionData := user.IntoSessionData()
+	session.Values[sessions.USER_DATA_VALUE] = userSessionData
 	err = session.Save(c.Request(), c.Response())
 	if err != nil {
 		return fmt.Errorf("failed to save session: %s", err.Error())
 	}
 
-	cookieRedirectTo, err := c.Cookie("redirect-after-login")
+	cookieRedirectTo, err := c.Cookie(middlewares.REDIRECT_COOKIE_NAME)
 	if err != nil {
 		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
 	}
