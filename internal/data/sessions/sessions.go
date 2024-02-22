@@ -17,8 +17,9 @@ var (
 )
 
 const (
-	// SessionName is the name of the session
-	SessionName = "session"
+	// SESSION_NAME is the name of the session
+	SESSION_NAME = "session"
+	USER_DATA_VALUE = "user"
 )
 
 func init() {

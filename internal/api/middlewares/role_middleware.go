@@ -34,7 +34,7 @@ func (am *AuthorizationMiddleware) isRoleAllowed(role user_roles.Role) bool {
 // If not, returns a 403 Forbidden response
 func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
+		session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
 		if err != nil {
 			return err
 		}

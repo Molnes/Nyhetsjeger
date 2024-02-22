@@ -102,11 +102,11 @@ func oauthGoogleCallback(c echo.Context) error {
 		}
 	}
 
-	session, err := sessions.Store.New(c.Request(), sessions.SessionName)
+	session, err := sessions.Store.New(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return fmt.Errorf("failed to create session: %s", err.Error())
 	}
-	session.Values["user"] = user
+	session.Values[sessions.USER_DATA_VALUE] = user
 	err = session.Save(c.Request(), c.Response())
 	if err != nil {
 		return fmt.Errorf("failed to save session: %s", err.Error())
@@ -123,7 +123,7 @@ func oauthGoogleCallback(c echo.Context) error {
 
 // Logs the user out by deleting the session
 func logout(c echo.Context) error {
-	session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
+	session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return fmt.Errorf("failed to get session: %s", err.Error())
 	}

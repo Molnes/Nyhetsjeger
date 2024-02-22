@@ -19,7 +19,7 @@ func homePage(c echo.Context) error {
 }
 
 func loginPage(c echo.Context) error {
-	session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
+	session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return err
 	}
