@@ -1,0 +1,49 @@
+package quiz_components
+
+import "fmt"
+
+type OptionalABTN struct {
+	selected bool
+	disabled bool
+}
+
+type OptionABTN func(*OptionalABTN) OptionalABTN
+
+func SelectedAButton() OptionABTN {
+	return func(o *OptionalABTN) OptionalABTN {
+		o.selected = true
+		return *o
+	}
+}
+
+func DisabledAButton() OptionABTN {
+	return func(o *OptionalABTN) OptionalABTN {
+		o.disabled = true
+		return *o
+	}
+}
+
+func assignCorrectStyle(option ...OptionABTN) string {
+	style := ""
+	for _, o := range option {
+		if o(&OptionalABTN{}).selected {
+			style += "border-4 border-blue-500 border-solid"
+		}
+	}
+	return style
+}
+
+func checkIfIsDisabled(option ...OptionABTN) bool {
+	for _, o := range option {
+		if o(&OptionalABTN{}).disabled {
+			return true
+		}
+	}
+	return false
+}
+
+templ AnswerButton(text string, option ...OptionABTN) {
+	<button id={ text } type="button" class={ "p-3 bg-white", assignCorrectStyle(option...) } disabled?={ checkIfIsDisabled(option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">
+		{ text }
+	</button>
+}
