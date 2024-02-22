@@ -33,7 +33,10 @@ func oauthGoogleLogin(c echo.Context) error {
 // If the user is in the user store, the user is updated with the new access token and refresh token
 // The user is then logged in and a session is created
 func oauthGoogleCallback(c echo.Context) error {
-	oauthState, _ := c.Cookie(auth.OauthStateCookieName)
+	oauthState, err := c.Cookie(auth.OauthStateCookieName)
+	if err != nil {
+		return fmt.Errorf("failed to get oauth state cookie: %s", err.Error())
+	}
 	if c.FormValue("state") != oauthState.Value {
 		return c.JSON(http.StatusUnauthorized, "invalid oauth state")
 	}
@@ -109,7 +112,13 @@ func oauthGoogleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to save session: %s", err.Error())
 	}
 
-	return c.Redirect(http.StatusTemporaryRedirect, "/")
+	cookieRedirectTo, err := c.Cookie("redirect-after-login")
+	if err != nil {
+		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
+	}
+	redirectTo := cookieRedirectTo.Value
+
+	return c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 }
 
 // Logs the user out by deleting the session
