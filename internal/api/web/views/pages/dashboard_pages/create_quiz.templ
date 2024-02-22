@@ -3,6 +3,7 @@ package dashboard_pages
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/create_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 )
 
 // The "Create quiz" page. This page is used to create a new quiz.
@@ -41,9 +42,9 @@ templ CreateQuiz() {
 			@dashboard_components.CreateQuizForm("") {
 				<h2>Spørsmål</h2>
 				<ul class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
-					<li class="flex flex-row justify-between px-3 py-1">Hva er hovedstaden i Italia?<button>✏️</button></li>
+					<li class="flex flex-row justify-between px-3 py-1">Hva er hovedstaden i Italia?<button type="button">✏️</button></li>
 				</ul>
-				<button id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
 				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz 🗑️</button>
@@ -54,16 +55,23 @@ templ CreateQuiz() {
 				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK ✅</button>
 			</div>
 		</div>
-		@dashboard_components.CreateQuestionModal()
+		@dashboard_components.CreateQuestionModal(articles.SampleArticles)
 	}
 	<script>
 		const createQuestionModal = document.getElementById("create-question-modal");
 		const newQuestionButton = document.getElementById("new-question-button");
+		const submitQuestionButton = document.getElementById("submit-question-button");
+		const closeModalButton = document.getElementById("close-modal-button");
 		
 		function openCreateQuestionModal() {
 			createQuestionModal.showModal();
 		}
 
+		function closeCreateQuestionModal() {
+			createQuestionModal.close();
+		}
+
 		newQuestionButton.addEventListener("click", openCreateQuestionModal);
+		closeModalButton.addEventListener("click", closeCreateQuestionModal);
 	</script>
 }
