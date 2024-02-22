@@ -19,11 +19,11 @@ func NewAuthenticationMiddleware(redirectToLogin bool) *AuthenticationMiddleware
 // If not, returns a 401 Unauthorized response
 func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
+		session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
 		if err != nil {
 			return err
 		}
-		if session.Values["user"] == nil {
+		if session.Values[sessions.USER_DATA_VALUE] == nil {
 			if am.redirectToLogin {
 				userPath := c.Request().URL.Path
 				cookie := http.Cookie{
