@@ -1,5 +1,9 @@
 BEGIN;
 
+DROP TABLE IF EXISTS http_sessions;
+DROP INDEX IF EXISTS http_sessions_expiry_idx;
+DROP INDEX IF EXISTS http_sessions_key_idx;
+
 DROP TABLE IF EXISTS user_answers;
 
 DROP TABLE IF EXISTS answer_alternatives;

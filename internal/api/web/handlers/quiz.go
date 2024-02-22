@@ -9,8 +9,8 @@ import (
 )
 
 // Registers handlers for quiz related pages
-func RegisterQuizHandlers(e *echo.Echo) {
-	e.GET("/", quizHomePage)
+func RegisterQuizHandlers(e *echo.Group) {
+	e.GET("", quizHomePage)
 	e.GET("/quizpage", GetQuizPage)
 }
 
