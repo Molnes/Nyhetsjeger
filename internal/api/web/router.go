@@ -16,25 +16,29 @@ func SetupRouter(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
+	// pages nor requiring authentication
 	handlers.RegisterPublicPages(e)
 
-	// authentication routes
+	// authentication routes, no authentication required
 	auth_group := e.Group("/auth")
 	handlers.RegisterAuthHandlers(auth_group)
 
-	// TODO add homepage with login button if not authenticated
-
+	// routes requiring authentication
 	quizGroup := e.Group("/quiz")
-	quizGroup.Use(middlewares.IsAuthenticated)
+	authForceWithRedirect := middlewares.NewAuthenticationMiddleware(true)
+	quizGroup.Use(authForceWithRedirect.EncofreAuthentication)
 	handlers.RegisterQuizHandlers(quizGroup)
 
+	// routes requiring admin
 	dashboardGroup := e.Group("/dashboard")
+	dashboardGroup.Use(authForceWithRedirect.EncofreAuthentication)
 	dashboardGroup.Use(middlewares.IsAdmin)
 
 	handlers.RegisterDashboardHandlers(dashboardGroup)
 
 	api_group := e.Group("/api/v1")
-	api_group.Use(middlewares.IsAuthenticated)
+	authForce := middlewares.NewAuthenticationMiddleware(false)
+	api_group.Use(authForce.EncofreAuthentication)
 
 	quiz_api_group := api_group.Group("/quiz")
 	api.RegisterQuizApiHandlers(quiz_api_group)
