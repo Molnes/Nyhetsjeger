@@ -1,7 +1,6 @@
 package quiz_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
-import "fmt"
 
 type Optional struct {
 	correctAnswered []string
@@ -18,39 +17,60 @@ func CorrectAndAnswered(correct string, answered string) Option {
 
 var answeredCorrectly bool = false
 
-func isCorrectOrChosen(id string, option ...Option) string {
+func isSelected(id string, option ...Option) bool {
 	o := Optional{}
 	for _, opt := range option {
 		o = opt(&o)
 	}
+
 	for i := 0; i < len(o.correctAnswered); i += 2 {
-		if o.correctAnswered[i] == id {
-
-			if o.correctAnswered[i] == o.correctAnswered[i+1] && o.correctAnswered[i+1] == id {
-				answeredCorrectly = true
-			}
-
-			return "bg-green-500"
+		if o.correctAnswered[i] == id && o.correctAnswered[i+1] == id {
+			answeredCorrectly = true
+			return true
 		}
+
 		if o.correctAnswered[i+1] == id {
-			return "bg-red-500"
+			return true
 		}
 	}
-	return "bg-white"
+
+	return false
+
+}
+
+func isCorrect(id string, option ...Option) bool {
+	o := Optional{}
+	for _, opt := range option {
+		o = opt(&o)
+	}
+
+	for i := 0; i < len(o.correctAnswered); i += 2 {
+		if o.correctAnswered[i] == id {
+			return true
+		}
+	}
+
+	return false
 }
 
 templ Answers(answers []questions.Alternative, option ...Option) {
-	<div id="answers-wrapper" class="flex flex-col [&>*]:mt-4">
-		for _ , answer := range answers {
-			<button id={ answer.Text } type="button" class={ "w-80 h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
-		}
+	<div id="answers-wrapper" class="w-80 flex flex-col [&>*]:mt-4">
 		if (option != nil) {
+			for _ , answer := range answers {
+				//<button id={ answer.Text } type="button" class={ "h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
+				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.Text, option...), isSelected(answer.Text, option...))
+			}
 			if (answeredCorrectly) {
 				<p class="font-bold">Riktig!</p>
 			} else {
 				<p class="font-bold">Feil!</p>
 			}
-			<button id="next-question" type="button" class="w-80 h-16 bg-blue-500" hx-post="/nextquestion" hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
+			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post="/nextquestion" hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
+		} else {
+			for _ , answer := range answers {
+				//<button id={ answer.Text } type="button" class={ "h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
+				@AnswerButton(answer.Text)
+			}
 		}
 	</div>
 }

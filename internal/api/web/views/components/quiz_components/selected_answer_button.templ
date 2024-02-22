@@ -1,0 +1,20 @@
+package quiz_components
+
+func assignSelected(selected bool) string {
+	if selected {
+		return "border-4 border-blue-500 border-solid"
+	}
+	return ""
+}
+
+templ selectedAnswerButton(text string, disabled bool, isCorrect bool, selected bool) {
+	<button id={ text } type="button" class={ "p-3 bg-white flex flex-row items-center justify-between", assignSelected(selected) } disabled?={ disabled }>
+		if isCorrect {
+			<img src="/static/svg/checkmark-outline.svg" alt="Checkmark" class="h-10 float-left"/>
+		} else {
+			<img src="/static/svg/cross.svg" alt="" class="h-10"/>
+		}
+		<p class="justify-self-center">{ text }</p>
+		<p>50%</p>
+	</button>
+}
