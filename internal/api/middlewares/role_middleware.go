@@ -28,11 +28,12 @@ func NewAuthorizationMiddleware(data *config.SharedData, allowedRoles []user_rol
 	return &AuthorizationMiddleware{data, allowedRoles, redirect_to_page}
 }
 
+// Checks if the role is allowed to pass through the middleware
 func (am *AuthorizationMiddleware) isRoleAllowed(role user_roles.Role) bool {
 	return slices.Contains(am.allowedRoles, role)
 }
 
-// Checks if the user is an admin
+// Checks if the user has a role that is allowed to pass through the middleware.
 // If not, returns a 403 Forbidden response
 func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
