@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"database/sql"
 	"net/http"
 	"slices"
 
@@ -14,7 +13,6 @@ import (
 // Middleware for enforcing user roles
 // Use AuthenticationMiddleware BEFORE this middleware, as it expects the user to be authenticated
 type AuthorizationMiddleware struct {
-	db                             *sql.DB
 	allowedRoles                   []user_roles.Role
 	redirectToPermissionDeniedPage bool
 }
@@ -24,8 +22,8 @@ type AuthorizationMiddleware struct {
 // AllowedRoles: A list of roles that are allowed to pass through the middleware.
 //
 // Roles not in the list will receive a 403 Forbidden response
-func NewAuthorizationMiddleware(db *sql.DB, allowedRoles []user_roles.Role, redirect_to_page bool) *AuthorizationMiddleware {
-	return &AuthorizationMiddleware{db, allowedRoles, redirect_to_page}
+func NewAuthorizationMiddleware(allowedRoles []user_roles.Role, redirect_to_page bool) *AuthorizationMiddleware {
+	return &AuthorizationMiddleware{allowedRoles, redirect_to_page}
 }
 
 func (am *AuthorizationMiddleware) isRoleAllowed(role user_roles.Role) bool {
@@ -36,16 +34,12 @@ func (am *AuthorizationMiddleware) isRoleAllowed(role user_roles.Role) bool {
 // If not, returns a 403 Forbidden response
 func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
+		session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
 		if err != nil {
 			return err
 		}
-		user := session.Values["user"].(users.UserSessionData)
-		role, err := users.GetUserRole(am.db, user.ID)
-		if err != nil {
-			return err
-		}
-		if !am.isRoleAllowed(role) {
+		user := session.Values["user"].(users.User)
+		if !am.isRoleAllowed(user.Role) {
 			if am.redirectToPermissionDeniedPage {
 				return c.Redirect(http.StatusFound, "/forbidden")
 			} else {
