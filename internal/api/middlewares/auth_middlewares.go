@@ -9,16 +9,30 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type AuthenticationMiddleware struct {
+	redirectToLogin bool
+}
+
+func NewAuthenticationMiddleware(redirectToLogin bool) *AuthenticationMiddleware {
+	return &AuthenticationMiddleware{redirectToLogin}
+}
+
 // Checks if the user is authenticated
 // If not, returns a 401 Unauthorized response
-func IsAuthenticated(next echo.HandlerFunc) echo.HandlerFunc {
+func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		session, err := sessions.Store.Get(c.Request(), sessions.SessionName)
 		if err != nil {
 			return err
 		}
 		if session.Values["user"] == nil {
-			return c.JSON(http.StatusUnauthorized, "Unauthorized")
+			if am.redirectToLogin {
+				return c.Redirect(http.StatusFound, "/login")
+			} else {
+
+				return c.JSON(http.StatusUnauthorized, "Unauthorized")
+			}
+
 		}
 		return next(c)
 	}
