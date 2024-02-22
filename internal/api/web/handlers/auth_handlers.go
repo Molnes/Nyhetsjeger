@@ -132,5 +132,5 @@ func logout(c echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to save session: %s", err.Error())
 	}
-	return c.NoContent(http.StatusNoContent)
+	return c.Redirect(http.StatusFound, "/")
 }
