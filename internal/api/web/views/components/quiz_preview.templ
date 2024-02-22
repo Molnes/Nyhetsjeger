@@ -3,20 +3,21 @@ package components
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 )
-
-//{ quiz.Questions[0].Article.ImgURL.String()   }
-templ Quiz_preview(quiz quizzes.Quiz) {
-	<div class="bg-gray-200 shadow-md rounded-lg m-10 max-w-sm w-full lg:max-w-full lg:flex">
-			<img
+// QuizPreview is a component that displays a preview of a quiz in the form of a card
+templ QuizPreview(quiz quizzes.Quiz) {
+	
+		<div class="bg-gray-200 shadow-md rounded-lg max-w-80 overflow-hidden"> 
+        <img
 				src="https://picsum.photos/200/300"
 				alt={ quiz.Title }
 				class="h-48 w-full  bg-gray-500"
 			/>
-		<div class="mt-4 lg:mt-0 lg:ml-4 grid grid-cols-1 gap-4">
-			<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800">Dagens Nyhets Quiz 15. februar</h3>
-			<a class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-10 mx-10 my-14 rounded bg-center text-center" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
-				Spill
-			</a>
+			<div class="mt-4 lg:mt-0 grid grid-cols-1 gap-4">
+				<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800">Dagens Nyhets Quiz 15. februar</h3>
+				<a class="mt-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-10 mx-10 my-14 rounded bg-center text-center" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
+					Spill
+				</a>
+			</div>
 		</div>
-	</div>
+
 }
