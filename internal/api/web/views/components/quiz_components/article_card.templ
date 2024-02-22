@@ -4,8 +4,8 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 )
 
-// ArticleCard is a component that displays an article in a card format
-// It has image, title and a link to the article
+// ArticleCard is a component that displays an article in a card format.
+// It has image, title and a link to the article.
 templ ArticleCard(article articles.Article) {
 	<a href={ templ.SafeURL(article.ArticleURL.String()) }>
 		<article class="flex flex-row items-center bg-white max-w-screen-md aspect-[4/1] overflow-hidden">
