@@ -25,10 +25,12 @@ CREATE TABLE IF NOT EXISTS articles (
 CREATE TABLE IF NOT EXISTS quizzes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
+    image_url TEXT NOT NULL,
     available_from TIMESTAMP NOT NULL,
     available_to TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     last_modified_at TIMESTAMP NOT NULL DEFAULT now()
+    published BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS questions (
