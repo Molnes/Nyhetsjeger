@@ -5,12 +5,6 @@ import (
 	"encoding/gob"
 	"time"
 
-	"database/sql"
-	"encoding/gob"
-	"time"
-
-	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
-
 	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
 	"github.com/google/uuid"
 )
