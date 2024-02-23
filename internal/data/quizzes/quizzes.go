@@ -1,6 +1,7 @@
 package quizzes
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
@@ -10,6 +11,7 @@ import (
 type Quiz struct {
 	ID             uuid.UUID
 	Title          string
+	ImageURL       url.URL
 	AvailableFrom  time.Time
 	AvailableTo    time.Time
 	CreatedAt      time.Time
@@ -25,8 +27,13 @@ func GetQuiz(quizID uuid.UUID) (Quiz, error) {
 // This function is used to create a new quiz with default values.
 func CreateDefaultQuiz() (Quiz, error) {
 	return Quiz{
-		ID:             uuid.New(),
-		Title:          "Daglig Quiz: " + time.Now().Format("1970-01-01"),
+		ID:    uuid.New(),
+		Title: "Daglig Quiz: " + time.Now().Format("01 Jan 2006"),
+		ImageURL: url.URL{
+			Scheme: "https",
+			Host:   "unsplash.it",
+			Path:   "/200/200",
+		},
 		AvailableFrom:  time.Now(),
 		AvailableTo:    time.Now().Add(24 * time.Hour),
 		CreatedAt:      time.Now(),
