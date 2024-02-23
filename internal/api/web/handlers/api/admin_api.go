@@ -11,6 +11,7 @@ func RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/create-new", PostQuiz)
 }
 
+// Handles the creation of a new quiz.
 func PostQuiz(c echo.Context) error {
 	// TODO: Add quiz to the database
 
