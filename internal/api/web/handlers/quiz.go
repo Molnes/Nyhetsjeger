@@ -52,5 +52,8 @@ func POSTNextQuestion(c echo.Context) error {
 	if questionIndex >= len(quizzes.SampleQuiz.Questions) {
 		questionIndex = 0
 	}
-	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(quizzes.SampleQuiz.Questions[questionIndex]))
+
+	progress := float64(questionIndex) / float64(len(quizzes.SampleQuiz.Questions))
+
+	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(quizzes.SampleQuiz.Questions[questionIndex], progress))
 }
