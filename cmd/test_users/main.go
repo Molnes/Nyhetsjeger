@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 )
 
@@ -53,8 +52,8 @@ func main() {
 	}
 
 	e := echo.New()
-	e.Logger.SetLevel(log.DEBUG)
-	e.Use(middleware.Logger())
+	// e.Logger.SetLevel(log.DEBUG)
+	// e.Use(middleware.Logger())
 
 	h1 := &handler{db, ss, userSessionDatas[0]}
 	h2 := &handler{db, ss, userSessionDatas[1]}
@@ -62,6 +61,14 @@ func main() {
 	e.POST("/user", h1.createSession)
 	e.POST("/admin", h2.createSession)
 	e.POST("/organization-admin", h3.createSession)
+	e.POST("/shutdown", func(c echo.Context) error {
+		log.Info("Shutting down test server...")
+		// shutdown in 1 second
+		time.AfterFunc(time.Second, func() {
+			os.Exit(0)
+		})
+		return c.NoContent(http.StatusOK)
+	})
 
 	e.Logger.Fatal(e.Start(":8089"))
 }
@@ -77,7 +84,6 @@ func (h *handler) createSession(c echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create session: %s", err.Error())
 	}
-	log.Info(h.userSession)
 	thisUser := h.userSession
 
 	session.Values[sessions.USER_DATA_VALUE] = thisUser
