@@ -9,6 +9,7 @@ import (
 
 //Starts a countdown from parameter to 0.
 //Runs as a javascript function.
+script startCountdown(countdownTime int) {
 	var countDownTime = 10;
 	var x = setInterval(function() {
 		countDownTime--;
@@ -21,19 +22,22 @@ import (
 
 }
 
+//Renders the basic question layout. It includes a timer, score, question and answers.
 templ QuizPage(quiz questions.Question, title string) {
 	@components.Layout() {
-		@startCountdown()
-		<div class="bg-gray-400 w-screen min-h-svh py-8">
-			<section class="flex justify-center items-center">
+		@startCountdown(10)
+		<div class="bg-gray-400 w-full min-h-svh py-8">
+			<section class="grid grid-cols-3 items-center max-w-screen-md mx-auto">
 				@icons.Cross(1.5, "currentcolor", 8, 8)
-				<h1 id="title-text" class="text-4xl font-bold text-center my-8 max-w-56">{ title }</h1>
-				<div class="text-xl text-right">
-					<p>Poeng</p>
-					<p class="font-bold">100</p>
-				</div>
-				<div class="h-16 w-16 ml-2 rounded-full bg-white flex items-center justify-center">
-					<p id="countdown" class="text-2xl font-bold">10</p>
+				<h1 id="title-text" class="text-4xl font-bold text-center justify-self-center my-8 max-w-56">{ title }</h1>
+				<div class="flex justify-self-end">
+					<div class="text-xl text-right">
+						<p>Poeng</p>
+						<p class="font-bold">100</p>
+					</div>
+					<div class="h-16 w-16 ml-2 rounded-full bg-white flex items-center justify-center">
+						<p id="countdown" class="text-2xl font-bold">10</p>
+					</div>
 				</div>
 			</section>
 			<section id="content" class="font-bold text-lg">
