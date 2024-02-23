@@ -3,8 +3,18 @@ package quiz_components
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
 
 templ QuizContent (question questions.Question) {
+templ QuizContent (question questions.Question, progress float64) {
+	<section id="progress-bar" class="flex justify-center">
+		<div class="w-96 h-8 bg-red-600 overflow-hidden">
+			//fmt.Sprintf("/nextquestion?answer=%s", answer.Text)
+			if true {
+				<div id="pbar" class="float-left h-full bg-blue-700"></div>
+				@progressLength(progress)
+			}
+		</div>
+	</section>
 	<section id="outer-image" class="flex content-center justify-center mt-4">
-		<div class="h-48 w-96 bg-gray-800"></div>
+		<img src="https://picsum.photos/390/200" alt=""/>
 	</section>
 	<section id="outer-text" class="flex justify-center mt-4">
 		<p class="w-96 text-center">{ question.Text }</p>
