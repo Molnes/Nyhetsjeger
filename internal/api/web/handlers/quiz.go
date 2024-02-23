@@ -26,6 +26,7 @@ func quizHomePage(c echo.Context) error {
 
 var questionIndex = 0
 
+// Gets the quiz page
 func GetQuizPage(c echo.Context) error {
 	sampleQuiz := quizzes.SampleQuiz.Questions[questionIndex]
 	title := quizzes.SampleQuiz.Title
@@ -33,6 +34,7 @@ func GetQuizPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(sampleQuiz, title))
 }
 
+// Checks if the answer was correct, and returns the results
 func GetIsCorrect(c echo.Context) error {
 	answer := c.QueryParam("answer")
 	correct := ""
@@ -47,6 +49,7 @@ func GetIsCorrect(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, quiz_components.CorrectAndAnswered(correct, answer)))
 }
 
+// Posts the next question
 func POSTNextQuestion(c echo.Context) error {
 	questionIndex++
 	if questionIndex >= len(quizzes.SampleQuiz.Questions) {

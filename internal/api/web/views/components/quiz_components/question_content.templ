@@ -2,6 +2,7 @@ package quiz_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
 
+//Javascript function that updates the progress bar
 script progressLength(progress float64) {
 	console.log("Hello from progressLength");
 	const pbar = document.getElementById("pbar");
@@ -10,6 +11,7 @@ script progressLength(progress float64) {
 	
 }
 
+//Component that displays the progress bar, the question and the answers
 templ QuizContent (question questions.Question, progress float64) {
 	<section id="progress-bar" class="flex justify-center">
 		<div class="w-96 h-8 bg-red-600 overflow-hidden">

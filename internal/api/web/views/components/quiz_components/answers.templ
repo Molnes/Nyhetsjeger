@@ -8,6 +8,7 @@ type Optional struct {
 
 type Option func(*Optional) Optional
 
+//Sets the correct and answered answer to the question
 func CorrectAndAnswered(correct string, answered string) Option {
 	return func(o *Optional) Optional {
 		o.correctAnswered = append(o.correctAnswered, correct, answered)
@@ -17,6 +18,7 @@ func CorrectAndAnswered(correct string, answered string) Option {
 
 var answeredCorrectly bool = false
 
+//Checks if the answer has been selected
 func isSelected(id string, option ...Option) bool {
 	o := Optional{}
 	for _, opt := range option {
@@ -38,6 +40,7 @@ func isSelected(id string, option ...Option) bool {
 
 }
 
+//Checks if the question has been answered correctly or not.
 func isCorrect(id string, option ...Option) bool {
 	o := Optional{}
 	for _, opt := range option {
@@ -53,12 +56,13 @@ func isCorrect(id string, option ...Option) bool {
 	return false
 }
 
+//Renders all the answers to the question in the form of buttons, and if the question has been answered, it will also display if the answer was correct or not.
+//Takes in the possible questions, and an optional Option to check if the question has been answered and if it was answered correctly.
 templ Answers(answers []questions.Alternative, option ...Option) {
 	<div id="answers-wrapper" class="w-80 flex flex-col [&>*]:mt-4">
 		if (option != nil) {
 			for _ , answer := range answers {
-				//<button id={ answer.Text } type="button" class={ "h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
-				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.Text, option...), isSelected(answer.Text, option...))
+				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.Text, option...), isSelected(answer.Text, option...), 0.24989)
 			}
 			if (answeredCorrectly) {
 				<p class="font-bold">Riktig!</p>
@@ -68,7 +72,6 @@ templ Answers(answers []questions.Alternative, option ...Option) {
 			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post="/nextquestion" hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
 		} else {
 			for _ , answer := range answers {
-				//<button id={ answer.Text } type="button" class={ "h-16 ", isCorrectOrChosen(answer.Text, option...) } disabled?={ option != nil } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", answer.Text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">{ answer.Text }</button>
 				@AnswerButton(answer.Text)
 			}
 		}
