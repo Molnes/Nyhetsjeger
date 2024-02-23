@@ -23,7 +23,7 @@ func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHand
 // Registers handlers for dashboard related pages
 func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
-	e.GET("/create-quiz", dph.dashboardCreateQuiz)
+	e.GET("/quiz/edit/:quizId", dph.dashboardEditQuiz)
 }
 
 // Renders the dashboard home page
@@ -32,7 +32,7 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 }
 
 // Renders the page for creating a new quiz
-func (dph *DashboardPagesHandler) dashboardCreateQuiz(c echo.Context) error {
+func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	// TODO: Fetch the quiz from the database
 	quiz, _ := quizzes.CreateDefaultQuiz()
 	articles, _ := articles.GetAllArticles()
