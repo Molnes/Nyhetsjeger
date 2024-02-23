@@ -6,6 +6,6 @@ templ ArticleListItem(url string) {
 		<a target="blank_" href={ templ.SafeURL(url) } class="[&:hover]:underline">
 			{ url }
 		</a>
-		<button class="px-1">❌</button>
+		<button class="px-1" title="Slett">❌</button>
 	</li>
 }
