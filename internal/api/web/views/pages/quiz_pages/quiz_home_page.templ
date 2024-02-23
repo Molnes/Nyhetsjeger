@@ -6,7 +6,7 @@ import (
 )
 
 // Quiz home page
-templ QuizHomePage() {
+templ QuizHomePage(quizzes []quizzes.Quiz) {
 	@components.Layout() {
 		<div class="bg-white min-h-screen overflow-auto flex flex-col">
 			<div class="flex justify-between items-center p-4">
@@ -17,8 +17,8 @@ templ QuizHomePage() {
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizzer</h2>
 				<div class="flex flex-wrap justify-center p-4 lg:gap-20 gap-10">
-                for _ = range 4 {
-						@components.QuizPreview(quizzes.SampleQuiz)
+                for _, quiz := range quizzes { 
+						@components.QuizPreview(quiz)
 					}
 				</div>
 			</div>

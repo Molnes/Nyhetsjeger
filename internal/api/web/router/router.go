@@ -4,40 +4,44 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers/api"
+	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
-	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"golang.org/x/oauth2"
 )
 
 // Sets up the router for the web server
 // Takes care of grouping routes, setting up middleware and registering handlers.
-func SetupRouter(e *echo.Echo) {
-
-	databaseConn := database.DB
+func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth2.Config) {
 
 	e.Logger.SetLevel(log.DEBUG)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
 	// pages nor requiring authentication
-	handlers.RegisterPublicPages(e)
+	publicPagesHandler := handlers.NewPublicPagesHandler(sharedData)
+	publicPagesHandler.RegisterPublicPages(e)
 
 	// authentication routes, no authentication required
-	auth_group := e.Group("/auth")
-	handlers.RegisterAuthHandlers(auth_group)
+	authGroup := e.Group("/auth")
+	authHandlers := handlers.NewAuthHandler(sharedData, oauthConfig)
+	authHandlers.RegisterAuthHandlers(authGroup)
 
 	// routes requiring authentication
 	quizGroup := e.Group("/quiz")
-	authForceWithRedirect := middlewares.NewAuthenticationMiddleware(true)
+	authForceWithRedirect := middlewares.NewAuthenticationMiddleware(sharedData, true)
 	quizGroup.Use(authForceWithRedirect.EncofreAuthentication)
-	handlers.RegisterQuizHandlers(quizGroup)
+
+	// quiz pages
+	quizPagesHandler := handlers.NewQuizPagesHandler(sharedData)
+	quizPagesHandler.RegisterQuizHandlers(quizGroup)
 
 	// routes requiring admin
 	enforceAdminMiddlewareRedirect :=
 		middlewares.NewAuthorizationMiddleware(
-			databaseConn,
+			sharedData,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
@@ -45,30 +49,35 @@ func SetupRouter(e *echo.Echo) {
 	dashboardGroup := e.Group("/dashboard")
 	dashboardGroup.Use(authForceWithRedirect.EncofreAuthentication)
 	dashboardGroup.Use(enforceAdminMiddlewareRedirect.EnforceRole)
-	handlers.RegisterDashboardHandlers(dashboardGroup)
+
+	// dashboard pages
+	dashboardPagesHandler := handlers.NewDashboardPagesHandler(sharedData)
+	dashboardPagesHandler.RegisterDashboardHandlers(dashboardGroup)
 
 	// api routes, requiring authentication
-	// api routes, requiring authentication
-	api_group := e.Group("/api/v1")
-	authForce := middlewares.NewAuthenticationMiddleware(false)
-	api_group.Use(authForce.EncofreAuthentication)
+	apiGroup := e.Group("/api/v1")
+	authForce := middlewares.NewAuthenticationMiddleware(sharedData, false)
+	apiGroup.Use(authForce.EncofreAuthentication)
 
-	quiz_api_group := api_group.Group("/quiz")
-	api.RegisterQuizApiHandlers(quiz_api_group)
+	quizApiGroup := apiGroup.Group("/quiz")
+	quizApiHandler := api.NewQuizApiHandler(sharedData)
+	quizApiHandler.RegisterQuizApiHandlers(quizApiGroup)
 
 	// admin api routes, requiring admin
-	// admin api routes, requiring admin
-	admin_api_group := api_group.Group("/admin")
+	adminApiGroup := apiGroup.Group("/admin")
 	enforceAdminMiddleware :=
 		middlewares.NewAuthorizationMiddleware(
-			databaseConn,
+			sharedData,
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
 			}, false)
-	admin_api_group.Use(enforceAdminMiddleware.EnforceRole)
-	api.RegisterAdminApiHandlers(admin_api_group)
+	adminApiGroup.Use(enforceAdminMiddleware.EnforceRole)
 
+	adminApiHandler := api.NewAdminApiHandler(sharedData)
+	adminApiHandler.RegisterAdminApiHandlers(adminApiGroup)
+
+	// static files
 	e.Static("/static", "assets")
 
 	// websocket for live updates
