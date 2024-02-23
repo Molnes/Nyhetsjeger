@@ -11,7 +11,7 @@ templ QuizPage(quiz questions.Question, title string) {
 		<div class="bg-gray-400 w-screen min-h-svh py-8">
 			<h1 id="title-text" class="text-6xl font-bold text-center my-8">{ title }</h1>
 			<section id="content" class="font-bold text-lg">
-				@quiz_components.QuizContent(quiz)
+				@quiz_components.QuizContent(quiz, 0)
 			</section>
 		</div>
 	}
