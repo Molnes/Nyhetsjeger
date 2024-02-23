@@ -71,7 +71,16 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Buttons: Delete, Hide, OK
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
 				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
-				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">Skjul quiz <input id="quiz-is-hidden" type="checkbox" class="mx-1 p-1"/></label>
+				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
+					Skjul quiz <input
+	id="quiz-is-hidden"
+	type="checkbox"
+	if !quiz.Published {
+		checked
+	}
+	class="mx-1 p-1"
+/>
+				</label>
 				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
 			</div>
 		</div>
