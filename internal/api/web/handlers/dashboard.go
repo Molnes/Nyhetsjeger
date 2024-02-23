@@ -23,5 +23,7 @@ func dashboardHomePage(c echo.Context) error {
 // Renders the page for creating a new quiz
 func dashboardEditQuiz(c echo.Context) error {
 	// TODO: Fetch the quiz from the database
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quizzes.Quiz{}))
+	quiz, _ := quizzes.CreateDefaultQuiz()
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz))
 }
