@@ -3,34 +3,31 @@ package sessions
 // Package sessions provides a session store for the application
 
 import (
-	"log"
-	"os"
+	"database/sql"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/antonlindstrom/pgstore"
 )
 
-var (
-	// Session store
-	Store *pgstore.PGStore
-)
+// var (
+// 	// Session store
+// 	Store *pgstore.PGStore
+// )
 
+// Constants related to the session store
 const (
 	// SESSION_NAME is the name of the session
 	SESSION_NAME = "session"
+	// USER_DATA_VALUE is the key for the user data in the session
 	USER_DATA_VALUE = "user"
 )
 
-func init() {
-	sessionKey, ok := os.LookupEnv("SESSION_SECRET")
-	if !ok {
-		log.Fatal("No session secret provided. Expected SESSION_SECRET")
-	}
+// Creates and sets up a new session store
+func NewSessionStore(databaseConn *sql.DB, sessionKey []byte) (*pgstore.PGStore, error) {
 
-	pgStore, err := pgstore.NewPGStoreFromPool(database.DB, []byte(sessionKey))
+	pgStore, err := pgstore.NewPGStoreFromPool(databaseConn, sessionKey)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	pgStore.Options.Secure = true
@@ -39,5 +36,5 @@ func init() {
 
 	pgStore.Cleanup(time.Hour * 24)
 
-	Store = pgStore
+	return pgStore, nil
 }
