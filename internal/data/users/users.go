@@ -60,10 +60,10 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 
 func CreateUser(db *sql.DB, user *User) (*User, error) {
 	row := db.QueryRow(
-		`INSERT INTO users (id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		`INSERT INTO users (id, username, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token`,
-		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+		user.ID, user.Username, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
 	return scanUserFromFullRow(row)
 }
 
