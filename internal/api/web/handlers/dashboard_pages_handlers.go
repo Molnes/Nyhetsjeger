@@ -5,6 +5,8 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/dashboard_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -31,5 +33,9 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for creating a new quiz
 func (dph *DashboardPagesHandler) dashboardCreateQuiz(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, dashboard_pages.CreateQuiz())
+	// TODO: Fetch the quiz from the database
+	quiz, _ := quizzes.CreateDefaultQuiz()
+	articles, _ := articles.GetAllArticles()
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(&quiz, &articles))
 }
