@@ -6,26 +6,37 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
 	"github.com/Molnes/Nyhetsjeger/internal/auth"
+	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/data/users"
 	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
-	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/oauth2"
 )
 
+type AuthHandler struct {
+	sharedData        *config.SharedData
+	googleOauthConfig *oauth2.Config
+}
+
+// Creates a new handler for auth related requests
+func NewAuthHandler(sharedData *config.SharedData, googleOauthConfig *oauth2.Config) *AuthHandler {
+	return &AuthHandler{sharedData, googleOauthConfig}
+}
+
 // Registers the auth related handlers to the given echo group
-func RegisterAuthHandlers(e *echo.Group) {
-	e.GET("/google/login", oauthGoogleLogin)
-	e.GET("/google/callback", oauthGoogleCallback)
-	e.POST("/logout", logout)
+func (ah *AuthHandler) RegisterAuthHandlers(g *echo.Group) {
+	g.GET("/google/login", ah.oauthGoogleLogin)
+	g.GET("/google/callback", ah.oauthGoogleCallback)
+	g.POST("/logout", ah.logout)
 }
 
 // Redirects the user to the Google OAuth2 login page
-func oauthGoogleLogin(c echo.Context) error {
+func (ah *AuthHandler) oauthGoogleLogin(c echo.Context) error {
 	oauthState := auth.GenerateAndSetStateOauthCookie(c)
-	url := auth.GoogleOauthConfig.AuthCodeURL(oauthState)
+	url := ah.googleOauthConfig.AuthCodeURL(oauthState)
 	return c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -33,8 +44,8 @@ func oauthGoogleLogin(c echo.Context) error {
 // If the user is not in the user store, a new user is created
 // If the user is in the user store, the user is updated with the new access token and refresh token
 // The user is then logged in and a session is created
-func oauthGoogleCallback(c echo.Context) error {
-	oauthState, err := c.Cookie(auth.OauthStateCookieName)
+func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
+	oauthState, err := c.Cookie(auth.OAUTH_STATE_COOKIE)
 	if err != nil {
 		return fmt.Errorf("failed to get oauth state cookie: %s", err.Error())
 	}
@@ -42,7 +53,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, "invalid oauth state")
 	}
 
-	token, err := auth.GoogleOauthConfig.Exchange(c.Request().Context(), c.FormValue("code"))
+	token, err := ah.googleOauthConfig.Exchange(c.Request().Context(), c.FormValue("code"))
 	if err != nil {
 		return fmt.Errorf("code exchange failed: %s", err.Error())
 	}
@@ -52,17 +63,17 @@ func oauthGoogleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to get user info: %s", err.Error())
 	}
 
-	user, err := users.GetUserBySsoID(database.DB, googleUser.ID)
+	user, err := users.GetUserBySsoID(ah.sharedData.DB, googleUser.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get user from user store: %s", err.Error())
 	}
 
 	if user == nil {
-		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken))
+		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken), ah.sharedData.CryptoKey)
 		if err != nil {
 			return fmt.Errorf("failed to encrypt access token: %s", err.Error())
 		}
-		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken))
+		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken), ah.sharedData.CryptoKey)
 		if err != nil {
 			return fmt.Errorf("failed to encrypt refresh token: %s", err.Error())
 		}
@@ -79,17 +90,17 @@ func oauthGoogleCallback(c echo.Context) error {
 			Token_expire:       token.Expiry,
 			RefreshtokenCypher: refreshTokenCypher,
 		}
-		createdUser, err := users.CreateUser(database.DB, &newUser)
+		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser)
 		if err != nil {
 			return fmt.Errorf("failed to create user: %s", err.Error())
 		}
 		user = createdUser
 	} else {
-		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken))
+		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken), ah.sharedData.CryptoKey)
 		if err != nil {
 			return fmt.Errorf("failed to encrypt access token: %s", err.Error())
 		}
-		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken))
+		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken), ah.sharedData.CryptoKey)
 		if err != nil {
 			return fmt.Errorf("failed to encrypt refresh token: %s", err.Error())
 		}
@@ -97,13 +108,13 @@ func oauthGoogleCallback(c echo.Context) error {
 		user.AccessTokenCypher = accessTokenCypher
 		user.Token_expire = token.Expiry
 		user.RefreshtokenCypher = refreshTokenCypher
-		err = users.UpdateUser(database.DB, user)
+		err = users.UpdateUser(ah.sharedData.DB, user)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %s", err.Error())
 		}
 	}
 
-	session, err := sessions.Store.New(c.Request(), sessions.SESSION_NAME)
+	session, err := ah.sharedData.SessionStore.New(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return fmt.Errorf("failed to create session: %s", err.Error())
 	}
@@ -116,17 +127,24 @@ func oauthGoogleCallback(c echo.Context) error {
 	}
 
 	cookieRedirectTo, err := c.Cookie(middlewares.REDIRECT_COOKIE_NAME)
-	if err != nil {
-		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
+	redirectTo := "/quiz"
+	if err == nil { // if redirect cookie is set, use it
+		redirectTo = cookieRedirectTo.Value
+		replacementCookie := http.Cookie{
+			Name:   middlewares.REDIRECT_COOKIE_NAME,
+			Path:   "/",
+			Value:  "",
+			MaxAge: -1,
+		}
+		c.SetCookie(&replacementCookie)
 	}
-	redirectTo := cookieRedirectTo.Value
 
 	return c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 }
 
 // Logs the user out by deleting the session
-func logout(c echo.Context) error {
-	session, err := sessions.Store.Get(c.Request(), sessions.SESSION_NAME)
+func (ah *AuthHandler) logout(c echo.Context) error {
+	session, err := ah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return fmt.Errorf("failed to get session: %s", err.Error())
 	}
@@ -135,6 +153,6 @@ func logout(c echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to save session: %s", err.Error())
 	}
-    c.Response().Header().Set("HX-Redirect", "/")
+	c.Response().Header().Set("HX-Redirect", "/")
 	return c.Redirect(http.StatusOK, "/")
 }
