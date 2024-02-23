@@ -36,7 +36,10 @@ func Api() {
 		log.Fatal("No session secret provided. Expected SESSION_SECRET")
 	}
 
-	sessionStore := sessions.NewSessionStore(databaseConn, []byte(sessionKey))
+	sessionStore,err := sessions.NewSessionStore(databaseConn, []byte(sessionKey))
+	if err != nil {
+		log.Fatal("Error creating session store: ", err)
+	}
 
 	key_str, ok := os.LookupEnv("AES_KEY")
 	if !ok {
