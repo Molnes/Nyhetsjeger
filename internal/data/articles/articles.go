@@ -44,8 +44,8 @@ var SampleArticles []Article = []Article{
 		Title: "Test 1",
 		ArticleURL: url.URL{
 			Scheme: "https",
-			Host:   "www.example.com",
-			Path:   "/test1",
+			Host:   "www.smp.no",
+			Path:   "/nyheter/i/Q7QX6Q/konkursnettverket-dette-gjer-regjeringa",
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
@@ -58,8 +58,8 @@ var SampleArticles []Article = []Article{
 		Title: "Test article: this is a very long title in order to check how titles look when they are long",
 		ArticleURL: url.URL{
 			Scheme: "https",
-			Host:   "www.example.com",
-			Path:   "/test1",
+			Host:   "www.smp.no",
+			Path:   "/nyheter/i/0QPq3A/tilraar-nye-ferjekailoeysingar",
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
