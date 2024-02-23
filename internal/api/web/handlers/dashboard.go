@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/dashboard_pages"
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,7 @@ func dashboardHomePage(c echo.Context) error {
 func dashboardEditQuiz(c echo.Context) error {
 	// TODO: Fetch the quiz from the database
 	quiz, _ := quizzes.CreateDefaultQuiz()
+	articles, _ := articles.GetAllArticles()
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz))
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(&quiz, &articles))
 }

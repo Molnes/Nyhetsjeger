@@ -5,14 +5,14 @@ import "github.com/Molnes/Nyhetsjeger/internal/data/articles"
 // Opens a modal for editing a question.
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
-templ EditQuestionModal(articles []articles.Article) {
+templ EditQuestionModal(articles *[]articles.Article) {
 	<dialog id="edit-question-modal" class="px-10 py-5 border border-black border-solid min-w-80">
 		<form hx-post="">
 			<h2 class="mb-5">Nytt spørsmål</h2>
 			<label for="articles-list" class="block">Basert på artikkel (URL)</label>
 			<input list="articles" id="articles-list" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
 			<datalist id="articles">
-				for _, article := range articles {
+				for _, article := range *articles {
 					<option value={ article.ArticleURL.String() }></option>
 				}
 			</datalist>

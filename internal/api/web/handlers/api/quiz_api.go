@@ -29,10 +29,10 @@ func GetQuizSummary(c echo.Context) error {
 
 func GetArticle(c echo.Context) error {
 	article := articles.SampleArticles[0]
-	return utils.Render(c, http.StatusOK, quiz_components.ArticleCard(article))
+	return utils.Render(c, http.StatusOK, quiz_components.ArticleCard(&article))
 }
 
 func GetArticles(c echo.Context) error {
 	articles := articles.SampleArticles
-	return utils.Render(c, http.StatusOK, quiz_components.ArticleList(articles))
+	return utils.Render(c, http.StatusOK, quiz_components.ArticleList(&articles))
 }

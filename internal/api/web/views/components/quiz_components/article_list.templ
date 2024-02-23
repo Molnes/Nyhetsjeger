@@ -5,11 +5,11 @@ import (
 )
 
 // This a component that takes a list of articles and renders them as ArticleCards.
-templ ArticleList(articles []articles.Article) {
+templ ArticleList(articles *[]articles.Article) {
 	<p class="text-center my-5">Sjekk ut artiklene som spørsmålene var basert på!</p>
 	<div class="flex flex-col gap-4">
-		for _, article := range articles {
-			@ArticleCard(article)
+		for _, article := range *articles {
+			@ArticleCard(&article)
 		}
 	</div>
 }
