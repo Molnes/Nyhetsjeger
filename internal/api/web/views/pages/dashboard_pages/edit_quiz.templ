@@ -1,0 +1,110 @@
+package dashboard_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+)
+
+// The "Edit quiz" page. This page is used to edit a quiz.
+// Add title, image, articles, active time, questions and answers.
+templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
+	@components.Layout() {
+		<div class="flex flex-col items-center gap-3 max-w-screen-sm m-auto px-5 py-3">
+			<h1 class="text-2xl">Rediger Quiz</h1>
+			// Quiz Title
+			@dashboard_components.EditQuizForm("") {
+				<label for="quiz-title" class="block">Tittel</label>
+				<input id="quiz-title" class="bg-gray-200 w-full px-2 py-1" type="text" value={ quiz.Title }/>
+			}
+			// Quiz Image
+			@dashboard_components.EditQuizForm("") {
+				<label for="quiz-image" class="block">Forside bilde</label>
+				<input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
+				if quiz.ImageURL.String() == "" {
+					<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
+				} else {
+					<img src={ quiz.ImageURL.String() } height="200" class="mb-2 block mx-auto"/>
+					<button id="remove-image-button" type="button" class="bg-gray-100 px-3 py-2 block mx-auto">Fjern bilde</button>
+				}
+			}
+			// Quiz Articles
+			@dashboard_components.EditQuizForm("") {
+				<h2>Artikler i quizzen</h2>
+				<div class="flex flex-row gap-5 mb-3">
+					<label for="add-article">Link<input type="text" id="add-article" class="bg-gray-200 px-2 py-1 ml-3"/></label>
+					<button hx-post="" id="add-article" class="bg-gray-300 px-5 py-1">
+						Legg til ➕
+					</button>
+				</div>
+				// List of all articles
+				<ul id="article-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
+					if len(*articles) == 0 {
+						<li class="text-center px-2 py-4">Ingen artikler lagt til enda.</li>
+					}
+					for _, article := range *articles {
+						@dashboard_components.ArticleListItem(article.ArticleURL.String())
+					}
+				</ul>
+			}
+			// Quiz Active Time
+			@dashboard_components.EditQuizForm("") {
+				<h2>Aktiv</h2>
+				<div class="block mb-3"><label for="quiz-active-start" class="mr-4">Fra</label><input id="quiz-active-start" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableFrom.Format("2006-01-01") }/></div>
+				<div class="block mb-3"><label for="quiz-active-end" class="mr-5">Til</label><input id="quiz-active-end" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableTo.Format("2006-01-01") }/></div>
+			}
+			// Quiz Questions
+			@dashboard_components.EditQuizForm("") {
+				<h2>Spørsmål</h2>
+				// List of all questions
+				<ul class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
+					if len(quiz.Questions) == 0 {
+						<li class="text-center px-2 py-4">Ingen spørsmål lagt til enda.</li>
+					}
+					for _, question := range quiz.Questions {
+						@dashboard_components.QuestionListItem(&question)
+					}
+				</ul>
+				<button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+			}
+			// Quiz Buttons: Delete, Hide, OK
+			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
+				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
+				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
+					Skjul quiz <input
+	id="quiz-is-hidden"
+	type="checkbox"
+	if !quiz.Published {
+		checked
+	}
+	class="mx-1 p-1"
+/>
+				</label>
+				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
+			</div>
+		</div>
+		@dashboard_components.EditQuestionModal(articles)
+		@modalWindow()
+	}
+}
+
+// Opens and closes the modal window needed to add a new question to the quiz.
+
+script modalWindow() {
+		const editQuestionModal = document.getElementById("edit-question-modal");
+		const newQuestionButton = document.getElementById("new-question-button");
+		const submitQuestionButton = document.getElementById("submit-question-button");
+		const closeModalButton = document.getElementById("close-modal-button");
+		
+		function openEditQuestionModal() {
+			editQuestionModal.showModal();
+		}
+
+		function closeEditQuestionModal() {
+			editQuestionModal.close();
+		}
+
+		newQuestionButton.addEventListener("click", openEditQuestionModal);
+		closeModalButton.addEventListener("click", closeEditQuestionModal);
+	}
