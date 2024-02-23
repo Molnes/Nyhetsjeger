@@ -18,6 +18,7 @@ type Quiz struct {
 	AvailableTo    time.Time
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
+	Published      bool
 	Questions      []questions.Question
 }
 
@@ -40,6 +41,7 @@ func CreateDefaultQuiz() (Quiz, error) {
 		AvailableTo:    time.Now().Add(24 * time.Hour),
 		CreatedAt:      time.Now(),
 		LastModifiedAt: time.Now(),
+		Published:      false,
 		Questions:      []questions.Question{},
 	}, nil
 }
