@@ -6,12 +6,18 @@ import (
 	"os"
 )
 
-
+type RssEnclosure struct {
+	XMLName xml.Name `xml:"enclosure"`
+	Url     string   `xml:"url,attr"`
+	Length  string   `xml:"length,attr"`
+	Type    string   `xml:"type,attr"`
+}
 
 type Item struct {
 	Title       string `xml:"title"`
 	Description string `xml:"description"`
 	Link        string `xml:"link"`
+    Enclosure   RssEnclosure `xml:"enclosure"`
 }
 
 type Channel struct {
