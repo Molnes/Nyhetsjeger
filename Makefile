@@ -27,3 +27,7 @@ reset-db:
 	
 initialize-docker:
 	docker compose up -d
+
+
+run-bruno:
+	./scripts/bruno-test.sh
