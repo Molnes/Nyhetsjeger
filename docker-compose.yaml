@@ -26,7 +26,6 @@ services:
       - db
     profiles:
       - dev
-      - prod
 
   server:
     build: ./
