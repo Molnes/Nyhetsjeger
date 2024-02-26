@@ -24,9 +24,9 @@ func main() {
 		log.Fatal("Test users: Error loading .env")
 	}
 
-	dburl, ok := os.LookupEnv("POSTGRESQL_URL_APP")
+	dburl, ok := os.LookupEnv("POSTGRESQL_URL_DEV")
 	if !ok {
-		log.Fatal("Test users: No database url provided. Expected POSTGRESQL_URL_APP")
+		log.Fatal("Test users: No database url provided. Expected POSTGRESQL_URL_DEV")
 	}
 
 	db, err := database.NewDatabaseConnection(dburl)
