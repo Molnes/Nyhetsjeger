@@ -73,10 +73,14 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
 );
 
 CREATE TABLE IF NOT EXISTS user_answers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL  REFERENCES users(id) ON DELETE CASCADE,
-    answer_alternative_id UUID NOT NULL REFERENCES answer_alternatives(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    question_presented_at TIMESTAMP NOT NULL,
+     -- following columns are nullable; if they are null, the user has not answered the question yet
+    chosen_answer_alternative_id UUID REFERENCES answer_alternatives(id) ON DELETE CASCADE,
+    answered_at TIMESTAMP,
+    points_awarded INTEGER CHECK (points_awarded >= 0),
+    PRIMARY KEY (user_id, question_id)
 );
 
 
