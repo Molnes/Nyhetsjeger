@@ -20,6 +20,8 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
+	e.Use(middleware.Secure())
+
 	// pages nor requiring authentication
 	publicPagesHandler := handlers.NewPublicPagesHandler(sharedData)
 	publicPagesHandler.RegisterPublicPages(e)
