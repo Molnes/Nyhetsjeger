@@ -43,7 +43,7 @@ func createSampleQuiz(db *sql.DB, title string) {
 		`INSERT INTO quizzes (title, available_from, available_to, image_url)
 		values ($1, $2, $3, $4)
 		RETURNING id;`,
-		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.example.com/")
+		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.unsplash.it/200/200")
 
 	err := row.Scan(&quiz_id)
 	if err != nil {
