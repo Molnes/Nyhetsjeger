@@ -23,7 +23,7 @@ script startCountdown(countdownTime int) {
 }
 
 //Renders the basic question layout. It includes a timer, score, question and answers.
-templ QuizPage(quiz questions.Question, title string) {
+templ QuizPage(quiz *questions.Question, title string) {
 	@components.Layout() {
 		@startCountdown(10)
 		<div class="bg-gray-400 w-full min-h-svh py-8">

@@ -6,6 +6,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/quiz_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/google/uuid"
@@ -24,6 +25,8 @@ func NewQuizPagesHandler(sharedData *config.SharedData) *QuizPagesHandler {
 func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("", qph.quizHomePage)
 	e.GET("/quizpage", qph.getQuizPage)
+	e.GET("/checkanswer", qph.getIsCorrect)
+	e.POST("/nextquestion", qph.postNextQuestion)
 }
 
 // Renders the quiz home page
@@ -37,38 +40,60 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	))
 }
 
-var questionIndex = 0
+func findQuestion(id uuid.UUID) *questions.Question {
+	for _, question := range quizzes.SampleQuiz.Questions {
+		if question.ID == id {
+			return &question
+		}
+	}
+	return nil
+}
 
 // Gets the quiz page
-func getQuizPage(c echo.Context) error {
-	sampleQuiz := quizzes.SampleQuiz.Questions[questionIndex]
+func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
+	questionId, _ := uuid.Parse(c.QueryParam("question"))
+	question := findQuestion(questionId)
 	title := quizzes.SampleQuiz.Title
 
-	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(sampleQuiz, title))
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(question, title))
 }
 
 // Checks if the answer was correct, and returns the results
-func getIsCorrect(c echo.Context) error {
+func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
 	answer, _ := uuid.Parse(c.QueryParam("answer"))
+	questionId, err := uuid.Parse(c.QueryParam("question"))
 	correct := uuid.UUID{}
-	alternatives := quizzes.SampleQuiz.Questions[questionIndex].Alternatives
-	for _, aswr := range alternatives {
-		if aswr.IsCorrect {
-			correct = aswr.ID
+
+	question := findQuestion(questionId)
+
+	//If the id is wrong, return not found error
+	if (question == nil || err != nil) {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	alternatives := question.Alternatives
+
+	for _, alternative := range alternatives {
+		if alternative.IsCorrect {
+			correct = alternative.ID
+			break
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, quiz_components.CorrectAndAnswered(correct, answer)))
+	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, questionId, quiz_components.CorrectAndAnswered(correct, answer)))
 }
 
 // Posts the next question
-func postNextQuestion(c echo.Context) error {
-	questionIndex++
-	if questionIndex >= len(quizzes.SampleQuiz.Questions) {
-		questionIndex = 0
+func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
+	questionID, err := uuid.Parse(c.QueryParam("question"))
+
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
 	}
 
-	progress := float64(questionIndex) / float64(len(quizzes.SampleQuiz.Questions))
+	questionArrangement := findQuestion(questionID).Arrangement
 
-	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(quizzes.SampleQuiz.Questions[questionIndex], progress))
+	progress := float64(questionArrangement) / float64(len(quizzes.SampleQuiz.Questions))
+
+	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(&quizzes.SampleQuiz.Questions[questionArrangement], progress))
 }

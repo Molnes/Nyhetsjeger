@@ -8,10 +8,11 @@ import (
 type Question struct {
 	ID           uuid.UUID
 	Text         string
-	Alternatives []Alternative
+	Arrangement uint
+	ArticleID articles.Article
+	QuizID uuid.UUID
 	Points       uint
-	// The article this question is based on.
-	Article articles.Article
+	Alternatives []Alternative
 }
 
 type Alternative struct {
@@ -57,7 +58,9 @@ var SampleQuestions []Question = []Question{
 			},
 		},
 		Points:  10,
-		Article: articles.SampleArticles[0],
+		ArticleID: articles.SampleArticles[0],
+		Arrangement: 0,
+		QuizID: uuid.New(),
 	},
 	{
 		ID:   uuid.New(),
@@ -85,6 +88,8 @@ var SampleQuestions []Question = []Question{
 			},
 		},
 		Points:  10,
-		Article: articles.SampleArticles[0],
+		ArticleID: articles.SampleArticles[0],
+		Arrangement: 1,
+		QuizID: uuid.New(),
 	},
 }

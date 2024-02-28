@@ -48,8 +48,8 @@ func checkIfIsDisabled(option ...OptionABTN) bool {
 }
 
 // AnswerButton is a button that represents an answer to a question. Takes a string and a variadic amount of options
-templ AnswerButton(id uuid.UUID, text string, option ...OptionABTN) {
-	<button id={ text } type="button" class={ "p-3 bg-white", assignCorrectStyle(option...) } disabled?={ checkIfIsDisabled(option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", id) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">
+templ AnswerButton(id uuid.UUID, questionId uuid.UUID, text string, option ...OptionABTN) {
+	<button id={ text } type="button" class={ "p-3 bg-white", assignCorrectStyle(option...) } disabled?={ checkIfIsDisabled(option...) } hx-get={ fmt.Sprintf("/checkanswer?answer=%s&question=%s", id, questionId) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">
 		{ text }
 	</button>
 }
