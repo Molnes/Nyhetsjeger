@@ -76,15 +76,16 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 		log.Println(err)
 	}
 	tx.Exec(
-		`INSERT INTO questions (id, question, quiz_id)
-		VALUES ($1, $2, $3);`,
-		question_id, question.text, quiz_id)
+		`INSERT INTO questions (id, question, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5);`,
+		question_id, question.text, nil, quiz_id, 10)
 
 	for _, a := range question.answer_alts {
+		alternative_id := uuid.New()
 		tx.Exec(
-			`INSERT INTO answer_alternatives (question_id, text, correct)
-			VALUES ($1, $2, $3);`,
-			question_id, a.answer, a.correct)
+			`INSERT INTO answer_alternatives (id, question_id, text, correct)
+			VALUES ($1, $2, $3, $4);`,
+			alternative_id, question_id, a.answer, a.correct)
 	}
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
