@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/quiz_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
@@ -35,14 +37,10 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	))
 }
 
-func (qph *QuizPagesHandler) GetQuizPage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage())
-}
-
 var questionIndex = 0
 
 // Gets the quiz page
-func GetQuizPage(c echo.Context) error {
+func getQuizPage(c echo.Context) error {
 	sampleQuiz := quizzes.SampleQuiz.Questions[questionIndex]
 	title := quizzes.SampleQuiz.Title
 
@@ -50,7 +48,7 @@ func GetQuizPage(c echo.Context) error {
 }
 
 // Checks if the answer was correct, and returns the results
-func GetIsCorrect(c echo.Context) error {
+func getIsCorrect(c echo.Context) error {
 	answer := c.QueryParam("answer")
 	correct := ""
 	alternatives := quizzes.SampleQuiz.Questions[questionIndex].Alternatives
@@ -65,7 +63,7 @@ func GetIsCorrect(c echo.Context) error {
 }
 
 // Posts the next question
-func POSTNextQuestion(c echo.Context) error {
+func postNextQuestion(c echo.Context) error {
 	questionIndex++
 	if questionIndex >= len(quizzes.SampleQuiz.Questions) {
 		questionIndex = 0
