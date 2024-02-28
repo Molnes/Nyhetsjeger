@@ -60,7 +60,7 @@ func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
-// Scans questions from full rows.
+// Converts a row from the database to a list of questions
 func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) {
 	questions := []Question{}
 
@@ -77,12 +77,12 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		}
 
 		// Print the question
-		println("----------- NEW LINE -----------")
+		/* println("----------- NEW LINE -----------")
 
 		println("Question ID: " + q.ID.String())
 		println("Text: " + q.Text)
 		println("Article ID: " + articleID.String())
-		println("Quiz ID: " + q.QuizID.String())
+		println("Quiz ID: " + q.QuizID.String()) */
 
 		// Add the article to the question
 		article, _ := articles.GetArticleByID(db, articleID)
@@ -110,7 +110,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 func getAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
 	row := db.QueryRow(
 		`SELECT
-				id, text, is_correct, question_id
+				id, text, correct, question_id
 			FROM
 				answer_alternatives
 			WHERE
@@ -129,8 +129,6 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 		&a.IsCorrect,
 		&a.QuestionID,
 	)
-
-	println("Alternative:" + a.Text)
 
 	if err != nil {
 		return nil, err
