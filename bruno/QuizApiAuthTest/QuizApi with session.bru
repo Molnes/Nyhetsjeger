@@ -1,0 +1,15 @@
+meta {
+  name: QuizApi with session
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/v1/nonexistantrouteb
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

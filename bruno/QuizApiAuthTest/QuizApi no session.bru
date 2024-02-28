@@ -1,0 +1,20 @@
+meta {
+  name: QuizApi no session
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/test
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "")
+  
+}

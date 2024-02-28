@@ -15,10 +15,10 @@ live-reload: reset-db
 include .env
 
 migrate-up:
-	migrate -database $(POSTGRESQL_URL) -path db/migrations up
+	migrate -database $(POSTGRESQL_URL_ROOT) -path db/migrations up
 
 migrate-down:
-	migrate -database $(POSTGRESQL_URL) -path db/migrations down
+	migrate -database $(POSTGRESQL_URL_ROOT) -path db/migrations down
 	
 reset-db:
 	./scripts/reset-db.sh
@@ -27,3 +27,7 @@ reset-db:
 	
 initialize-docker:
 	docker compose up -d
+
+
+run-bruno:
+	./scripts/bruno-test.sh

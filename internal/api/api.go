@@ -20,9 +20,14 @@ import (
 func Api() {
 	e := echo.New()
 
-	dbUrl, ok := os.LookupEnv("POSTGRESQL_URL_APP")
-	if !ok {
-		log.Fatal("No database url provided. Expected POSTGRESQL_URL_APP")
+	var dbUrl string
+	if os.Getenv("COMPOSE_PROFILES") == "dev" {
+		dbUrl = os.Getenv("POSTGRESQL_URL_DEV")
+	} else {
+		dbUrl = os.Getenv("POSTGRESQL_URL_PROD")
+	}
+	if dbUrl == "" {
+		log.Fatal("No database url provided. Expected POSTGRESQL_URL_DEV or POSTGRESQL_URL_PROD")
 	}
 
 	databaseConn, err := database.NewDatabaseConnection(dbUrl)
