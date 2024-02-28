@@ -57,8 +57,7 @@ func getIsCorrect(c echo.Context) error {
 			correct = aswr.Text
 		}
 	}
-
-	fmt.Println(answer)
+	
 	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, quiz_components.CorrectAndAnswered(correct, answer)))
 }
 
