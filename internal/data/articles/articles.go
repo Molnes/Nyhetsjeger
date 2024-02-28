@@ -1,6 +1,7 @@
 package articles
 
 import (
+	"database/sql"
 	"net/url"
 
 	"github.com/google/uuid"
@@ -36,6 +37,52 @@ func GetAllArticles() ([]Article, error) {
 
 func GetArticle(articleID uuid.UUID) (Article, error) {
 	return SampleArticles[0], nil
+}
+
+// Get an Article by its ID
+func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
+	row := db.QueryRow(
+		`SELECT
+			id, title, url, img_url
+		FROM
+			articles
+		WHERE
+			id = $1`,
+		id)
+
+	return scanArticleFromFullRow(row)
+}
+
+// Convert a row from the database to an Article
+func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
+	var article Article
+	var articleURL string
+	var imgURL string
+	err := row.Scan(
+		&article.ID,
+		&article.Title,
+		&articleURL,
+		&imgURL,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the article URL
+	tempArticleURL, err := url.Parse(articleURL)
+	article.ArticleURL = *tempArticleURL
+	if err == sql.ErrNoRows {
+		return nil, err
+	}
+
+	// Parse the image URL
+	tempImageURL, err := url.Parse(imgURL)
+	article.ImgURL = *tempImageURL
+	if err == sql.ErrNoRows {
+		return nil, err
+	}
+
+	return &article, nil
 }
 
 var SampleArticles []Article = []Article{
