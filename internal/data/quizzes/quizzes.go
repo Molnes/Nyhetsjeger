@@ -52,13 +52,33 @@ var SampleQuiz Quiz = Quiz{
 	Questions: questions.SampleQuestions,
 }
 
+/* func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
+	row := db.QueryRow(
+		`SELECT
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published
+    FROM
+			quizzes
+		WHERE
+			id = $1`,
+		id)
+	quiz, err := scanQuizzesFromFullRow(row)
+
+	questions, err := questions.GetQuestionsByQuizID(db, id)
+	quiz.Questions = *questions
+
+	return quiz, err
+} */
+
 func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
-		`SELECT id, title 
-        FROM quizzes
-		WHERE id = $1`,
+		`SELECT id, title, image_url, available_from, available_to, created_at, last_modified_at, published
+		FROM
+			quizzes
+		WHERE
+			id = $1`,
 		id)
-	return scanQuizzesromFullRow(row)
+
+	return scanQuizzesFromFullRow(row)
 }
 
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
@@ -85,11 +105,17 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return quizzes, nil
 }
 
-func scanQuizzesromFullRow(row *sql.Row) (*Quiz, error) {
+func scanQuizzesFromFullRow(row *sql.Row) (*Quiz, error) {
 	quiz := Quiz{}
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
+		&quiz.ImageURL,
+		&quiz.AvailableFrom,
+		&quiz.AvailableTo,
+		&quiz.CreatedAt,
+		&quiz.LastModifiedAt,
+		&quiz.Published,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil

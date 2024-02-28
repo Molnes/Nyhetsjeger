@@ -8,6 +8,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -33,9 +34,27 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for creating a new quiz
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
-	// TODO: Fetch the quiz from the database
-	quiz, _ := quizzes.CreateDefaultQuiz()
+	uuid_id, _ := uuid.Parse(c.Param("quizId"))
+	println("Real Quiz ID: " + uuid_id.String())
+
+	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
+	println("Quiz ID: " + quiz.ID.String())
+	println("Title: " + quiz.Title)
+	println("Image: " + quiz.ImageURL.String())
+	println("Available from: " + quiz.AvailableFrom.String())
+	println("Available to: " + quiz.AvailableTo.String())
+	println("Created at: " + quiz.CreatedAt.String())
+	println("Last modified at: " + quiz.LastModifiedAt.String())
+
+	// questions := questions.GetQuestionsByQuizID(dph.sharedData.DB, c.Params("quizId"))
+	// questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, uuid_id)
+	/* for _, question := range *questions {
+		println("Question ID:" + question.ID.String())
+	} */
+	// quiz, _ := quizzes.CreateDefaultQuiz()
+
+	// TODO: Get the actual articles for the quiz
 	articles, _ := articles.GetAllArticles()
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(&quiz, &articles))
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, &articles))
 }
