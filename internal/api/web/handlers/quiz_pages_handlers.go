@@ -55,7 +55,7 @@ func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
 	question := findQuestion(questionId)
 	title := quizzes.SampleQuiz.Title
 
-	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(question, title))
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizQuestion(question, title))
 }
 
 // Checks if the answer was correct, and returns the results
