@@ -1,6 +1,7 @@
 package quiz_components
 
 import "fmt"
+import "github.com/google/uuid"
 
 type OptionalABTN struct {
 	selected bool
@@ -47,8 +48,8 @@ func checkIfIsDisabled(option ...OptionABTN) bool {
 }
 
 // AnswerButton is a button that represents an answer to a question. Takes a string and a variadic amount of options
-templ AnswerButton(text string, option ...OptionABTN) {
-	<button id={ text } type="button" class={ "p-3 bg-white", assignCorrectStyle(option...) } disabled?={ checkIfIsDisabled(option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", text) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">
+templ AnswerButton(id uuid.UUID, text string, option ...OptionABTN) {
+	<button id={ text } type="button" class={ "p-3 bg-white", assignCorrectStyle(option...) } disabled?={ checkIfIsDisabled(option...) } hx-get={ fmt.Sprintf("/nextquestion?answer=%s", id) } hx-trigger="click" hx-target="#answers-wrapper" hx-swap="outerHTML">
 		{ text }
 	</button>
 }

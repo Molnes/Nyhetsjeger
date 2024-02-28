@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
@@ -9,6 +8,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,7 +23,7 @@ func NewQuizPagesHandler(sharedData *config.SharedData) *QuizPagesHandler {
 // Registers handlers for quiz pages
 func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("", qph.quizHomePage)
-	e.GET("/quizpage", qph.GetQuizPage)
+	e.GET("/quizpage", qph.getQuizPage)
 }
 
 // Renders the quiz home page
@@ -49,15 +49,15 @@ func getQuizPage(c echo.Context) error {
 
 // Checks if the answer was correct, and returns the results
 func getIsCorrect(c echo.Context) error {
-	answer := c.QueryParam("answer")
-	correct := ""
+	answer, _ := uuid.Parse(c.QueryParam("answer"))
+	correct := uuid.UUID{}
 	alternatives := quizzes.SampleQuiz.Questions[questionIndex].Alternatives
 	for _, aswr := range alternatives {
 		if aswr.IsCorrect {
-			correct = aswr.Text
+			correct = aswr.ID
 		}
 	}
-	
+
 	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, quiz_components.CorrectAndAnswered(correct, answer)))
 }
 

@@ -1,15 +1,16 @@
 package quiz_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
+import "github.com/google/uuid"
 
 type Optional struct {
-	correctAnswered []string
+	correctAnswered []uuid.UUID
 }
 
 type Option func(*Optional) Optional
 
 //Sets the correct and answered answer to the question
-func CorrectAndAnswered(correct string, answered string) Option {
+func CorrectAndAnswered(correct uuid.UUID, answered uuid.UUID) Option {
 	return func(o *Optional) Optional {
 		o.correctAnswered = append(o.correctAnswered, correct, answered)
 		return *o
@@ -19,7 +20,7 @@ func CorrectAndAnswered(correct string, answered string) Option {
 var answeredCorrectly bool = false
 
 //Checks if the answer has been selected
-func isSelected(id string, option ...Option) bool {
+func isSelected(id uuid.UUID, option ...Option) bool {
 	o := Optional{}
 	for _, opt := range option {
 		o = opt(&o)
@@ -41,7 +42,7 @@ func isSelected(id string, option ...Option) bool {
 }
 
 //Checks if the question has been answered correctly or not.
-func isCorrect(id string, option ...Option) bool {
+func isCorrect(id uuid.UUID, option ...Option) bool {
 	o := Optional{}
 	for _, opt := range option {
 		o = opt(&o)
@@ -62,7 +63,7 @@ templ Answers(answers []questions.Alternative, option ...Option) {
 	<div id="answers-wrapper" class="w-80 flex flex-col [&>*]:mt-4">
 		if (option != nil) {
 			for _ , answer := range answers {
-				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.Text, option...), isSelected(answer.Text, option...), 0.24989)
+				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.ID, option...), isSelected(answer.ID, option...), 0.24989)
 			}
 			if (answeredCorrectly) {
 				<p class="font-bold">Riktig!</p>
@@ -72,7 +73,7 @@ templ Answers(answers []questions.Alternative, option ...Option) {
 			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post="/nextquestion" hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
 		} else {
 			for _ , answer := range answers {
-				@AnswerButton(answer.Text)
+				@AnswerButton(answer.ID, answer.Text)
 			}
 		}
 	</div>
