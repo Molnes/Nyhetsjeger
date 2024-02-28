@@ -38,3 +38,40 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 func (qph *QuizPagesHandler) GetQuizPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage())
 }
+
+var questionIndex = 0
+
+// Gets the quiz page
+func GetQuizPage(c echo.Context) error {
+	sampleQuiz := quizzes.SampleQuiz.Questions[questionIndex]
+	title := quizzes.SampleQuiz.Title
+
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage(sampleQuiz, title))
+}
+
+// Checks if the answer was correct, and returns the results
+func GetIsCorrect(c echo.Context) error {
+	answer := c.QueryParam("answer")
+	correct := ""
+	alternatives := quizzes.SampleQuiz.Questions[questionIndex].Alternatives
+	for _, aswr := range alternatives {
+		if aswr.IsCorrect {
+			correct = aswr.Text
+		}
+	}
+
+	fmt.Println(answer)
+	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, quiz_components.CorrectAndAnswered(correct, answer)))
+}
+
+// Posts the next question
+func POSTNextQuestion(c echo.Context) error {
+	questionIndex++
+	if questionIndex >= len(quizzes.SampleQuiz.Questions) {
+		questionIndex = 0
+	}
+
+	progress := float64(questionIndex) / float64(len(quizzes.SampleQuiz.Questions))
+
+	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(quizzes.SampleQuiz.Questions[questionIndex], progress))
+}
