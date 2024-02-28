@@ -106,17 +106,21 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 }
 
 func scanQuizzesFromFullRow(row *sql.Row) (*Quiz, error) {
-	quiz := Quiz{}
+	var quiz Quiz
+	var imageURL string
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
-		&quiz.ImageURL,
+		&imageURL,
 		&quiz.AvailableFrom,
 		&quiz.AvailableTo,
 		&quiz.CreatedAt,
 		&quiz.LastModifiedAt,
 		&quiz.Published,
 	)
+	tempURL, err := url.Parse(imageURL)
+	quiz.ImageURL = *tempURL
+
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
