@@ -43,7 +43,7 @@ func GetArticle(articleID uuid.UUID) (Article, error) {
 func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 	row := db.QueryRow(
 		`SELECT
-			id, title, url, img_url
+			id, title, url, image_url
 		FROM
 			articles
 		WHERE
@@ -57,13 +57,14 @@ func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	var article Article
 	var articleURL string
-	var imgURL string
+	var imageURL string
 	err := row.Scan(
 		&article.ID,
 		&article.Title,
 		&articleURL,
-		&imgURL,
+		&imageURL,
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	}
 
 	// Parse the image URL
-	tempImageURL, err := url.Parse(imgURL)
+	tempImageURL, err := url.Parse(imageURL)
 	article.ImgURL = *tempImageURL
 	if err == sql.ErrNoRows {
 		return nil, err
