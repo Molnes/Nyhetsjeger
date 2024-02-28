@@ -40,10 +40,10 @@ func main() {
 func createSampleQuiz(db *sql.DB, title string) {
 	var quiz_id uuid.UUID
 	row := db.QueryRow(
-		`INSERT INTO quizzes (title, available_from, available_to)
-		values ($1, $2, $3)
+		`INSERT INTO quizzes (title, available_from, available_to, image_url)
+		values ($1, $2, $3, $4)
 		RETURNING id;`,
-		title, time.Now(), time.Now().Add(time.Hour*24))
+		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.example.com/")
 
 	err := row.Scan(&quiz_id)
 	if err != nil {
