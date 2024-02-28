@@ -36,7 +36,7 @@ func Api() {
 		log.Fatal("No session secret provided. Expected SESSION_SECRET")
 	}
 
-	sessionStore,err := sessions.NewSessionStore(databaseConn, []byte(sessionKey))
+	sessionStore, err := sessions.NewSessionStore(databaseConn, []byte(sessionKey))
 	if err != nil {
 		log.Fatal("Error creating session store: ", err)
 	}
