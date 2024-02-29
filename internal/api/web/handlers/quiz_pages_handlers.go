@@ -26,6 +26,11 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/quizpage", qph.getQuizPage)
 	e.GET("/checkanswer", qph.getIsCorrect)
 	e.POST("/nextquestion", qph.postNextQuestion)
+	
+    e.GET("/toppliste", qph.GetScoreboard)
+    e.GET("/fullforte", qph.GetFinishedQuizzes)
+    e.GET("/arkiv", qph.GetArchivedQuizzes)
+    e.GET("/profil", qph.GetQuizProfile)
 }
 
 // Renders the quiz home page
@@ -86,4 +91,20 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 	progress := float64(questionArrangement) / float64(len(quizzes.SampleQuiz.Questions))
 
 	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(&quizzes.SampleQuiz.Questions[questionArrangement], progress))
+}
+
+func (qph *QuizPagesHandler) GetScoreboard(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard())
+}
+
+func (qph *QuizPagesHandler) GetFinishedQuizzes(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
+}
+
+func (qph *QuizPagesHandler) GetArchivedQuizzes(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.ArchivedQuizzes())
+}
+
+func (qph *QuizPagesHandler) GetQuizProfile(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
 }

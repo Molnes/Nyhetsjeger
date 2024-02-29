@@ -52,13 +52,26 @@ var SampleQuiz Quiz = Quiz{
 	Questions: questions.SampleQuestions,
 }
 
-func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
+// Retrieves a quiz from the database by its ID.
+// Includes the questions for the quiz.
+// Includes the articles for each question.
+// Includes the alternatives for each question.
+func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
-		`SELECT id, title 
-        FROM quizzes
-		WHERE id = $1`,
+		`SELECT
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published
+    FROM
+			quizzes
+		WHERE
+			id = $1`,
 		id)
-	return scanQuizzesromFullRow(row)
+
+	quiz, err := scanQuizFromFullRow(row)
+
+	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
+	quiz.Questions = *tempQuestions
+
+	return quiz, err
 }
 
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
@@ -85,14 +98,25 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return quizzes, nil
 }
 
-func scanQuizzesromFullRow(row *sql.Row) (*Quiz, error) {
-	quiz := Quiz{}
+// Converts a row from the database to a Quiz.
+func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
+	var quiz Quiz
+	var imageURL string
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
+		&imageURL,
+		&quiz.AvailableFrom,
+		&quiz.AvailableTo,
+		&quiz.CreatedAt,
+		&quiz.LastModifiedAt,
+		&quiz.Published,
 	)
+	tempURL, err := url.Parse(imageURL)
+	quiz.ImageURL = *tempURL
+
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, err
 	}
 	return &quiz, err
 }
