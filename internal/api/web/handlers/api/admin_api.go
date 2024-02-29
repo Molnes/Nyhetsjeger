@@ -5,6 +5,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,6 +21,7 @@ func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
 // Registers handlers for admin api
 func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/create-new", PostQuiz)
+	e.DELETE("/delete-quiz", aah.DeleteQuiz)
 }
 
 // Handles the creation of a new quiz.
@@ -30,4 +32,13 @@ func PostQuiz(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?quiz-id="+quiz.ID.String())
 	return c.Redirect(http.StatusOK, "/dashboard/edit-quiz?quiz-id="+quiz.ID.String())
+}
+
+// Deletes a quiz from the database.
+func (aah *AdminApiHandler) DeleteQuiz(c echo.Context) error {
+	quiz_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
+	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+
+	c.Response().Header().Set("HX-Redirect", "/dashboard")
+	return c.Redirect(http.StatusOK, "/dashboard")
 }
