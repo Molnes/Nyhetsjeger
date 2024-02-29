@@ -8,7 +8,6 @@ templ BurgerMenu() {
 				<li><a href="/quiz" class="hover:text-gray-600">Home</a></li>
 				<li><a href="/quiz/toppliste" class="hover:text-gray-600">Toppliste</a></li>
 				<li><a href="/quiz/fullforte" class="hover:text-gray-600">Fullførte quizzer</a></li>
-
 				<li><a href="/quiz/arkiv" class="hover:text-gray-600">Gamle quizzer</a></li>
 				<li><a href="/quiz/profil" class="hover:text-gray-600">Profil</a></li>
 				<!-- Add more menu items as needed -->
@@ -18,10 +17,10 @@ templ BurgerMenu() {
 			</ul>
 		</div>
 		<!-- Button to toggle sidebar -->
-		<button id="toggleSidebar" class="fixed top-4 right-4 ">
-@burgerIcon()
-@crossIcon()
-            </button>
+		<button id="toggleSidebar" class="fixed top-5 right-4 ">
+			@burgerIcon()
+			@crossIcon()
+		</button>
 		<!-- Inline JavaScript -->
 		<script>
         const sidebar = document.getElementById('sidebar');
@@ -38,18 +37,16 @@ templ BurgerMenu() {
 	</div>
 }
 
-
-
 templ burgerIcon() {
-<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="burger">
-<path d="M4 18L20 18" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-<path d="M4 12L20 12" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-<path d="M4 6L20 6" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-</svg>
+	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="burger">
+		<path d="M4 18L20 18" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+		<path d="M4 12L20 12" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+		<path d="M4 6L20 6" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+	</svg>
 }
 
 templ crossIcon() {
-<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="cross" class="hidden">
-<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="cross" class="hidden">
+		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+	</svg>
 }
