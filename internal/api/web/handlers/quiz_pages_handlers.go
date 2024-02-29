@@ -7,6 +7,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/quiz_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+    "github.com/Molnes/Nyhetsjeger/internal/data/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -47,7 +48,11 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 // Gets the quiz page
 func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
 	questionId, _ := uuid.Parse(c.QueryParam("questionid"))
-	question := quizzes.GetQuestionFromId(questionId)
+	question,err := questions.GetQuestionByID(qph.sharedData.DB, questionId)
+    if err != nil {
+        return c.NoContent(http.StatusNotFound)
+        }
+
 	title := quizzes.SampleQuiz.Title
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizQuestion(question, title))
