@@ -34,7 +34,7 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
-	uuid_id, _ := uuid.Parse(c.Param("id"))
+	uuid_id, _ := uuid.Parse(c.QueryParam("quiz_id"))
 	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
 
 	// Collect all the articles from each question in the quiz.
