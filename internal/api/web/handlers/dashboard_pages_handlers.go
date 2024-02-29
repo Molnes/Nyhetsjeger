@@ -24,7 +24,7 @@ func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHand
 // Registers handlers for dashboard related pages.
 func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
-	e.GET("/quiz/edit/:quizId", dph.dashboardEditQuiz)
+	e.GET("/edit-quiz", dph.dashboardEditQuiz)
 }
 
 // Renders the dashboard home page.
@@ -34,7 +34,7 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
-	uuid_id, _ := uuid.Parse(c.Param("quizId"))
+	uuid_id, _ := uuid.Parse(c.Param("id"))
 	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
 
 	// Collect all the articles from each question in the quiz.

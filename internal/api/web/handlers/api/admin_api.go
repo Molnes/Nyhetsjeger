@@ -28,6 +28,6 @@ func PostQuiz(c echo.Context) error {
 
 	quiz, _ := quizzes.CreateDefaultQuiz()
 
-	c.Response().Header().Set("HX-Redirect", "/dashboard/quiz/edit/"+quiz.ID.String())
-	return c.Redirect(http.StatusOK, "/dashboard/quiz/edit/"+quiz.ID.String())
+	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?id="+quiz.ID.String())
+	return c.Redirect(http.StatusOK, "/dashboard/edit-quiz?id="+quiz.ID.String())
 }
