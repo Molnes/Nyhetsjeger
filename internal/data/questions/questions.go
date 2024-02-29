@@ -76,14 +76,6 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 			return nil, err
 		}
 
-		// Print the question
-		/* println("----------- NEW LINE -----------")
-
-		println("Question ID: " + q.ID.String())
-		println("Text: " + q.Text)
-		println("Article ID: " + articleID.String())
-		println("Quiz ID: " + q.QuizID.String()) */
-
 		// Add the article to the question
 		article, _ := articles.GetArticleByID(db, articleID)
 		if article != nil {
@@ -97,6 +89,9 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 				q.Alternatives = append(q.Alternatives, *alternative)
 			}
 		}
+
+		// Add the question to the list of questions
+		questions = append(questions, q)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -120,7 +115,7 @@ func getAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
 	return scanAlternativeFromFullRow(row)
 }
 
-// Convert a row from the database to an Alternative
+// Convert a row from the database to an Alternative.
 func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 	var a Alternative
 	err := row.Scan(

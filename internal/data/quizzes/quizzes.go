@@ -66,10 +66,10 @@ func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 			id = $1`,
 		id)
 
-	quiz, err := scanQuizzesFromFullRow(row)
+	quiz, err := scanQuizFromFullRow(row)
 
-	questions, err := questions.GetQuestionsByQuizID(db, id)
-	quiz.Questions = *questions
+	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
+	quiz.Questions = *tempQuestions
 
 	return quiz, err
 }
@@ -98,7 +98,8 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return quizzes, nil
 }
 
-func scanQuizzesFromFullRow(row *sql.Row) (*Quiz, error) {
+// Converts a row from the database to a Quiz.
+func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
 	var imageURL string
 	err := row.Scan(

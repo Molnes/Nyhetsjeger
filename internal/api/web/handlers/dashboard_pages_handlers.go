@@ -16,45 +16,36 @@ type DashboardPagesHandler struct {
 	sharedData *config.SharedData
 }
 
-// Creates a new DashboardPagesHandler
+// Creates a new DashboardPagesHandler.
 func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHandler {
 	return &DashboardPagesHandler{sharedData}
 }
 
-// Registers handlers for dashboard related pages
+// Registers handlers for dashboard related pages.
 func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
 	e.GET("/quiz/edit/:quizId", dph.dashboardEditQuiz)
 }
 
-// Renders the dashboard home page
+// Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardPage())
 }
 
-// Renders the page for creating a new quiz
+// Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	uuid_id, _ := uuid.Parse(c.Param("quizId"))
-	println("Real Quiz ID: " + uuid_id.String())
+	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
 
-	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
-	println("Quiz ID: " + quiz.ID.String())
-	println("Title: " + quiz.Title)
-	println("Image: " + quiz.ImageURL.String())
-	println("Available from: " + quiz.AvailableFrom.String())
-	println("Available to: " + quiz.AvailableTo.String())
-	println("Created at: " + quiz.CreatedAt.String())
-	println("Last modified at: " + quiz.LastModifiedAt.String())
-
-	// questions := questions.GetQuestionsByQuizID(dph.sharedData.DB, c.Params("quizId"))
-	// questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, uuid_id)
-	/* for _, question := range *questions {
-		println("Question ID:" + question.ID.String())
-	} */
-	// quiz, _ := quizzes.CreateDefaultQuiz()
-
-	// TODO: Get the actual articles for the quiz
-	articles, _ := articles.GetAllArticles()
+	// Collect all the articles from each question in the quiz.
+	// Only add the ones that are valid.
+	articles := []articles.Article{}
+	for _, question := range quiz.Questions {
+		article := question.Article
+		if article.ID.Valid {
+			articles = append(articles, article)
+		}
+	}
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, &articles))
 }

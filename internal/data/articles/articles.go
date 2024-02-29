@@ -8,21 +8,25 @@ import (
 )
 
 type Article struct {
-	ID         uuid.UUID
+	ID         uuid.NullUUID
 	Title      string
 	ArticleURL url.URL
 	ImgURL     url.URL
 }
 
 func newArticleNoID(title string, articleURL url.URL, imgURL url.URL) Article {
+
 	return Article{
-		ID:         uuid.New(),
+		ID: uuid.NullUUID{
+			UUID:  uuid.New(),
+			Valid: true,
+		},
 		Title:      title,
 		ArticleURL: articleURL,
 		ImgURL:     imgURL,
 	}
 }
-func newArticle(ID uuid.UUID, title string, articleURL url.URL, imgURL url.URL) Article {
+func newArticle(ID uuid.NullUUID, title string, articleURL url.URL, imgURL url.URL) Article {
 	return Article{
 		ID:         ID,
 		Title:      title,
@@ -39,7 +43,7 @@ func GetArticle(articleID uuid.UUID) (Article, error) {
 	return SampleArticles[0], nil
 }
 
-// Get an Article by its ID
+// Get an Article by its ID.
 func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 	row := db.QueryRow(
 		`SELECT
@@ -53,7 +57,7 @@ func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 	return scanArticleFromFullRow(row)
 }
 
-// Convert a row from the database to an Article
+// Convert a row from the database to an Article.
 func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	var article Article
 	var articleURL string
@@ -69,14 +73,14 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 		return nil, err
 	}
 
-	// Parse the article URL
+	// Parse the article URL.
 	tempArticleURL, err := url.Parse(articleURL)
 	article.ArticleURL = *tempArticleURL
 	if err == sql.ErrNoRows {
 		return nil, err
 	}
 
-	// Parse the image URL
+	// Parse the image URL.
 	tempImageURL, err := url.Parse(imageURL)
 	article.ImgURL = *tempImageURL
 	if err == sql.ErrNoRows {
@@ -88,7 +92,10 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 
 var SampleArticles []Article = []Article{
 	{
-		ID:    uuid.New(),
+		ID: uuid.NullUUID{
+			UUID:  uuid.New(),
+			Valid: true,
+		},
 		Title: "Test 1",
 		ArticleURL: url.URL{
 			Scheme: "https",
@@ -102,7 +109,10 @@ var SampleArticles []Article = []Article{
 		},
 	},
 	{
-		ID:    uuid.New(),
+		ID: uuid.NullUUID{
+			UUID:  uuid.New(),
+			Valid: true,
+		},
 		Title: "Test article: this is a very long title in order to check how titles look when they are long",
 		ArticleURL: url.URL{
 			Scheme: "https",
