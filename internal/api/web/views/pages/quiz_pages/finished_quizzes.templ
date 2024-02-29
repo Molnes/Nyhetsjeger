@@ -1,10 +1,10 @@
 
 package quiz_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 
 templ FinishedQuizzes() {
-	@components.Layout() {
+	@layout_components.QuizLayout() {
 		<h1>Fullførte quizzer</h1>
 	}
 }

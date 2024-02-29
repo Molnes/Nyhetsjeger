@@ -1,9 +1,9 @@
 package public_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 
 templ LoginPage() {
-	@components.Layout() {
+	@layout_components.BaseLayout() {
 		<div class="flex flex-col items-center justify-center min-h-screen">
 			<a
 				href="/auth/google/login"
