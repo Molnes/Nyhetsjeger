@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     text TEXT NOT NULL,
     correct BOOLEAN NOT NULL,
-    question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE
+    question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    CONSTRAINT unique_alternative_question UNIQUE (id, question_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_answers (
@@ -80,7 +81,10 @@ CREATE TABLE IF NOT EXISTS user_answers (
     chosen_answer_alternative_id UUID REFERENCES answer_alternatives(id) ON DELETE CASCADE,
     answered_at TIMESTAMP,
     points_awarded INTEGER CHECK (points_awarded >= 0),
-    PRIMARY KEY (user_id, question_id)
+    PRIMARY KEY (user_id, question_id),
+    CONSTRAINT ans_alt_belong_to_question
+        FOREIGN KEY (question_id, chosen_answer_alternative_id)
+        REFERENCES answer_alternatives(question_id, id)
 );
 
 -- Table expected by package we use for sessions

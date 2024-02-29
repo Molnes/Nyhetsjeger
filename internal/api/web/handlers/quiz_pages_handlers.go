@@ -22,6 +22,12 @@ func NewQuizPagesHandler(sharedData *config.SharedData) *QuizPagesHandler {
 func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("", qph.quizHomePage)
 	e.GET("/quizpage", qph.GetQuizPage)
+
+
+    e.GET("/toppliste", qph.GetScoreboard)
+    e.GET("/fullforte", qph.GetFinishedQuizzes)
+    e.GET("/arkiv", qph.GetArchivedQuizzes)
+    e.GET("/profil", qph.GetQuizProfile)
 }
 
 // Renders the quiz home page
@@ -37,4 +43,20 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 
 func (qph *QuizPagesHandler) GetQuizPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizPage())
+}
+
+func (qph *QuizPagesHandler) GetScoreboard(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard())
+}
+
+func (qph *QuizPagesHandler) GetFinishedQuizzes(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
+}
+
+func (qph *QuizPagesHandler) GetArchivedQuizzes(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.ArchivedQuizzes())
+}
+
+func (qph *QuizPagesHandler) GetQuizProfile(c echo.Context) error {
+        return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
 }
