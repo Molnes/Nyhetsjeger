@@ -27,7 +27,7 @@ func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHand
 func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
 	e.GET("/edit-quiz", dph.dashboardEditQuiz)
-	// e.GET("/edit-quiz/new-question", dph.das)
+	e.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
 }
 
 // Renders the dashboard home page.
@@ -68,10 +68,11 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 		Alternatives: []questions.Alternative{},
 	}
 
-	question_id, _ := questions.PostNewQuestion(dph.sharedData.DB, newQuestion)
+	// Save the new question to the database.
+	questions.PostNewQuestion(dph.sharedData.DB, newQuestion)
 
-	// TODO: Create a new question in the DB and return the question ID.
-	// Return the modal.
+	// Get all the articles.
+	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionModal())
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionModal(articles))
 }

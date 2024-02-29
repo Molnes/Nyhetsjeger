@@ -131,6 +131,19 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 	return &a, nil
 }
 
+// Post a new question to the database.
+// Returns the ID of the new question.
+func PostNewQuestion(db *sql.DB, question Question) (uuid.UUID, error) {
+	// Insert the question into the database
+	db.QueryRow(
+		`INSERT INTO questions (id, question, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5);`,
+		question.ID, question.Text, question.Article.ID, question.QuizID, question.Points,
+	)
+
+	return question.ID, nil
+}
+
 var SampleQuestions []Question = []Question{
 	{
 		ID:   uuid.New(),
