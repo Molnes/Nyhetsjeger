@@ -71,7 +71,7 @@ templ Answers(answers []questions.Alternative, questionId uuid.UUID, option ...O
 			} else {
 				<p class="font-bold">Feil!</p>
 			}
-			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post={ fmt.Sprintf("/nextquestion=%s", questionId) } answer.Text hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
+			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post={ fmt.Sprintf("/nextquestion?questionid=%s", questionId) } answer.Text hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
 		} else {
 			for _ , answer := range answers {
 				@AnswerButton(answer.ID, questionId, answer.Text)
