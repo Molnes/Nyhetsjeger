@@ -70,14 +70,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>
-				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz?id=%s/new-question", quiz.ID) } type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz?quiz-id=%s/new-question", quiz.ID) } hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			// Quiz Buttons: Delete, Hide, OK
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
 				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
 				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
-					Skjul quiz <input
+					Skjul quiz<input
 	id="quiz-is-hidden"
+	class="ml-3"
 	type="checkbox"
 	if !quiz.Published {
 		checked
@@ -88,27 +89,31 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
 			</div>
 		</div>
-		<div id="question-modal"></div>
+		<dialog id="question-modal"></dialog>
 		@modalWindow()
 	}
 }
 
-// Opens and closes the modal window needed to add a new question to the quiz.
+// Opens and closes the modal window needed to add or edit a question.
 
 script modalWindow() {
 		const questionModal = document.getElementById("question-modal");
+		const editQuestionButtons = document.getElementsByClassName(".edit-question-button");
 		const newQuestionButton = document.getElementById("new-question-button");
 		const submitQuestionButton = document.getElementById("submit-question-button");
 		const closeModalButton = document.getElementById("close-modal-button");
 		
 		function openQuestionModal() {
-			editQuestionModal.showModal();
+			questionModal.showModal();
 		}
 
 		function closeQuestionModal() {
-			editQuestionModal.close();
+			questionModal.close();
 		}
 
+		editQuestionButtons.forEach(button => {
+			button.addEventListener("click", openQuestionModal);
+		});
 		newQuestionButton.addEventListener("click", openQuestionModal);
 		closeModalButton.addEventListener("click", closeQuestionModal);
 	}
