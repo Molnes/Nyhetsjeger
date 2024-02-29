@@ -7,5 +7,10 @@ import (
 )
 
 templ QuestionListItem(question *questions.Question) {
-	<li class="flex flex-row justify-between px-3 py-1">{ question.Text }<button hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) } hx-target="#question-modal" hx-trigger="click" type="button" class="edit-question-button px-1" title="Rediger">✏️</button></li>
+	<li class="flex flex-row justify-between px-3 py-1">
+		{ question.Text }
+		<button hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) } hx-target="#question-modal" hx-trigger="click" type="button" class="edit-question-button px-1" title="Rediger">
+			✏️
+		</button>
+	</li>
 }
