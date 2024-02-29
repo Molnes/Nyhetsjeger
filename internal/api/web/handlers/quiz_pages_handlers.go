@@ -6,7 +6,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/quiz_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
-	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/google/uuid"
@@ -40,19 +39,10 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	))
 }
 
-func findQuestion(id uuid.UUID) *questions.Question {
-	for _, question := range quizzes.SampleQuiz.Questions {
-		if question.ID == id {
-			return &question
-		}
-	}
-	return nil
-}
-
 // Gets the quiz page
 func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
-	questionId, _ := uuid.Parse(c.QueryParam("question"))
-	question := findQuestion(questionId)
+	questionId, _ := uuid.Parse(c.QueryParam("questionid"))
+	question := quizzes.GetQuestionFromId(questionId)
 	title := quizzes.SampleQuiz.Title
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizQuestion(question, title))
@@ -60,11 +50,11 @@ func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
 
 // Checks if the answer was correct, and returns the results
 func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
-	answer, _ := uuid.Parse(c.QueryParam("answer"))
-	questionId, err := uuid.Parse(c.QueryParam("question"))
+	answer, _ := uuid.Parse(c.QueryParam("answerid"))
+	questionId, err := uuid.Parse(c.QueryParam("questionid"))
 	correct := uuid.UUID{}
 
-	question := findQuestion(questionId)
+	question := quizzes.GetQuestionFromId(questionId)
 
 	//If the id is wrong, return not found error
 	if (question == nil || err != nil) {
@@ -85,13 +75,13 @@ func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
 
 // Posts the next question
 func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
-	questionID, err := uuid.Parse(c.QueryParam("question"))
+	questionID, err := uuid.Parse(c.QueryParam("questionid"))
 
 	if err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	questionArrangement := findQuestion(questionID).Arrangement
+	questionArrangement := quizzes.GetQuestionFromId(questionID).Arrangement
 
 	progress := float64(questionArrangement) / float64(len(quizzes.SampleQuiz.Questions))
 
