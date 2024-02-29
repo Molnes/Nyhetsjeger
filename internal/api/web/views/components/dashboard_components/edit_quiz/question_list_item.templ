@@ -1,9 +1,11 @@
 package dashboard_components
 
 import (
+	"fmt"
+
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 )
 
 templ QuestionListItem(question *questions.Question) {
-	<li class="flex flex-row justify-between px-3 py-1">{ question.Text }<button type="button" class="px-1" title="Rediger">✏️</button></li>
+	<li class="flex flex-row justify-between px-3 py-1">{ question.Text }<button hx-get={ fmt.Sprintf("/dashboard/edit-question?question_id=%s", question.ID) } hx-target="#question-modal" type="button" class="px-1" title="Rediger">✏️</button></li>
 }
