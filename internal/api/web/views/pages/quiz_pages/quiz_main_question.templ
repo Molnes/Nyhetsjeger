@@ -1,11 +1,11 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 )
 
 templ QuizPage() {
-	@components.Layout() {
+	@layout_components.BaseLayout() {
 		<div class="bg-gray-400 w-screen h-screen">
 			<section id="outer-header">
 				<h1 id="text-placeholder" class="text-7xl font-bold text-center">Quiz navn</h1>
