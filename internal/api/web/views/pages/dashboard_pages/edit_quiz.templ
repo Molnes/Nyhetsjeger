@@ -10,7 +10,7 @@ import (
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
-	@layout_components.Layout() {
+	@layout_components.BaseLayout() {
 		<div class="flex flex-col items-center gap-3 max-w-screen-sm m-auto px-5 py-3">
 			<h1 class="text-2xl">Rediger Quiz</h1>
 			// Quiz Title
