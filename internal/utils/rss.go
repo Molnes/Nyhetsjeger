@@ -14,10 +14,10 @@ type RssEnclosure struct {
 }
 
 type Item struct {
-	Title       string `xml:"title"`
-	Description string `xml:"description"`
-	Link        string `xml:"link"`
-    Enclosure   RssEnclosure `xml:"enclosure"`
+	Title       string       `xml:"title"`
+	Description string       `xml:"description"`
+	Link        string       `xml:"link"`
+	Enclosure   RssEnclosure `xml:"enclosure"`
 }
 
 type Channel struct {
@@ -33,25 +33,24 @@ type RSS struct {
 }
 
 func GetRssFeed() (RSS, error) {
-                //get the root url of the rss feed from .env
-        rssRootUrl := os.Getenv("ARTICLE_ROOT_URL")
-        if rssRootUrl == "" {
-                panic("ARTICLE_ROOT_URL not set")
-        }
+	//get the root url of the rss feed from .env
+	rssRootUrl := os.Getenv("ARTICLE_ROOT_URL")
+	if rssRootUrl == "" {
+		panic("ARTICLE_ROOT_URL not set")
+	}
 
-        resp, err := http.Get(rssRootUrl)
-        if err != nil {
-               return RSS{}, err
-        }
-        defer resp.Body.Close()
+	resp, err := http.Get(rssRootUrl)
+	if err != nil {
+		return RSS{}, err
+	}
+	defer resp.Body.Close()
 
-        rss := RSS{}
-        err = xml.NewDecoder(resp.Body).Decode(&rss)
-        if err != nil {
-                return RSS{}, err
-        }
+	rss := RSS{}
+	err = xml.NewDecoder(resp.Body).Decode(&rss)
+	if err != nil {
+		return RSS{}, err
+	}
 
-        return rss, nil
+	return rss, nil
 
 }
-

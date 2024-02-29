@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS questions (
     arrangement INTEGER NOT NULL,
     article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    points INTEGER NOT NULL,
     CONSTRAINT question_arrangement UNIQUE (arrangement, quiz_id)
 );
 
@@ -64,7 +65,6 @@ CREATE OR REPLACE TRIGGER set_question_arrangement
     FOR EACH ROW
     EXECUTE FUNCTION set_question_arrangement();
 
-
 CREATE TABLE IF NOT EXISTS answer_alternatives (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     text TEXT NOT NULL,
@@ -87,7 +87,6 @@ CREATE TABLE IF NOT EXISTS user_answers (
         REFERENCES answer_alternatives(question_id, id)
 );
 
-
 -- Table expected by package we use for sessions
 -- code taken directly from https://github.com/antonlindstrom/pgstore/blob/e3a6e3fed12a32697b352a4636d78204f9dbdc81/pgstore.go#L234
 CREATE TABLE IF NOT EXISTS http_sessions (
@@ -99,5 +98,4 @@ CREATE TABLE IF NOT EXISTS http_sessions (
               expires_on TIMESTAMPTZ);
               CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
               CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
-
 END;

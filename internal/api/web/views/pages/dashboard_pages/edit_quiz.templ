@@ -44,7 +44,9 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						<li class="text-center px-2 py-4">Ingen artikler lagt til enda.</li>
 					}
 					for _, article := range *articles {
-						@dashboard_components.ArticleListItem(article.ArticleURL.String())
+						if article.ID.Valid {
+							@dashboard_components.ArticleListItem(article.ArticleURL.String())
+						}
 					}
 				</ul>
 			}

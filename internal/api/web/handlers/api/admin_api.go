@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
-
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
 	"github.com/labstack/echo/v4"
 )

@@ -43,7 +43,7 @@ func createSampleQuiz(db *sql.DB, title string) {
 		`INSERT INTO quizzes (title, available_from, available_to, image_url)
 		values ($1, $2, $3, $4)
 		RETURNING id;`,
-		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.example.com/")
+		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.unsplash.it/200/200")
 
 	err := row.Scan(&quiz_id)
 	if err != nil {
@@ -76,15 +76,16 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 		log.Println(err)
 	}
 	tx.Exec(
-		`INSERT INTO questions (id, question, quiz_id)
-		VALUES ($1, $2, $3);`,
-		question_id, question.text, quiz_id)
+		`INSERT INTO questions (id, question, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5);`,
+		question_id, question.text, nil, quiz_id, 10)
 
 	for _, a := range question.answer_alts {
+		alternative_id := uuid.New()
 		tx.Exec(
-			`INSERT INTO answer_alternatives (question_id, text, correct)
-			VALUES ($1, $2, $3);`,
-			question_id, a.answer, a.correct)
+			`INSERT INTO answer_alternatives (id, question_id, text, correct)
+			VALUES ($1, $2, $3, $4);`,
+			alternative_id, question_id, a.answer, a.correct)
 	}
 	if err := tx.Commit(); err != nil {
 		log.Println(err)

@@ -26,8 +26,6 @@ func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("/forbidden", pph.forbiddenPage)
 }
 
-
-
 func (pph *PublicPagesHandler) homePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.HomePage())
 }
