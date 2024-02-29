@@ -1,9 +1,9 @@
 package public_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 
 templ ForbiddenPage() {
-	@components.Layout() {
+	@layout_components.Layout() {
 		<main class="flex flex-col items-center justify-center min-h-screen">
 			<h1 class="text-6xl">Forbidden</h1>
 			<p>You are not allowed to access the page you requested.</p>

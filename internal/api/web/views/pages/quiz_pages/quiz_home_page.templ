@@ -1,13 +1,14 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
 )
 
 // Quiz home page
 templ QuizHomePage(quizzes []quizzes.Quiz) {
-	@components.Layout() {
+	@layout_components.Layout() {
 		<div class="bg-white min-h-screen overflow-auto flex flex-col">
 			<div class="flex justify-between items-center p-4">
 				<h2 class="text-5xl">🔥 9</h2>
