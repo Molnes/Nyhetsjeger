@@ -1,12 +1,12 @@
 package dashboard_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 )
 
 // Dashboard home page
 templ DashboardPage() {
-	@components.Layout() {
+	@layout_components.BaseLayout() {
 		<div class="rounded-xl bg-center bg-cover bg-no-repeat bg-gray-200 h-screen flex flex-col justify-center items-center">
 			<h1 class="text-4xl text-center">Nyhetsjeger dashbord</h1>
 			<p class="text-center">Her kan du administrere dine quizzer</p>
