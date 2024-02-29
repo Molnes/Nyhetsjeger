@@ -1,14 +1,15 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
 )
 
 //Starts a countdown from parameter to 0.
 //Runs as a javascript function.
+
 script startCountdown(countdownTime int) {
 	var countDownTime = 10;
 	var x = setInterval(function() {
@@ -24,7 +25,7 @@ script startCountdown(countdownTime int) {
 
 //Renders the basic question layout. It includes a timer, score, question and answers.
 templ QuizQuestion(quiz *questions.Question, title string) {
-	@components.Layout() {
+	@layout_components.BaseLayout() {
 		@startCountdown(10)
 		<div class="bg-gray-400 w-full min-h-svh py-8">
 			<section class="grid grid-cols-3 items-center max-w-screen-md mx-auto">
