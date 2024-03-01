@@ -38,6 +38,11 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 // Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	uuid_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
+	if uuid_id == uuid.Nil {
+		// TODO: Redirect to proper error handling page with descriptive error message.
+		return utils.Render(c, http.StatusNotFound, dashboard_pages.DashboardPage())
+	}
+
 	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
 
 	// Get all the articles for a quiz.
