@@ -108,8 +108,10 @@ BEGIN
         END IF;
 
         -- If the new article_id is not null, insert a new entry
+        -- And the new article_id and quiz_id combination already exists, do nothing
         IF NEW.article_id IS NOT NULL THEN
-            INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id);
+            INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id)
+            ON CONFLICT DO NOTHING;
         END IF;
     END IF;
 
