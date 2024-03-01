@@ -1,77 +1,42 @@
+
 package quiz_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/data/questions"
 import "github.com/google/uuid"
 import "fmt"
 
-type Optional struct {
-	correctAnswered []uuid.UUID
-}
-
-type Option func(*Optional) Optional
-
-// Sets the correct and answered answer to the question
-func CorrectAndAnswered(correct uuid.UUID, answered uuid.UUID) Option {
-	return func(o *Optional) Optional {
-		o.correctAnswered = append(o.correctAnswered, correct, answered)
-		return *o
+// given a value, find the value in the array and return if the value is correct or not.
+func findAnswer(answers []questions.Alternative, value uuid.UUID) bool {
+	for _, answer := range answers {
+		if answer.ID == value {
+			return answer.IsCorrect
+		}
 	}
+	return false
 }
 
-var answeredCorrectly bool = false
+func compareUUID(a uuid.UUID, b uuid.UUID) bool {
+	return a == b
+}
 
 // Checks if the answer has been selected
-func isSelected(id uuid.UUID, option ...Option) bool {
-	o := Optional{}
-	for _, opt := range option {
-		o = opt(&o)
-	}
-
-	for i := 0; i < len(o.correctAnswered); i += 2 {
-		if o.correctAnswered[i] == id && o.correctAnswered[i+1] == id {
-			answeredCorrectly = true
-			return true
-		}
-
-		if o.correctAnswered[i+1] == id {
-			return true
-		}
-	}
-
-	return false
-
-}
 
 // Checks if the question has been answered correctly or not.
-func isCorrect(id uuid.UUID, option ...Option) bool {
-	o := Optional{}
-	for _, opt := range option {
-		o = opt(&o)
-	}
-
-	for i := 0; i < len(o.correctAnswered); i += 2 {
-		if o.correctAnswered[i] == id {
-			return true
-		}
-	}
-
-	return false
-}
 
 //Renders all the answers to the question in the form of buttons, and if the question has been answered, it will also display if the answer was correct or not.
 //Takes in the possible questions, and an optional Option to check if the question has been answered and if it was answered correctly.
-templ Answers(answers []questions.Alternative, questionId uuid.UUID, option ...Option) {
+templ Answers(answers []questions.Alternative, questionId uuid.UUID, answering bool, selectedAnswer uuid.UUID) {
 	<div id="answers-wrapper" class="w-80 flex flex-col [&>*]:mt-4">
-		if (option != nil) {
+		if (answering) {
 			for _ , answer := range answers {
-				@selectedAnswerButton(answer.Text, option != nil, isCorrect(answer.ID, option...), isSelected(answer.ID, option...), 0.24989)
+				@selectedAnswerButton(answer.Text, answering, answer.IsCorrect, compareUUID(answer.ID, selectedAnswer), 0.24989)
 			}
-			if (answeredCorrectly) {
+			if findAnswer(answers, selectedAnswer) {
 				<p class="font-bold">Riktig!</p>
 			} else {
 				<p class="font-bold">Feil!</p>
 			}
-			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post={ fmt.Sprintf("/nextquestion?questionid=%s", questionId) } answer.Text hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
+			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post={ fmt.Sprintf("/quiz/nextquestion?questionid=%s", questionId) } answer.Text hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
 		} else {
 			for _ , answer := range answers {
 				@AnswerButton(answer.ID, questionId, answer.Text)
@@ -79,3 +44,4 @@ templ Answers(answers []questions.Alternative, questionId uuid.UUID, option ...O
 		}
 	</div>
 }
+
