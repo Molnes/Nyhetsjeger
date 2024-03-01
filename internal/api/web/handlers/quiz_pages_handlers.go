@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
@@ -67,11 +66,13 @@ func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
+
 	quizID, err := uuid.Parse(c.Param("id"))
-	log.Println(quizID.String())
 	if err != nil {
-		log.Println(err)
-		return c.NoContent(http.StatusNotFound)
+		// if error, return server error and log "error parsing quiz id"
+
+		return c.NoContent(http.StatusInternalServerError)
+
 	}
 
 	question, err := questions.GetFirstQuestion(qph.sharedData.DB, quizID)
@@ -91,7 +92,7 @@ func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
 	answerId, _ := uuid.Parse(c.QueryParam("answerid"))
 	questionId, err := uuid.Parse(c.QueryParam("questionid"))
 
-	question := quizzes.GetQuestionFromId(questionId)
+	question, err := questions.GetQuestionByID(qph.sharedData.DB, questionId)
 
 	//If the id is wrong, return not found error
 	if question == nil || err != nil {
@@ -107,14 +108,18 @@ func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	answerCorrect := alternative.IsCorrect
-	//If the answer is correct, return the correct answer
+	err = users.AnswerQuestion(qph.sharedData.DB, utils.GetUserIDFromCtx(c), questionId, alternative.ID)
 
-	return utils.Render(c, http.StatusOK,
-		quiz_components.Answers(alternatives, questionId,
-			quiz_components.CorrectAndAnswered(answerCorrect, answerId),
-		),
-	)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	alternatives, err := questions.GetAlternativesByQuestionID(qph.sharedData.DB, questionId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_components.Answers((*alternatives), questionId, true, answerId))
 
 }
 
@@ -125,12 +130,28 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
+    question, err := questions.GetNextQuestion(qph.sharedData.DB, questionID)
+    if err != nil {
+            return c.NoContent(http.StatusNotFound)
+    }
 
-	questionArrangement := quizzes.GetQuestionFromId(questionID).Arrangement
+    // IMPORTANT: If the question is nil, it means that the quiz is finished and the user should be redirected to the finished quiz page
+    if question == nil {
+            return c.NoContent(http.StatusNotFound)
+        }
+
+
+	err = users.StartQuestion(qph.sharedData.DB, utils.GetUserIDFromCtx(c), questionID)
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+
+	questionArrangement := question.Arrangement
 
 	progress := float64(questionArrangement) / float64(len(quizzes.SampleQuiz.Questions))
 
-	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(&quizzes.SampleQuiz.Questions[questionArrangement], progress))
+	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(question, progress))
 }
 
 func (qph *QuizPagesHandler) GetScoreboard(c echo.Context) error {
