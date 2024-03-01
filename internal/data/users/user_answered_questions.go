@@ -23,7 +23,7 @@ func StartQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
         return nil
 }
 
-func  AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAlternative questions.Alternative) error {
+func  AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAlternative uuid.UUID) error {
 
        db.QueryRow("UPDATE user_answers SET chosen_alternative = $1, answered_at = $2 WHERE user_id = $3 AND question_id = $4 RETURNING chosen_alternative, answered_at", chosenAlternative, time.Now(), userId, questionId)
         return nil
