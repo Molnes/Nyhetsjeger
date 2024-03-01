@@ -25,6 +25,9 @@ func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHand
 func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
 	e.GET("/quiz/edit/:quizId", dph.dashboardEditQuiz)
+	e.GET("/leaderboard", dph.leaderboard)
+	e.GET("/access-settings", dph.accessSettings)
+	e.GET("/user-details/:userId", dph.userDetails)
 }
 
 // Renders the dashboard home page.
@@ -48,4 +51,16 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, &articles))
+}
+
+func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage())
+}
+
+func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage())
+}
+
+func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage())
 }
