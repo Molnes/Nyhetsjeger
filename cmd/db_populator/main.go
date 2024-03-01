@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"net/url"
 	"os"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -37,6 +39,49 @@ func main() {
 	createSampleQuiz(db, "Daglig quiz 01/03/24")
 }
 
+func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	article := articles.Article{
+		ID: uuid.NullUUID{
+			UUID:  uuid.New(),
+			Valid: true,
+		},
+		Title: "Sample article",
+		ArticleURL: url.URL{
+			Scheme: "https",
+			Host:   "www.example.com",
+		},
+		ImgURL: url.URL{
+			Scheme: "https",
+			Host:   "www.unsplash.it",
+			Path:   "/200/200",
+		},
+	}
+
+	tx.Exec(
+		`INSERT INTO 
+			articles (id, title, url, image_url)
+		VALUES 
+			($1, $2, $3, $4);`,
+		article.ID, article.Title, article.ArticleURL.String(), article.ImgURL.String())
+
+	tx.Exec(
+		`INSERT INTO 
+			quiz_articles (quiz_id, article_id)
+		VALUES 
+			($1, $2);`,
+		quizID, article.ID)
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+	}
+}
+
 func createSampleQuiz(db *sql.DB, title string) {
 	var quiz_id uuid.UUID
 	row := db.QueryRow(
@@ -49,6 +94,8 @@ func createSampleQuiz(db *sql.DB, title string) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	createSampleQuizArticle(db, quiz_id)
 
 	for range 3 {
 		createQuestion(db, quiz_id, sampleQuestion1)
