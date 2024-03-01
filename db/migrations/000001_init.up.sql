@@ -33,6 +33,12 @@ CREATE TABLE IF NOT EXISTS quizzes (
     published BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS quiz_articles (
+    quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    PRIMARY KEY (quiz_id, article_id)
+);
+
 CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
