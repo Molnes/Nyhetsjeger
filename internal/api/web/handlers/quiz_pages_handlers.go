@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/data/users"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -57,12 +58,17 @@ func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
 
 	title := quizzes.SampleQuiz.Title
 
+	err = users.StartQuestion(qph.sharedData.DB, utils.GetUserIDFromCtx(c), questionId)
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizQuestion(question, title))
 }
 
 func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
 	quizID, err := uuid.Parse(c.Param("id"))
-    log.Println(quizID.String())
+	log.Println(quizID.String())
 	if err != nil {
 		log.Println(err)
 		return c.NoContent(http.StatusNotFound)
@@ -82,9 +88,8 @@ func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
 
 // Checks if the answer was correct, and returns the results
 func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
-	answer, _ := uuid.Parse(c.QueryParam("answerid"))
+	answerId, _ := uuid.Parse(c.QueryParam("answerid"))
 	questionId, err := uuid.Parse(c.QueryParam("questionid"))
-	correct := uuid.UUID{}
 
 	question := quizzes.GetQuestionFromId(questionId)
 
@@ -93,16 +98,24 @@ func (qph *QuizPagesHandler) getIsCorrect(c echo.Context) error {
 		return c.NoContent(http.StatusNotFound)
 	}
 
-	alternatives := question.Alternatives
-
-	for _, alternative := range alternatives {
-		if alternative.IsCorrect {
-			correct = alternative.ID
-			break
-		}
+	alternative, err := questions.GetAlternativeByID(qph.sharedData.DB, answerId)
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
 	}
 
-	return utils.Render(c, http.StatusOK, quiz_components.Answers(alternatives, questionId, quiz_components.CorrectAndAnswered(correct, answer)))
+	if alternative.QuestionID != questionId {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	answerCorrect := alternative.IsCorrect
+	//If the answer is correct, return the correct answer
+
+	return utils.Render(c, http.StatusOK,
+		quiz_components.Answers(alternatives, questionId,
+			quiz_components.CorrectAndAnswered(answerCorrect, answerId),
+		),
+	)
+
 }
 
 // Posts the next question
