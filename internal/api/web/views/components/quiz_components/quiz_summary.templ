@@ -24,6 +24,7 @@ templ QuizSummary(summary users.UserQuizSummary) {
 				// for i := 0; i < 10; i++ {
 				for _, aq := range summary.AnsweredQuestions {
 					<li class="mb-2">
+                    <!-- { aq.QuestionText } TODO: this needs to be fixed either by changing struct or by adding a new field -->
 						<br/>
 						<span class={ getColor(aq.ChosenAlternative.IsCorrect), "font-bold pl-3" }>
 							{ aq.ChosenAlternative.Text }
