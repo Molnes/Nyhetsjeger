@@ -127,7 +127,7 @@ CREATE TRIGGER update_quiz_articles_trigger
 CREATE TABLE IF NOT EXISTS user_answers (
     user_id UUID NOT NULL  REFERENCES users(id) ON DELETE CASCADE,
     question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-    question_presented_at TIMESTAMP NOT NULL,
+    question_presented_at TIMESTAMP NOT NULL DEFAULT now(),
      -- following columns are nullable; if they are null, the user has not answered the question yet
     chosen_answer_alternative_id UUID REFERENCES answer_alternatives(id) ON DELETE CASCADE,
     answered_at TIMESTAMP,
