@@ -43,6 +43,26 @@ func GetArticle(articleID uuid.UUID) (Article, error) {
 	return SampleArticles[0], nil
 }
 
+func GetArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
+	rows, err := db.Query(
+		`SELECT
+				a.id, a.title, a.url, a.image_url
+			FROM
+				articles a
+			LEFT JOIN
+				quiz_articles q ON q.article_id = a.id
+			WHERE
+				q.quiz_id = $1`,
+		quizID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanArticlesFromFullRows(rows)
+}
+
 // Get an Article by its ID.
 func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 	row := db.QueryRow(
@@ -88,6 +108,48 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	}
 
 	return &article, nil
+}
+
+// Convert a set of rows from the database to a list of Articles.
+func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
+	var articles []Article
+	for rows.Next() {
+		var article Article
+		var articleURL string
+		var imageURL string
+		err := rows.Scan(
+			&article.ID,
+			&article.Title,
+			&articleURL,
+			&imageURL,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Parse the article URL.
+		tempArticleURL, err := url.Parse(articleURL)
+		article.ArticleURL = *tempArticleURL
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
+		// Parse the image URL.
+		tempImageURL, err := url.Parse(imageURL)
+		article.ImgURL = *tempImageURL
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
+		articles = append(articles, article)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &articles, nil
 }
 
 var SampleArticles []Article = []Article{
