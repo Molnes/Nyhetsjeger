@@ -2,18 +2,34 @@ package dashboard_pages
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/dashboard_home_page"
 )
 
 // Dashboard home page
-templ DashboardHomePage() {
+templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []quizzes.Quiz) {
 	@layout_components.DashBoardLayout() {
-		<div class="rounded-xl bg-center bg-cover bg-no-repeat bg-gray-200 h-screen flex flex-col justify-center items-center">
-			<h1 class="text-4xl text-center">Nyhetsjeger dashbord</h1>
-			<p class="text-center">Her kan du administrere dine quizzer</p>
-			<div class="flex justify-center mt-10">
-				<a href="/dashboard/edit-quiz" class="bg-red-400 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-					Administrer quizzer
-				</a>
+		<div class="flex flex-col pl-8 pt-8 pr-48">
+			<div class="flex flex-row justify-between ">
+				<h1 class="text-4xl mb-5">Upubliserte quizzer</h1>
+				<button
+					class="text-xl bg-gray-200 hover:bg-gray-300 py-1 px-3 shadow-sm rounded-sm"
+					hx-post="/api/v1/admin/quiz/create-new"
+				>Lag ny quiz</button>
+			</div>
+			<div class="flex flex-row flex-wrap mb-10">
+				for _, quiz := range unpublishedQuizzes {
+					@dashboard_components.QuizTile(quiz)
+				}
+			</div>
+			<div class="flex flex-row justify-between">
+				<h1 class="text-4xl mb-5">Publiserte quizzer</h1>
+				<button class="text-xl bg-gray-200 hover:bg-gray-300 py-1 px-3 shadow-sm rounded-sm">Filtrer</button>
+			</div>
+			<div class="flex flex-row flex-wrap ">
+				for _, quiz := range publishedQuizzes {
+					@dashboard_components.QuizTile(quiz)
+				}
 			</div>
 		</div>
 	}

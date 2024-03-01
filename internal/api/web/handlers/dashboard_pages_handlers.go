@@ -32,7 +32,15 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 
 // Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardHomePage())
+	unpublishedQuizzes, err := quizzes.GetQuizzes(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	publishedQuizzes := unpublishedQuizzes
+	publishedQuizzes = append(publishedQuizzes, unpublishedQuizzes...)
+	publishedQuizzes = append(publishedQuizzes, unpublishedQuizzes...)
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardHomePage(unpublishedQuizzes, publishedQuizzes))
 }
 
 // Renders the page for editing quiz.

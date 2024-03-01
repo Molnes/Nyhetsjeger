@@ -1,0 +1,25 @@
+package dashboard_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/data/quizzes"
+
+templ QuizTile(quiz quizzes.Quiz) {
+	<a
+		class="mr-4 mb-4 bg-gray-200 shadow-md rounded-lg max-w-56 overflow-hidden flex flex-col hover:shadow-lg transition duration-100 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+		href={ templ.SafeURL("/dashboard/quiz/edit/" + quiz.ID.String()) }
+	>
+		// src={ quiz.ImageURL.String() }
+		<img
+			src="https://picsum.photos/200/300"
+			alt={ quiz.Title }
+			class="h-48 w-full bg-gray-500 "
+		/>
+		<div class="py-2 pl-1 pr-4">
+			<h3 class="text-xl font-semibold text-gray-800">{ quiz.Title }</h3>
+			<p>
+				Fra: { quiz.AvailableFrom.Format("02.01.2006 15:04") }
+				<br/>
+				Til: { quiz.AvailableTo.Format("02.01.2006 15:04") }
+			</p>
+		</div>
+	</a>
+}
