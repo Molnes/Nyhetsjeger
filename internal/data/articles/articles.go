@@ -48,9 +48,9 @@ func GetArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
 		`SELECT
 				a.id, a.title, a.url, a.image_url
 			FROM
-				questions q
+				articles a
 			LEFT JOIN
-				articles a ON q.article_id = a.id
+				quiz_articles q ON q.article_id = a.id
 			WHERE
 				q.quiz_id = $1`,
 		quizID)

@@ -40,17 +40,10 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	uuid_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
 	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
 
-	// Collect all the articles from each question in the quiz.
-	// Only add the ones that are valid.
-	articles := []articles.Article{}
-	for _, question := range quiz.Questions {
-		article := question.Article
-		if article.ID.Valid {
-			articles = append(articles, article)
-		}
-	}
+	// Get all the articles for a quiz.
+	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, &articles))
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles))
 }
 
 // Renders the modal for creating a new question.
