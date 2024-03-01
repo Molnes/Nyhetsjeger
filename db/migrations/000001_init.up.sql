@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS quiz_articles (
     PRIMARY KEY (quiz_id, article_id)
 );
 
+
 CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
@@ -78,6 +79,48 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
     question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
     CONSTRAINT unique_alternative_question UNIQUE (id, question_id)
 );
+
+CREATE OR REPLACE FUNCTION insert_quiz_articles()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If the article_id is not null, insert a new entry
+    IF NEW.article_id IS NOT NULL THEN
+        INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER insert_quiz_articles_trigger
+    AFTER INSERT ON questions
+    FOR EACH ROW
+    EXECUTE PROCEDURE insert_quiz_articles();
+
+CREATE OR REPLACE FUNCTION update_quiz_articles()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If the article_id is updated
+    IF NEW.article_id IS DISTINCT FROM OLD.article_id THEN
+        -- If the old article_id is not null, delete the old entry
+        IF OLD.article_id IS NOT NULL THEN
+            DELETE FROM quiz_articles WHERE article_id = OLD.article_id AND quiz_id = OLD.quiz_id;
+        END IF;
+
+        -- If the new article_id is not null, insert a new entry
+        IF NEW.article_id IS NOT NULL THEN
+            INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id);
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_quiz_articles_trigger
+    AFTER UPDATE OF article_id ON questions
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_quiz_articles();
 
 CREATE TABLE IF NOT EXISTS user_answers (
     user_id UUID NOT NULL  REFERENCES users(id) ON DELETE CASCADE,
