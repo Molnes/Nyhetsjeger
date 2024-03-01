@@ -102,7 +102,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 
 		// Add the alternatives to the question
 		for _, id := range alternativeIDs {
-			alternative, _ := getAlternativeByID(db, id)
+			alternative, _ := GetAlternativeByID(db, id)
 			if alternative != nil {
 				q.Alternatives = append(q.Alternatives, *alternative)
 			}
