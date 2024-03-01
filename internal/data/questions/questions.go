@@ -50,8 +50,25 @@ func GetFirstQuestion(db *sql.DB, quizID uuid.UUID) (*Question, error) {
         return scanQuestionFromFullRow(db, rows)
 }
 
+// function for getting the next question in a quiz if there is one based on the arrangement, returns nil if there is no next question or an error
+// takes *sql.DB 
+// takes the current question UUID to get the next question
+func GetNextQuestion(db *sql.DB,  currentQuestionID uuid.UUID) (*Question, error) {
+        currentQuestion, err := GetQuestionByID(db, currentQuestionID)
+        if err != nil {
+                return nil, err
+        }
+        rows:= db.QueryRow(
+                `SELECT
+                        id, question, arrangement, article_id, quiz_id, points
+                FROM
+                        questions
+                WHERE
+                        quiz_id = $1 AND arrangement = $2`,
+                currentQuestion.QuizID, currentQuestion.Arrangement + 1)
 
-
+        return scanQuestionFromFullRow(db, rows)
+}
 
 // Returns all questions for a given quiz.
 // Includes the article for each question.
