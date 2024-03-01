@@ -35,6 +35,24 @@ func GetQuestion(quizID uuid.UUID) (Question, error) {
 	return SampleQuestions[0], nil
 }
 
+
+
+func GetFirstQuestion(db *sql.DB, quizID uuid.UUID) (*Question, error) {
+        rows:= db.QueryRow(
+                `SELECT
+                                id, question, arrangement, article_id, quiz_id, points
+                        FROM
+                                questions
+                        WHERE
+                                quiz_id = $1 AND arrangement = 1`,
+                quizID)
+
+        return scanQuestionFromFullRow(db, rows)
+}
+
+
+
+
 // Returns all questions for a given quiz.
 // Includes the article for each question.
 // Includes the alternatives for each question.
@@ -183,7 +201,7 @@ func scanAlternativesFromFullRows(rows *sql.Rows) (*[]Alternative, error) {
 }
 
 // Return alternative for a given question.
-func getAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
+func GetAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
 	row := db.QueryRow(
 		`SELECT
 				id, text, correct, question_id
