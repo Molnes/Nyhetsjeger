@@ -27,7 +27,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("/quiz/edit/:quizId", dph.dashboardEditQuiz)
 	e.GET("/leaderboard", dph.leaderboard)
 	e.GET("/access-settings", dph.accessSettings)
-	e.GET("/user-details/:userId", dph.userDetails)
+	e.GET("/user-details", dph.userDetails)
 }
 
 // Renders the dashboard home page.
@@ -71,5 +71,6 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 }
 
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
+	// userId := c.QueryParam("user-id")
 	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage())
 }
