@@ -5,25 +5,21 @@ templ SideMenu() {
 		<h1 class="text-3xl mb-4 bg-gray-300 py-2">Quiz Admin</h1>
 		<nav>
 			<ul class="space-y-4">
-				<li>
-					<a href="/dashboard" class="block bg-gray-200 hover:bg-gray-300 py-2">
-						Hjem
-					</a>
-				</li>
-				<li>
-					<a href="/dashboard/leaderboard" class="block bg-gray-200 hover:bg-gray-300 py-2">
-						Toppliste
-					</a>
-				</li>
-				<li>
-					<a href="/dashboard/access-settings" class="block bg-gray-200 hover:bg-gray-300 py-2">
-						Tilgang
-					</a>
-				</li>
+				@menuItem("Hjem", "/dashboard")
+				@menuItem("Toppliste", "/dashboard/leaderboard")
+				@menuItem("Tilgang", "/dashboard/access-settings")
 			</ul>
 		</nav>
 		<ul class="bottom-4 absolute w-full">
 			<li><a hx-post="/auth/logout" class="hover:text-gray-600 cursor-pointer">Logg ut</a></li>
 		</ul>
 	</div>
+}
+
+templ menuItem(text string, href string) {
+	<li>
+		<a href={ templ.SafeURL(href) } class="block bg-gray-200 hover:bg-gray-300 py-2">
+			{ text }
+		</a>
+	</li>
 }
