@@ -134,3 +134,32 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	}
 	return &quiz, err
 }
+
+// Create a Quiz in the DB.
+func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
+	db.QueryRow(
+		`INSERT INTO quizzes
+			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published)
+		VALUES
+			($1, $2, $3, $4, $5, $6, $7, $8)`,
+		quiz.ID,
+		quiz.Title,
+		quiz.ImageURL.String(),
+		quiz.AvailableFrom,
+		quiz.AvailableTo,
+		quiz.CreatedAt,
+		quiz.LastModifiedAt,
+		quiz.Published,
+	)
+
+	return &quiz.ID, nil
+}
+
+// Delete a Quiz from the DB by its ID.
+func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
+	_, err := db.Exec(
+		`DELETE FROM quizzes
+		WHERE id = $1`,
+		id)
+	return err
+}
