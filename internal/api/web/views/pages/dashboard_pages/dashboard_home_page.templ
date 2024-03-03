@@ -17,7 +17,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 					hx-post="/api/v1/admin/quiz/create-new"
 				>Lag ny quiz</button>
 			</div>
-			<div class="flex flex-row flex-wrap mb-10">
+			<div class="flex flex-row flex-wrap mb-10 gap-4">
 				for _, quiz := range unpublishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
@@ -26,7 +26,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 				<h1 class="text-4xl mb-5">Publiserte quizzer</h1>
 				<button class="text-xl bg-gray-200 hover:bg-gray-300 py-1 px-3 shadow-sm rounded-sm">Filtrer</button>
 			</div>
-			<div class="flex flex-row flex-wrap ">
+			<div class="flex flex-row flex-wrap gap-4">
 				for _, quiz := range publishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
