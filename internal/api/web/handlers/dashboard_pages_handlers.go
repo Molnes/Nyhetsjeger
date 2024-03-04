@@ -28,11 +28,24 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
 	e.GET("/edit-quiz", dph.dashboardEditQuiz)
 	e.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
+	e.GET("/leaderboard", dph.leaderboard)
+	e.GET("/access-settings", dph.accessSettings)
+	e.GET("/user-details", dph.userDetails)
+
 }
 
 // Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardPage())
+	nonPublishedQuizzes, err := quizzes.GetNonPublishedQuizzes(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	publishedQuizzes, err := quizzes.GetAllPublishedQuizzes(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardHomePage(nonPublishedQuizzes, publishedQuizzes))
 }
 
 // Renders the page for editing quiz.
@@ -40,7 +53,8 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	uuid_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
 	if uuid_id == uuid.Nil {
 		// TODO: Redirect to proper error handling page with descriptive error message.
-		return utils.Render(c, http.StatusNotFound, dashboard_pages.DashboardPage())
+		// return utils.Render(c, http.StatusNotFound, dashboard_pages.DashboardPage())
+		return c.Redirect(http.StatusFound, "/dashboard")
 	}
 
 	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
@@ -73,4 +87,17 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionModal(articles))
+}
+
+func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage())
+}
+
+func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage())
+}
+
+func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
+	// userId := c.QueryParam("user-id")
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage())
 }
