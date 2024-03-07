@@ -8,7 +8,7 @@ run:
 	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
-live-reload
+live-reload:
 	air -c .air.toml
 
 #!make
