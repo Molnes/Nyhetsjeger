@@ -30,10 +30,10 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/checkanswer", qph.getIsCorrect)
 	e.POST("/nextquestion", qph.postNextQuestion)
 
-	e.GET("/toppliste", qph.GetScoreboard)
-	e.GET("/fullforte", qph.GetFinishedQuizzes)
-	e.GET("/arkiv", qph.GetArchivedQuizzes)
-	e.GET("/profil", qph.GetQuizProfile)
+	e.GET("/toppliste", qph.getScoreboard)
+	e.GET("/fullforte", qph.getFinishedQuizzes)
+	e.GET("/arkiv", qph.getArchivedQuizzes)
+	e.GET("/profil", qph.getQuizProfile)
 }
 
 // Renders the quiz home page
@@ -154,18 +154,18 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(question, progress))
 }
 
-func (qph *QuizPagesHandler) GetScoreboard(c echo.Context) error {
+func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard())
 }
 
-func (qph *QuizPagesHandler) GetFinishedQuizzes(c echo.Context) error {
+func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
 }
 
-func (qph *QuizPagesHandler) GetArchivedQuizzes(c echo.Context) error {
+func (qph *QuizPagesHandler) getArchivedQuizzes(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.ArchivedQuizzes())
 }
 
-func (qph *QuizPagesHandler) GetQuizProfile(c echo.Context) error {
+func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
 }
