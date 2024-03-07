@@ -2,6 +2,7 @@ package questions
 
 import (
 	"database/sql"
+	"net/url"
 
 	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 type Question struct {
 	ID           uuid.UUID
 	Text         string
+	ImageURL     url.URL
 	Arrangement  uint
 	Article      articles.Article // The article this question is based on.
 	QuizID       uuid.UUID
@@ -41,7 +43,7 @@ func GetQuestion(quizID uuid.UUID) (Question, error) {
 func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 	rows, err := db.Query(
 		`SELECT
-				q.id, q.question, q.arrangement, q.article_id, q.quiz_id, q.points,
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.points,
 				array_agg(a.id)
 			FROM
 				questions q
@@ -68,13 +70,17 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		var q Question
 		var articleID uuid.UUID
 		var alternativeIDs []uuid.UUID
+		var imageURL string
 		err := rows.Scan(
-			&q.ID, &q.Text, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
 			pq.Array(&alternativeIDs),
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		tempURL, err := url.Parse(imageURL)
+		q.ImageURL = *tempURL
 
 		// Add the article to the question
 		article, _ := articles.GetArticleByID(db, articleID)
@@ -136,9 +142,9 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 func PostNewQuestion(db *sql.DB, question Question) (uuid.UUID, error) {
 	// Insert the question into the database
 	db.QueryRow(
-		`INSERT INTO questions (id, question, article_id, quiz_id, points)
-		VALUES ($1, $2, $3, $4, $5);`,
-		question.ID, question.Text, question.Article.ID, question.QuizID, question.Points,
+		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5, $6);`,
+		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points,
 	)
 
 	return question.ID, nil

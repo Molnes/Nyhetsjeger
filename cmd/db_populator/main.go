@@ -123,9 +123,9 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 		log.Println(err)
 	}
 	tx.Exec(
-		`INSERT INTO questions (id, question, article_id, quiz_id, points)
-		VALUES ($1, $2, $3, $4, $5);`,
-		question_id, question.text, nil, quiz_id, 10)
+		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5, $6);`,
+		question_id, question.text, "https://unsplash.it/200/200", nil, quiz_id, 10)
 
 	for _, a := range question.answer_alts {
 		alternative_id := uuid.New()

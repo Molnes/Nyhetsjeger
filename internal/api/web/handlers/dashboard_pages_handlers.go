@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
 
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/dashboard_pages"
@@ -72,20 +73,26 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	// Create a new question with no actual data.
 	// Set the default points to be 10.
 	newQuestion := questions.Question{
-		ID:           uuid.New(),
-		Text:         "",
+		ID:   uuid.New(),
+		Text: "SPØRSMÅL",
+		ImageURL: url.URL{
+			Scheme: "https",
+			Host:   "unsplash.it",
+			Path:   "/200/200",
+		},
 		Article:      articles.Article{},
 		QuizID:       quiz_id,
 		Points:       10,
 		Alternatives: []questions.Alternative{},
 	}
 
-	println(newQuestion.ID.String())
+	// Post the new question to the database.
+	// questions.PostNewQuestion(dph.sharedData.DB, newQuestion)
 
 	// Get all the articles.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(articles))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {

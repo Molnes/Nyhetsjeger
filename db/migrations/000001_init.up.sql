@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS quiz_articles (
 CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
+    image_url TEXT NOT NULL,
     arrangement INTEGER NOT NULL,
     article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
