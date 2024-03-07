@@ -35,6 +35,41 @@ func GetQuestion(quizID uuid.UUID) (Question, error) {
 	return SampleQuestions[0], nil
 }
 
+
+
+func GetFirstQuestion(db *sql.DB, quizID uuid.UUID) (*Question, error) {
+        rows:= db.QueryRow(
+                `SELECT
+                                id, question, arrangement, article_id, quiz_id, points
+                        FROM
+                                questions
+                        WHERE
+                                quiz_id = $1 AND arrangement = 1`,
+                quizID)
+
+        return scanQuestionFromFullRow(db, rows)
+}
+
+// function for getting the next question in a quiz if there is one based on the arrangement, returns nil if there is no next question or an error
+// takes *sql.DB 
+// takes the current question UUID to get the next question
+func GetNextQuestion(db *sql.DB,  currentQuestionID uuid.UUID) (*Question, error) {
+        currentQuestion, err := GetQuestionByID(db, currentQuestionID)
+        if err != nil {
+                return nil, err
+        }
+        rows:= db.QueryRow(
+                `SELECT
+                        id, question, arrangement, article_id, quiz_id, points
+                FROM
+                        questions
+                WHERE
+                        quiz_id = $1 AND arrangement = $2`,
+                currentQuestion.QuizID, currentQuestion.Arrangement + 1)
+
+        return scanQuestionFromFullRow(db, rows)
+}
+
 // Returns all questions for a given quiz.
 // Includes the article for each question.
 // Includes the alternatives for each question.
@@ -84,7 +119,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 
 		// Add the alternatives to the question
 		for _, id := range alternativeIDs {
-			alternative, _ := getAlternativeByID(db, id)
+			alternative, _ := GetAlternativeByID(db, id)
 			if alternative != nil {
 				q.Alternatives = append(q.Alternatives, *alternative)
 			}
@@ -101,8 +136,89 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 	return &questions, nil
 }
 
+// Get specific question by ID.
+func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
+        row := db.QueryRow(
+                `SELECT
+                                id, question, arrangement, article_id, quiz_id, points
+                        FROM
+                                questions
+                        WHERE
+                                id = $1`,
+                id)
+
+        return scanQuestionFromFullRow(db, row)
+}
+
+// Convert a row from the database to a Question.
+func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
+        var q Question
+        var articleID uuid.UUID
+        err := row.Scan(
+                &q.ID, &q.Text, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+        )
+
+        if err != nil {
+                return nil, err
+        }
+
+        // Add the article to the question
+        article, _ := articles.GetArticleByID(db, articleID)
+        if article != nil {
+                q.Article = *article
+        }
+
+        // Add the alternatives to the question
+        alternatives, _ := GetAlternativesByQuestionID(db, q.ID)
+        q.Alternatives = *alternatives
+
+        return &q, nil
+}
+
+// Get all alternatives for a given question.
+func GetAlternativesByQuestionID(db *sql.DB, id uuid.UUID) (*[]Alternative, error) {
+        rows, err := db.Query(
+                `SELECT
+                                id, text, correct, question_id
+                        FROM
+                                answer_alternatives
+                        WHERE
+                                question_id = $1`,
+                id)
+        if err != nil {
+                return nil, err
+        }
+        defer rows.Close() // Close the rows when the function returns
+
+        return scanAlternativesFromFullRows(rows)
+}
+
+// Convert a row from the database to a list of alternatives
+func scanAlternativesFromFullRows(rows *sql.Rows) (*[]Alternative, error) {
+        alternatives := []Alternative{}
+
+        for rows.Next() {
+                var a Alternative
+                err := rows.Scan(
+                        &a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+                )
+                if err != nil {
+                        return nil, err
+                }
+
+                // Add the alternative to the list of alternatives
+                alternatives = append(alternatives, a)
+        }
+
+        if err := rows.Err(); err != nil {
+                return nil, err
+        }
+
+        return &alternatives, nil
+}
+
 // Return alternative for a given question.
-func getAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
+func GetAlternativeByID(db *sql.DB, id uuid.UUID) (*Alternative, error) {
 	row := db.QueryRow(
 		`SELECT
 				id, text, correct, question_id
@@ -172,6 +288,8 @@ var SampleQuestions []Question = []Question{
 		},
 		Points:  10,
 		Article: articles.SampleArticles[0],
+		Arrangement: 0,
+		QuizID: uuid.New(),
 	},
 	{
 		ID:   uuid.New(),
@@ -200,5 +318,7 @@ var SampleQuestions []Question = []Question{
 		},
 		Points:  10,
 		Article: articles.SampleArticles[0],
+		Arrangement: 1,
+		QuizID: uuid.New(),
 	},
 }
