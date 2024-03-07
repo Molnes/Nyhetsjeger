@@ -25,6 +25,8 @@ func StartQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 
 func  AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAlternative uuid.UUID) error {
 
-       db.QueryRow("UPDATE user_answers SET chosen_alternative = $1, answered_at = $2 WHERE user_id = $3 AND question_id = $4 RETURNING chosen_alternative, answered_at", chosenAlternative, time.Now(), userId, questionId)
-        return nil
+       _,  err :=  db.Exec(`UPDATE user_answers 
+                        SET chosen_answer_alternative_id = $1, answered_at = $2 
+                        WHERE user_id = $3 AND question_id = $4`, chosenAlternative, time.Now(), userId, questionId)
+        return err
 }
