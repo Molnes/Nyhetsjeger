@@ -85,7 +85,7 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	// Get all the articles.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionModal(articles))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(articles))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {

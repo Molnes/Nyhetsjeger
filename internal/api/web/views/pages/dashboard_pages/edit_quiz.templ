@@ -70,7 +70,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>
-				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="outerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="innerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			// Quiz Buttons: Delete, Hide, OK
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
@@ -89,34 +90,35 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
 			</div>
 		</div>
-		<dialog id="question-modal"></dialog>
 	}
+	<dialog
+		id="question-modal"
+		class="px-10 py-5 border border-black border-solid min-w-80"
+	>
+		// @dashboard_components.EditQuestionForm(articles)
+		// <button id="close-modal-button">Close</button> /* This button is just a placeholder until it's replaced by the form */
+	</dialog>
+	@modalWindowScript()
 }
 
-// Opens and closes the modal window needed to add or edit a question.
+// Opens the modal window needed to add or edit a question.
 
-script modalWindow() {
+script modalWindowScript() {
 		const questionModal = document.getElementById("question-modal");
 		const editQuestionButtons = document.getElementsByClassName("edit-question-button");
 		const newQuestionButton = document.getElementById("new-question-button");
-		const submitQuestionButton = document.getElementById("submit-question-button");
-		const closeModalButton = document.getElementById("close-modal-button");
 
-		console.log("New Question Button:", newQuestionButton)
-
+		// Open the modal window
 		function openQuestionModal() {
-			console.log("OPENING UP!")
-			questionModal.showModal();
+			if (!questionModal.open) {
+				questionModal.showModal();
+			}
 		}
 
-		function closeQuestionModal() {
-			console.log("CLOSING!")
-			questionModal.close();
-		}
-
+		// Add event listeners to the buttons for opening the modal
 		for (let i = 0; i < editQuestionButtons.length; i++) {
-    editQuestionButtons[i].addEventListener('click', openQuestionModal);
-}
+    	editQuestionButtons[i].addEventListener('click', openQuestionModal);
+		}
+
 		newQuestionButton.addEventListener("click", openQuestionModal);
-		closeModalButton.addEventListener("click", closeQuestionModal);
 	}
