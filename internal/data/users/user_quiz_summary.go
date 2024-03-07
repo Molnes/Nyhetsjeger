@@ -20,7 +20,6 @@ var SampleUserQuizSummary UserQuizSummary = UserQuizSummary{
 	AnsweredQuestions: []UserAnsweredQuestion{
 		{
 			QuestionID:   uuid.New(),
-			QuestionText: "Example question lorem ipsum hello?",
 			ChosenAlternative: questions.Alternative{
 				ID:        uuid.New(),
 				Text:      "alt1 123",
@@ -28,7 +27,6 @@ var SampleUserQuizSummary UserQuizSummary = UserQuizSummary{
 			},
 		}, {
 			QuestionID:   uuid.New(),
-			QuestionText: "Example question2?",
 			ChosenAlternative: questions.Alternative{
 				ID:        uuid.New(),
 				Text:      "alt2 lorem ipsum",
