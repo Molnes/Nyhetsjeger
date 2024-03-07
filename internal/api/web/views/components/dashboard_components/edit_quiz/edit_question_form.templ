@@ -1,12 +1,16 @@
 package dashboard_components
 
-import "github.com/Molnes/Nyhetsjeger/internal/data/articles"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
+)
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
-templ EditQuestionForm(articles *[]articles.Article) {
+templ EditQuestionForm(question questions.Question, articles *[]articles.Article) {
 	<form hx-post="">
 		<h2 class="mb-5">Nytt spørsmål</h2>
+		// Article
 		<label for="articles-list" class="block">Basert på artikkel (URL)</label>
 		<input list="articles" id="articles-list" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
 		<datalist id="articles">
@@ -14,17 +18,56 @@ templ EditQuestionForm(articles *[]articles.Article) {
 				<option value={ article.ArticleURL.String() }></option>
 			}
 		</datalist>
+		// Questions
 		<label for="question" class="block">Spørsmål</label>
-		<input type="text" id="question" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
+		<input type="text" id="question" class="bg-gray-200 px-3 py-1 w-full mb-5" value={ question.Text }/>
 		<fieldset class="block mb-5">
+			// Alternatives
 			<legend>Svar alternativer (Fyll inn mellom 2 til 4)</legend>
-			<input id="question-1" type="text" class="bg-gray-200 px-3 py-1 w-full mb-2"/>
-			<input id="question-2" type="text" class="bg-gray-200 px-3 py-1 w-full mb-2"/>
-			<input id="question-3" type="text" class="bg-gray-200 px-3 py-1 w-full mb-2"/>
-			<input id="question-4" type="text" class="bg-gray-200 px-3 py-1 w-full"/>
+			// TODO: Possibly do this better
+			<input
+				id="question-1"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 1 {
+					value={ question.Alternatives[0].Text }
+				}
+			/>
+			<input
+				id="question-2"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 2 {
+					value={ question.Alternatives[1].Text }
+				}
+			/>
+			<input
+				id="question-3"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 3 {
+					value={ question.Alternatives[2].Text }
+				}
+			/>
+			<input
+				id="question-4"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full"
+				if len(question.Alternatives) >= 4 {
+					value={ question.Alternatives[3].Text }
+				}
+			/>
 		</fieldset>
+		// Image
 		<label for="question-image" class="block">Bilde</label>
-		<input id="question-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-5"/>
+		<input id="question-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
+		if question.ImageURL.String() == "" {
+			<p class="text-sm text-gray-500 mb-5">Ingen bilde valgt enda.</p>
+		} else {
+			<img src={ question.ImageURL.String() } height="200" class="mb-2 block mx-auto"/>
+			<button id="remove-image-button" type="button" class="bg-gray-100 px-3 py-2 block mx-auto mb-5">Fjern bilde</button>
+		}
+		// Points
 		<label for="points">Poeng</label>
 		<input id="points" type="number" class="block bg-gray-200 px-3 py-1 w-full mb-5" min="0"/>
 		<div class="flex flex-row justify-between gap-5">
