@@ -73,13 +73,9 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	// Create a new question with no actual data.
 	// Set the default points to be 10.
 	newQuestion := questions.Question{
-		ID:   uuid.New(),
-		Text: "SPØRSMÅL",
-		ImageURL: url.URL{
-			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
-		},
+		ID:           uuid.New(),
+		Text:         "SPØRSMÅL",
+		ImageURL:     url.URL{},
 		Article:      articles.Article{},
 		QuizID:       quiz_id,
 		Points:       10,
