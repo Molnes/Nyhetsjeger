@@ -66,8 +66,7 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 		Alternatives: []questions.Alternative{},
 	}
 
-	// Save the new question to the database.
-	questions.PostNewQuestion(dph.sharedData.DB, newQuestion)
+	println(newQuestion.ID.String())
 
 	// Get all the articles.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
