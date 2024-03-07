@@ -1,6 +1,8 @@
 package dashboard_components
 
 import (
+	"fmt"
+
 	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/data/questions"
 )
@@ -9,7 +11,7 @@ import (
 // 4 answer alternatives (optional 2 to 4), and an image.
 templ EditQuestionForm(question questions.Question, articles *[]articles.Article) {
 	<form hx-post="">
-		<h2 class="mb-5">Nytt spørsmål</h2>
+		<h2 class="mb-5">Rediger spørsmål</h2>
 		// Article
 		<label for="articles-list" class="block">Basert på artikkel (URL)</label>
 		<input list="articles" id="articles-list" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
@@ -69,7 +71,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		}
 		// Points
 		<label for="points">Poeng</label>
-		<input id="points" type="number" class="block bg-gray-200 px-3 py-1 w-full mb-5" min="0"/>
+		<input id="points" type="number" class="block bg-gray-200 px-3 py-1 w-full mb-5" min="0" value={ fmt.Sprint(question.Points) }/>
 		<div class="flex flex-row justify-between gap-5">
 			<button id="close-modal-button" onclick="closeModal()" type="button" class="bg-gray-100 hover:bg-red-400 focus:bg-red-400 font-bold px-3 py-2 w-full">Avbryt</button>
 			<button id="submit-question-button" type="submit" class="bg-gray-200 hover:bg-gray-400 focus:bg-gray-400 font-bold px-3 py-2 w-full">Lagre</button>
