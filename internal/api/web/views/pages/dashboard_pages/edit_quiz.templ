@@ -70,7 +70,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>
-				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz?quiz-id=%s/new-question", quiz.ID) } hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="outerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			// Quiz Buttons: Delete, Hide, OK
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
@@ -90,7 +90,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			</div>
 		</div>
 		<dialog id="question-modal"></dialog>
-		@modalWindow()
 	}
 }
 
@@ -98,22 +97,26 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 
 script modalWindow() {
 		const questionModal = document.getElementById("question-modal");
-		const editQuestionButtons = document.getElementsByClassName(".edit-question-button");
+		const editQuestionButtons = document.getElementsByClassName("edit-question-button");
 		const newQuestionButton = document.getElementById("new-question-button");
 		const submitQuestionButton = document.getElementById("submit-question-button");
 		const closeModalButton = document.getElementById("close-modal-button");
-		
+
+		console.log("New Question Button:", newQuestionButton)
+
 		function openQuestionModal() {
+			console.log("OPENING UP!")
 			questionModal.showModal();
 		}
 
 		function closeQuestionModal() {
+			console.log("CLOSING!")
 			questionModal.close();
 		}
 
-		editQuestionButtons.forEach(button => {
-			button.addEventListener("click", openQuestionModal);
-		});
+		for (let i = 0; i < editQuestionButtons.length; i++) {
+    editQuestionButtons[i].addEventListener('click', openQuestionModal);
+}
 		newQuestionButton.addEventListener("click", openQuestionModal);
 		closeModalButton.addEventListener("click", closeQuestionModal);
 	}
