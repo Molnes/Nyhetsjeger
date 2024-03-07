@@ -1,0 +1,25 @@
+package dashboard_components
+
+templ SideMenu() {
+	<div class="fixed h-full text-center w-48 bg-gray-100">
+		<h1 class="text-3xl mb-4 bg-gray-300 py-2">Quiz Admin</h1>
+		<nav>
+			<ul class="space-y-4">
+				@menuItem("Hjem", "/dashboard")
+				@menuItem("Toppliste", "/dashboard/leaderboard")
+				@menuItem("Tilgang", "/dashboard/access-settings")
+			</ul>
+		</nav>
+		<ul class="bottom-4 absolute w-full">
+			<li><a hx-post="/auth/logout" class="hover:text-gray-600 cursor-pointer">Logg ut</a></li>
+		</ul>
+	</div>
+}
+
+templ menuItem(text string, href string) {
+	<li>
+		<a href={ templ.SafeURL(href) } class="block bg-gray-200 hover:bg-gray-300 py-2">
+			{ text }
+		</a>
+	</li>
+}

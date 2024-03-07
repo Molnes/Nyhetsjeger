@@ -1,0 +1,12 @@
+package layout_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components"
+
+templ DashBoardLayout() {
+	@BaseLayout() {
+		@dashboard_components.SideMenu()
+		<main class="ml-48">
+			{ children... }
+		</main>
+	}
+}

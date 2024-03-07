@@ -102,6 +102,20 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return quizzes, nil
 }
 
+func GetNonPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
+	return GetQuizzes(db)
+}
+
+func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
+	quizzes, err := GetQuizzes(db)
+	if err != nil {
+		return nil, err
+	}
+	quizzes = append(quizzes, quizzes...)
+	quizzes = append(quizzes, quizzes...)
+	return quizzes, nil
+}
+
 // Converts a row from the database to a Quiz.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
