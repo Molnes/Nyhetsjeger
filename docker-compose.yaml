@@ -29,7 +29,7 @@ services:
       - dev
 
   server:
-    build: ./
+    image: ghcr.io/molnes/nyhetsjeger:main
     restart: always
     env_file:
       - .env
