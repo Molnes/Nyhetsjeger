@@ -1,10 +1,10 @@
 package layout_components
 
-import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components"
+import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/side_menu"
 
 templ DashBoardLayout() {
 	@BaseLayout() {
-		@dashboard_components.SideMenu()
+		@side_menu.SideMenu()
 		<main class="ml-48">
 			{ children... }
 		</main>
