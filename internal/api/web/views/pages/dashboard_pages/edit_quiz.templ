@@ -94,10 +94,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 	<dialog
 		id="question-modal"
 		class="px-10 py-5 border border-black border-solid min-w-80"
-	>
-		// @dashboard_components.EditQuestionForm(articles)
-		// <button id="close-modal-button">Close</button> /* This button is just a placeholder until it's replaced by the form */
-	</dialog>
+	></dialog>
 	@modalWindowScript()
 }
 
@@ -121,4 +118,4 @@ script modalWindowScript() {
 		}
 
 		newQuestionButton.addEventListener("click", openQuestionModal);
-	}
+}
