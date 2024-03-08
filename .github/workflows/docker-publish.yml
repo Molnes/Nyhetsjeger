@@ -95,10 +95,13 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
   
-  deploy:
+  run_remote_script:
+    name: Run remote update script
+    needs: build
     runs-on: ubuntu-latest
+    environment: ssh-deploy
     steps:
-      name: Run update script
+    - name: Run remote update script
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
