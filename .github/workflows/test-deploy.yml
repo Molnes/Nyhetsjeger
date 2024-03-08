@@ -4,12 +4,13 @@ name: TestDeploy
 on: [push]
 
 
-jobs:  
+jobs:
+
   build:
- 
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      name: Run update script
+    - name: Run remote update script
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
