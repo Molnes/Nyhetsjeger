@@ -6,8 +6,8 @@ on: [push]
 
 jobs:
 
-  build:
-    name: Build
+  run_remote_script:
+    name: Run remote update script
     runs-on: ubuntu-latest
     environment: ssh-deploy
     steps:
