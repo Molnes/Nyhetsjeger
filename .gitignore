@@ -5,3 +5,12 @@ bin
 assets/css/tailwind.css
 .env
 db/postgres-data
+
+# vscode files
+
+.vscode/*
+
+
+# vscode files
+
+.vscode/*

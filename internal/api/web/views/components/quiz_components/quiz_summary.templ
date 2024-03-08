@@ -1,0 +1,47 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/data/users"
+	"strconv"
+)
+
+templ QuizSummary(summary users.UserQuizSummary) {
+	<div class="flex flex-col justify-start items-center bg-gray-300 px-1 py-5 h-screen">
+		<section class="flex flex-col items-center">
+			<h1 class="font-bold text-3xl">RESULTAT</h1>
+			<div class="rounded-full size-24 bg-gray-200 flex justify-center items-center mt-2 mb-5">
+				<p class="flex items-center font-bold text-1xl ">
+					<span class="w-2/5 text-right relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+					<span class="w-1/5 text-center text-2xl">/</span>
+					<span class="w-2/5 text-left relative top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+				</p>
+			</div>
+		</section>
+		<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
+			<h2 class="font-bold text-2xl">OPPSUMMERING</h2>
+			<ol class="list-none overflow-y-auto scrollbar-hide">
+				// test with more questions
+				// for i := 0; i < 10; i++ {
+				for _, aq := range summary.AnsweredQuestions {
+					<li class="mb-2">
+                    <!-- { aq.QuestionText } TODO: this needs to be fixed either by changing struct or by adding a new field -->
+						<br/>
+						<span class={ getColor(aq.ChosenAlternative.IsCorrect), "font-bold pl-3" }>
+							{ aq.ChosenAlternative.Text }
+						</span>
+					</li>
+				}
+				// }
+			</ol>
+		</section>
+		<button class="bg-gray-200 text-blackd px-10 py-1 font-bold">NESTE</button>
+	</div>
+}
+
+// determine color of the answer based on if it is correct or not
+func getColor(correct bool) string {
+	if correct {
+		return "text-cyan-900"
+	}
+	return "text-orange-900"
+}

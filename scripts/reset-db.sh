@@ -11,4 +11,4 @@ for i in {1..10}; do docker compose exec db pg_isready && break || sleep 1; done
 sleep 1;
 
 echo "Running migrate up"
-migrate -database ${POSTGRESQL_URL} -path db/migrations -verbose up
+migrate -database ${POSTGRESQL_URL_ROOT} -path db/migrations -verbose up

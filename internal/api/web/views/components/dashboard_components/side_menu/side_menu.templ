@@ -1,0 +1,51 @@
+package side_menu
+
+type SideMenuItem int
+
+const (
+	Home           = 0
+	Leaderboard    = 1
+	AccessSettings = 2
+
+	MENU_CONTEXT_KEY = "chosen-side-menu-item"
+)
+
+templ SideMenu() {
+	<div class="fixed h-full text-center w-48 bg-gray-100">
+		<h1 class="text-3xl mb-4 bg-gray-300 py-2">Quiz Admin</h1>
+		<nav>
+			<ul class="space-y-4">
+				@menuItem("Hjem", "/dashboard", isSelected(ctx, Home))
+				@menuItem("Toppliste", "/dashboard/leaderboard", isSelected(ctx, Leaderboard))
+				@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings))
+			</ul>
+		</nav>
+		<ul class="bottom-4 absolute w-full">
+			<li><a hx-post="/auth/logout" class="hover:text-gray-600 cursor-pointer">Logg ut</a></li>
+		</ul>
+	</div>
+}
+
+// Checks the context for the chosen side menu item and compares it to the current item. If value not set, returns false.
+func isSelected(ctx context.Context, item SideMenuItem) bool {
+	chosen, ok := ctx.Value(MENU_CONTEXT_KEY).(SideMenuItem)
+	if !ok {
+		return false
+	}
+	return chosen == item
+}
+
+templ menuItem(text string, href string, highlight bool) {
+	<li>
+		<a
+			href={ templ.SafeURL(href) }
+			if highlight {
+				class="block bg-gray-300 py-2"
+			} else {
+				class="block bg-gray-200 hover:bg-gray-300 py-2"
+			}
+		>
+			{ text }
+		</a>
+	</li>
+}

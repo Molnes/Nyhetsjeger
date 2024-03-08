@@ -3,22 +3,22 @@ build:
 	npx tailwindcss -o assets/css/tailwind.css
 	go build -o bin/main cmd/server/main.go
 
-run: reset-db
+run:
 	templ generate -path ./internal/api/web/
 	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
-live-reload: reset-db
+live-reload:
 	air -c .air.toml
 
 #!make
 include .env
 
 migrate-up:
-	migrate -database $(POSTGRESQL_URL) -path db/migrations up
+	migrate -database $(POSTGRESQL_URL_ROOT) -path db/migrations up
 
 migrate-down:
-	migrate -database $(POSTGRESQL_URL) -path db/migrations down
+	migrate -database $(POSTGRESQL_URL_ROOT) -path db/migrations down
 	
 reset-db:
 	./scripts/reset-db.sh
@@ -27,3 +27,7 @@ reset-db:
 	
 initialize-docker:
 	docker compose up -d
+
+
+run-bruno:
+	./scripts/bruno-test.sh
