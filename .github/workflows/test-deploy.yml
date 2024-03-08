@@ -9,6 +9,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    environment: ssh-deploy
     steps:
     - name: Run remote update script
       uses: appleboy/ssh-action@v1.0.3
