@@ -1,6 +1,9 @@
 package router
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/handlers/api"
@@ -19,6 +22,14 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	e.Logger.SetLevel(log.DEBUG)
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
+
+	secureConfig := middleware.DefaultSecureConfig
+
+	currentCsp := secureConfig.ContentSecurityPolicy
+	allowedFrameAncestors := os.Getenv("ALLOWED_FRAME_ANCESTORS")
+	secureConfig.ContentSecurityPolicy = fmt.Sprintf("frame-ancestors 'self' %s; %s", allowedFrameAncestors, currentCsp)
+
+	e.Use(middleware.SecureWithConfig(secureConfig))
 
 	// pages nor requiring authentication
 	publicPagesHandler := handlers.NewPublicPagesHandler(sharedData)

@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/side_menu"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/pages/dashboard_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
@@ -37,6 +39,9 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 
 // Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
+	addMenuContext(c, side_menu.Home)
+	c.Request().WithContext(context.WithValue(c.Request().Context(), side_menu.MENU_CONTEXT_KEY, side_menu.Home))
+
 	nonPublishedQuizzes, err := quizzes.GetNonPublishedQuizzes(dph.sharedData.DB)
 	if err != nil {
 		return err
@@ -106,14 +111,21 @@ func (dph *DashboardPagesHandler) removeImageFromQuiz(c echo.Context) error {
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
+	addMenuContext(c, side_menu.Leaderboard)
 	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage())
 }
 
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
+	addMenuContext(c, side_menu.AccessSettings)
 	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage())
 }
 
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	// userId := c.QueryParam("user-id")
 	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage())
+}
+
+// Adds chosen menu item to the context, so it can be used in the template.
+func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
+	utils.AddToContext(c, side_menu.MENU_CONTEXT_KEY, menuContext)
 }

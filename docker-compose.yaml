@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   db:
     image: postgres
@@ -11,7 +13,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD_ROOT}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # - ./db/postgres-data:/var/lib/postgresql/data
       - db-data:/var/lib/postgresql/data
     profiles:
       - dev
@@ -28,7 +29,7 @@ services:
       - dev
 
   server:
-    build: ./
+    image: ghcr.io/molnes/nyhetsjeger:main
     restart: always
     env_file:
       - .env
