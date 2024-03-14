@@ -1,10 +1,10 @@
 build:
-	templ generate -path ./internal/api/web/
+	templ generate -path ./internal/web_server/web/
 	npx tailwindcss -o assets/css/tailwind.css
 	go build -o bin/main cmd/server/main.go
 
 run:
-	templ generate -path ./internal/api/web/
+	templ generate -path ./internal/web_server/web/
 	npx tailwindcss -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
