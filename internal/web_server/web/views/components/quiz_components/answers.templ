@@ -1,0 +1,46 @@
+
+package quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/questions"
+import "github.com/google/uuid"
+import "fmt"
+
+// given a value, find the value in the array and return if the value is correct or not.
+func findAnswer(answers []questions.Alternative, value uuid.UUID) bool {
+	for _, answer := range answers {
+		if answer.ID == value {
+			return answer.IsCorrect
+		}
+	}
+	return false
+}
+
+func compareUUID(a uuid.UUID, b uuid.UUID) bool {
+	return a == b
+}
+
+// Checks if the answer has been selected
+
+// Checks if the question has been answered correctly or not.
+
+//Renders all the answers to the question in the form of buttons, and if the question has been answered, it will also display if the answer was correct or not.
+//Takes in the possible questions, and an optional Option to check if the question has been answered and if it was answered correctly.
+templ Answers(answers []questions.Alternative, questionId uuid.UUID, answering bool, selectedAnswer uuid.UUID) {
+	<div id="answers-wrapper" class="w-80 flex flex-col [&>*]:mt-4">
+		if (answering) {
+			for _ , answer := range answers {
+				@selectedAnswerButton(answer.Text, answering, answer.IsCorrect, compareUUID(answer.ID, selectedAnswer), 0.24989)
+			}
+			if findAnswer(answers, selectedAnswer) {
+				<p class="font-bold">Riktig!</p>
+			} else {
+				<p class="font-bold">Feil!</p>
+			}
+			<button id="next-question" type="button" class="h-16 bg-blue-500" hx-post={ fmt.Sprintf("/quiz/nextquestion?questionid=%s", questionId) } answer.Text hx-trigger="click" hx-target="#content" hx-swap="innerHTML">Neste spørsmål</button>
+		} else {
+			for _ , answer := range answers {
+				@AnswerButton(answer.ID, questionId, answer.Text)
+			}
+		}
+	</div>
+}

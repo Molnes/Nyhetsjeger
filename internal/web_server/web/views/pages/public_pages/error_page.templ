@@ -1,0 +1,17 @@
+package public_pages
+
+import (
+	"net/http"
+	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+)
+
+templ ErrorPage(statusCode int, message string) {
+	@layout_components.BaseLayout(http.StatusText(statusCode)) {
+		<main class="flex flex-col items-center justify-center min-h-screen">
+			<h1 class="text-6xl">{ fmt.Sprintf("%d: %s" ,statusCode, http.StatusText(statusCode)) }</h1>
+			<p>{ message }</p>
+		</main>
+	}
+}

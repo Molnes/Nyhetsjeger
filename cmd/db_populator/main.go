@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/data/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )

@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/data/sessions"
-	"github.com/Molnes/Nyhetsjeger/internal/data/users"
-	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
+	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/antonlindstrom/pgstore"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
