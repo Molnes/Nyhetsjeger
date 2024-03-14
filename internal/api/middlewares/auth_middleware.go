@@ -53,7 +53,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 				c.SetCookie(&cookie)
 				return c.Redirect(http.StatusFound, "/login")
 			} else {
-				return c.JSON(http.StatusUnauthorized, "Unauthorized")
+				return echo.NewHTTPError(http.StatusUnauthorized, "You are not authenticated")
 			}
 		}
 	}
