@@ -56,7 +56,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
-			}, true)
+			})
 	dashboardGroup := e.Group("/dashboard")
 	dashboardGroup.Use(authForceWithRedirect.EncofreAuthentication)
 	dashboardGroup.Use(enforceAdminMiddlewareRedirect.EnforceRole)
@@ -83,7 +83,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
-			}, false)
+			})
 	adminApiGroup.Use(enforceAdminMiddleware.EnforceRole)
 
 	adminApiHandler := api.NewAdminApiHandler(sharedData)
