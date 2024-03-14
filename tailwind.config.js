@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
         content: [
-                './internal/api/web/**/*.templ',
+                './internal/web_server/web/**/*.templ',
         ],
         theme: {
                 colors: {
