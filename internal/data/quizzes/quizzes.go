@@ -67,11 +67,17 @@ func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 		id)
 
 	quiz, err := scanQuizFromFullRow(row)
+	if err != nil {
+		return nil, err
+	}
 
 	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
+	if err != nil {
+		return nil, err
+	}
 	quiz.Questions = *tempQuestions
 
-	return quiz, err
+	return quiz, nil
 }
 
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
@@ -126,6 +132,9 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		&quiz.LastModifiedAt,
 		&quiz.Published,
 	)
+	if err != nil {
+		return nil, err
+	}
 	tempURL, err := url.Parse(imageURL)
 	quiz.ImageURL = *tempURL
 
@@ -137,7 +146,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 
 // Create a Quiz in the DB.
 func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
-	db.QueryRow(
+	_, err := db.Exec(
 		`INSERT INTO quizzes
 			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published)
 		VALUES
@@ -152,7 +161,7 @@ func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 		quiz.Published,
 	)
 
-	return &quiz.ID, nil
+	return &quiz.ID, err
 }
 
 // Delete a Quiz from the DB by its ID.
