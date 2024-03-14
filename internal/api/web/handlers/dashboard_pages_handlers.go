@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
@@ -38,7 +37,6 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 // Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	addMenuContext(c, side_menu.Home)
-	c.Request().WithContext(context.WithValue(c.Request().Context(), side_menu.MENU_CONTEXT_KEY, side_menu.Home))
 
 	nonPublishedQuizzes, err := quizzes.GetNonPublishedQuizzes(dph.sharedData.DB)
 	if err != nil {
