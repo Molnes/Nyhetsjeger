@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
@@ -34,13 +33,6 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("/leaderboard", dph.leaderboard)
 	e.GET("/access-settings", dph.accessSettings)
 	e.GET("/user-details", dph.userDetails)
-	e.GET("/error", func(c echo.Context) error {
-		return fmt.Errorf("test error")
-	})
-	e.GET("/error2", func(c echo.Context) error {
-		return echo.NewHTTPError(http.StatusNotFound, "could not find page youre looking for!")
-	})
-
 }
 
 // Renders the dashboard home page.
