@@ -71,11 +71,17 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 		id)
 
 	quiz, err := scanQuizFromFullRow(row)
+	if err != nil {
+		return nil, err
+	}
 
 	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
+	if err != nil {
+		return nil, err
+	}
 	quiz.Questions = *tempQuestions
 
-	return quiz, err
+	return quiz, nil
 }
 
 func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
@@ -140,6 +146,9 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		&quiz.LastModifiedAt,
 		&quiz.Published,
 	)
+	if err != nil {
+		return nil, err
+	}
 	tempURL, err := url.Parse(imageURL)
 	quiz.ImageURL = *tempURL
 

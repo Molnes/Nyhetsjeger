@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"context"
+	"database/sql"
 	"net/http"
 	"net/url"
 
@@ -34,13 +34,11 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("/leaderboard", dph.leaderboard)
 	e.GET("/access-settings", dph.accessSettings)
 	e.GET("/user-details", dph.userDetails)
-
 }
 
 // Renders the dashboard home page.
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	addMenuContext(c, side_menu.Home)
-	c.Request().WithContext(context.WithValue(c.Request().Context(), side_menu.MENU_CONTEXT_KEY, side_menu.Home))
 
 	nonPublishedQuizzes, err := quizzes.GetNonPublishedQuizzes(dph.sharedData.DB)
 	if err != nil {
@@ -56,14 +54,19 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
-	uuid_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
-	if uuid_id == uuid.Nil {
-		// TODO: Redirect to proper error handling page with descriptive error message.
-		// return utils.Render(c, http.StatusNotFound, dashboard_pages.DashboardPage())
-		return c.Redirect(http.StatusFound, "/dashboard")
+	uuid_id, err := uuid.Parse(c.QueryParam("quiz-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
-	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
+	quiz, err := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "No quiz with given id found.")
+		} else {
+			return err
+		}
+	}
 
 	// Get all the articles for a quiz.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
@@ -73,7 +76,10 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 
 // Renders the modal for creating a new question.
 func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) error {
-	quiz_id, _ := uuid.Parse(c.QueryParam("quiz-id"))
+	quiz_id, err := uuid.Parse(c.QueryParam("quiz-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
+	}
 
 	// Create a new question with no actual data.
 	// Set the default points to be 10.

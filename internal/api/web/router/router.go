@@ -56,7 +56,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
-			}, true)
+			})
 	dashboardGroup := e.Group("/dashboard")
 	dashboardGroup.Use(authForceWithRedirect.EncofreAuthentication)
 	dashboardGroup.Use(enforceAdminMiddlewareRedirect.EnforceRole)
@@ -67,6 +67,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 
 	// api routes, requiring authentication
 	apiGroup := e.Group("/api/v1")
+	apiGroup.Use(handlers.SetApiErrorDisplay)
 	authForce := middlewares.NewAuthenticationMiddleware(sharedData, false)
 	apiGroup.Use(authForce.EncofreAuthentication)
 
@@ -82,7 +83,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 			[]user_roles.Role{
 				user_roles.QuizAdmin,
 				user_roles.OrganizationAdmin,
-			}, false)
+			})
 	adminApiGroup.Use(enforceAdminMiddleware.EnforceRole)
 
 	adminApiHandler := api.NewAdminApiHandler(sharedData)
@@ -93,5 +94,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 
 	// websocket for live updates
 	e.GET("/ws", handlers.WebsocketHandler)
+
+	e.HTTPErrorHandler = handlers.HTTPErrorHandler
 
 }
