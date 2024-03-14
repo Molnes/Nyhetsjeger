@@ -8,7 +8,7 @@ import (
 
 func TestIsRoleAllowed(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin}
-	mw := NewAuthorizationMiddleware(nil, allowedRoles, false)
+	mw := NewAuthorizationMiddleware(nil, allowedRoles)
 	if !mw.isRoleAllowed(user_roles.QuizAdmin) {
 		t.Error("Expected role to be allowed")
 	}
@@ -16,7 +16,7 @@ func TestIsRoleAllowed(t *testing.T) {
 
 func TestIsRoleAllowedTwo(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin, user_roles.OrganizationAdmin}
-	mw := NewAuthorizationMiddleware(nil, allowedRoles, false)
+	mw := NewAuthorizationMiddleware(nil, allowedRoles)
 	if !mw.isRoleAllowed(user_roles.QuizAdmin) {
 		t.Error("Expected role to be allowed")
 	}
@@ -27,7 +27,7 @@ func TestIsRoleAllowedTwo(t *testing.T) {
 
 func TestIsRoleNotAllowed(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin}
-	mw := NewAuthorizationMiddleware(nil, allowedRoles, false)
+	mw := NewAuthorizationMiddleware(nil, allowedRoles)
 	if mw.isRoleAllowed(user_roles.User) {
 		t.Error("Expected role to not be allowed")
 	}

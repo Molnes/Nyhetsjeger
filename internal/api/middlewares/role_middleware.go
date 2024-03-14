@@ -14,9 +14,8 @@ import (
 // Middleware for enforcing user roles
 // Use AuthenticationMiddleware BEFORE this middleware, as it expects the user to be authenticated
 type AuthorizationMiddleware struct {
-	sharedData                     *config.SharedData
-	allowedRoles                   []user_roles.Role
-	redirectToPermissionDeniedPage bool
+	sharedData   *config.SharedData
+	allowedRoles []user_roles.Role
 }
 
 // Creates a new AuthorizationMiddleware.
@@ -24,8 +23,8 @@ type AuthorizationMiddleware struct {
 // AllowedRoles: A list of roles that are allowed to pass through the middleware.
 //
 // Roles not in the list will receive a 403 Forbidden response
-func NewAuthorizationMiddleware(data *config.SharedData, allowedRoles []user_roles.Role, redirect_to_page bool) *AuthorizationMiddleware {
-	return &AuthorizationMiddleware{data, allowedRoles, redirect_to_page}
+func NewAuthorizationMiddleware(data *config.SharedData, allowedRoles []user_roles.Role) *AuthorizationMiddleware {
+	return &AuthorizationMiddleware{data, allowedRoles}
 }
 
 // Checks if the role is allowed to pass through the middleware
@@ -47,11 +46,7 @@ func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.Handl
 			return err
 		}
 		if !am.isRoleAllowed(role) {
-			if am.redirectToPermissionDeniedPage {
-				return c.Redirect(http.StatusFound, "/forbidden")
-			} else {
-				return c.JSON(http.StatusForbidden, "Forbidden")
-			}
+			return echo.NewHTTPError(http.StatusForbidden, "You are not allowed to access this resource")
 		}
 		return next(c)
 	}

@@ -50,7 +50,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 		return fmt.Errorf("failed to get oauth state cookie: %s", err.Error())
 	}
 	if c.FormValue("state") != oauthState.Value {
-		return c.JSON(http.StatusUnauthorized, "invalid oauth state")
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid oauth state")
 	}
 
 	token, err := ah.googleOauthConfig.Exchange(c.Request().Context(), c.FormValue("code"))
