@@ -1,0 +1,16 @@
+package dashboard_components
+
+import (
+	"net/url"
+)
+
+// Shows a preview of an image and a remove button if the image is not empty.
+// If the image is empty, a text is displayed.
+templ ImagePreview(url url.URL) {
+	if url.String() == "" {
+		<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
+	} else {
+		<img src={ url.String() } height="200" class="mb-2 block mx-auto"/>
+		<button id="remove-image-button" type="button" class="bg-gray-100 px-3 py-2 block mx-auto">Fjern bilde</button>
+	}
+}
