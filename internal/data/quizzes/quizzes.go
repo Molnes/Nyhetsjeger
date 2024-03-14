@@ -151,7 +151,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 
 // Create a Quiz in the DB.
 func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
-	db.QueryRow(
+	_, err := db.Exec(
 		`INSERT INTO quizzes
 			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published)
 		VALUES
@@ -166,7 +166,7 @@ func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 		quiz.Published,
 	)
 
-	return &quiz.ID, nil
+	return &quiz.ID, err
 }
 
 // Delete a Quiz from the DB by its ID.

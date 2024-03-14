@@ -20,13 +20,13 @@ func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
 
 // Registers handlers for admin api
 func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
-	e.POST("/quiz/create-new", aah.PostQuiz)
+	e.POST("/quiz/create-new", aah.PostDefaultQuiz)
 	e.DELETE("/delete-quiz", aah.DeleteQuiz)
 }
 
-// Handles the creation of a new default quiz.
+// Handles the creation of a new default quiz in the DB.
 // Redirects to the edit quiz page for the newly created quiz.
-func (aah *AdminApiHandler) PostQuiz(c echo.Context) error {
+func (aah *AdminApiHandler) PostDefaultQuiz(c echo.Context) error {
 	quiz, _ := quizzes.CreateDefaultQuiz()
 	quizzes.CreateQuiz(aah.sharedData.DB, quiz)
 
