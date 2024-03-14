@@ -67,6 +67,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 
 	// api routes, requiring authentication
 	apiGroup := e.Group("/api/v1")
+	apiGroup.Use(handlers.SetApiErrorDisplay)
 	authForce := middlewares.NewAuthenticationMiddleware(sharedData, false)
 	apiGroup.Use(authForce.EncofreAuthentication)
 
