@@ -2,8 +2,8 @@ package layout_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/side_menu"
 
-templ DashBoardLayout() {
-	@BaseLayout() {
+templ DashBoardLayout(pageTitle string) {
+	@BaseLayout(pageTitle) {
 		@side_menu.SideMenu()
 		<main class="ml-48">
 			{ children... }

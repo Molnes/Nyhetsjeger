@@ -25,7 +25,7 @@ script startCountdown(countdownTime int) {
 
 //Renders the basic question layout. It includes a timer, score, question and answers.
 templ QuizQuestion(quiz *questions.Question, title string) {
-	@layout_components.BaseLayout() {
+	@layout_components.BaseLayout("Quiz") {
 		@startCountdown(10)
 		<div class="bg-gray-400 w-full min-h-svh py-8">
 			<section class="grid grid-cols-3 items-center max-w-screen-md mx-auto">
