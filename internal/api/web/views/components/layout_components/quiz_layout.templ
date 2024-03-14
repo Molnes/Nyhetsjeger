@@ -2,8 +2,8 @@ package layout_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/quiz_components"
 
-templ QuizLayout() {
-	@BaseLayout() {
+templ QuizLayout(pageTitle string) {
+	@BaseLayout(pageTitle) {
 		@quiz_components.BurgerMenu()
 		{ children... }
 	}
