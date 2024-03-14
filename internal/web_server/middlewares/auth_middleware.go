@@ -30,7 +30,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 	return func(c echo.Context) error {
 		session, err := am.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 		if err != nil {
-			return err
+			return echo.NewHTTPError(http.StatusUnauthorized, err)
 		}
 		userData := session.Values[sessions.USER_DATA_VALUE]
 		if userData != nil {
