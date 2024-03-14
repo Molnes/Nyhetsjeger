@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
@@ -31,17 +32,12 @@ const (
 // No additional logging will be done.
 func HTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
-	var errorMessage string = "Internal server error"
+	errorMessage := "Internal server error"
 
 	he, ok := err.(*echo.HTTPError)
 	if ok {
 		code = he.Code
-		msgStr, ok := he.Message.(string)
-		if ok {
-			errorMessage = msgStr
-		} else {
-			errorMessage = http.StatusText(code)
-		}
+		errorMessage = fmt.Sprintf("%v", he.Message)
 	} else {
 		errorMessage = err.Error()
 	}
