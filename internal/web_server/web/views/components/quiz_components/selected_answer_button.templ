@@ -1,0 +1,26 @@
+package quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "fmt"
+
+// If true, the button will have a blue border.
+func assignSelected(selected bool) string {
+	if selected {
+		return "border-4 border-blue-500 border-solid"
+	}
+	return ""
+}
+
+//Represents a button after a question has been answered. Showws the answer, if it was correct, and how many percent of the answers were this answer.
+templ selectedAnswerButton(text string, disabled bool, isCorrect bool, selected bool, howMany float64) {
+	<button id={ text } type="button" class={ "p-3 bg-white flex flex-row items-center justify-between", assignSelected(selected) } disabled?={ disabled }>
+		if isCorrect {
+			@icons.Checkmark(30, "green", 10, 10)
+			//<img src="/static/svg/checkmark-outline.svg" alt="Checkmark" class="h-10 float-left"/>
+		} else {
+			@icons.Cross(1.5, "red", 10, 10)
+		}
+		<p class="justify-self-center">{ text }</p>
+		<p>{ fmt.Sprintf("%.2f%%", howMany) }</p>
+	</button>
+}

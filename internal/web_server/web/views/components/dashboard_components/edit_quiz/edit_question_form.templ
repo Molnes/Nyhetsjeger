@@ -1,0 +1,82 @@
+package dashboard_components
+
+import (
+	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+)
+
+// The form includes a list of articles to base the question on, the question itself,
+// 4 answer alternatives (optional 2 to 4), and an image.
+templ EditQuestionForm(question questions.Question, articles *[]articles.Article) {
+	<form hx-post="">
+		<h2 class="text-2xl mb-5">Rediger spørsmål</h2>
+		// Article
+		<label for="articles-list" class="block">Basert på artikkel (URL)</label>
+		<input list="articles" id="articles-list" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
+		<datalist id="articles">
+			for _, article := range *articles {
+				<option value={ article.ArticleURL.String() }></option>
+			}
+		</datalist>
+		// Questions
+		<label for="question" class="block">Spørsmål</label>
+		<input type="text" id="question" class="bg-gray-200 px-3 py-1 w-full mb-5" value={ question.Text }/>
+		<fieldset class="block mb-5">
+			// Alternatives
+			<legend>Svar alternativer (Fyll inn mellom 2 til 4)</legend>
+			// TODO: Possibly do this better
+			<input
+				id="question-1"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 1 {
+					value={ question.Alternatives[0].Text }
+				}
+			/>
+			<input
+				id="question-2"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 2 {
+					value={ question.Alternatives[1].Text }
+				}
+			/>
+			<input
+				id="question-3"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full mb-2"
+				if len(question.Alternatives) >= 3 {
+					value={ question.Alternatives[2].Text }
+				}
+			/>
+			<input
+				id="question-4"
+				type="text"
+				class="bg-gray-200 px-3 py-1 w-full"
+				if len(question.Alternatives) >= 4 {
+					value={ question.Alternatives[3].Text }
+				}
+			/>
+		</fieldset>
+		// Image
+		<label for="question-image" class="block">Bilde</label>
+		<input id="question-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
+		@ImagePreview(question.ImageURL)
+		// Points
+		<label for="points" class="block mt-5">Poeng</label>
+		<input id="points" type="number" class="bg-gray-200 px-3 py-1 w-full mb-5" min="0" value={ fmt.Sprint(question.Points) }/>
+		// Buttons
+		<div class="flex flex-row justify-between gap-5 mt-5">
+			<button id="close-modal-button" onclick="closeModal()" type="button" class="bg-gray-100 hover:bg-red-400 focus:bg-red-400 font-bold px-3 py-2 w-full">Avbryt</button>
+			<button id="submit-question-button" type="submit" class="bg-gray-200 hover:bg-gray-400 focus:bg-gray-400 font-bold px-3 py-2 w-full">Lagre</button>
+		</div>
+	</form>
+	<script>
+		function closeModal() {
+			const modal = document.getElementById("question-modal");
+			modal.close();
+		}
+	</script>
+}

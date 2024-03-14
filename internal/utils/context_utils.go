@@ -3,7 +3,7 @@ package utils
 import (
 	"context"
 
-	"github.com/Molnes/Nyhetsjeger/internal/api/middlewares"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )

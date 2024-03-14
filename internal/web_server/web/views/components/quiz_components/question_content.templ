@@ -1,0 +1,34 @@
+package quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/questions"
+import "github.com/google/uuid"
+
+//Javascript function that updates the progress bar
+
+script progressLength(progress float64) {
+	const pbar = document.getElementById("pbar");
+	const width = progress * 100;
+	pbar.style.width = width + "%";
+	
+}
+
+//Component that displays the progress bar, the question and the answers
+templ QuizContent (question *questions.Question, progress float64) {
+	<section id="progress-bar" class="flex justify-center">
+		<div class="w-96 h-8 bg-red-600 overflow-hidden">
+			if true {
+				<div id="pbar" class="float-left h-full bg-blue-700"></div>
+				@progressLength(progress)
+			}
+		</div>
+	</section>
+	<section id="outer-image" class="flex content-center justify-center mt-4">
+		<img src="https://picsum.photos/390/200" alt=""/>
+	</section>
+	<section id="outer-text" class="flex justify-center mt-4">
+		<p class="w-96 text-center">{ question.Text }</p>
+	</section>
+	<section id="answers-outer" class="mt-4 flex justify-center">
+		@Answers(question.Alternatives, question.ID, false, uuid.Nil)
+	</section>
+}
