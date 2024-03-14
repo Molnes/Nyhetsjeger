@@ -94,4 +94,6 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	// websocket for live updates
 	e.GET("/ws", handlers.WebsocketHandler)
 
+	e.HTTPErrorHandler = handlers.HTTPErrorHandler
+
 }
