@@ -43,7 +43,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 			return next(c)
 		} else {
 			if am.redirectToLogin {
-				userPath := c.Request().URL.Path
+				userPath := c.Request().URL.String()
 				cookie := http.Cookie{
 					Name:   REDIRECT_COOKIE_NAME,
 					Path:   "/",
