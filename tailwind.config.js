@@ -1,13 +1,20 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    './internal/web_server/web/**/*.templ',
-  ],
-  theme: {
-    extend: {
-      colors: {
-      },
-    },
-  },
-  plugins: [],
+export default {
+        content: [
+                './internal/api/web/**/*.templ',
+        ],
+        theme: {
+                colors: {
+                },
+                fontFamily: {
+                        sans: ['Bitter', 'serif'],
+                },
+                extends: {
+                        fontFamily: {
+
+                                'noto-sans': ['Noto Sans', 'sans-serif'],
+                        }
+                }
+        },
+        plugins: [],
 };

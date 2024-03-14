@@ -8,9 +8,12 @@ templ BaseLayout(pageTitle string) {
 	<html lang="en">
 		<head>
 			<meta charset="utf-8"/>
-			<title>{pageTitle}</title>
+			<title>{ pageTitle }</title>
 			<link rel="stylesheet" href="/static/css/tailwind.css"/>
-			<link rel="stylesheet" href="/static/css/styles.css"/>
+			<link rel="stylesheet" href="/static/css/styles.css?v=1.2"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
 			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 		</head>
 		<body>
