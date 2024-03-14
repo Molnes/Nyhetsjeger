@@ -58,7 +58,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/dashboard")
 	}
 
-	quiz, _ := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
+	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
 
 	// Get all the articles for a quiz.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
@@ -86,6 +86,23 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles))
+}
+
+// Update the image for a quiz.
+func (dph *DashboardPagesHandler) removeImageFromQuiz(c echo.Context) error {
+	quizID, _ := uuid.Parse(c.QueryParam("quiz-id"))
+	quizImageURL := c.FormValue("quiz-image-url")
+	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, quizID)
+
+	image_url, err := url.Parse(quizImageURL)
+
+	if err != nil {
+		return err
+	}
+
+	quizzes.UpdateImageByQuizID(dph.sharedData.DB, quizID, *image_url)
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ImagePreview(quiz.ImageURL))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {

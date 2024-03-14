@@ -60,7 +60,7 @@ var SampleQuiz Quiz = Quiz{
 // Includes the questions for the quiz.
 // Includes the articles for each question.
 // Includes the alternatives for each question.
-func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
+func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
 			id, title, image_url, available_from, available_to, created_at, last_modified_at, published
@@ -76,6 +76,16 @@ func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	quiz.Questions = *tempQuestions
 
 	return quiz, err
+}
+
+func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET image_url = $1
+		WHERE id = $2`,
+		imageURL.String(),
+		id)
+	return err
 }
 
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
