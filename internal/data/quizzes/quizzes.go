@@ -2,6 +2,7 @@ package quizzes
 
 import (
 	"database/sql"
+	"fmt"
 
 	"net/url"
 	"time"
@@ -29,16 +30,19 @@ func GetQuiz(quizID uuid.UUID) (Quiz, error) {
 // Create a default quiz.
 // This function is used to create a new quiz with default values.
 func CreateDefaultQuiz() (Quiz, error) {
+	tn := time.Now().Local()
+	_, week := tn.ISOWeek()
+
 	return Quiz{
 		ID:    uuid.New(),
-		Title: "Daglig Quiz: " + time.Now().Format("01 Jan 2006"),
+		Title: fmt.Sprintf("Quiz: Uke %d", week),
 		ImageURL: url.URL{
 			Scheme: "https",
 			Host:   "unsplash.it",
 			Path:   "/200/200",
 		},
 		AvailableFrom:  time.Now(),
-		AvailableTo:    time.Now().Add(24 * time.Hour),
+		AvailableTo:    time.Now().Add(24 * 7 * time.Hour),
 		CreatedAt:      time.Now(),
 		LastModifiedAt: time.Now(),
 		Published:      false,
@@ -48,7 +52,7 @@ func CreateDefaultQuiz() (Quiz, error) {
 
 var SampleQuiz Quiz = Quiz{
 	ID:        uuid.New(),
-	Title:     "Sample quiz",
+	Title:     "Eksempel quiz",
 	Questions: questions.SampleQuestions,
 }
 
@@ -56,7 +60,7 @@ var SampleQuiz Quiz = Quiz{
 // Includes the questions for the quiz.
 // Includes the articles for each question.
 // Includes the alternatives for each question.
-func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
+func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
 			id, title, image_url, available_from, available_to, created_at, last_modified_at, published
@@ -78,6 +82,16 @@ func GetFullQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	quiz.Questions = *tempQuestions
 
 	return quiz, nil
+}
+
+func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET image_url = $1
+		WHERE id = $2`,
+		imageURL.String(),
+		id)
+	return err
 }
 
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {

@@ -35,8 +35,8 @@ func main() {
 	log.Println("----- Populating database -----")
 	defer log.Println("----- Database populated -----")
 
-	createSampleQuiz(db, "Daglig quiz 17/02/24")
-	createSampleQuiz(db, "Daglig quiz 01/03/24")
+	createSampleQuiz(db, "Ukentlig quiz 1")
+	createSampleQuiz(db, "Ukentlig quiz 2")
 }
 
 func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
@@ -88,7 +88,7 @@ func createSampleQuiz(db *sql.DB, title string) {
 		`INSERT INTO quizzes (title, available_from, available_to, image_url)
 		values ($1, $2, $3, $4)
 		RETURNING id;`,
-		title, time.Now(), time.Now().Add(time.Hour*24), "https://www.unsplash.it/200/200")
+		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://www.unsplash.it/200/200")
 
 	err := row.Scan(&quiz_id)
 	if err != nil {
@@ -123,9 +123,9 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 		log.Println(err)
 	}
 	tx.Exec(
-		`INSERT INTO questions (id, question, article_id, quiz_id, points)
-		VALUES ($1, $2, $3, $4, $5);`,
-		question_id, question.text, nil, quiz_id, 10)
+		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
+		VALUES ($1, $2, $3, $4, $5, $6);`,
+		question_id, question.text, "https://unsplash.it/200/200", nil, quiz_id, 10)
 
 	for _, a := range question.answer_alts {
 		alternative_id := uuid.New()

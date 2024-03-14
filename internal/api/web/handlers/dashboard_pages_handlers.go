@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
+	"net/url"
 
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/api/web/views/components/dashboard_components/side_menu"
@@ -58,7 +59,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
-	quiz, err := quizzes.GetFullQuizByID(dph.sharedData.DB, uuid_id)
+	quiz, err := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return echo.NewHTTPError(http.StatusNotFound, "No quiz with given id found.")
@@ -84,20 +85,35 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	// Set the default points to be 10.
 	newQuestion := questions.Question{
 		ID:           uuid.New(),
-		Text:         "",
+		Text:         "SPØRSMÅL",
+		ImageURL:     url.URL{},
 		Article:      articles.Article{},
 		QuizID:       quiz_id,
 		Points:       10,
 		Alternatives: []questions.Alternative{},
 	}
 
-	// Save the new question to the database.
-	questions.PostNewQuestion(dph.sharedData.DB, newQuestion)
-
 	// Get all the articles.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionModal(articles))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles))
+}
+
+// Update the image for a quiz.
+func (dph *DashboardPagesHandler) removeImageFromQuiz(c echo.Context) error {
+	quizID, _ := uuid.Parse(c.QueryParam("quiz-id"))
+	quizImageURL := c.FormValue("quiz-image-url")
+	quiz, _ := quizzes.GetQuizByID(dph.sharedData.DB, quizID)
+
+	image_url, err := url.Parse(quizImageURL)
+
+	if err != nil {
+		return err
+	}
+
+	quizzes.UpdateImageByQuizID(dph.sharedData.DB, quizID, *image_url)
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ImagePreview(quiz.ImageURL))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
