@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
@@ -69,22 +70,20 @@ func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
 
 	quizID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		// if error, return server error and log "error parsing quiz id"
-
-		return c.NoContent(http.StatusInternalServerError)
-
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
-	question, err := questions.GetFirstQuestion(qph.sharedData.DB, quizID)
-
+	questionId, err := questions.GetFirstQuestionID(qph.sharedData.DB, quizID)
 	if err != nil {
-		return c.NoContent(http.StatusNotFound)
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "No questions found for quiz")
+		} else {
+			return err
+		}
 	}
 
 	//redirect to quiz page with first question
-
-	return c.Redirect(http.StatusFound, "/quiz/quizpage?questionid="+question.ID.String())
-
+	return c.Redirect(http.StatusFound, "/quiz/quizpage?questionid="+questionId.String())
 }
 
 // Checks if the answer was correct, and returns the results
