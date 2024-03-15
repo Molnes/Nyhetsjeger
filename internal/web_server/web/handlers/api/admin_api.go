@@ -39,6 +39,7 @@ func (aah *AdminApiHandler) PostDefaultQuiz(c echo.Context) error {
 	return c.Redirect(http.StatusOK, "/dashboard/edit-quiz?quiz-id="+quiz.ID.String())
 }
 
+// Updates the title of a quiz in the database.
 func (aah *AdminApiHandler) EditQuizTitle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam("quiz-id"))
@@ -53,7 +54,7 @@ func (aah *AdminApiHandler) EditQuizTitle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
 }
