@@ -6,7 +6,7 @@ import (
 
 // Shows a preview of an image and a remove button if the image is not empty.
 // If the image is empty, a text is displayed.
-templ ImagePreview(url url.URL) {
+templ ImagePreview(url *url.URL) {
 	if url.String() == "" {
 		<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
 	} else {

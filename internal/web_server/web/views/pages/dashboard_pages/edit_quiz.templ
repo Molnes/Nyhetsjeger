@@ -3,11 +3,16 @@ package dashboard_pages
 import (
 	"fmt"
 
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 )
+
+// Constants for the input names (for HTTP POST requests)
+const QuizTitle = "quiz-title"
+const QuizImageURL = "quiz-image-url"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -16,17 +21,20 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 		<div class="flex flex-col items-center gap-3 max-w-screen-sm m-auto px-5 py-3">
 			<h1 class="text-2xl">Rediger Quiz</h1>
 			// Quiz Title
-			@dashboard_components.EditQuizForm("") {
-				<label for="quiz-title" class="block">Tittel</label>
-				<input id="quiz-title" class="bg-gray-200 w-full px-2 py-1" type="text" value={ quiz.Title }/>
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
+				<div class="flex row items-center gap-3">
+					<label for="quiz-title" class="block">Tittel</label>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
 			}
 			// Quiz Image
 			@dashboard_components.EditQuizForm("") {
 				<label for="quiz-image" class="block">Forside bilde</label>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				<input id="quiz-image" name="quiz-image-url" type="text" class="bg-gray-200 w-full px-2 py-1 mb-2" value={ quiz.ImageURL.String() }/>
-				@dashboard_components.ImagePreview(quiz.ImageURL)
+				<input id="quiz-image" name={ QuizImageURL } type="text" class="bg-gray-200 w-full px-2 py-1 mb-2" value={ quiz.ImageURL.String() }/>
+				@dashboard_components.ImagePreview(&quiz.ImageURL)
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm("") {

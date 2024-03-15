@@ -1,13 +1,20 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    './internal/web_server/web/**/*.templ',
-  ],
-  theme: {
-    extend: {
-      colors: {
-      },
-    },
-  },
-  plugins: [],
+export default {
+        content: [
+                './internal/web_server/web/**/*.templ',
+        ],
+        theme: {
+                extend: {
+                        colors: {
+                                'cblue': '#0085FF',
+                                'cindigo': '#5B14F2',
+                                'cfuchsia': '#AD00FF',
+                        },
+                },
+                fontFamily: {
+                        body: ['Bitter', 'serif'],
+                        sans: ['Noto Sans', 'sans-serif'],
+                },
+        },
+        plugins: [],
 };
