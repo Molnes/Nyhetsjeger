@@ -4,16 +4,11 @@ export default {
                 './internal/web_server/web/**/*.templ',
         ],
         theme: {
-                colors: {
-                },
                 fontFamily: {
-                        sans: ['Bitter', 'serif'],
+                        body: ['Bitter', 'serif'],
+                        sans: ['Noto Sans', 'sans-serif'],
                 },
                 extends: {
-                        fontFamily: {
-
-                                'noto-sans': ['Noto Sans', 'sans-serif'],
-                        }
                 }
         },
         plugins: [],
