@@ -1,0 +1,13 @@
+package components
+
+// A loading indicator component.
+// It will be displayed using HTMX. Example: hx-indicator="previous .htmx-indicator".
+templ LoadingIndicator() {
+	<img
+		height="20"
+		width="20"
+		class="htmx-indicator py-1"
+		src="https://raw.githubusercontent.com/Codelessly/FlutterLoadingGIFs/master/packages/cupertino_activity_indicator_selective.gif"
+		alt="Loading..."
+	/>
+}
