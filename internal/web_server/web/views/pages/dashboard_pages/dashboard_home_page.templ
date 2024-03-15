@@ -9,8 +9,8 @@ import (
 // Dashboard home page
 templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []quizzes.Quiz) {
 	@layout_components.DashBoardLayout("Dashboard") {
-		<div class="flex flex-col px-4 pt-8 max-w-screen-lg mx-auto">
-			<div class="flex flex-row justify-between items-center mb-6">
+		<div class="flex flex-col px-8 py-6 max-w-screen-lg mx-auto">
+			<div class="flex flex-row gap-3 justify-between items-center mb-6">
 				<h1 class="text-3xl">Upubliserte quizzer</h1>
 				<button
 					class="text-md text-white bg-cindigo font-bold py-2 px-5 shadow-sm rounded-sm"
@@ -19,12 +19,12 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 					Lag ny quiz
 				</button>
 			</div>
-			<div class="flex flex-row flex-wrap mb-10 gap-y-6 gap-x-8">
+			<div class="flex flex-row flex-wrap mb-10 gap-y-8 gap-x-10">
 				for _, quiz := range unpublishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
 			</div>
-			<div class="flex flex-row justify-between items-center mb-6">
+			<div class="flex flex-row gap-3 justify-between items-center mb-6">
 				<h1 class="text-3xl">Publiserte quizzer</h1>
 				<button
 					class="text-md text-white font-bold bg-cindigo py-2 px-5 shadow-sm rounded-sm"
@@ -32,7 +32,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 					Filtrer
 				</button>
 			</div>
-			<div class="flex flex-row flex-wrap gap-y-6 gap-x-8">
+			<div class="flex flex-row flex-wrap gap-y-8 gap-x-10">
 				for _, quiz := range publishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
