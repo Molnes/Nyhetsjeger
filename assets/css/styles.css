@@ -15,3 +15,8 @@
     scrollbar-width: none;
     /* Firefox */
 }
+
+.custom-gradient {
+    background-image: linear-gradient(to bottom right, #0085FF, #5B14F2, #AD00FF); 
+}
+
