@@ -60,16 +60,22 @@ func GetNextQuestion(db *sql.DB, currentQuestionID uuid.UUID) (*Question, error)
 	if err != nil {
 		return nil, err
 	}
-	rows := db.QueryRow(
+	row := db.QueryRow(
 		`SELECT
-      id, question, image_url, arrangement, article_id, quiz_id, points
+      id
     FROM
       questions
     WHERE
       quiz_id = $1 AND arrangement = $2`,
 		currentQuestion.QuizID, currentQuestion.Arrangement+1)
 
-	return scanQuestionFromFullRow(db, rows)
+	var nextQuestionID uuid.UUID
+	err = row.Scan(&nextQuestionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetQuestionByID(db, nextQuestionID)
 }
 
 // Returns all questions for a given quiz.
