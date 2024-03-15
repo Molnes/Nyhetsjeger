@@ -17,6 +17,18 @@
 }
 
 .custom-gradient {
-    background-image: linear-gradient(to bottom right, #0085FF, #5B14F2, #AD00FF); 
+    background-image: linear-gradient(to bottom right, #0085FF, #5B14F2, #AD00FF);
 }
 
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 100ms ease-in
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}

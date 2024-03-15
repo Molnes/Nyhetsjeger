@@ -29,7 +29,7 @@ func GetQuiz(quizID uuid.UUID) (Quiz, error) {
 
 // Create a default quiz.
 // This function is used to create a new quiz with default values.
-func CreateDefaultQuiz() (Quiz, error) {
+func CreateDefaultQuiz() Quiz {
 	tn := time.Now().Local()
 	_, week := tn.ISOWeek()
 
@@ -47,7 +47,7 @@ func CreateDefaultQuiz() (Quiz, error) {
 		LastModifiedAt: time.Now(),
 		Published:      false,
 		Questions:      []questions.Question{},
-	}, nil
+	}
 }
 
 var SampleQuiz Quiz = Quiz{
@@ -84,12 +84,24 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	return quiz, nil
 }
 
+// Update the image URL for a quiz by its ID.
 func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
 	_, err := db.Exec(
 		`UPDATE quizzes
 		SET image_url = $1
 		WHERE id = $2`,
 		imageURL.String(),
+		id)
+	return err
+}
+
+// Update the title for a quiz by its ID.
+func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET title = $1
+		WHERE id = $2`,
+		title,
 		id)
 	return err
 }
