@@ -19,7 +19,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 					Lag ny quiz
 				</button>
 			</div>
-			<div class="flex flex-row flex-wrap mb-10 gap-y-8 gap-x-10">
+			<div class="flex flex-row flex-wrap mb-14 gap-y-8 gap-x-10">
 				for _, quiz := range unpublishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}

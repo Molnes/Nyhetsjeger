@@ -4,21 +4,21 @@ import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 
 templ QuizTile(quiz quizzes.Quiz) {
 	<a
-		class="bg-gray-200 shadow-md rounded-lg max-w-56 overflow-hidden flex flex-col hover:shadow-lg transition duration-100 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+		class="bg-clightindigo shadow-md rounded-lg max-w-56 overflow-hidden flex flex-col hover:shadow-lg transition duration-100 ease-in-out transform hover:-translate-y-1 hover:scale-105"
 		href={ templ.SafeURL("/dashboard/edit-quiz?quiz-id=" + quiz.ID.String()) }
 	>
-		// src={ quiz.ImageURL.String() }
 		<img
-			src="https://picsum.photos/200/300"
+			src={ quiz.ImageURL.String() }
 			alt={ quiz.Title }
-			class="h-48 w-full bg-gray-500 "
+			class="h-36 w-full bg-gray-500 object-cover"
 		/>
-		<div class="p-2">
-			<h3 class="text-xl font-semibold text-gray-800">{ quiz.Title }</h3>
+		<div class="px-5 py-3">
+			<h3 class="text-xl font-semibold text-gray-800 mb-2">{ quiz.Title }</h3>
+			<p class="mb-1">
+				Fra: { quiz.AvailableFrom.Format("02.01.2006, 15:04") }
+			</p>
 			<p>
-				Fra: { quiz.AvailableFrom.Format("02.01.2006 15:04") }
-				<br/>
-				Til: { quiz.AvailableTo.Format("02.01.2006 15:04") }
+				Til: { quiz.AvailableTo.Format("02.01.2006, 15:04") }
 			</p>
 		</div>
 	</a>
