@@ -50,17 +50,24 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 
 // Gets the quiz page
 func (qph *QuizPagesHandler) getQuizPage(c echo.Context) error {
-	questionId, _ := uuid.Parse(c.QueryParam("questionid"))
+	questionId, err := uuid.Parse(c.QueryParam("questionid"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question id")
+	}
 	question, err := questions.GetQuestionByID(qph.sharedData.DB, questionId)
 	if err != nil {
-		return c.NoContent(http.StatusNotFound)
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "No question found")
+		} else {
+			return err
+		}
 	}
 
 	title := quizzes.SampleQuiz.Title
 
 	err = users.StartQuestion(qph.sharedData.DB, utils.GetUserIDFromCtx(c), questionId)
 	if err != nil {
-		return c.NoContent(http.StatusNotFound)
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizQuestion(question, title))

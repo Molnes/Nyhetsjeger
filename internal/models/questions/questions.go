@@ -193,16 +193,60 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 
 // Get specific question by ID.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
-	row := db.QueryRow(
+	rows, err := db.Query(
 		`SELECT
-      id, question, image_url, arrangement, article_id, quiz_id, points
-    FROM
-      questions
-    WHERE
-      id = $1`,
+		questions.id, question, image_url, arrangement, article_id, quiz_id, points,
+		answer_alternatives.id as alt_id, text, correct, question_id
+		FROM questions, answer_alternatives
+		WHERE questions.id=question_id AND
+		questions.id = $1`,
 		id)
 
-	return scanQuestionFromFullRow(db, row)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	var q Question
+	var imageUrlString string
+	var alternatives []Alternative
+
+	if rows.Next() {
+		var a Alternative
+		err := rows.Scan(
+			&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.Points,
+			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		alternatives = append(alternatives, a)
+	} else {
+		return nil, sql.ErrNoRows
+	}
+	for rows.Next() {
+		var a Alternative
+		var throwAway interface{}
+		err := rows.Scan(
+			&throwAway, &throwAway, &throwAway, &throwAway, &throwAway, &throwAway, &throwAway,
+			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		alternatives = append(alternatives, a)
+	}
+	imageUrl, err := url.Parse(imageUrlString)
+	if err != nil {
+		return nil, err
+	}
+	q.ImageURL = *imageUrl
+	q.Alternatives = alternatives
+	return &q, nil
 }
 
 // Get all alternatives for a given question.
