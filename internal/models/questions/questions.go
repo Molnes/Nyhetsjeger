@@ -2,6 +2,7 @@ package questions
 
 import (
 	"database/sql"
+	"errors"
 	"net/url"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -37,17 +38,18 @@ func GetQuestion(quizID uuid.UUID) (Question, error) {
 	return SampleQuestions[0], nil
 }
 
-func GetFirstQuestion(db *sql.DB, quizID uuid.UUID) (*Question, error) {
-	rows := db.QueryRow(
-		`SELECT
-			id, question, image_url, arrangement, article_id, quiz_id, points
-    FROM
-      questions
-    WHERE
-      quiz_id = $1 AND arrangement = 1`,
+// Returns the ID of first question in the given quiz.
+func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
+	var id uuid.UUID
+	row := db.QueryRow(
+		`SELECT id
+    	FROM questions
+    	WHERE
+      	quiz_id = $1 AND arrangement = 1`,
 		quizID)
+	err := row.Scan(&id)
 
-	return scanQuestionFromFullRow(db, rows)
+	return id, err
 }
 
 // function for getting the next question in a quiz if there is one based on the arrangement, returns nil if there is no next question or an error
@@ -58,16 +60,22 @@ func GetNextQuestion(db *sql.DB, currentQuestionID uuid.UUID) (*Question, error)
 	if err != nil {
 		return nil, err
 	}
-	rows := db.QueryRow(
+	row := db.QueryRow(
 		`SELECT
-      id, question, image_url, arrangement, article_id, quiz_id, points
+      id
     FROM
       questions
     WHERE
       quiz_id = $1 AND arrangement = $2`,
 		currentQuestion.QuizID, currentQuestion.Arrangement+1)
 
-	return scanQuestionFromFullRow(db, rows)
+	var nextQuestionID uuid.UUID
+	err = row.Scan(&nextQuestionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetQuestionByID(db, nextQuestionID)
 }
 
 // Returns all questions for a given quiz.
@@ -192,16 +200,59 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 
 // Get specific question by ID.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
+	var q Question
+	var imageUrlString string
 	row := db.QueryRow(
-		`SELECT
-      id, question, image_url, arrangement, article_id, quiz_id, points
-    FROM
-      questions
-    WHERE
-      id = $1`,
-		id)
+		`
+		SELECT
+		id, question, image_url, arrangement, article_id, quiz_id, points
+		FROM questions
+		WHERE id = $1;
+		`, id)
+	err := row.Scan(
+		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.Points,
+	)
+	if err != nil {
+		return nil, err
+	}
+	imageUrl, err := url.Parse(imageUrlString)
+	if err != nil {
+		return nil, err
+	}
+	q.ImageURL = *imageUrl
 
-	return scanQuestionFromFullRow(db, row)
+	answerRows, err := db.Query(
+		`
+		SELECT id, text, correct, question_id
+		FROM answer_alternatives
+		WHERE question_id = $1;
+		`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer answerRows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var alternatives []Alternative
+	for answerRows.Next() {
+		var a Alternative
+		err := answerRows.Scan(
+			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		alternatives = append(alternatives, a)
+	}
+	if len(alternatives) == 0 {
+		// not a "rows not found", it is a server error - questions must have alternatives
+		return nil, errors.New("no alternatives found for question with id: " + id.String())
+	}
+	q.Alternatives = alternatives
+	return &q, nil
 }
 
 // Get all alternatives for a given question.
