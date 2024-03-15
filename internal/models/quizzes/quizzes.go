@@ -106,10 +106,13 @@ func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 	return err
 }
 
+// Get all quizzes in the database.
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	rows, err := db.Query(
-		`SELECT id, title 
-        FROM quizzes`)
+		`SELECT
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published 
+    FROM
+			quizzes`)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +120,25 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 
 	quizzes := []Quiz{}
 	for rows.Next() {
-		quiz := Quiz{}
+		var quiz Quiz
+		var imageURL string
 		err := rows.Scan(
 			&quiz.ID,
 			&quiz.Title,
+			&imageURL,
+			&quiz.AvailableFrom,
+			&quiz.AvailableTo,
+			&quiz.CreatedAt,
+			&quiz.LastModifiedAt,
+			&quiz.Published,
 		)
 		if err != nil {
+			return nil, err
+		}
+		tempURL, err := url.Parse(imageURL)
+		quiz.ImageURL = *tempURL
+
+		if err == sql.ErrNoRows {
 			return nil, err
 		}
 		quizzes = append(quizzes, quiz)
