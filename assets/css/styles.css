@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
-
 /* CSS classes ".scrollbar-hide" and ".scrollbar-hide::-webkit-scrollbar" (next 2) taken from https://design2tailwind.com/blog/tailwindcss-hide-scrollbar/ */
 /* For Webkit-based browsers (Chrome, Safari and Opera) */
 .scrollbar-hide::-webkit-scrollbar {
