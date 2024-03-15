@@ -30,6 +30,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/:id", qph.getQuizPageByQuizID)
 	e.GET("/checkanswer", qph.getIsCorrect)
 	e.POST("/nextquestion", qph.postNextQuestion)
+	e.GET("/quiz-summary", qph.getQuizSummary)
 
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
@@ -154,6 +155,21 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 	progress := float64(questionArrangement) / float64(len(quizzes.SampleQuiz.Questions))
 
 	return utils.Render(c, http.StatusOK, quiz_components.QuizContent(question, progress))
+}
+
+func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
+	quizID, err := uuid.Parse(c.QueryParam("quizid"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
+	}
+
+	quizSummary, err := users.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
+	if err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizSummaryPage(quizSummary))
+
 }
 
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
