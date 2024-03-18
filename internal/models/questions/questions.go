@@ -17,6 +17,7 @@ type Question struct {
 	Arrangement  uint
 	Article      articles.Article // The article this question is based on.
 	QuizID       uuid.UUID
+	TimeLimitSeconds    uint
 	Points       uint
 	Alternatives []Alternative
 }
@@ -84,7 +85,7 @@ func GetNextQuestion(db *sql.DB, currentQuestionID uuid.UUID) (*Question, error)
 func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 	rows, err := db.Query(
 		`SELECT
-				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.points,
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points,
 				array_agg(a.id)
 			FROM
 				questions q
@@ -155,7 +156,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		var alternativeIDs []uuid.UUID
 		var imageURL string
 		err := rows.Scan(
-			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds , &q.Points,
 			pq.Array(&alternativeIDs),
 		)
 		if err != nil {
@@ -205,12 +206,12 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	row := db.QueryRow(
 		`
 		SELECT
-		id, question, image_url, arrangement, article_id, quiz_id, points
+		id, question, image_url, arrangement, article_id, quiz_id, time_limit_seconds, points
 		FROM questions
 		WHERE id = $1;
 		`, id)
 	err := row.Scan(
-		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.Points,
+		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
