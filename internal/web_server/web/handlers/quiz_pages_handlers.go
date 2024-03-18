@@ -165,7 +165,7 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 
 	quizSummary, err := users.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
 	if err != nil {
-		return c.NoContent(http.StatusNotFound)
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizSummaryPage(quizSummary))
