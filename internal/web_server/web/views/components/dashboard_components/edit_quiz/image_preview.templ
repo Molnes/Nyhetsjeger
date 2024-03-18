@@ -13,17 +13,15 @@ templ ImagePreview(imageURL *url.URL, quizID string) {
 	} else {
 		// This div wrapper is to prevent a layout shift while loading the image
 		<div style="height: 200px" class="mx-auto mb-2">
-			<img src={ imageURL.String() } height="200" style="height: 100%" class="block rounded mx-auto object-cover"/>
+			<img src={ imageURL.String() } height="200" style="height: 100%" class="block rounded-lg mx-auto object-cover"/>
 		</div>
 		<button
 			id="remove-image-button"
 			type="button"
 			class="bg-gray-100 px-3 py-2 block mx-auto"
 			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quizID) }
-			hx-trigger="change"
 			hx-swap="outerHTML"
-			hx-target="this"
-			hx-sync="closest form:abort"
+			hx-target="#image-input-wrapper"
 			hx-indicator="previous .htmx-indicator"
 		>Fjern bilde</button>
 	}

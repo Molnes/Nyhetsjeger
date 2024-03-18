@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -98,10 +97,11 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 
 	// Set the image URL to nil
 	err = quizzes.RemoveImageByQuizID(dph.sharedData.DB, quiz_id)
-	log.Fatal(err)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
+	}
 
 	time.Sleep(1 * time.Second) // TODO: Remove
-	log.Fatal("DELETE THIS QUIZ IMAGE RIGHT NOW!")
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(&url.URL{}, quiz_id.String(), dashboard_pages.QuizImageURL))
 }
