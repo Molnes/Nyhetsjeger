@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/url"
 
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
 
@@ -100,17 +101,12 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 		return nil, err
 	}
 
-	// Convert the image URL from DB to a URL type.
-	if imageURL.Valid {
-		tempURL, err := url.Parse(imageURL.String)
-		if err != nil {
-			return nil, err
-		} else {
-			article.ImgURL = *tempURL
-		}
-	} else {
-		article.ImgURL = url.URL{}
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
 	}
+	article.ImgURL = *tempURL
 
 	return &article, nil
 }
@@ -140,17 +136,12 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 			return nil, err
 		}
 
-		// Convert the image URL from DB to a URL type.
-		if imageURL.Valid {
-			tempURL, err := url.Parse(imageURL.String)
-			if err != nil {
-				return nil, err
-			} else {
-				article.ImgURL = *tempURL
-			}
-		} else {
-			article.ImgURL = url.URL{}
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
 		}
+		article.ImgURL = *tempURL
 
 		articles = append(articles, article)
 	}
