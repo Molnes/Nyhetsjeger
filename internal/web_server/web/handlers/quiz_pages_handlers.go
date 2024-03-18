@@ -8,6 +8,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
@@ -30,7 +31,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/:id", qph.getQuizPageByQuizID)
 	e.GET("/checkanswer", qph.getIsCorrect)
 	e.POST("/nextquestion", qph.postNextQuestion)
-	e.GET("/quiz-summary", qph.getQuizSummary)
+	e.GET("/summary", qph.getQuizSummary)
 
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
@@ -160,12 +161,17 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quizid"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quizid")
 	}
 
-	quizSummary, err := users.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
+	quizSummary, err := user_quiz_summary.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
 	if err != nil {
-		return err
+		if err == user_quiz_summary.ErrNoSuchQuiz {
+			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
+		}
+		if err == user_quiz_summary.ErrQuizNotCompleted {
+			return echo.NewHTTPError(http.StatusConflict, "Quiz not completed - no summary available")
+		}
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizSummaryPage(quizSummary))
