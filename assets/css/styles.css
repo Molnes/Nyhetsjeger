@@ -52,23 +52,3 @@
     background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
     filter: blur(10px);
 }
-
-.box {
-    position: relative;
-    background: white;
-    padding: 10px;
-    border-radius: 1rem;
-    height: 5rem;
-    width: 5rem;
-    margin: 5rem;
-}
-
-.box::before {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    z-index: -1;
-    background: rgb(0, 150, 184);
-    background: linear-gradient(125deg, rgba(0, 150, 184, 1) 0%, rgba(212, 37, 255, 1) 100%);
-    filter: blur(10px);
-}
