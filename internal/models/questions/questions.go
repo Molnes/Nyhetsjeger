@@ -215,11 +215,13 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	imageUrl, err := url.Parse(imageUrlString)
 	if err != nil {
 		return nil, err
+	} else {
+		q.ImageURL = *imageUrl
 	}
-	q.ImageURL = *imageUrl
 
 	answerRows, err := db.Query(
 		`

@@ -95,6 +95,16 @@ func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
 	return err
 }
 
+// Remove the image URL for a quiz by its ID.
+func RemoveImageByQuizID(db *sql.DB, id uuid.UUID) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET image_url = NULL
+		WHERE id = $1`,
+		id)
+	return err
+}
+
 // Update the title for a quiz by its ID.
 func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 	_, err := db.Exec(
@@ -135,12 +145,14 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 		if err != nil {
 			return nil, err
 		}
-		tempURL, err := url.Parse(imageURL)
-		quiz.ImageURL = *tempURL
 
-		if err == sql.ErrNoRows {
+		tempURL, err := url.Parse(imageURL)
+		if err != nil {
 			return nil, err
+		} else {
+			quiz.ImageURL = *tempURL
 		}
+
 		quizzes = append(quizzes, quiz)
 	}
 	return quizzes, nil
