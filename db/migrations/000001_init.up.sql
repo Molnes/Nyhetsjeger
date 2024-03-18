@@ -169,4 +169,14 @@ CREATE TABLE IF NOT EXISTS usernames (
     FOREIGN KEY (noun) REFERENCES nouns(noun),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE VIEW available_usernames AS
+    SELECT a.adjective, n.noun
+    FROM adjectives a
+    CROSS JOIN nouns n
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM usernames u
+        WHERE u.adjective = a.adjective AND u.noun = n.noun
+);
 END;
