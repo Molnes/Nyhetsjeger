@@ -29,6 +29,7 @@ func main() {
 	defer db.Close()
 
 	populate_adjectives(db)
+	populate_nouns(db)
 }
 
 func populate_adjectives(db *sql.DB) {
@@ -47,4 +48,24 @@ func populate_adjectives(db *sql.DB) {
 		log.Println(err)
 	}
 }
+
+func populate_nouns(db *sql.DB) {
+	// Populate nouns with lefse, taco, and, stol and appelsin.
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	tx.Exec("INSERT INTO nouns VALUES ('lefse')")
+	tx.Exec("INSERT INTO nouns VALUES ('taco')")
+	tx.Exec("INSERT INTO nouns VALUES ('and')")
+	tx.Exec("INSERT INTO nouns VALUES ('stol')")
+	tx.Exec("INSERT INTO nouns VALUES ('appelsin')")
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+	}
+}
+
 }
