@@ -5,7 +5,9 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/d
 templ DashBoardLayout(pageTitle string) {
 	@BaseLayout(pageTitle) {
 		@side_menu.SideMenu()
-		<main class="ml-48">
+		/* Note that the left-margin of "main" should be the same as the
+			width of the side menu. */
+		<main class="ml-52 bg-white">
 			{ children... }
 		</main>
 	}

@@ -1,0 +1,13 @@
+package icons
+
+import "fmt"
+
+// Home icon. Parameters are all in pixels.
+// Example: Trophy(20, "currentColor", 20, 20)
+templ Trophy(strokeWidth float64, stroke string, height int, width int) {
+	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512">
+		<path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M176 464h160M256 464V336M384 224c0-50.64-.08-134.63-.12-160a16 16 0 00-16-16l-223.79.26a16 16 0 00-16 15.95c0 30.58-.13 129.17-.13 159.79 0 64.28 83 112 128 112S384 288.28 384 224z"></path>
+		<path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M128 96H48v16c0 55.22 33.55 112 80 112M384 96h80v16c0 55.22-33.55 112-80 112"></path>
+	</svg>
+	//SVG from ionicons.com
+}
