@@ -192,7 +192,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	}
 
 	// Set image URL
-	tempURL, err := data_handling..ConvertNullStringToURL(&imageURL)
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
 	if err != nil {
 		return nil, err
 	}
