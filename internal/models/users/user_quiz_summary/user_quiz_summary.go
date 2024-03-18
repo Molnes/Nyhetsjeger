@@ -1,4 +1,4 @@
-package users
+package user_quiz_summary
 
 import (
 	"database/sql"
@@ -21,11 +21,7 @@ type AnsweredQuestion struct {
 	ChosenAlternativeID   uuid.UUID
 	ChosenAlternativeText string
 	IsCorrect             bool
-	PointsAwarded         int
-}
-
-func (aq *AnsweredQuestion) IsComplete() bool {
-	return aq.ChosenAlternativeID != uuid.Nil
+	PointsAwarded         uint
 }
 
 var ErrNoSuchQuiz = errors.New("quiz_summary: no such quiz")
@@ -61,19 +57,24 @@ func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSu
 		return nil, ErrQuizNotCompleted
 	}
 
+	for _, aq := range answeredQuestions {
+		summary.AchievedScore += aq.PointsAwarded
+	}
+
 	return &summary, nil
 }
 
 func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]AnsweredQuestion, error) {
 	rows, err := db.Query(
 		`SELECT questions.id, questions.question, answer_alternatives.id, answer_alternatives.text,
-		answer_alternatives.correct, points_awarded
-		FROM user_answers
-		LEFT JOIN answer_alternatives ON user_answers.chosen_answer_alternative_id = answer_alternatives.id
-		JOIN questions ON user_answers.question_id = questions.id
-		JOIN quizzes ON questions.quiz_id = quizzes.id
-		JOIN users ON user_answers.user_id = users.id
-	WHERE quizzes.id = $1 AND users.id = $2;`, quizID, userID)
+	answer_alternatives.correct, points_awarded
+	FROM user_answers
+	LEFT JOIN answer_alternatives ON user_answers.chosen_answer_alternative_id = answer_alternatives.id
+	JOIN questions ON user_answers.question_id = questions.id
+	JOIN quizzes ON questions.quiz_id = quizzes.id
+	JOIN users ON user_answers.user_id = users.id
+	WHERE user_answers.chosen_answer_alternative_id IS NOT NULL
+	AND quizzes.id = $1 AND users.id = $2;`, quizID, userID)
 
 	if err != nil {
 		return nil, err
@@ -83,30 +84,16 @@ func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]Ans
 	var answeredQuestions []AnsweredQuestion
 	for rows.Next() {
 		var aq AnsweredQuestion
-		var nullableALternativeText sql.NullString
-		var nullablePointsAwarded sql.NullInt64
-		var nullableIsCorrect sql.NullBool
-
 		err := rows.Scan(
 			&aq.QuestionID,
 			&aq.QuestionText,
 			&aq.ChosenAlternativeID,
-			&nullableALternativeText,
-			&nullableIsCorrect,
-			&nullablePointsAwarded,
+			&aq.ChosenAlternativeText,
+			&aq.IsCorrect,
+			&aq.PointsAwarded,
 		)
 		if err != nil {
 			return nil, err
-		}
-
-		if nullableALternativeText.Valid {
-			aq.ChosenAlternativeText = nullableALternativeText.String
-		}
-		if nullableIsCorrect.Valid {
-			aq.IsCorrect = nullableIsCorrect.Bool
-		}
-		if nullablePointsAwarded.Valid {
-			aq.PointsAwarded = int(nullablePointsAwarded.Int64)
 		}
 
 		answeredQuestions = append(answeredQuestions, aq)
