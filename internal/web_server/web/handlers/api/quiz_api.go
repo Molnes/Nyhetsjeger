@@ -7,6 +7,8 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,6 +24,7 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/question", qah.getQuestion)
 	e.GET("/article", qah.getArticle)
 	e.GET("/articles", qah.getArticles)
+	e.POST("/user-answer", qah.postUserAnswer)
 }
 
 func (qah *QuizApiHandler) getQuestion(c echo.Context) error {
@@ -38,4 +41,18 @@ func (qah *QuizApiHandler) getArticle(c echo.Context) error {
 func (qah *QuizApiHandler) getArticles(c echo.Context) error {
 	articles := articles.SampleArticles
 	return utils.Render(c, http.StatusOK, quiz_components.ArticleList(&articles))
+}
+
+func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
+	_, err := uuid.Parse(c.QueryParam("questionid"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing questionid")
+	}
+	_, err = uuid.Parse(c.FormValue("answer"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answerid in formdata")
+	}
+
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
+
 }
