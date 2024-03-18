@@ -31,3 +31,5 @@ initialize-docker:
 
 run-bruno:
 	./scripts/bruno-test.sh
+populate-usernames:
+	go run cmd/username_populator/main.go
