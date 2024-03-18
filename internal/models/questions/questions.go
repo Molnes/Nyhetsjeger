@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -117,17 +118,12 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 		return nil, err
 	}
 
-	// Convert the image URL from DB to a URL type.
-	if imageURL.Valid {
-		tempURL, err := url.Parse(imageURL.String)
-		if err != nil {
-			return nil, err
-		} else {
-			q.ImageURL = *tempURL
-		}
-	} else {
-		q.ImageURL = url.URL{}
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
 	}
+	q.ImageURL = *tempURL
 
 	// Add the article to the question
 	article, _ := articles.GetArticleByID(db, articleID)
@@ -163,17 +159,12 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 			return nil, err
 		}
 
-		// Convert the image URL from DB to a URL type.
-		if imageURL.Valid {
-			tempURL, err := url.Parse(imageURL.String)
-			if err != nil {
-				return nil, err
-			} else {
-				q.ImageURL = *tempURL
-			}
-		} else {
-			q.ImageURL = url.URL{}
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
 		}
+		q.ImageURL = *tempURL
 
 		// Add the article to the question
 		article, _ := articles.GetArticleByID(db, articleID)

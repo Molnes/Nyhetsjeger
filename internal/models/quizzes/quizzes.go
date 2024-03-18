@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
 
@@ -146,17 +147,12 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 			return nil, err
 		}
 
-		// Convert the image URL from DB to a URL type.
-		if imageURL.Valid {
-			tempURL, err := url.Parse(imageURL.String)
-			if err != nil {
-				return nil, err
-			} else {
-				quiz.ImageURL = *tempURL
-			}
-		} else {
-			quiz.ImageURL = url.URL{}
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
 		}
+		quiz.ImageURL = *tempURL
 
 		quizzes = append(quizzes, quiz)
 	}
@@ -195,17 +191,12 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		return nil, err
 	}
 
-	// Convert the image URL from DB to a URL type.
-	if imageURL.Valid {
-		tempURL, err := url.Parse(imageURL.String)
-		if err != nil {
-			return nil, err
-		} else {
-			quiz.ImageURL = *tempURL
-		}
-	} else {
-		quiz.ImageURL = url.URL{}
+	// Set image URL
+	tempURL, err := data_handling..ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
 	}
+	quiz.ImageURL = *tempURL
 
 	if err == sql.ErrNoRows {
 		return nil, err
