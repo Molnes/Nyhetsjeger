@@ -155,4 +155,7 @@ CREATE TABLE IF NOT EXISTS adjectives (
     adjective TEXT PRIMARY KEY
 );
 
+CREATE TABLE IF NOT EXISTS nouns (
+    noun TEXT PRIMARY KEY
+);
 END;
