@@ -30,6 +30,7 @@ func main() {
 
 	populate_adjectives(db)
 	populate_nouns(db)
+	/* populate_usernames(db) */
 }
 
 func populate_adjectives(db *sql.DB) {
@@ -68,4 +69,17 @@ func populate_nouns(db *sql.DB) {
 	}
 }
 
+func populate_usernames(db *sql.DB) {
+	// Populate usernames with raudlefse, fintaco, brennandeand, raudstol, and finappelsin.
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	tx.Exec("INSERT INTO usernames VALUES ('raud', 'lefse')")
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+	}
 }
