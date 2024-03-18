@@ -27,4 +27,24 @@ func main() {
 	}
 
 	defer db.Close()
+
+	populate_adjectives(db)
+}
+
+func populate_adjectives(db *sql.DB) {
+	// Populate adjectives with raud, fin and brennande.
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	tx.Exec("INSERT INTO adjectives VALUES ('raud')")
+	tx.Exec("INSERT INTO adjectives VALUES ('fin')")
+	tx.Exec("INSERT INTO adjectives VALUES ('brennande')")
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+	}
+}
 }
