@@ -13,6 +13,7 @@ import (
 // Constants for the input names (for HTTP POST requests)
 const QuizTitle = "quiz-title"
 const QuizImageURL = "quiz-image-url"
+const QuizPublished = "quiz-is-published"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -83,17 +84,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Buttons: Delete, Hide, OK
 			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
 				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
-				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
-					Skjul quiz<input
-	id="quiz-is-hidden"
-	class="ml-3"
-	type="checkbox"
-	if !quiz.Published {
-		checked
-	}
-	class="mx-1 p-1"
-/>
-				</label>
+				@dashboard_components.ToggleQuizPublished(quiz.Published, QuizPublished)
 				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
 			</div>
 		</div>

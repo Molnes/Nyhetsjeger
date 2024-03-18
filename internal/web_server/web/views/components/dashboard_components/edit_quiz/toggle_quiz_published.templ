@@ -1,0 +1,19 @@
+package dashboard_components
+
+// A toggle to publish or unpublish a quiz.
+// If the quiz is published, the checkbox is not checked.
+// If the quiz is not published, the checkbox is checked.
+templ ToggleQuizPublished(isPublished bool, inputName string) {
+	<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
+		Skjul quiz
+		<input
+			name={ inputName }
+			class="ml-3"
+			type="checkbox"
+			if !isPublished {
+				checked
+			}
+			class="mx-1 p-1"
+		/>
+	</label>
+}
