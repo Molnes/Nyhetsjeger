@@ -150,4 +150,9 @@ CREATE TABLE IF NOT EXISTS http_sessions (
               expires_on TIMESTAMPTZ);
               CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
               CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
+
+CREATE TABLE IF NOT EXISTS adjectives (
+    adjective TEXT PRIMARY KEY
+);
+
 END;
