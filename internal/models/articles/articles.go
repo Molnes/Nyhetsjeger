@@ -81,7 +81,7 @@ func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	var article Article
 	var articleURL string
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&article.ID,
 		&article.Title,
@@ -100,11 +100,16 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 		return nil, err
 	}
 
-	// Parse the image URL.
-	tempImageURL, err := url.Parse(imageURL)
-	article.ImgURL = *tempImageURL
-	if err == sql.ErrNoRows {
-		return nil, err
+	// Convert the image URL from DB to a URL type.
+	if imageURL.Valid {
+		tempURL, err := url.Parse(imageURL.String)
+		if err != nil {
+			return nil, err
+		} else {
+			article.ImgURL = *tempURL
+		}
+	} else {
+		article.ImgURL = url.URL{}
 	}
 
 	return &article, nil
@@ -116,7 +121,7 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	for rows.Next() {
 		var article Article
 		var articleURL string
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&article.ID,
 			&article.Title,
@@ -135,11 +140,16 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 			return nil, err
 		}
 
-		// Parse the image URL.
-		tempImageURL, err := url.Parse(imageURL)
-		article.ImgURL = *tempImageURL
-		if err == sql.ErrNoRows {
-			return nil, err
+		// Convert the image URL from DB to a URL type.
+		if imageURL.Valid {
+			tempURL, err := url.Parse(imageURL.String)
+			if err != nil {
+				return nil, err
+			} else {
+				article.ImgURL = *tempURL
+			}
+		} else {
+			article.ImgURL = url.URL{}
 		}
 
 		articles = append(articles, article)

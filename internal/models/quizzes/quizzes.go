@@ -131,7 +131,7 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	quizzes := []Quiz{}
 	for rows.Next() {
 		var quiz Quiz
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&quiz.ID,
 			&quiz.Title,
@@ -146,11 +146,16 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 			return nil, err
 		}
 
-		tempURL, err := url.Parse(imageURL)
-		if err != nil {
-			return nil, err
+		// Convert the image URL from DB to a URL type.
+		if imageURL.Valid {
+			tempURL, err := url.Parse(imageURL.String)
+			if err != nil {
+				return nil, err
+			} else {
+				quiz.ImageURL = *tempURL
+			}
 		} else {
-			quiz.ImageURL = *tempURL
+			quiz.ImageURL = url.URL{}
 		}
 
 		quizzes = append(quizzes, quiz)
@@ -175,7 +180,7 @@ func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
 // Converts a row from the database to a Quiz.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
@@ -189,8 +194,18 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	if err != nil {
 		return nil, err
 	}
-	tempURL, err := url.Parse(imageURL)
-	quiz.ImageURL = *tempURL
+
+	// Convert the image URL from DB to a URL type.
+	if imageURL.Valid {
+		tempURL, err := url.Parse(imageURL.String)
+		if err != nil {
+			return nil, err
+		} else {
+			quiz.ImageURL = *tempURL
+		}
+	} else {
+		quiz.ImageURL = url.URL{}
+	}
 
 	if err == sql.ErrNoRows {
 		return nil, err

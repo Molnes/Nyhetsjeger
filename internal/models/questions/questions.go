@@ -108,7 +108,7 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
 	var alternativeIDs []uuid.UUID
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
 		pq.Array(&alternativeIDs),
@@ -117,15 +117,16 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 		return nil, err
 	}
 
-	// Add the image URL to the question
-	if imageURL != "" {
-		tempURL, err := url.Parse(imageURL)
-
+	// Convert the image URL from DB to a URL type.
+	if imageURL.Valid {
+		tempURL, err := url.Parse(imageURL.String)
 		if err != nil {
 			return nil, err
+		} else {
+			q.ImageURL = *tempURL
 		}
-
-		q.ImageURL = *tempURL
+	} else {
+		q.ImageURL = url.URL{}
 	}
 
 	// Add the article to the question
@@ -153,7 +154,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		var q Question
 		var articleID uuid.UUID
 		var alternativeIDs []uuid.UUID
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
 			pq.Array(&alternativeIDs),
@@ -162,15 +163,16 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 			return nil, err
 		}
 
-		// Add the image URL to the question
-		if imageURL != "" {
-			tempURL, err := url.Parse(imageURL)
-
+		// Convert the image URL from DB to a URL type.
+		if imageURL.Valid {
+			tempURL, err := url.Parse(imageURL.String)
 			if err != nil {
 				return nil, err
+			} else {
+				q.ImageURL = *tempURL
 			}
-
-			q.ImageURL = *tempURL
+		} else {
+			q.ImageURL = url.URL{}
 		}
 
 		// Add the article to the question

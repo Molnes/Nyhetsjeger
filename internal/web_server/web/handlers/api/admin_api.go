@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -61,7 +62,7 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
 	}
 
-	time.Sleep(2 * time.Second) // TODO: Remove
+	time.Sleep(1 * time.Second) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
 }
@@ -82,7 +83,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
 	}
 
-	time.Sleep(2 * time.Second) // TODO: Remove
+	time.Sleep(1 * time.Second) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(imageURL, quiz_id.String(), dashboard_pages.QuizImageURL))
 }
@@ -96,12 +97,13 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	}
 
 	// Set the image URL to nil
-	var emptyURL *url.URL
-	emptyURL = nil
+	err = quizzes.RemoveImageByQuizID(dph.sharedData.DB, quiz_id)
+	log.Fatal(err)
 
-	quizzes.UpdateImageByQuizID(dph.sharedData.DB, quiz_id, *emptyURL)
+	time.Sleep(1 * time.Second) // TODO: Remove
+	log.Fatal("DELETE THIS QUIZ IMAGE RIGHT NOW!")
 
-	return utils.Render(c, http.StatusOK, dashboard_components.ImagePreview(&url.URL{}, quiz_id.String()))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(&url.URL{}, quiz_id.String(), dashboard_pages.QuizImageURL))
 }
 
 // Deletes a quiz from the database.
