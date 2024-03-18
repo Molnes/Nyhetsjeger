@@ -14,8 +14,8 @@ templ QuizPreview(quiz quizzes.Quiz) {
 		/>
 		<div class="mt-4 lg:mt-0 grid grid-cols-1 gap-4 bg-gray-200">
 			<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800">{ quiz.Title }</h3>
-			<a class="mt-2 text-white font-sans py-2 px-10 mx-10 my-14 rounded-lg bg-center text-center cgradient" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
-				Spill
+			<a class="mt-2 text-white font-sans py-2 px-10 mx-10 my-14 rounded-lg bg-center text-center cgradient font-bold" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
+				SPILL
 			</a>
 		</div>
 	</div>
