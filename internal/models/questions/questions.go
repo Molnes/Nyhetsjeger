@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -108,7 +109,7 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
 	var alternativeIDs []uuid.UUID
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
 		pq.Array(&alternativeIDs),
@@ -117,16 +118,12 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 		return nil, err
 	}
 
-	// Add the image URL to the question
-	if imageURL != "" {
-		tempURL, err := url.Parse(imageURL)
-
-		if err != nil {
-			return nil, err
-		}
-
-		q.ImageURL = *tempURL
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
 	}
+	q.ImageURL = *tempURL
 
 	// Add the article to the question
 	article, _ := articles.GetArticleByID(db, articleID)
@@ -153,7 +150,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		var q Question
 		var articleID uuid.UUID
 		var alternativeIDs []uuid.UUID
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
 			pq.Array(&alternativeIDs),
@@ -162,16 +159,12 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 			return nil, err
 		}
 
-		// Add the image URL to the question
-		if imageURL != "" {
-			tempURL, err := url.Parse(imageURL)
-
-			if err != nil {
-				return nil, err
-			}
-
-			q.ImageURL = *tempURL
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
 		}
+		q.ImageURL = *tempURL
 
 		// Add the article to the question
 		article, _ := articles.GetArticleByID(db, articleID)
@@ -215,11 +208,13 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	imageUrl, err := url.Parse(imageUrlString)
 	if err != nil {
 		return nil, err
+	} else {
+		q.ImageURL = *imageUrl
 	}
-	q.ImageURL = *imageUrl
 
 	answerRows, err := db.Query(
 		`

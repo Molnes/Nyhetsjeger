@@ -29,12 +29,14 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
 			}
 			// Quiz Image
-			@dashboard_components.EditQuizForm("") {
-				<label for="quiz-image" class="block">Forside bilde</label>
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
+				<div class="flex flex-row items-center gap-3">
+					<label for="quiz-title" class="block">Forside bilde</label>
+					@components.LoadingIndicator()
+				</div>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				<input id="quiz-image" name={ QuizImageURL } type="text" class="bg-gray-200 w-full px-2 py-1 mb-2" value={ quiz.ImageURL.String() }/>
-				@dashboard_components.ImagePreview(&quiz.ImageURL)
+				@dashboard_components.EditImageInput(&quiz.ImageURL, quiz.ID.String(), QuizImageURL)
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm("") {

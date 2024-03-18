@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/url"
 
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
 
@@ -81,7 +82,7 @@ func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	var article Article
 	var articleURL string
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&article.ID,
 		&article.Title,
@@ -100,12 +101,12 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 		return nil, err
 	}
 
-	// Parse the image URL.
-	tempImageURL, err := url.Parse(imageURL)
-	article.ImgURL = *tempImageURL
-	if err == sql.ErrNoRows {
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
 		return nil, err
 	}
+	article.ImgURL = *tempURL
 
 	return &article, nil
 }
@@ -116,7 +117,7 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	for rows.Next() {
 		var article Article
 		var articleURL string
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&article.ID,
 			&article.Title,
@@ -135,12 +136,12 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 			return nil, err
 		}
 
-		// Parse the image URL.
-		tempImageURL, err := url.Parse(imageURL)
-		article.ImgURL = *tempImageURL
-		if err == sql.ErrNoRows {
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
 			return nil, err
 		}
+		article.ImgURL = *tempURL
 
 		articles = append(articles, article)
 	}

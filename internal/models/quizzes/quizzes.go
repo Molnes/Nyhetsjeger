@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
 
@@ -95,6 +96,16 @@ func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
 	return err
 }
 
+// Remove the image URL for a quiz by its ID.
+func RemoveImageByQuizID(db *sql.DB, id uuid.UUID) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET image_url = NULL
+		WHERE id = $1`,
+		id)
+	return err
+}
+
 // Update the title for a quiz by its ID.
 func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 	_, err := db.Exec(
@@ -121,7 +132,7 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	quizzes := []Quiz{}
 	for rows.Next() {
 		var quiz Quiz
-		var imageURL string
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&quiz.ID,
 			&quiz.Title,
@@ -135,12 +146,14 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 		if err != nil {
 			return nil, err
 		}
-		tempURL, err := url.Parse(imageURL)
-		quiz.ImageURL = *tempURL
 
-		if err == sql.ErrNoRows {
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
 			return nil, err
 		}
+		quiz.ImageURL = *tempURL
+
 		quizzes = append(quizzes, quiz)
 	}
 	return quizzes, nil
@@ -163,7 +176,7 @@ func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
 // Converts a row from the database to a Quiz.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
@@ -177,7 +190,12 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	if err != nil {
 		return nil, err
 	}
-	tempURL, err := url.Parse(imageURL)
+
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
+	}
 	quiz.ImageURL = *tempURL
 
 	if err == sql.ErrNoRows {
