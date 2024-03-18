@@ -85,7 +85,7 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 }
 
 // Update the image URL for a quiz by its ID.
-func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
+func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL *url.URL) error {
 	_, err := db.Exec(
 		`UPDATE quizzes
 		SET image_url = $1
@@ -96,7 +96,7 @@ func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
 }
 
 // Update the title for a quiz by its ID.
-func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
+func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title *string) error {
 	_, err := db.Exec(
 		`UPDATE quizzes
 		SET title = $1

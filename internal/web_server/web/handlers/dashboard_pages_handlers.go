@@ -111,7 +111,7 @@ func (dph *DashboardPagesHandler) removeImageFromQuiz(c echo.Context) error {
 		return err
 	}
 
-	quizzes.UpdateImageByQuizID(dph.sharedData.DB, quizID, *image_url)
+	quizzes.UpdateImageByQuizID(dph.sharedData.DB, quizID, image_url)
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ImagePreview(&quiz.ImageURL))
 }
