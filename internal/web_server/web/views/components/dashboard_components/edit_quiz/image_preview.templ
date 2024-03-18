@@ -1,16 +1,30 @@
 package dashboard_components
 
 import (
+	"fmt"
 	"net/url"
 )
 
 // Shows a preview of an image and a remove button if the image is not empty.
 // If the image is empty, a text is displayed.
-templ ImagePreview(url *url.URL) {
-	if url.String() == "" {
+templ ImagePreview(imageURL *url.URL, quizID string) {
+	if imageURL.String() == "" {
 		<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
 	} else {
-		<img src={ url.String() } height="200" class="mb-2 block mx-auto"/>
-		<button id="remove-image-button" type="button" class="bg-gray-100 px-3 py-2 block mx-auto">Fjern bilde</button>
+		// This div wrapper is to prevent a layout shift while loading the image
+		<div style="height: 200px" class="mx-auto mb-2">
+			<img src={ imageURL.String() } height="200" style="height: 100%" class="block rounded mx-auto object-cover"/>
+		</div>
+		<button
+			id="remove-image-button"
+			type="button"
+			class="bg-gray-100 px-3 py-2 block mx-auto"
+			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quizID) }
+			hx-trigger="change"
+			hx-swap="outerHTML"
+			hx-target="this"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+		>Fjern bilde</button>
 	}
 }
