@@ -47,7 +47,7 @@ func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 	_, err := db.Exec(
 		`INSERT INTO user_answers
 		(user_id, question_id, question_presented_at)
-		VALUES ($1, $2, $3)`, userId, questionId, time.Now())
+		VALUES ($1, $2, $3)`, userId, questionId, time.Now().UTC())
 
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
@@ -131,19 +131,23 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
-	nowTime := time.Now()
-	pointsAwarded := calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints)
+	nowTime := time.Now().UTC()
+
+	question, err := questions.GetQuestionByID(db, questionId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pointsAwarded uint
+	if question.IsAnswerCorrect(chosenAlternative) {
+		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints)
+	}
 	_, err = db.Exec(
 		`UPDATE user_answers
 		SET chosen_answer_alternative_id = $1, answered_at = $2, points_awarded = $3
 		WHERE user_id = $4 AND question_id = $5;`,
 		chosenAlternative, nowTime, pointsAwarded, userId, questionId)
 
-	if err != nil {
-		return nil, err
-	}
-
-	question, err := questions.GetQuestionByID(db, questionId)
 	if err != nil {
 		return nil, err
 	}
@@ -167,14 +171,18 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint) uint {
 
 	diff := answeredAt.Sub(questionPresentadAt)
+
 	secondsTaken := diff.Seconds()
+
+	threshholdMax := 0.25
+	threshholdMid := 0.5
 
 	var pointsAwarded float64
 
 	timeLimitFloat := float64(timeLimit)
-	if secondsTaken < 0.75*timeLimitFloat {
+	if secondsTaken < threshholdMax*timeLimitFloat {
 		pointsAwarded = float64(maxPoints)
-	} else if secondsTaken < 0.5*timeLimitFloat {
+	} else if secondsTaken < threshholdMid*timeLimitFloat {
 		pointsAwarded = float64(maxPoints) / 2
 	} else {
 		pointsAwarded = float64(maxPoints) / 4
