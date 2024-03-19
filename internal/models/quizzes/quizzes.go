@@ -21,6 +21,7 @@ type Quiz struct {
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Published      bool
+	IsDeleted      bool
 	Questions      []questions.Question
 }
 
@@ -47,6 +48,7 @@ func CreateDefaultQuiz() Quiz {
 		CreatedAt:      time.Now(),
 		LastModifiedAt: time.Now(),
 		Published:      false,
+		IsDeleted:      false,
 		Questions:      []questions.Question{},
 	}
 }
@@ -64,7 +66,7 @@ var SampleQuiz Quiz = Quiz{
 func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
     FROM
 			quizzes
 		WHERE
@@ -121,7 +123,7 @@ func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published 
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
     FROM
 			quizzes`)
 	if err != nil {
@@ -142,6 +144,7 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 			&quiz.CreatedAt,
 			&quiz.LastModifiedAt,
 			&quiz.Published,
+			&quiz.IsDeleted,
 		)
 		if err != nil {
 			return nil, err
@@ -186,6 +189,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		&quiz.CreatedAt,
 		&quiz.LastModifiedAt,
 		&quiz.Published,
+		&quiz.IsDeleted,
 	)
 	if err != nil {
 		return nil, err
@@ -208,7 +212,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 	_, err := db.Exec(
 		`INSERT INTO quizzes
-			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published)
+			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted)
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8)`,
 		quiz.ID,
@@ -219,6 +223,7 @@ func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 		quiz.CreatedAt,
 		quiz.LastModifiedAt,
 		quiz.Published,
+		quiz.IsDeleted,
 	)
 
 	return &quiz.ID, err
