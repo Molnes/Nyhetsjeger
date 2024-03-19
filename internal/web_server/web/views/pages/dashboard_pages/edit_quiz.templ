@@ -14,6 +14,8 @@ import (
 const QuizTitle = "quiz-title"
 const QuizImageURL = "quiz-image-url"
 const QuizPublished = "quiz-is-published"
+const QuizActiveFrom = "quiz-active-from"
+const QuizActiveTo = "quiz-active-to"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -65,15 +67,12 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm("") {
-				<h2>Aktiv</h2>
-				<div class="block mb-3">
-					<label for="quiz-active-start" class="mr-4">Fra</label>
-					<input id="quiz-active-start" type="datetime-local" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableFrom.Local().Format("2006-01-02T15:04") }/>
+				<div class="flex flex-row items-center gap-3">
+					<h2>Aktiv</h2>
+					@components.LoadingIndicator()
 				</div>
-				<div class="block mb-3">
-					<label for="quiz-active-end" class="mr-5">Til</label>
-					<input id="quiz-active-end" type="datetime-local" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableTo.Local().Format("2006-01-02T15:04") }/>
-				</div>
+				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
+				@dashboard_components.EditActiveEndInput(quiz.AvailableTo, quiz.ID.String(), QuizActiveTo)
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {

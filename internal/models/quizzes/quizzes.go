@@ -252,3 +252,14 @@ func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) err
 		id)
 	return err
 }
+
+// Update the quiz's 'active' start time by its ID.
+func UpdateActiveStartByQuizID(db *sql.DB, id uuid.UUID, activeStart time.Time) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET available_from = $1
+		WHERE id = $2`,
+		activeStart,
+		id)
+	return err
+}

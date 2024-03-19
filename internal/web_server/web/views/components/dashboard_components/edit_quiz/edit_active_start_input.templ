@@ -1,0 +1,28 @@
+package dashboard_components
+
+import (
+	"fmt"
+	"time"
+
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
+)
+
+// Displays the input for the active start time of a quiz.
+// The input has datetime in Norway's timezone.
+templ EditActiveStartInput(startTime time.Time, quizID string, inputName string) {
+	<div id="quiz-active-start" class="block mb-3">
+		<label for="quiz-active-start" class="mr-4">Fra</label>
+		<input
+			name={ inputName }
+			type="datetime-local"
+			class="bg-gray-200 px-3 py-1"
+			value={ data_handling.GetNorwayTime(startTime).Format("2006-01-02T15:04") }
+			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-start?quiz-id=%s", quizID) }
+			hx-trigger="change"
+			hx-target="this"
+			hx-swap="#quiz-active-start"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+		/>
+	</div>
+}
