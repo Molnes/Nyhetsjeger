@@ -92,6 +92,8 @@ func populate_usernames(db *sql.DB) {
 	}
 }
 
+// Loads data from a csv file into the adjectives and nouns tables.
+// Hardcoded to be used with the whitelist-words.csv file.
 func loadDataFromCSV(db *sql.DB) {
 	file, err := os.Open("data/whitelist-words.csv")
 	if err != nil {
