@@ -163,11 +163,7 @@ CREATE TABLE IF NOT EXISTS usernames (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     adjective TEXT NOT NULL REFERENCES adjectives(adjective),
     noun TEXT NOT NULL REFERENCES nouns(noun),
-    PRIMARY KEY (adjective, noun),
-
-    FOREIGN KEY (adjective) REFERENCES adjectives(adjective),
-    FOREIGN KEY (noun) REFERENCES nouns(noun),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    PRIMARY KEY (adjective, noun)
 );
 
 CREATE VIEW available_usernames AS
