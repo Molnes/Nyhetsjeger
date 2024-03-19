@@ -244,6 +244,17 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 	return err
 }
 
+// Update the published status of a quiz by its ID.
+func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET published = $1
+		WHERE id = $2`,
+		published,
+		id)
+	return err
+}
+
 // Retrieves a partial quiz from the database by a quiz ID.
 func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 	row := db.QueryRow(

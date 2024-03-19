@@ -32,6 +32,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/create-new", aah.postDefaultQuiz)
 	e.POST("/quiz/edit-title", aah.editQuizTitle)
 	e.POST("/quiz/edit-image", aah.editQuizImage)
+	e.POST("/quiz/edit-published-status", aah.editQuizPublished)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
 	e.DELETE("/delete-quiz", aah.deleteQuiz)
 }
@@ -61,7 +62,7 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
 	}
 
-	time.Sleep(1 * time.Second) // TODO: Remove
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
 }
@@ -82,7 +83,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
 	}
 
-	time.Sleep(1 * time.Second) // TODO: Remove
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(imageURL, quiz_id.String(), dashboard_pages.QuizImageURL))
 }
@@ -101,7 +102,7 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
 	}
 
-	time.Sleep(1 * time.Second) // TODO: Remove
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(&url.URL{}, quiz_id.String(), dashboard_pages.QuizImageURL))
 }
@@ -109,7 +110,6 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 // Deletes a quiz from the database.
 func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
 	}
@@ -118,4 +118,25 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")
 	return c.Redirect(http.StatusOK, "/dashboard")
+}
+
+// Updates the published status of a quiz in the database.
+// If the quiz is published, it will be unpublished, and vice versa.
+func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
+	// Get the quiz ID
+	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+	}
+
+	// Update the quiz published status
+	published := c.FormValue(dashboard_pages.QuizPublished)
+	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, !(published == "on"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz published status")
+	}
+
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(!(published == "on"), quiz_id.String(), dashboard_pages.QuizPublished))
 }

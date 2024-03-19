@@ -16,8 +16,9 @@ import (
 
 func main() {
 	err := godotenv.Load()
+
 	if err != nil {
-		log.Fatal("DB Populator: Error loading .env")
+		log.Default().Println("Error loading .env file")
 	}
 
 	dburl, ok := os.LookupEnv("POSTGRESQL_URL_DEV")

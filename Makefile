@@ -24,6 +24,7 @@ reset-db:
 	./scripts/reset-db.sh
 	./scripts/add-db-usr.sh
 	go run cmd/db_populator/main.go
+	go run cmd/username_populator/main.go
 	
 initialize-docker:
 	docker compose up -d
@@ -31,3 +32,6 @@ initialize-docker:
 
 run-bruno:
 	./scripts/bruno-test.sh
+
+populate-usernames:
+	go run cmd/username_populator/main.go
