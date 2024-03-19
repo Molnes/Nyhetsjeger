@@ -91,6 +91,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 
 	// static files
 	e.Static("/static", "assets")
+	e.File("/favicon.ico", "assets/favicon.ico")
 
 	// websocket for live updates
 	e.GET("/ws", handlers.WebsocketHandler)
