@@ -150,4 +150,29 @@ CREATE TABLE IF NOT EXISTS http_sessions (
               expires_on TIMESTAMPTZ);
               CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
               CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
+
+CREATE TABLE IF NOT EXISTS adjectives (
+    adjective TEXT PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS nouns (
+    noun TEXT PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS usernames (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    adjective TEXT NOT NULL REFERENCES adjectives(adjective),
+    noun TEXT NOT NULL REFERENCES nouns(noun),
+    PRIMARY KEY (adjective, noun)
+);
+
+CREATE VIEW available_usernames AS
+    SELECT a.adjective, n.noun
+    FROM adjectives a
+    CROSS JOIN nouns n
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM usernames u
+        WHERE u.adjective = a.adjective AND u.noun = n.noun
+);
 END;
