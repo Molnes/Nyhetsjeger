@@ -13,28 +13,31 @@ import (
 // Constants for the input names (for HTTP POST requests)
 const QuizTitle = "quiz-title"
 const QuizImageURL = "quiz-image-url"
+const QuizPublished = "quiz-is-published"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
-		<div class="flex flex-col items-center gap-3 max-w-screen-sm m-auto px-5 py-3">
+		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto px-5 py-3">
 			<h1 class="text-2xl">Rediger Quiz</h1>
 			// Quiz Title
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
-				<div class="flex row items-center gap-3">
+				<div class="flex flex-row items-center gap-3">
 					<label for="quiz-title" class="block">Tittel</label>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
 			}
 			// Quiz Image
-			@dashboard_components.EditQuizForm("") {
-				<label for="quiz-image" class="block">Forside bilde</label>
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
+				<div class="flex flex-row items-center gap-3">
+					<label for="quiz-title" class="block">Forside bilde</label>
+					@components.LoadingIndicator()
+				</div>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				<input id="quiz-image" name={ QuizImageURL } type="text" class="bg-gray-200 w-full px-2 py-1 mb-2" value={ quiz.ImageURL.String() }/>
-				@dashboard_components.ImagePreview(&quiz.ImageURL)
+				@dashboard_components.EditImageInput(&quiz.ImageURL, quiz.ID.String(), QuizImageURL)
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm("") {
@@ -78,22 +81,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="innerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
+			@components.LoadingIndicator()
 			// Quiz Buttons: Delete, Hide, OK
-			<div class="flex flex-row justify-around w-full px-5 py-3 mt-5">
-				<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
-				<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
-					Skjul quiz<input
-	id="quiz-is-hidden"
-	class="ml-3"
-	type="checkbox"
-	if !quiz.Published {
-		checked
-	}
-	class="mx-1 p-1"
-/>
-				</label>
-				<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
-			</div>
+			@dashboard_components.EditQuizForm("") {
+				<div class="flex flex-row justify-around w-full px-5">
+					<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
+					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
+					<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
+				</div>
+			}
 		</div>
 	}
 	<dialog

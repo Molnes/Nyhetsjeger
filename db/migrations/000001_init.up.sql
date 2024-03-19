@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     url TEXT NOT NULL,
-    image_url TEXT NOT NULL
+    image_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS quizzes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    image_url TEXT NOT NULL,
+    image_url TEXT,
     available_from TIMESTAMP NOT NULL,
     available_to TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),

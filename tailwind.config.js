@@ -9,6 +9,7 @@ export default {
                                 'cblue': '#0085FF',
                                 'cindigo': '#5B14F2',
                                 'cfuchsia': '#AD00FF',
+                                'clightindigo': '#E3D8F1',
                         },
                 },
                 fontFamily: {

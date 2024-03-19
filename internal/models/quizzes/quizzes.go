@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
 
@@ -95,6 +96,16 @@ func UpdateImageByQuizID(db *sql.DB, id uuid.UUID, imageURL url.URL) error {
 	return err
 }
 
+// Remove the image URL for a quiz by its ID.
+func RemoveImageByQuizID(db *sql.DB, id uuid.UUID) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET image_url = NULL
+		WHERE id = $1`,
+		id)
+	return err
+}
+
 // Update the title for a quiz by its ID.
 func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 	_, err := db.Exec(
@@ -106,10 +117,13 @@ func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 	return err
 }
 
+// Get all quizzes in the database.
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	rows, err := db.Query(
-		`SELECT id, title 
-        FROM quizzes`)
+		`SELECT
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published 
+    FROM
+			quizzes`)
 	if err != nil {
 		return nil, err
 	}
@@ -117,14 +131,29 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 
 	quizzes := []Quiz{}
 	for rows.Next() {
-		quiz := Quiz{}
+		var quiz Quiz
+		var imageURL sql.NullString
 		err := rows.Scan(
 			&quiz.ID,
 			&quiz.Title,
+			&imageURL,
+			&quiz.AvailableFrom,
+			&quiz.AvailableTo,
+			&quiz.CreatedAt,
+			&quiz.LastModifiedAt,
+			&quiz.Published,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+
 		quizzes = append(quizzes, quiz)
 	}
 	return quizzes, nil
@@ -147,7 +176,7 @@ func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
 // Converts a row from the database to a Quiz.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
-	var imageURL string
+	var imageURL sql.NullString
 	err := row.Scan(
 		&quiz.ID,
 		&quiz.Title,
@@ -161,7 +190,12 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	if err != nil {
 		return nil, err
 	}
-	tempURL, err := url.Parse(imageURL)
+
+	// Set image URL
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+	if err != nil {
+		return nil, err
+	}
 	quiz.ImageURL = *tempURL
 
 	if err == sql.ErrNoRows {
@@ -195,6 +229,17 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 	_, err := db.Exec(
 		`DELETE FROM quizzes
 		WHERE id = $1`,
+		id)
+	return err
+}
+
+// Update the published status of a quiz by its ID.
+func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET published = $1
+		WHERE id = $2`,
+		published,
 		id)
 	return err
 }
