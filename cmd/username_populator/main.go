@@ -33,6 +33,7 @@ func main() {
 	/* populate_usernames(db) */
 }
 
+// Populates the adjectives table
 func populate_adjectives(db *sql.DB) {
 	// Populate adjectives with raud, fin and brennande.
 	ctx := context.Background()
@@ -50,6 +51,7 @@ func populate_adjectives(db *sql.DB) {
 	}
 }
 
+// Populates the nouns table
 func populate_nouns(db *sql.DB) {
 	// Populate nouns with lefse, taco, and, stol and appelsin.
 	ctx := context.Background()
@@ -69,6 +71,7 @@ func populate_nouns(db *sql.DB) {
 	}
 }
 
+// Populates the usernames table
 func populate_usernames(db *sql.DB) {
 	// Populate usernames with raudlefse, fintaco, brennandeand, raudstol, and finappelsin.
 	ctx := context.Background()
