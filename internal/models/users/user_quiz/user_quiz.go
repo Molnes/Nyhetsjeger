@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 var ErrNoSuchQuiz = errors.New("user_quiz: no such quiz")
@@ -23,7 +24,8 @@ func getNextUnansweredQuestionID(db *sql.DB, userID uuid.UUID, quizID uuid.UUID)
 		AND id NOT IN (
 			SELECT question_id
 			FROM user_answers
-			WHERE user_id = $2
+			WHERE chosen_answer_alternative_id IS NOT NULL
+			AND user_id = $2
 		)
 		ORDER BY arrangement
 		LIMIT 1;`, quizID, userID)
@@ -39,11 +41,20 @@ func getNextUnansweredQuestionID(db *sql.DB, userID uuid.UUID, quizID uuid.UUID)
 	return id, nil
 }
 
+var errQuestionAlreadyStarted = errors.New("user quiz: question already started")
+
 func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 	_, err := db.Exec(
 		`INSERT INTO user_answers
 		(user_id, question_id, question_presented_at)
 		VALUES ($1, $2, $3)`, userId, questionId, time.Now())
+
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return errQuestionAlreadyStarted
+		}
+	}
+
 	return err
 }
 
@@ -86,7 +97,10 @@ func StartNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questio
 
 	err = startQuestion(db, userID, question.ID)
 	if err != nil {
-		return nil, err
+		if err != errQuestionAlreadyStarted {
+			// ignoring the question already started error, so the user can continue anytime
+			return nil, err
+		}
 	}
 	return question, nil
 }
