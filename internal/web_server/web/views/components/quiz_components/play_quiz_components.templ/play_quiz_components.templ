@@ -28,12 +28,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
 		<div class="grid grid-cols-2 gap-8 w-full">
 			for _, alt := range answered.Question.Alternatives {
-				<button
-					disabled
-					class="font-bold p-2 h-28 rounded gradient-shadow bg-white text-wrap"
-				>
-					{ alt.Text }
-				</button>
+				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
@@ -54,16 +49,33 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	</div>
 }
 
-// templ feedbackButton(text string, wasPicked bool, correct bool, percentage float) {
-// 	<button
-// 		disabled
-// 		class={ "font-bold p-2 h-28 rounded gradient-shadow bg-white"
-// 			if wasPicked {
-// 			}
-// 	>
-// 		{ text }
-// 		{ if wasPicked {
-// 			fmt.Sprintf(" - %d%%", int(percentage*100))
-// 		} }
-// 	</button>
-// }
+templ feedbackButton(alternative questions.Alternative, wasPicked bool) {
+	<button
+		disabled
+		class="font-bold p-2 h-28 rounded gradient-shadow bg-white text-wrap"
+	>
+		{ alternative.Text }
+		<div class="absolute -top-4 -left-4 ">
+			if alternative.IsCorrect {
+				@feedbackCircle() {
+					<span class="text-green-500">Riktig</span>
+				}
+			} else {
+				@feedbackCircle() {
+					<span class="text-red-500">Feil</span>
+				}
+			}
+		</div>
+		<div class="absolute -bottom-4 -right-4">
+			@feedbackCircle() {
+				{ fmt.Sprintf("%v%%", alternative.PercentChosen * 100) }
+			}
+		</div>
+	</button>
+}
+
+templ feedbackCircle() {
+	<div class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow">
+		{ children... }
+	</div>
+}
