@@ -131,15 +131,14 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
-	nowTime := time.Now().UTC()
-
-	question, err := questions.GetQuestionByID(db, questionId)
+	isCorrect, err := questions.IsCorrectAnswer(db, questionId, chosenAlternative)
 	if err != nil {
 		return nil, err
 	}
 
+	nowTime := time.Now().UTC()
 	var pointsAwarded uint
-	if question.IsAnswerCorrect(chosenAlternative) {
+	if isCorrect {
 		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints)
 	}
 	_, err = db.Exec(
@@ -152,6 +151,10 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, err
 	}
 
+	question, err := questions.GetQuestionByID(db, questionId)
+	if err != nil {
+		return nil, err
+	}
 	nextQuestionID, err := getNextUnansweredQuestionID(db, userId, question.QuizID)
 	if err != nil {
 		if err != ErrNoMoreQuestions {
