@@ -1,0 +1,50 @@
+package play_quiz_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/questions"
+import "fmt"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+import "github.com/google/uuid"
+
+templ AnswerButtons(question *questions.Question) {
+	<form
+		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?questionid=%s", question.ID.String()) }
+		hx-swap="outerHTML"
+		class="flex flex-col"
+	>
+		for _, alternative := range question.Alternatives {
+			<button
+				type="submit"
+				name="answer"
+				value={ alternative.ID.String() }
+			>
+				{ alternative.Text }
+			</button>
+		}
+	</form>
+}
+
+templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
+	<div class="flex flex-col">
+		for _, alt := range answered.Question.Alternatives {
+			<button
+				disabled
+			>
+				{ alt.Text } { fmt.Sprintf("%t",alt.IsCorrect) } { fmt.Sprintf("%t", alt.ID == answered.ChosenAnswerID) }
+			</button>
+		}
+		if answered.NextQuestionID != uuid.Nil {
+			<button
+				onclick="location.reload()"
+			>
+				NEXT
+			</button>
+		} else {
+			<a
+				class=""
+				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quizid=%s", answered.Question.QuizID.String())) }
+			>
+				FINISH
+			</a>
+		}
+	</div>
+}

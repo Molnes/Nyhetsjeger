@@ -2,8 +2,45 @@ package quiz_pages
 
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components.templ"
 
 templ QuizPlayPage(title string, data *user_quiz.StartQuizData) {
 	@layout_components.QuizPlayLayout(title) {
+		<div class="flex flex-col items-center">
+			<h1
+				class="text-3xl font-bold"
+			>{ data.PartialQuiz.Title }</h1>
+			@progressBar(data.FirstQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
+			<section>
+				<h2
+					class="text-2xl font-bold"
+				>{ data.FirstQuestion.Text }</h2>
+				@play_quiz_components.AnswerButtons(&data.FirstQuestion)
+			</section>
+		</div>
 	}
+}
+
+
+templ progressBar(current uint, total uint) {
+	<div class="flex justify-center items-center">
+		for i := uint(0); i < total; i++ {
+			<div
+				if i < current {
+					class="w-8 h-8 bg-gray-500 rounded-full "
+				} else {
+					class="w-8 h-8 bg-gray-200 rounded-full "
+				}
+			></div>
+			if i < total - 1 {
+				<div
+					if i+1 < current {
+						class="w-4 h-3 bg-gray-500 "
+					} else {
+						class="w-4 h-3 bg-gray-200"
+					}
+				></div>
+			}
+		}
+	</div>
 }

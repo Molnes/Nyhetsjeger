@@ -5,8 +5,10 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components.templ"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -44,15 +46,20 @@ func (qah *QuizApiHandler) getArticles(c echo.Context) error {
 }
 
 func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
-	_, err := uuid.Parse(c.QueryParam("questionid"))
+	questionID, err := uuid.Parse(c.QueryParam("questionid"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing questionid")
 	}
-	_, err = uuid.Parse(c.FormValue("answer"))
+	pickedAnswerID, err := uuid.Parse(c.FormValue("answer"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answerid in formdata")
 	}
 
-	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
+	answered, err := user_quiz.AnswerQuestion(qah.sharedData.DB, utils.GetUserIDFromCtx(c), questionID, pickedAnswerID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
 
 }
