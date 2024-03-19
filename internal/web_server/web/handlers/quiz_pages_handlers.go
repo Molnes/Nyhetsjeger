@@ -106,9 +106,10 @@ func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 	if err != nil {
 		if err == user_quiz.ErrNoSuchQuiz {
 			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
-		}
-		if err == user_quiz.ErrNoMoreQuestions {
-			return c.Redirect(http.StatusFound, "/quiz/summary?quizid="+quizID.String())
+		} else if err == user_quiz.ErrNoMoreQuestions {
+			return c.Redirect(http.StatusTemporaryRedirect, "/quiz/summary?quizid="+quizID.String())
+		} else {
+			return err
 		}
 	}
 
