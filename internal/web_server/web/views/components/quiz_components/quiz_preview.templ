@@ -10,10 +10,10 @@ templ QuizPreview(quiz quizzes.Quiz) {
 		<img
 			src="https://picsum.photos/200/300"
 			alt={ quiz.Title }
-			class="h-48 w-full  bg-gray-500 rounded-t-lg"
+			class="h-48 w-full  bg-gray-500 rounded-t-lg object-cover"
 		/>
-		<div class="mt-4 lg:mt-0 grid grid-cols-1 gap-4 bg-gray-200">
-			<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800">{ quiz.Title }</h3>
+		<div class="mt-0 grid grid-cols-1 gap-4 bg-gray-200">
+			<h3 class="text-4xl mt-10 mx-10 text-center font-semibold text-gray-800 h-20 text-ellipsis w-64 overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
 			<a class="mt-2 text-white font-sans py-2 px-10 mx-10 my-14 rounded-lg bg-center text-center cgradient font-bold" href={ templ.SafeURL("/quiz/" + quiz.ID.String()) }>
 				SPILL
 			</a>
