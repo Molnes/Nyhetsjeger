@@ -12,15 +12,15 @@ import (
 )
 
 type Question struct {
-	ID           uuid.UUID
-	Text         string
-	ImageURL     url.URL
-	Arrangement  uint
-	Article      articles.Article // The article this question is based on.
-	QuizID       uuid.UUID
-	TimeLimitSeconds    uint
-	Points       uint
-	Alternatives []Alternative
+	ID               uuid.UUID
+	Text             string
+	ImageURL         url.URL
+	Arrangement      uint
+	Article          articles.Article // The article this question is based on.
+	QuizID           uuid.UUID
+	TimeLimitSeconds uint
+	Points           uint
+	Alternatives     []Alternative
 }
 
 type Alternative struct {
@@ -28,6 +28,18 @@ type Alternative struct {
 	Text       string
 	IsCorrect  bool
 	QuestionID uuid.UUID
+}
+
+func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
+	isCorrect := false
+	for _, a := range q.Alternatives {
+		if a.ID == answerID {
+			isCorrect = a.IsCorrect
+			break
+		}
+	}
+	return isCorrect
+
 }
 
 // Returns all questions for a given quiz.
@@ -153,7 +165,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		var alternativeIDs []uuid.UUID
 		var imageURL sql.NullString
 		err := rows.Scan(
-			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds , &q.Points,
+			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 			pq.Array(&alternativeIDs),
 		)
 		if err != nil {
@@ -195,7 +207,7 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 // Get specific question by ID.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
-	var imageUrlString string
+	var imageUrlString sql.NullString
 	row := db.QueryRow(
 		`
 		SELECT
@@ -210,7 +222,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		return nil, err
 	}
 
-	imageUrl, err := url.Parse(imageUrlString)
+	imageUrl, err := data_handling.ConvertNullStringToURL(&imageUrlString)
 	if err != nil {
 		return nil, err
 	} else {
