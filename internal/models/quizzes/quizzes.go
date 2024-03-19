@@ -40,8 +40,8 @@ func CreateDefaultQuiz() Quiz {
 		Title: fmt.Sprintf("Quiz: Uke %d", week),
 		ImageURL: url.URL{
 			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
+			Host:   "upload.wikimedia.org",
+			Path:   "/wikipedia/commons/5/59/Question_mark_choice.jpg",
 		},
 		AvailableFrom:  time.Now(),
 		AvailableTo:    time.Now().Add(24 * 7 * time.Hour),
