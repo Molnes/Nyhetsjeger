@@ -31,8 +31,8 @@ type PartialQuiz struct {
 	AvailableFrom  time.Time
 	AvailableTo    time.Time
 	Published      bool
-	QuestionNumber int
-	MaxScore       int
+	QuestionNumber uint
+	MaxScore       uint
 }
 
 func GetQuiz(quizID uuid.UUID) (Quiz, error) {
