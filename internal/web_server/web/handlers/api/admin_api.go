@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -43,8 +42,6 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 func (aah *AdminApiHandler) postDefaultQuiz(c echo.Context) error {
 	// Create a default quiz object
 	quiz := quizzes.CreateDefaultQuiz()
-	log.Println(quiz.ID)
-	log.Println(quiz.Title)
 
 	// Add quiz to database
 	quizID, err := quizzes.CreateQuiz(aah.sharedData.DB, quiz)
