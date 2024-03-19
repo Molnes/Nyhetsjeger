@@ -1,8 +1,10 @@
 package quiz_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components.templ"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components.templ"
+)
 
 templ QuizPlayPage(title string, data *user_quiz.StartQuizData) {
 	@layout_components.QuizPlayLayout(title) {
@@ -10,8 +12,15 @@ templ QuizPlayPage(title string, data *user_quiz.StartQuizData) {
 			<h1
 				class="text-3xl font-bold"
 			>{ data.PartialQuiz.Title }</h1>
-			@progressBar(data.FirstQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 			<section>
+				@progressBar(data.FirstQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
+				if data.FirstQuestion.ImageURL.String() != "" {
+					<img
+						class="h-48 object-cover rounded-lg shadow-lg my-4 mx-auto"
+						src={ data.FirstQuestion.ImageURL.String() }
+						alt=""
+					/>
+				}
 				<h2
 					class="text-2xl font-bold"
 				>{ data.FirstQuestion.Text }</h2>
@@ -20,7 +29,6 @@ templ QuizPlayPage(title string, data *user_quiz.StartQuizData) {
 		</div>
 	}
 }
-
 
 templ progressBar(current uint, total uint) {
 	<div class="flex justify-center items-center">
