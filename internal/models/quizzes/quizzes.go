@@ -232,3 +232,14 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 		id)
 	return err
 }
+
+// Update the published status of a quiz by its ID.
+func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET published = $1
+		WHERE id = $2`,
+		published,
+		id)
+	return err
+}

@@ -1,19 +1,31 @@
 package dashboard_components
 
+import (
+	"fmt"
+)
+
 // A toggle to publish or unpublish a quiz.
 // If the quiz is published, the checkbox is not checked.
 // If the quiz is not published, the checkbox is checked.
-templ ToggleQuizPublished(isPublished bool, inputName string) {
-	<label for="quiz-is-hidden" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
+// While the request is pending, the previous indicator is displayed.
+templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
+	<label id="quiz-is-hidden-label" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
 		Skjul quiz
 		<input
+			id={ inputName }
 			name={ inputName }
-			class="ml-3"
+			class="ml-3 mx-1 p-1"
 			type="checkbox"
 			if !isPublished {
 				checked
 			}
-			class="mx-1 p-1"
+			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-published-status?quiz-id=%s", quizID) }
+			hx-trigger="change"
+			hx-vals="true:false"
+			hx-swap="outerHTML"
+			hx-target="#quiz-is-hidden-label"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
 		/>
 	</label>
 }
