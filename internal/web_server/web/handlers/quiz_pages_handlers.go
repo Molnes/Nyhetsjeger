@@ -97,9 +97,9 @@ func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
-	quizID, err := uuid.Parse(c.QueryParam("quizid"))
+	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz-id")
 	}
 
 	startQuizData, err := user_quiz.StartQuiz(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
@@ -107,7 +107,7 @@ func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 		if err == user_quiz.ErrNoSuchQuiz {
 			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
 		} else if err == user_quiz.ErrNoMoreQuestions {
-			return c.Redirect(http.StatusTemporaryRedirect, "/quiz/summary?quizid="+quizID.String())
+			return c.Redirect(http.StatusTemporaryRedirect, "/quiz/summary?quiz-id="+quizID.String())
 		} else {
 			return err
 		}
@@ -180,9 +180,9 @@ func (qph *QuizPagesHandler) postNextQuestion(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
-	quizID, err := uuid.Parse(c.QueryParam("quizid"))
+	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quizid")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz-id")
 	}
 
 	quizSummary, err := user_quiz_summary.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)

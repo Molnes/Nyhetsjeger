@@ -46,9 +46,9 @@ func (qah *QuizApiHandler) getArticles(c echo.Context) error {
 }
 
 func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
-	questionID, err := uuid.Parse(c.QueryParam("questionid"))
+	questionID, err := uuid.Parse(c.QueryParam("question-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing questionid")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question-id")
 	}
 	pickedAnswerID, err := uuid.Parse(c.FormValue("answer"))
 	if err != nil {

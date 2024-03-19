@@ -7,7 +7,7 @@ import "github.com/google/uuid"
 
 templ AnswerButtons(question *questions.Question) {
 	<form
-		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?questionid=%s", question.ID.String()) }
+		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		hx-swap="outerHTML"
 		class="grid grid-cols-2 gap-8"
 	>
@@ -46,7 +46,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		} else {
 			<a
 				class=""
-				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quizid=%s", answered.Question.QuizID.String())) }
+				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
 			</a>
