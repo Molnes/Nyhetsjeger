@@ -29,11 +29,11 @@ func main() {
 
 	defer db.Close()
 
-	/* populate_adjectives(db)
-	populate_nouns(db) */
+	populate_adjectives(db)
+	populate_nouns(db)
 	/* populate_usernames(db) */
 
-	loadDataFromCSV(db)
+	/* loadDataFromCSV(db) */
 }
 
 // Populates the adjectives table
@@ -97,7 +97,7 @@ func populate_usernames(db *sql.DB) {
 func loadDataFromCSV(db *sql.DB) {
 	file, err := os.Open("data/whitelist-words.csv")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer file.Close()
 
@@ -112,7 +112,7 @@ func loadDataFromCSV(db *sql.DB) {
 	r.Read() // Skip header
 	records, err := r.ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	for _, record := range records {
