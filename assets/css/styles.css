@@ -2,23 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Custom variables */
+:root {
+        --cblue: #0085FF;
+        --cindigo: #5B14F2;
+        --cfuchsia: #AD00FF;
+}
+
 /* CSS classes ".scrollbar-hide" and ".scrollbar-hide::-webkit-scrollbar" (next 2) taken from https://design2tailwind.com/blog/tailwindcss-hide-scrollbar/ */
 /* For Webkit-based browsers (Chrome, Safari and Opera) */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+        display: none;
 }
 
 /* For IE, Edge and Firefox */
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
 }
 
-.custom-gradient {
-    background-image: linear-gradient(to bottom right, #0085FF, #5B14F2, #AD00FF);
-}
 
 .htmx-indicator {
     opacity: 0;
@@ -31,4 +36,32 @@
 
 .htmx-request.htmx-indicator {
     opacity: 1;
+}
+/* Background Gradient */
+.cgradient {
+        background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+}
+
+/* Gradient Border */
+.cgradient-border {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+}
+
+.gradient-shadow {
+    position: relative;
+}
+
+.gradient-shadow::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    z-index: -1;
+    background: rgb(0, 150, 184);
+    /* gradient using the custom properties */
+    background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
+    filter: blur(10px);
 }
