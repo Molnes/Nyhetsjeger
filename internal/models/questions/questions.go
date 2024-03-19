@@ -24,10 +24,12 @@ type Question struct {
 }
 
 type Alternative struct {
-	ID         uuid.UUID
-	Text       string
-	IsCorrect  bool
-	QuestionID uuid.UUID
+	ID            uuid.UUID
+	Text          string
+	IsCorrect     bool
+	QuestionID    uuid.UUID
+	chosenBy      uint
+	PercentChosen float64
 }
 
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
@@ -39,7 +41,19 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 		}
 	}
 	return isCorrect
+}
 
+// Initializes the percentage of times each alternative has been chosen.
+func (q *Question) initPercentChosen() {
+	total := 0
+	for _, a := range q.Alternatives {
+		total += int(a.chosenBy)
+	}
+	if total != 0 {
+		for i, a := range q.Alternatives {
+			q.Alternatives[i].PercentChosen = float64(a.chosenBy) / float64(total)
+		}
+	}
 }
 
 // Returns all questions for a given quiz.
@@ -204,6 +218,22 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 	return &questions, nil
 }
 
+func IsCorrectAnswer(db *sql.DB, questionID uuid.UUID, answerID uuid.UUID) (bool, error) {
+	row := db.QueryRow(
+		`SELECT correct
+		FROM answer_alternatives
+		WHERE
+			id = $1 AND question_id = $2`,
+		answerID, questionID)
+
+	var isCorrect bool
+	err := row.Scan(&isCorrect)
+	if err != nil {
+		return false, err
+	}
+	return isCorrect, nil
+}
+
 // Get specific question by ID.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
@@ -230,10 +260,11 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	}
 
 	answerRows, err := db.Query(
-		`
-		SELECT id, text, correct, question_id
-		FROM answer_alternatives
-		WHERE question_id = $1;
+		`SELECT aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
+		FROM answer_alternatives aa
+		LEFT JOIN user_answers ua ON aa.id = ua.chosen_answer_alternative_id
+		WHERE aa.question_id = $1
+		GROUP BY aa.id;
 		`, id)
 	if err != nil {
 		return nil, err
@@ -248,7 +279,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	for answerRows.Next() {
 		var a Alternative
 		err := answerRows.Scan(
-			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID, &a.chosenBy,
 		)
 		if err != nil {
 			return nil, err
@@ -260,6 +291,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		return nil, errors.New("no alternatives found for question with id: " + id.String())
 	}
 	q.Alternatives = alternatives
+	q.initPercentChosen()
 	return &q, nil
 }
 
