@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/csv"
 	"log"
 	"os"
 
@@ -28,9 +29,11 @@ func main() {
 
 	defer db.Close()
 
-	populate_adjectives(db)
-	populate_nouns(db)
+	/* populate_adjectives(db)
+	populate_nouns(db) */
 	/* populate_usernames(db) */
+
+	loadDataFromCSV(db)
 }
 
 // Populates the adjectives table
@@ -83,6 +86,43 @@ func populate_usernames(db *sql.DB) {
 	}
 
 	tx.Exec("INSERT INTO usernames VALUES ('raud', 'lefse')")
+
+	if err := tx.Commit(); err != nil {
+		log.Println(err)
+	}
+}
+
+func loadDataFromCSV(db *sql.DB) {
+	file, err := os.Open("data/whitelist-words.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	r := csv.NewReader(file)
+	r.Comma = ';'
+	r.Read() // Skip header
+	records, err := r.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, record := range records {
+
+		//In case of an unbalanced csv file
+		if len(record[0]) > 0 {
+			tx.Exec("INSERT INTO adjectives VALUES ($1)", record[0])
+		}
+		if len(record[1]) > 0 {
+			tx.Exec("INSERT INTO nouns VALUES ($1)", record[1])
+		}
+	}
 
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
