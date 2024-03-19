@@ -24,6 +24,17 @@ type Quiz struct {
 	Questions      []questions.Question
 }
 
+type PartialQuiz struct {
+	ID             uuid.UUID
+	Title          string
+	ImageURL       url.URL
+	AvailableFrom  time.Time
+	AvailableTo    time.Time
+	Published      bool
+	QuestionNumber int
+	MaxScore       int
+}
+
 func GetQuiz(quizID uuid.UUID) (Quiz, error) {
 	return SampleQuiz, nil
 }
@@ -231,4 +242,38 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 		WHERE id = $1`,
 		id)
 	return err
+}
+
+// Retrieves a partial quiz from the database by a quiz ID.
+func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
+	row := db.QueryRow(
+		`SELECT qz.id, qz.title, qz.image_url, qz.available_from, qz.available_to, qz.published, count(q.id), sum(q.points)
+		FROM quizzes qz 
+		LEFT JOIN questions q ON q.quiz_id = qz.id
+		WHERE qz.id = $1
+		GROUP BY qz.id;`, quizid)
+
+	var pq PartialQuiz
+	var imageURLStr sql.NullString
+	err := row.Scan(
+		&pq.ID,
+		&pq.Title,
+		&imageURLStr,
+		&pq.AvailableFrom,
+		&pq.AvailableTo,
+		&pq.Published,
+		&pq.QuestionNumber,
+		&pq.MaxScore,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	tempURL, err := data_handling.ConvertNullStringToURL(&imageURLStr)
+	if err != nil {
+		return nil, err
+	}
+	pq.ImageURL = *tempURL
+
+	return &pq, nil
 }
