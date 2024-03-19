@@ -109,3 +109,16 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 	user.Role = user_roles.RoleFromString(roleString)
 	return &user, err
 }
+
+// Returns a random available username from the database
+func getRandomAvailableUsername(db *sql.DB) (string, error) {
+	var username string
+	err := db.QueryRow(
+		`SELECT *
+			FROM available_usernames 
+			OFFSET floor(random() * (
+				SELECT COUNT(*) FROM available_usernames)
+		) 
+		LIMIT 1;`).Scan(&username)
+	return username, err
+}
