@@ -1,0 +1,9 @@
+package quiz_pages
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+
+templ QuizPlayPage(title string, data *user_quiz.StartQuizData) {
+	@layout_components.QuizPlayLayout(title) {
+	}
+}

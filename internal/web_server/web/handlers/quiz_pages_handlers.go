@@ -8,6 +8,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
@@ -32,7 +33,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/checkanswer", qph.getIsCorrect)
 	e.POST("/nextquestion", qph.postNextQuestion)
 	e.GET("/summary", qph.getQuizSummary)
-
+	e.GET("/play", qph.getPlayQuizPage)
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
 	e.GET("/arkiv", qph.getArchivedQuizzes)
@@ -93,6 +94,25 @@ func (qph *QuizPagesHandler) getQuizPageByQuizID(c echo.Context) error {
 
 	//redirect to quiz page with first question
 	return c.Redirect(http.StatusFound, "/quiz/quizpage?questionid="+questionId.String())
+}
+
+func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
+	quizID, err := uuid.Parse(c.QueryParam("quizid"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
+	}
+
+	startQuizData, err := user_quiz.StartQuiz(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
+	if err != nil {
+		if err == user_quiz.ErrNoSuchQuiz {
+			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
+		}
+		if err == user_quiz.ErrNoMoreQuestions {
+			return c.Redirect(http.StatusFound, "/quiz/summary?quizid="+quizID.String())
+		}
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizPlayPage(startQuizData.PartialQuiz.Title, startQuizData))
 }
 
 // Checks if the answer was correct, and returns the results
