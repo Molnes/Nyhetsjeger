@@ -20,6 +20,9 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 				</button>
 			</div>
 			<div class="flex flex-row flex-wrap mb-14 gap-y-8 gap-x-10">
+				if len(unpublishedQuizzes) == 0 {
+					<p class="w-full px-5 py-3 bg-clightindigo text-center">Fant ingen upubliserte quizzer. Lag en ny quiz!</p>
+				}
 				for _, quiz := range unpublishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
@@ -33,6 +36,11 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 				</button>
 			</div>
 			<div class="flex flex-row flex-wrap gap-y-8 gap-x-10">
+				if len(publishedQuizzes) == 0 {
+					<p class="w-full px-5 py-3 bg-clightindigo text-center">
+						Fant ingen publiserte quizzer. For å publisere en quiz, velg en upublisert quiz og <b>ikke</b> kryss av for å skjule quiz.
+					</p>
+				}
 				for _, quiz := range publishedQuizzes {
 					@dashboard_components.QuizTile(quiz)
 				}
