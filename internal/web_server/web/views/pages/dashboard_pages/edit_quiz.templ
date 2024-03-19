@@ -41,7 +41,10 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm("") {
-				<h2>Artikler i quizzen</h2>
+				<div class="flex flex-row items-center gap-3">
+					<h2>Artikler i quizzen</h2>
+					@components.LoadingIndicator()
+				</div>
 				<div class="flex flex-row gap-5 mb-3">
 					<label for="add-article">Link<input type="text" id="add-article" class="bg-gray-200 px-2 py-1 ml-3"/></label>
 					<button hx-post="" id="add-article" class="bg-gray-300 px-5 py-1">
@@ -63,8 +66,14 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm("") {
 				<h2>Aktiv</h2>
-				<div class="block mb-3"><label for="quiz-active-start" class="mr-4">Fra</label><input id="quiz-active-start" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableFrom.Format("2006-01-01") }/></div>
-				<div class="block mb-3"><label for="quiz-active-end" class="mr-5">Til</label><input id="quiz-active-end" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableTo.Format("2006-01-01") }/></div>
+				<div class="block mb-3">
+					<label for="quiz-active-start" class="mr-4">Fra</label>
+					<input id="quiz-active-start" type="datetime-local" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableFrom.Local().Format("2006-01-02T15:04") }/>
+				</div>
+				<div class="block mb-3">
+					<label for="quiz-active-end" class="mr-5">Til</label>
+					<input id="quiz-active-end" type="datetime-local" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableTo.Local().Format("2006-01-02T15:04") }/>
+				</div>
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {
