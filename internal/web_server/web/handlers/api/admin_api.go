@@ -34,7 +34,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/edit-image", aah.editQuizImage)
 	e.POST("/quiz/edit-published-status", aah.editQuizPublished)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
-	e.DELETE("/delete-quiz", aah.deleteQuiz)
+	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -109,11 +109,13 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 
 // Deletes a quiz from the database.
 func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
+	// Parse the quiz ID from the query parameter
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
 	}
 
+	// Sets the quiz as deleted in the database
 	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")

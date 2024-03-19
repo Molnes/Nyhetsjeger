@@ -70,7 +70,8 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
     FROM
 			quizzes
 		WHERE
-			id = $1`,
+			id = $1 AND
+			is_deleted = false`,
 		id)
 
 	quiz, err := scanQuizFromFullRow(row)
@@ -125,7 +126,9 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 		`SELECT
 			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
     FROM
-			quizzes`)
+			quizzes
+		WHERE
+			is_deleted = false`)
 	if err != nil {
 		return nil, err
 	}
@@ -229,10 +232,11 @@ func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 	return &quiz.ID, err
 }
 
-// Delete a Quiz from the DB by its ID.
+// Set a Quiz to deleted in the DB by its ID.
 func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 	_, err := db.Exec(
-		`DELETE FROM quizzes
+		`UPDATE quizzes
+		SET is_deleted = true
 		WHERE id = $1`,
 		id)
 	return err
