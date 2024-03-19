@@ -118,7 +118,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	var questionPresentedAt time.Time
 	var chosenAnsweIdNull uuid.UUID
 	var maxPoints uint
-	var timeLimit time.Time
+	var timeLimit uint
 	err := db.QueryRow(
 		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
@@ -132,7 +132,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	}
 
 	nowTime := time.Now()
-	pointsAwarded := calculatePoints(questionPresentedAt, nowTime, uint(timeLimit.Second()), maxPoints)
+	pointsAwarded := calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints)
 	_, err = db.Exec(
 		`UPDATE user_answers
 		SET chosen_answer_alternative_id = $1, answered_at = $2, points_awarded = $3
