@@ -72,6 +72,8 @@ func populate_nouns(db *sql.DB) {
 }
 
 // Populates the usernames table
+// This solution will not work at this moment.
+// Function will be used later to debug and test.
 func populate_usernames(db *sql.DB) {
 	// Populate usernames with raudlefse, fintaco, brennandeand, raudstol, and finappelsin.
 	ctx := context.Background()
