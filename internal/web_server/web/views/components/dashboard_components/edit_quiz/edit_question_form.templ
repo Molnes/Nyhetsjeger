@@ -9,7 +9,7 @@ import (
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
-templ EditQuestionForm(question questions.Question, articles *[]articles.Article) {
+templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string) {
 	<form hx-post="">
 		<h2 class="text-2xl mb-5">Rediger spørsmål</h2>
 		// Article
@@ -63,7 +63,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		// Image
 		<label for="question-image" class="block">Bilde</label>
 		<input id="question-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-		@ImagePreview(&question.ImageURL)
+		@ImagePreview(&question.ImageURL, quizID)
 		// Points
 		<label for="points" class="block mt-5">Poeng</label>
 		<input id="points" type="number" class="bg-gray-200 px-3 py-1 w-full mb-5" min="0" value={ fmt.Sprint(question.Points) }/>

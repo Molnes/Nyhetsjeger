@@ -2,6 +2,11 @@ package quiz_components
 
 templ BurgerMenu() {
 	<div>
+		<!-- Button to toggle sidebar -->
+		<button id="toggleSidebar" class="fixed top-5 right-4 z-10">
+			@burgerIcon()
+			@crossIcon()
+		</button>
 		<!-- Sidebar -->
 		<div id="sidebar" class="fixed right-0 top-0 h-screen w-64 bg-gray-300 text-black p-4 hidden shadow-lg text-2xl">
 			<ul class="space-y-2">
@@ -13,14 +18,9 @@ templ BurgerMenu() {
 				<!-- Add more menu items as needed -->
 			</ul>
 			<ul class="bottom-4 absolute w-full">
-				<li class="border-t-2 mt-4 pt-4 bottom-0"><a hx-post="/auth/logout" class="hover:text-gray-600 cursor-pointer">Logg ut</a></li>
+				<li class="border-t-2 mt-4 pt-4 bottom-0"><button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 cursor-pointer">Logg ut</button></li>
 			</ul>
 		</div>
-		<!-- Button to toggle sidebar -->
-		<button id="toggleSidebar" class="fixed top-5 right-4 ">
-			@burgerIcon()
-			@crossIcon()
-		</button>
 		<!-- Inline JavaScript -->
 		<script>
         const sidebar = document.getElementById('sidebar');
