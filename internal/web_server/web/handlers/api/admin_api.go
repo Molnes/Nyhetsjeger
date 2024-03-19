@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -40,11 +41,19 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 // Handles the creation of a new default quiz in the DB.
 // Redirects to the edit quiz page for the newly created quiz.
 func (aah *AdminApiHandler) postDefaultQuiz(c echo.Context) error {
+	// Create a default quiz object
 	quiz := quizzes.CreateDefaultQuiz()
-	quizzes.CreateQuiz(aah.sharedData.DB, quiz)
+	log.Println(quiz.ID)
+	log.Println(quiz.Title)
 
-	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?quiz-id="+quiz.ID.String())
-	return c.Redirect(http.StatusOK, "/dashboard/edit-quiz?quiz-id="+quiz.ID.String())
+	// Add quiz to database
+	quizID, err := quizzes.CreateQuiz(aah.sharedData.DB, quiz)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new quiz")
+	}
+
+	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?quiz-id="+quizID.String())
+	return c.Redirect(http.StatusOK, "/dashboard/edit-quiz?quiz-id="+quizID.String())
 }
 
 // Updates the title of a quiz in the database.

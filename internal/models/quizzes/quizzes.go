@@ -217,7 +217,7 @@ func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 		`INSERT INTO quizzes
 			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted)
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8)`,
+			($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		quiz.ID,
 		quiz.Title,
 		quiz.ImageURL.String(),
