@@ -75,7 +75,8 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 }
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		username_adjective, username_noun
 		FROM users
 		WHERE sso_user_id = $1`,
 		sso_id)
