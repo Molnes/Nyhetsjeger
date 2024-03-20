@@ -2,6 +2,8 @@ package play_quiz_components
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"fmt"
 )
 
 templ QuizPlayContent(data *user_quiz.QuizData) {
@@ -9,9 +11,13 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		id="quiz-play-content"
 		class="flex flex-col items-center w-11/12 md:w-3/4 lg:w-1/2 mx-auto h-full py-2 gap-2"
 	>
-		<h1 class="text-3xl font-bold">
-			{ data.PartialQuiz.Title }
-		</h1>
+		<div class="flex justify-between items-center w-full ">
+			<a href="/quiz">
+				@icons.Cross(2, "black", 10, 10)
+			</a>
+			<h1 class="text-3xl font-bold">{ data.PartialQuiz.Title }</h1>
+			@timer(data.CurrentQuestion.TimeLimitSeconds)
+		</div>
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
@@ -48,5 +54,11 @@ templ progressBar(current uint, total uint) {
 				}
 			</div>
 		}
+	</div>
+}
+
+templ timer(timeLeft uint) {
+	<div>
+		{ fmt.Sprintf("%v", timeLeft) }
 	</div>
 }
