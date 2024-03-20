@@ -179,4 +179,11 @@ func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
 	return &adjective, &noun, err
 }
 
+func assignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
+	_, err := db.Exec(
+		`UPDATE users
+			SET username_adjective = $2, username_noun = $3
+			WHERE id = $1`,
+		userID, adjective, noun)
+	return err
 }
