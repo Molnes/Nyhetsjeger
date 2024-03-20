@@ -245,8 +245,8 @@ var SampleArticles []Article = []Article{
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
 		},
 	},
 	{
@@ -262,8 +262,8 @@ var SampleArticles []Article = []Article{
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
 		},
 	},
 }

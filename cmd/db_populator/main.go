@@ -59,8 +59,8 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
-			Host:   "www.unsplash.it",
-			Path:   "/200/200",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
 		},
 	}
 
@@ -89,7 +89,7 @@ func createSampleQuiz(db *sql.DB, title string) {
 		`INSERT INTO quizzes (title, available_from, available_to, image_url)
 		values ($1, $2, $3, $4)
 		RETURNING id;`,
-		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://www.unsplash.it/200/200")
+		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://picsum.photos/id/1062/500/300")
 
 	err := row.Scan(&quiz_id)
 	if err != nil {
@@ -126,7 +126,7 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 	tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
 		VALUES ($1, $2, $3, $4, $5, $6);`,
-		question_id, question.text, "https://unsplash.it/200/200", nil, quiz_id, 10)
+		question_id, question.text, "https://picsum.photos/id/1062/500/300", nil, quiz_id, 10)
 
 	for _, a := range question.answer_alts {
 		alternative_id := uuid.New()
