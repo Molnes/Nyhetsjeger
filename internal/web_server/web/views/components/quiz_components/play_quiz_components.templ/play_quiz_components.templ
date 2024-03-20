@@ -35,7 +35,9 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		if answered.NextQuestionID != uuid.Nil {
 			<button
 				class="text-xl p-2 w-min rounded-sm gradient-shadow bg-white text-wrap"
-				onclick="location.reload()"
+				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				hx-target="#quiz-play-content"
+				hx-swap="outerHTML"
 			>
 				NESTE
 			</button>

@@ -58,23 +58,29 @@ func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 	return err
 }
 
-type StartQuizData struct {
-	PartialQuiz   quizzes.PartialQuiz
-	FirstQuestion questions.Question
+type QuizData struct {
+	PartialQuiz quizzes.PartialQuiz
+	CurrentQuestion    questions.Question
 }
 
-func StartQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*StartQuizData, error) {
+// Returns the next question in the quiz for the user and saves the time it was presented.
+//
+// May return:
+//
+// ErrNoSuchQuiz if the quiz does not exist.
+// ErrNoMoreQuestions if there are no more unanswered questions for the user.
+func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizData, error) {
 	partialQuiz, err := quizzes.GetPartialQuizByID(db, quizID)
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	firstQuestion, err := StartNextQuestion(db, userID, quizID)
+	nextQuestion, err := StartNextQuestion(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
-	return &StartQuizData{
+	return &QuizData{
 		*partialQuiz,
-		*firstQuestion,
+		*nextQuestion,
 	}, nil
 
 }

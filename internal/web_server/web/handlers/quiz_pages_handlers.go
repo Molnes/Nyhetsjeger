@@ -102,7 +102,7 @@ func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz-id")
 	}
 
-	startQuizData, err := user_quiz.StartQuiz(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
+	startQuizData, err := user_quiz.NextQuestionInQuiz(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
 	if err != nil {
 		if err == user_quiz.ErrNoSuchQuiz {
 			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
