@@ -10,7 +10,7 @@ templ AnswerButtons(question *questions.Question) {
 	<form
 		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		hx-swap="outerHTML"
-		class="grid grid-cols-2 gap-8 w-full isolate"
+		class="grid grid-cols-2 gap-8 w-full isolate mt-2"
 	>
 		for _, alternative := range question.Alternatives {
 			<button
@@ -27,7 +27,7 @@ templ AnswerButtons(question *questions.Question) {
 
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
-		<div class="grid grid-cols-2 gap-8 w-full isolate">
+		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
