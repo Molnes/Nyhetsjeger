@@ -10,7 +10,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
-	userranking "github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
@@ -201,9 +201,9 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
-        rankings, err := userranking.GetRanking(qph.sharedData.DB)
+        rankings, err := user_ranking.GetRanking(qph.sharedData.DB)
         if err != nil {
-                return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get rankings")
+                return err
         }
 	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings))
 }

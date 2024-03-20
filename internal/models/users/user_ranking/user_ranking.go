@@ -1,4 +1,4 @@
-package userranking
+package user_ranking
 
 import "database/sql"
 
