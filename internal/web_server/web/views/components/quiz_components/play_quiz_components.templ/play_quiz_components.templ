@@ -1,30 +1,43 @@
 package play_quiz_components
 
-import "github.com/Molnes/Nyhetsjeger/internal/models/questions"
-import "fmt"
-import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
-import "github.com/google/uuid"
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"github.com/google/uuid"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+)
 
+// Form with buttons for each alternative in a question
 templ AnswerButtons(question *questions.Question) {
-	<form
-		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
-		hx-swap="outerHTML"
-		class="grid grid-cols-2 gap-8 w-full isolate mt-2"
+	<div
+		id="answer-buttons"
+		class="flex flex-col gap-8 items-center w-full"
 	>
-		for _, alternative := range question.Alternatives {
-			<button
-				type="submit"
-				name="answer"
-				class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
-				value={ alternative.ID.String() }
-			>
-				{ alternative.Text }
-			</button>
-		}
-	</form>
+		<form
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+			hx-swap="outerHTML"
+			hx-target="#answer-buttons"
+			hx-indicator=".htmx-indicator"
+			class="grid grid-cols-2 gap-8 w-full isolate mt-2"
+		>
+			for _, alternative := range question.Alternatives {
+				<button
+					type="submit"
+					name="answer"
+					class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+					value={ alternative.ID.String() }
+				>
+					{ alternative.Text }
+				</button>
+			}
+		</form>
+		@components.LoadingIndicator()
+	</div>
 }
 
+//
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
 		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">
@@ -34,16 +47,18 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl p-2 w-min rounded-sm gradient-shadow bg-white text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
+				hx-indicator=".htmx-indicator"
 			>
 				NESTE
+				@components.LoadingIndicator()
 			</button>
 		} else {
 			<a
-				class=""
+				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
