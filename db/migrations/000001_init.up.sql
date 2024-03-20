@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS quizzes (
     available_to TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     last_modified_at TIMESTAMP NOT NULL DEFAULT now(),
-    published BOOLEAN NOT NULL DEFAULT FALSE
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS quiz_articles (

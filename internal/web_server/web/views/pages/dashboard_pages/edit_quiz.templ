@@ -14,6 +14,8 @@ import (
 const QuizTitle = "quiz-title"
 const QuizImageURL = "quiz-image-url"
 const QuizPublished = "quiz-is-published"
+const QuizActiveFrom = "quiz-active-from"
+const QuizActiveTo = "quiz-active-to"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -41,7 +43,10 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm("") {
-				<h2>Artikler i quizzen</h2>
+				<div class="flex flex-row items-center gap-3">
+					<h2>Artikler i quizzen</h2>
+					@components.LoadingIndicator()
+				</div>
 				<div class="flex flex-row gap-5 mb-3">
 					<label for="add-article">Link<input type="text" id="add-article" class="bg-gray-200 px-2 py-1 ml-3"/></label>
 					<button hx-post="" id="add-article" class="bg-gray-300 px-5 py-1">
@@ -62,9 +67,12 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm("") {
-				<h2>Aktiv</h2>
-				<div class="block mb-3"><label for="quiz-active-start" class="mr-4">Fra</label><input id="quiz-active-start" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableFrom.Format("2006-01-01") }/></div>
-				<div class="block mb-3"><label for="quiz-active-end" class="mr-5">Til</label><input id="quiz-active-end" type="date" class="bg-gray-200 px-3 py-1" value={ quiz.AvailableTo.Format("2006-01-01") }/></div>
+				<div class="flex flex-row items-center gap-3">
+					<h2>Aktiv</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
+				@dashboard_components.EditActiveEndInput(quiz.AvailableTo, quiz.ID.String(), QuizActiveTo)
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {
@@ -85,7 +93,13 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row justify-around w-full px-5">
-					<button class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40">Slett quiz</button>
+					<button
+						class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40"
+						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
+					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
 					<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
 				</div>
