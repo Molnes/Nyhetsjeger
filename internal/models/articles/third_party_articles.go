@@ -54,7 +54,7 @@ type ArticleSMP struct {
 	} `json:"components"`
 }
 
-// Some sample articles for testing purposes.
+// Get an ArticleSMP from a JSON file.
 func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	// Open file
 	file, err := os.Open(filename)
@@ -68,6 +68,7 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	// Read file
 	byteValue, err := io.ReadAll(file)
 
+	// Parse JSON to ArticleSMP
 	var article ArticleSMP
 	err = json.Unmarshal(byteValue, &article)
 	if err != nil {
@@ -110,6 +111,7 @@ func getMainImageOfArticle(article ArticleSMP) (*url.URL, error) {
 	return &url.URL{}, nil
 }
 
+// Get an Article by its URL.
 func GetArticleByURL(articleUrl string) (Article, error) {
 	// TODO: Update this to fetch the article from the web instead of reading it from JSON.
 
