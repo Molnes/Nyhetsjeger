@@ -40,6 +40,11 @@ func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun stri
 		RefreshtokenCypher: RefreshtokenCypher,
 	}
 }
+
+func (u *User) Username() string {
+	return u.usernameAdjective + " " + u.usernameNoun
+}
+
 type UserSessionData struct {
 	ID    uuid.UUID
 	SsoID string
