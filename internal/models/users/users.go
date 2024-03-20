@@ -25,6 +25,21 @@ type User struct {
 	RefreshtokenCypher []byte
 }
 
+func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun string, Email string, Phone string, OptInRanking bool, Role user_roles.Role, AccessTokenCypher []byte, Token_expire time.Time, RefreshtokenCypher []byte) *User {
+	return &User{
+		ID:                 ID,
+		SsoID:              SsoID,
+		usernameAdjective:  usernameAdjective,
+		usernameNoun:       usernameNoun,
+		Email:              Email,
+		Phone:              Phone,
+		OptInRanking:       OptInRanking,
+		Role:               Role,
+		AccessTokenCypher:  AccessTokenCypher,
+		Token_expire:       Token_expire,
+		RefreshtokenCypher: RefreshtokenCypher,
+	}
+}
 type UserSessionData struct {
 	ID    uuid.UUID
 	SsoID string
