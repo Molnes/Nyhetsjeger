@@ -1,0 +1,20 @@
+package dashboard_components
+
+// A row with a label and an input field.
+// The input field is for adding a new article to the list of articles.
+templ AddArticleInput(nameInput string) {
+	<div class="flex flex-row gap-5 mb-3">
+		<label for={ nameInput }>
+			Link
+			<input
+				id={ nameInput }
+				name={ nameInput }
+				type="text"
+				class="bg-gray-200 px-2 py-1 ml-3"
+			/>
+		</label>
+		<button hx-post="" class="bg-gray-300 px-5 py-1">
+			Legg til ➕
+		</button>
+	</div>
+}

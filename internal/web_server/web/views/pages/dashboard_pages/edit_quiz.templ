@@ -14,6 +14,7 @@ import (
 const QuizTitle = "quiz-title"
 const QuizImageURL = "quiz-image-url"
 const QuizPublished = "quiz-is-published"
+const QuizArticleURL = "quiz-article-url"
 const QuizActiveFrom = "quiz-active-from"
 const QuizActiveTo = "quiz-active-to"
 
@@ -26,7 +27,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Title
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
 				<div class="flex flex-row items-center gap-3">
-					<label for="quiz-title" class="block">Tittel</label>
+					<label for={ QuizTitle } class="block">Tittel</label>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
@@ -34,7 +35,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			// Quiz Image
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
 				<div class="flex flex-row items-center gap-3">
-					<label for="quiz-title" class="block">Forside bilde</label>
+					<label for={ QuizImageURL } class="block">Forside bilde</label>
 					@components.LoadingIndicator()
 				</div>
 				// TODO: Also support uploading an image
@@ -47,12 +48,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					<h2>Artikler i quizzen</h2>
 					@components.LoadingIndicator()
 				</div>
-				<div class="flex flex-row gap-5 mb-3">
-					<label for="add-article">Link<input type="text" id="add-article" class="bg-gray-200 px-2 py-1 ml-3"/></label>
-					<button hx-post="" id="add-article" class="bg-gray-300 px-5 py-1">
-						Legg til ➕
-					</button>
-				</div>
+				@dashboard_components.AddArticleInput(QuizArticleURL)
 				// List of all articles
 				<ul id="article-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
 					if len(*articles) == 0 {
