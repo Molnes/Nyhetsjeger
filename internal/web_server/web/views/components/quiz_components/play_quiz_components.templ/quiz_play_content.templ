@@ -26,24 +26,27 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 }
 
 templ progressBar(current uint, total uint) {
-	<div class="flex justify-center items-center">
+	<div class="flex justify-center items-center gap-2 isolate">
 		for i := uint(0); i < total; i++ {
 			<div
 				if i < current {
-					class="w-8 h-8 bg-gray-500 rounded-full "
+					class="w-8 h-8 bg-gray-500 rounded-full"
 				} else {
-					class="w-8 h-8 bg-gray-200 rounded-full "
+					class="w-8 h-8 bg-gray-300 rounded-full"
 				}
-			></div>
-			if i < total - 1 {
-				<div
-					if i+1 < current {
-						class="w-4 h-3 bg-gray-500 "
-					} else {
-						class="w-4 h-3 bg-gray-200"
-					}
-				></div>
-			}
+			>
+				if i < total-1 {
+					<div class="flex flex-col justify-center h-full">
+						<div
+							if i+1 < current {
+								class="w-4 h-3 bg-gray-500 relative -right-7 -z-10"
+							} else {
+								class="w-4 h-3 bg-gray-300 relative -right-7 -z-10"
+							}
+						></div>
+					</div>
+				}
+			</div>
 		}
 	</div>
 }
