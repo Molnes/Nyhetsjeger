@@ -1,9 +1,35 @@
 package quiz_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"fmt"
+)
 
-templ Scoreboard() {
+templ Scoreboard(rankings []userranking.UserRanking) {
 	@layout_components.QuizLayout("Scoreboard") {
-		<h1>Scoreboard</h1>
+		<div class="w-full flex flex-col items-center mt-10 overflow-x-auto">
+			<h1 class="text-3xl font-bold">Scoreboard</h1>
+			<div class="mx-auto">
+				<table class="table-auto border-collapse border border-gray-200">
+					<thead>
+						<tr class="bg-pink-100">
+							<th class="text-left font-bold p-2 text-gray-800">Rank</th>
+							<th class="text-left font-bold p-2 text-gray-800">Email</th>
+							<th class="text-left font-bold p-2 text-gray-800">Points</th>
+						</tr>
+					</thead>
+					<tbody>
+						for i, user := range rankings {
+							<tr class="border-b hover:bg-purple-100">
+								<td class="p2">{ fmt.Sprintf("%d", i+1) }</td>
+								<td class="p2">{ user.Email }</td>
+								<td class="p2">{ fmt.Sprintf("%d", user.Points) }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
 	}
 }
