@@ -166,14 +166,17 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 }
 
 // Returns a random available username from the database
-func getRandomAvailableUsername(db *sql.DB) (string, error) {
-	var username string
+func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
+	var adjective string
+	var noun string
 	err := db.QueryRow(
 		`SELECT *
 			FROM available_usernames 
 			OFFSET floor(random() * (
 				SELECT COUNT(*) FROM available_usernames)
 		) 
-		LIMIT 1;`).Scan(&username)
-	return username, err
+		LIMIT 1;`).Scan(&adjective, &noun)
+	return &adjective, &noun, err
+}
+
 }
