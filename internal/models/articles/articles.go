@@ -194,23 +194,6 @@ func AddArticleToQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error
 	return err
 }
 
-// Get an Article's data by its URL.
-func GetArticleDataByURL(articleURL url.URL) (Article, error) {
-	tempID := uuid.NullUUID{
-		UUID:  uuid.New(),
-		Valid: true,
-	}
-
-	article := Article{
-		ID:         tempID,
-		Title:      "Test article",
-		ArticleURL: articleURL,
-		ImgURL:     url.URL{},
-	}
-
-	return article, nil
-}
-
 func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool, error) {
 	row := db.QueryRow(
 		`SELECT
