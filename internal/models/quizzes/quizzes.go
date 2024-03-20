@@ -263,3 +263,14 @@ func UpdateActiveStartByQuizID(db *sql.DB, id uuid.UUID, activeStart time.Time) 
 		id)
 	return err
 }
+
+// Update the quiz's 'active' end time by its ID.
+func UpdateActiveEndByQuizID(db *sql.DB, id uuid.UUID, activeEnd time.Time) error {
+	_, err := db.Exec(
+		`UPDATE quizzes
+		SET available_to = $1
+		WHERE id = $2`,
+		activeEnd,
+		id)
+	return err
+}

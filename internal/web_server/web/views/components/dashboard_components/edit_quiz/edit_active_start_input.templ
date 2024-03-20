@@ -11,8 +11,9 @@ import (
 // The input has datetime in Norway's timezone.
 templ EditActiveStartInput(startTime time.Time, quizID string, inputName string) {
 	<div id="quiz-active-start" class="block mb-3">
-		<label for="quiz-active-start" class="mr-4">Fra</label>
+		<label for={ inputName } class="mr-4">Fra</label>
 		<input
+			id={ inputName }
 			name={ inputName }
 			type="datetime-local"
 			class="bg-gray-200 px-3 py-1"
