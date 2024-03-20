@@ -153,6 +153,84 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	return &articles, nil
 }
 
+// Get an Article ID by its URL.
+func GetArticleIDByURL(db *sql.DB, articleURL *url.URL) (*uuid.NullUUID, error) {
+	row := db.QueryRow(
+		`SELECT
+			id
+		FROM
+			articles
+		WHERE
+			url = $1`,
+		articleURL.String())
+
+	var articleID uuid.NullUUID
+	err := row.Scan(&articleID)
+
+	return &articleID, err
+}
+
+// Add an Article to the database.
+func AddArticle(db *sql.DB, article *Article) error {
+	_, err := db.Exec(
+		`INSERT INTO
+			articles (id, title, url, image_url)
+		VALUES
+			($1, $2, $3, $4)`,
+		article.ID, article.Title, article.ArticleURL.String(), article.ImgURL.String())
+
+	return err
+}
+
+// Add an Article to a Quiz.
+func AddArticleToQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error {
+	_, err := db.Exec(
+		`INSERT INTO
+			quiz_articles (quiz_id, article_id)
+		VALUES
+			($1, $2)`,
+		quizID, articleID)
+
+	return err
+}
+
+// Get an Article's data by its URL.
+func GetArticleDataByURL(articleURL url.URL) (Article, error) {
+	tempID := uuid.NullUUID{
+		UUID:  uuid.New(),
+		Valid: true,
+	}
+
+	article := Article{
+		ID:         tempID,
+		Title:      "Test article",
+		ArticleURL: articleURL,
+		ImgURL:     url.URL{},
+	}
+
+	return article, nil
+}
+
+func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool, error) {
+	row := db.QueryRow(
+		`SELECT
+			article_id
+		FROM
+			quiz_articles
+		WHERE
+			article_id = $1 AND quiz_id = $2`,
+		articleID, quizID)
+
+	var tempID uuid.UUID
+	err := row.Scan(&tempID)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	return true, err
+}
+
 var SampleArticles []Article = []Article{
 	{
 		ID: uuid.NullUUID{

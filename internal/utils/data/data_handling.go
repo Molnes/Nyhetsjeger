@@ -31,7 +31,7 @@ func DateStringToNorwayTime(dateTime string, c echo.Context) (time.Time, error) 
 	// Get the time in Norway's timezone
 	norwayLocation, err := time.LoadLocation("Europe/Oslo")
 	if err != nil {
-		return time.Unix(0, 0), echo.NewHTTPError(http.StatusInternalServerError, "Failed to get Norway's time zone")
+		return time.Unix(0, 0), err
 	}
 
 	// Parse the time

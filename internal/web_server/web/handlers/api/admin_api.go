@@ -1,11 +1,13 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
@@ -38,6 +40,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/edit-end", aah.editQuizActiveEnd)
 	e.POST("/quiz/edit-published-status", aah.editQuizPublished)
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
+	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -202,4 +205,55 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+}
+
+func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
+	// Get the quiz ID
+	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+	}
+
+	// Get the article URL
+	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
+	tempURL, err := url.Parse(articleURL)
+	if err != nil && err == sql.ErrNoRows {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
+	}
+
+	// Check if the article is already in the DB
+	articleID, err := articles.GetArticleIDByURL(aah.sharedData.DB, tempURL)
+	if err != nil && err != sql.ErrNoRows {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+	}
+
+	// If it exists, check if it already is in the quiz
+	if articleID.Valid {
+		articleInQuiz, err := articles.IsArticleInQuiz(aah.sharedData.DB, &articleID.UUID, &quiz_id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
+		}
+		if articleInQuiz {
+			return echo.NewHTTPError(http.StatusBadRequest, "Article is already in quiz")
+		}
+	}
+
+	// If not in DB, fetch the relevant article data and add it to the DB
+	if !articleID.Valid {
+		article, err := articles.GetArticleByURL(articleURL)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+		}
+
+		articles.AddArticle(aah.sharedData.DB, &article)
+
+		articleID = &article.ID
+	}
+
+	// Add the article to the quiz
+	err = articles.AddArticleToQuiz(aah.sharedData.DB, &articleID.UUID, &quiz_id)
+
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL))
 }
