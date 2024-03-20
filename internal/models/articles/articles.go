@@ -194,6 +194,8 @@ func AddArticleToQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error
 	return err
 }
 
+// Returns 'true' if it finds the article in the quiz in the DB.
+// Returns 'false' if it does not find it.
 func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool, error) {
 	row := db.QueryRow(
 		`SELECT
