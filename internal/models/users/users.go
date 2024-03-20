@@ -83,13 +83,41 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	return scanUserFromFullRow(row)
 }
 
-func CreateUser(db *sql.DB, user *User) (*User, error) {
-	row := db.QueryRow(
-		`INSERT INTO users (id, username, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token`,
-		user.ID, user.Username, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
-	return scanUserFromFullRow(row)
+func CreateUser(db *sql.DB, user *User, ctx context.Context) (*User, error) {
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	var adjective string
+	var noun string
+	if err = tx.QueryRowContext(ctx,
+		`SELECT *
+			FROM available_usernames 
+			OFFSET floor(random() * (
+				SELECT COUNT(*) FROM available_usernames)
+		) 
+		LIMIT 1;`).Scan(&adjective, &noun); err != nil {
+		return nil, err
+	}
+
+	_, err = db.ExecContext(ctx,
+		`INSERT INTO users (id, sso_user_id, username_adjective, username_noun,email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+		--RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
+		`,
+		user.ID, user.SsoID, adjective, noun, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
+		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return GetUserByID(db, user.ID)
 }
 
 // Returns the role of the user with the ID provided
