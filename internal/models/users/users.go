@@ -155,6 +155,8 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.AccessTokenCypher,
 		&user.Token_expire,
 		&user.RefreshtokenCypher,
+		&user.usernameAdjective,
+		&user.usernameNoun,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
