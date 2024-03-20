@@ -52,15 +52,23 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				@dashboard_components.AddArticleInput(len(*articles), ArticlesLength, quiz.ID.String(), QuizArticleURL)
 				// List of all articles
 				<ul id="article-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
-					if len(*articles) == 0 {
-						<li class="text-center px-2 py-4">Ingen artikler lagt til enda.</li>
-					}
+					<li
+						id="no-articles-warning"
+						if len(*articles) == 0 {
+							class="text-center px-2 py-4"
+						} else {
+							class="text-center px-2 py-4 hidden"
+						}
+					>
+						<p>Ingen artikler lagt til enda.</p>
+					</li>
 					for _, article := range *articles {
 						if article.ID.Valid {
 							@dashboard_components.ArticleListItem(article.ArticleURL.String())
 						}
 					}
 				</ul>
+				@articleList()
 			}
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm("") {
@@ -130,4 +138,37 @@ script modalWindowScript() {
 		}
 
 		newQuestionButton.addEventListener("click", openQuestionModal);
+}
+
+// This script is used to observe changes in the article list.
+// If the warning is displayed and  an article is added, hide the warning.
+// If the last article is removed, the warning should be shown.
+
+script articleList() {
+		const articleList = document.getElementById("article-list");
+		const noArticlesWarning = document.getElementById("no-articles-warning");
+
+		// Observe if the children of article list are mutated (added or removed)
+		const observer = new MutationObserver(handleChanges);
+		const config = { childList: true };
+		observer.observe(articleList, config);
+
+		// If the article list is changed, this function is called
+		function handleChanges(mutationsList, observer) {
+				mutationsList.forEach(mutation => {
+						if (mutation.type === 'childList') {
+								updateWarningVisibility();
+						}
+				});
+		}
+
+		// Update if the warning should be shown or not
+		const updateWarningVisibility = () => {
+			// If the warning is shown, but an article is appended, hide the warning
+			if (noArticlesWarning && articleList.children.length > 1) {
+				noArticlesWarning.classList.add("hidden");
+			} else if (noArticlesWarning) {
+				noArticlesWarning.classList.remove("hidden");
+			}
+		}
 }
