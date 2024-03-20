@@ -2,10 +2,10 @@ package layout_components
 
 templ QuizPlayLayout(pageTitle string) {
 	@BaseLayout(pageTitle) {
-		<main
-			class="w-11/12 mx-auto"
+		<div
+			class=" bg-gray-100 w-full h-screen"
 		>
 			{ children... }
-		</main>
+		</div>
 	}
 }

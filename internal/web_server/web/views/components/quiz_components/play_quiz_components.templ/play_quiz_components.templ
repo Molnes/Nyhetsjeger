@@ -9,13 +9,13 @@ templ AnswerButtons(question *questions.Question) {
 	<form
 		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		hx-swap="outerHTML"
-		class="grid grid-cols-2 gap-8"
+		class="grid grid-cols-2 gap-8 w-full isolate"
 	>
 		for _, alternative := range question.Alternatives {
 			<button
 				type="submit"
 				name="answer"
-				class="font-bold p-10 h-28 rounded gradient-shadow bg-white text-wrap"
+				class="font-bold p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -26,7 +26,7 @@ templ AnswerButtons(question *questions.Question) {
 
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
-		<div class="grid grid-cols-2 gap-8 w-full">
+		<div class="grid grid-cols-2 gap-8 w-full isolate">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
@@ -52,7 +52,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 templ feedbackButton(alternative questions.Alternative, wasPicked bool) {
 	<button
 		disabled
-		class="font-bold p-2 h-28 rounded gradient-shadow bg-white text-wrap"
+		class="font-bold p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
 	>
 		{ alternative.Text }
 		<div class="absolute -top-4 -left-4 ">
