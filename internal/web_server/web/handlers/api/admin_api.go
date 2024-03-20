@@ -190,21 +190,21 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	}
 
 	// Get the time in Norway's timezone
-	activeEnd := c.FormValue(dashboard_pages.QuizActiveFrom)
+	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
 	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
 	if err != nil {
 		return err
 	}
 
-	// Update the quiz active start
-	err = quizzes.UpdateActiveStartByQuizID(aah.sharedData.DB, quiz_id, activeEndTime)
+	// Update the quiz active end
+	err = quizzes.UpdateActiveEndByQuizID(aah.sharedData.DB, quiz_id, activeEndTime)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active start time")
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active end time")
 	}
 
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
 
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
