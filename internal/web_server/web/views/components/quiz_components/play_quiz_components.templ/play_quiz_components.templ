@@ -55,24 +55,34 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 templ feedbackButton(alternative questions.Alternative, wasPicked bool) {
 	<button
 		disabled
-		class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+		if wasPicked {
+			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
+		} else {
+			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+		}
 	>
 		{ alternative.Text }
 		<div class="absolute -top-4 -left-4 ">
 			if alternative.IsCorrect {
-				@feedbackCircle(true)
+				@feedbackCircle(true, wasPicked)
 			} else {
-				@feedbackCircle(false)
+				@feedbackCircle(false, wasPicked)
 			}
 		</div>
 		<div class="absolute -bottom-4 -right-4">
-			@feedbackPercentage(alternative.PercentChosen)
+			@feedbackPercentage(alternative.PercentChosen, wasPicked)
 		</div>
 	</button>
 }
 
-templ feedbackCircle(correct bool) {
-	<div class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow">
+templ feedbackCircle(correct bool, wasPicked bool) {
+	<div
+		if wasPicked {
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow border-4 border-blue-500"
+		} else {
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow"
+		}
+	>
 		if correct {
 			@icons.Checkmark(60, "green", 1, 1)
 		} else {
@@ -81,8 +91,14 @@ templ feedbackCircle(correct bool) {
 	</div>
 }
 
-templ feedbackPercentage(percentage float64) {
-	<div class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm">
+templ feedbackPercentage(percentage float64, wasPicked bool) {
+	<div
+		if wasPicked {
+			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm border-4 border-blue-500"
+		} else {
+			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm"
+		}
+	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }
 	</div>
 }
