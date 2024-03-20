@@ -25,6 +25,7 @@ type User struct {
 	RefreshtokenCypher []byte
 }
 
+// New creates a new user with the provided parameters
 func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun string, Email string, Phone string, OptInRanking bool, Role user_roles.Role, AccessTokenCypher []byte, Token_expire time.Time, RefreshtokenCypher []byte) *User {
 	return &User{
 		ID:                 ID,
@@ -41,6 +42,7 @@ func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun stri
 	}
 }
 
+// Username returns the username of the user as a single string
 func (u *User) Username() string {
 	return u.usernameAdjective + " " + u.usernameNoun
 }
@@ -64,6 +66,7 @@ func init() {
 	gob.Register(UserSessionData{})
 }
 
+// Returns a user from the database with the uuid provided
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
@@ -73,6 +76,8 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 		id)
 	return scanUserFromFullRow(row)
 }
+
+// Returns a user from the database with the SSO ID provided
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
@@ -83,6 +88,7 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	return scanUserFromFullRow(row)
 }
 
+// Creates a new user in the database
 func CreateUser(db *sql.DB, user *User, ctx context.Context) (*User, error) {
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -179,6 +185,7 @@ func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
 	return &adjective, &noun, err
 }
 
+// Assigns a username to a user in the database
 func assignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
 	_, err := db.Exec(
 		`UPDATE users
