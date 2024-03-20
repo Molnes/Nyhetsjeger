@@ -1,8 +1,10 @@
 package users
 
 import (
+	"context"
 	"database/sql"
 	"encoding/gob"
+	"log"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
@@ -12,7 +14,8 @@ import (
 type User struct {
 	ID                 uuid.UUID
 	SsoID              string
-	Username           string
+	usernameAdjective  string
+	usernameNoun       string
 	Email              string
 	Phone              string
 	OptInRanking       bool
