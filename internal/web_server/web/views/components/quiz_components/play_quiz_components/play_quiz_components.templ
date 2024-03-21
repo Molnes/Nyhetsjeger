@@ -76,10 +76,10 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	</div>
 }
 
-templ feedbackButton(alternative questions.Alternative, wasPicked bool) {
+templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
-		if wasPicked {
+		if isSelected {
 			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
 		} else {
 			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
@@ -88,13 +88,13 @@ templ feedbackButton(alternative questions.Alternative, wasPicked bool) {
 		{ alternative.Text }
 		<div class="absolute -top-4 -left-4 ">
 			if alternative.IsCorrect {
-				@feedbackCircle(true, wasPicked)
+				@feedbackCircle(true, isSelected)
 			} else {
-				@feedbackCircle(false, wasPicked)
+				@feedbackCircle(false, isSelected)
 			}
 		</div>
 		<div class="absolute -bottom-4 -right-4">
-			@feedbackPercentage(alternative.PercentChosen, wasPicked)
+			@feedbackPercentage(alternative.PercentChosen, isSelected)
 		</div>
 	</button>
 }
