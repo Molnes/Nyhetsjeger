@@ -259,6 +259,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, articleID.UUID.String(), quiz_id.String()))
 }
 
+// Deletes an article from a quiz in the database.
 func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -273,7 +274,10 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	}
 
 	// Remove the article from the quiz
-	articles.DeleteArticleFromQuiz(aah.sharedData.DB, &article_id, &quiz_id)
+	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &article_id, &quiz_id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
+	}
 
 	return c.NoContent(http.StatusOK)
 }
