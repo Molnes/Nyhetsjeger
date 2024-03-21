@@ -7,7 +7,7 @@ import (
 )
 
 templ Scoreboard(rankings []user_ranking.UserRanking) {
-	@layout_components.QuizLayout("Scoreboard") {
+	@layout_components.QuizLayoutMenu("Scoreboard") {
 		<div class="w-full flex flex-col items-center mt-10 overflow-x-auto">
 			<h1 class="text-3xl font-bold">Scoreboard</h1>
 			<div class="mx-auto">
