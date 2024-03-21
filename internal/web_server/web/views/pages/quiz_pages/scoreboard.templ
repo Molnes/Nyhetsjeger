@@ -8,8 +8,8 @@ import (
 
 templ Scoreboard(rankings []user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Scoreboard") {
-		<div class="w-full flex flex-col items-center mt-10 overflow-x-auto">
-			<h1 class="text-3xl font-bold">Scoreboard</h1>
+		<main class="w-full flex flex-col items-center overflow-x-auto">
+			<h1 class="text-3xl font-bold  mt-10">Scoreboard</h1>
 			<div class="mx-auto">
 				<table class="table-auto border-collapse border border-gray-200">
 					<thead>
@@ -30,6 +30,6 @@ templ Scoreboard(rankings []user_ranking.UserRanking) {
 					</tbody>
 				</table>
 			</div>
-		</div>
+		</main>
 	}
 }
