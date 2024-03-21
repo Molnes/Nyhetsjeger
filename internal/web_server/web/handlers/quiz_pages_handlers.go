@@ -37,6 +37,8 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/fullforte", qph.getFinishedQuizzes)
 	e.GET("/arkiv", qph.getArchivedQuizzes)
 	e.GET("/profil", qph.getQuizProfile)
+
+	e.GET("/username", qph.usernamePage)
 }
 
 // Renders the quiz home page
@@ -192,4 +194,14 @@ func (qph *QuizPagesHandler) getArchivedQuizzes(c echo.Context) error {
 
 func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
+}
+
+func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
+
+	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if error != nil {
+		return error
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
 }
