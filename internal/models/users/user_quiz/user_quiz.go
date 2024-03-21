@@ -122,18 +122,18 @@ var ErrQuestionAlreadyAnswered = errors.New("user quiz: question already answere
 
 func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAlternative uuid.UUID) (*UserAnsweredQuestion, error) {
 	var questionPresentedAt time.Time
-	var chosenAnsweIdNull uuid.UUID
+	var chosenAnswerIdNull uuid.UUID
 	var maxPoints uint
 	var timeLimit uint
 	err := db.QueryRow(
 		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
 		WHERE user_id = $1 AND question_id = $2;`, userId, questionId,
-	).Scan(&questionPresentedAt, &maxPoints, &timeLimit, &chosenAnsweIdNull)
+	).Scan(&questionPresentedAt, &maxPoints, &timeLimit, &chosenAnswerIdNull)
 	if err != nil {
 		return nil, err
 	}
-	if chosenAnsweIdNull != uuid.Nil {
+	if chosenAnswerIdNull != uuid.Nil {
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
