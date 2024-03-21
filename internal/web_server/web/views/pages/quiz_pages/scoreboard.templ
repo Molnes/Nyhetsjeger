@@ -23,7 +23,7 @@ templ Scoreboard(rankings []user_ranking.UserRanking) {
 						for i, user := range rankings {
 							<tr class="border-b hover:bg-purple-100">
 								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", i+1) }</td>
-								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%s %s", user.Username_adjective, user.Username_noun) }</td>
+								<td class="text-center p-2 border border-slate-700">{ user.Username }</td>
 								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
 							</tr>
 						}
