@@ -274,10 +274,12 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	}
 
 	// Remove the article from the quiz
-	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &article_id, &quiz_id)
+	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &quiz_id, &article_id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
 	}
+
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return c.NoContent(http.StatusOK)
 }
