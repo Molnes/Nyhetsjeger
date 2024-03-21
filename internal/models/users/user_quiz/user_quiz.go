@@ -16,6 +16,9 @@ var ErrNoSuchQuiz = errors.New("user_quiz: no such quiz")
 var ErrNoMoreQuestions = errors.New("user_quiz: no more unanswered questions in quiz")
 var ErrNoSuchAnswer = errors.New("user_quiz: no such answer")
 
+// Returns the ID of the next question the provided user has not answered in the provided quiz.
+//
+// If there are no more questions, returns ErrNoMoreQuestions.
 func getNextUnansweredQuestionID(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (uuid.UUID, error) {
 	row := db.QueryRow(
 		`SELECT id
@@ -43,6 +46,9 @@ func getNextUnansweredQuestionID(db *sql.DB, userID uuid.UUID, quizID uuid.UUID)
 
 var errQuestionAlreadyStarted = errors.New("user quiz: question already started")
 
+// Initiates the answering process for a question.
+//
+// Saves that user was presented with the question (question presented at). If the user has already started answering the question, returns errQuestionAlreadyStarted.
 func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 	_, err := db.Exec(
 		`INSERT INTO user_answers
@@ -59,8 +65,8 @@ func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 }
 
 type QuizData struct {
-	PartialQuiz quizzes.PartialQuiz
-	CurrentQuestion    questions.Question
+	PartialQuiz     quizzes.PartialQuiz
+	CurrentQuestion questions.Question
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -120,6 +126,11 @@ type UserAnsweredQuestion struct {
 
 var ErrQuestionAlreadyAnswered = errors.New("user quiz: question already answered")
 
+// Saves the user's answer to a question and returns the result as a UserAnsweredQuestion.
+//
+// May return:
+//
+// ErrQuestionAlreadyAnswered if the user has already answered the question.
 func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAlternative uuid.UUID) (*UserAnsweredQuestion, error) {
 	var questionPresentedAt time.Time
 	var chosenAnswerIdNull uuid.UUID
@@ -177,6 +188,9 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	}, nil
 }
 
+// Calculates the points awarded for answering a question. The points are based on the time taken to answer the question.
+// As of now there are 3 possible outcomes: 100%, 50% or 25% of the max points.
+// These are based on the thresholds: 0-25%, 25-50% and 50+% of the time limit used.
 func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint) uint {
 
 	diff := answeredAt.Sub(questionPresentadAt)
@@ -199,5 +213,4 @@ func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLi
 
 	rounded := math.RoundToEven(pointsAwarded)
 	return uint(rounded)
-
 }
