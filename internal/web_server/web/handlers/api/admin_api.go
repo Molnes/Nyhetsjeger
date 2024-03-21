@@ -41,6 +41,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/edit-published-status", aah.editQuizPublished)
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
+	e.DELETE("/quiz/delete-article", aah.deleteArticle)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -234,7 +235,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
 		}
 		if articleInQuiz {
-			return echo.NewHTTPError(http.StatusBadRequest, "Article is already in quiz")
+			return echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
 		}
 	}
 
@@ -255,5 +256,28 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
-	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL))
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, articleID.UUID.String(), quiz_id.String()))
+}
+
+// Deletes an article from a quiz in the database.
+func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
+	// Get the quiz ID
+	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+	}
+
+	// Get the article ID
+	article_id, err := uuid.Parse(c.QueryParam("article-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing article ID")
+	}
+
+	// Remove the article from the quiz
+	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &article_id, &quiz_id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
+	}
+
+	return c.NoContent(http.StatusOK)
 }

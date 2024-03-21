@@ -216,6 +216,19 @@ func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool,
 	return true, err
 }
 
+func DeleteArticleFromQuiz(db *sql.DB, quizID *uuid.UUID, articleID *uuid.UUID) error {
+	_, err := db.Exec(
+		`DELETE FROM
+			quiz_articles
+		WHERE
+			quiz_id = $1 AND
+			article_id = $2`,
+		quizID,
+		articleID)
+
+	return err
+}
+
 var SampleArticles []Article = []Article{
 	{
 		ID: uuid.NullUUID{
