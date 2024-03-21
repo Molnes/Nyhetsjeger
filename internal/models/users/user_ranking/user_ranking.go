@@ -7,6 +7,7 @@ type UserRanking struct {
 	Points int
 }
 
+// Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB) ([]UserRanking, error) {
 	rows, err := db.Query(`
         SELECT email, pt.sum_points
