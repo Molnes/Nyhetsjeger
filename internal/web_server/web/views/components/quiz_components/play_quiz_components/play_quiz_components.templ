@@ -39,6 +39,7 @@ templ AnswerButtons(question *questions.Question) {
 	</div>
 }
 
+// Stops the timer right before the HTMX request is sent by the form.
 script stopTimerBeforeRequest() {
 	const answerForm = document.getElementById('answer-form');
 	answerForm.addEventListener('htmx:beforeRequest', function(evt) {
@@ -47,6 +48,7 @@ script stopTimerBeforeRequest() {
 	});
 }
 
+// Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
 		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">
