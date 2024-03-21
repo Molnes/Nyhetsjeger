@@ -1,11 +1,35 @@
 package dashboard_components
 
+import (
+	"fmt"
+)
+
 // An item in the list of articles the quiz questions are based on
-templ ArticleListItem(url string) {
-	<li class="flex flex-row justify-between px-3 py-1">
-		<a target="blank_" href={ templ.SafeURL(url) } class="[&:hover]:underline">
-			{ url }
+templ ArticleListItem(articleUrl string, articleID string, quizID string) {
+	<li id={ articleID } class="flex flex-row justify-between px-3 py-1">
+		<a target="blank_" href={ templ.SafeURL(articleUrl) } class="[&:hover]:underline">
+			{ articleUrl }
 		</a>
-		<button class="px-1" title="Slett">❌</button>
+		<button
+			id="delete-article-button"
+			class="px-1"
+			title="Slett"
+			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
+			hx-swap="none"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+			onclick={ deleteArticle(articleID) }
+		>
+			❌
+		</button>
 	</li>
+}
+
+// Remove the article list item from the list of articles.
+
+script deleteArticle(articleID string) {
+	console.log(articleID)
+		let element = document.getElementById(articleID);
+		console.log(element)
+		element.parentNode.removeChild(element);
 }
