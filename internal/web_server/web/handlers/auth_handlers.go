@@ -153,5 +153,5 @@ func (ah *AuthHandler) logout(c echo.Context) error {
 		return fmt.Errorf("failed to save session: %s", err.Error())
 	}
 	c.Response().Header().Set("HX-Redirect", "/")
-	return c.Redirect(http.StatusOK, "/")
+	return c.NoContent(http.StatusNoContent)
 }
