@@ -24,7 +24,6 @@ type User struct {
 	RefreshtokenCypher []byte
 }
 
-
 type UserSessionData struct {
 	ID    uuid.UUID
 	SsoID string
@@ -48,7 +47,7 @@ func init() {
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
-		concat(username_adjective, ' ', username_noun) AS username
+		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE id = $1`,
 		id)
@@ -59,7 +58,7 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
-		concat(username_adjective, ' ', username_noun) AS username
+		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE sso_user_id = $1`,
 		sso_id)
