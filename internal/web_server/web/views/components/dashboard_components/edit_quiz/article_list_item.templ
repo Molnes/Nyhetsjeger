@@ -32,8 +32,6 @@ script deleteArticle(articleID string) {
 		document.body.addEventListener('htmx:afterOnLoad', function (event) {
 			if (event.detail.elt.id === ('delete-article-'+articleID) && event.detail.xhr.status === 200) {
 				let element = document.getElementById(articleID);
-				console.log("Element", element, element.parentNode)
-
 				element.parentNode.removeChild(element);
 			}
 		}, {once: true});
