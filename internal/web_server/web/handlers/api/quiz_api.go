@@ -40,6 +40,8 @@ func (qah *QuizApiHandler) getArticles(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_components.ArticleList(&articles))
 }
 
+// Handles get request for the next question in a given quiz.
+// Renders the QuizPlayContent component with the quiz data.
 func (qah *QuizApiHandler) getNextQuestion(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
@@ -60,6 +62,11 @@ func (qah *QuizApiHandler) getNextQuestion(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(quizData))
 }
 
+// Handles post request for a user's answer to a question.
+//
+// Expects the question-id as a query parameter and the answer-id as form data.
+//
+// Renders the FeedbackButtons component with the answer feedback.
 func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam("question-id"))
 	if err != nil {
@@ -67,7 +74,7 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	}
 	pickedAnswerID, err := uuid.Parse(c.FormValue("answer-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answerid in formdata")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answer-id in formdata")
 	}
 
 	answered, err := user_quiz.AnswerQuestion(qah.sharedData.DB, utils.GetUserIDFromCtx(c), questionID, pickedAnswerID)
@@ -80,5 +87,4 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
-
 }

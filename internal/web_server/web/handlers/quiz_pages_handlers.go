@@ -44,6 +44,9 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	))
 }
 
+// Renders the play quiz page, expects a query parameter quiz-id.
+// If the quiz is not found, returns a 404 error.
+// If the quiz is completed, redirects to the quiz summary page.
 func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
@@ -64,6 +67,9 @@ func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizPlayPage(startQuizData.PartialQuiz.Title, startQuizData))
 }
 
+// Renders the quiz summary page, expects a query parameter quiz-id.
+// If the quiz is not found, returns a 404 error.
+// If the quiz is not completed, returns a 409 (conflict) error, since the summary is not available at that point.
 func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
@@ -84,6 +90,7 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 
 }
 
+// Renders the scoreboard page.
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	rankings, err := user_ranking.GetRanking(qph.sharedData.DB)
 	if err != nil {
