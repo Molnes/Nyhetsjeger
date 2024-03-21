@@ -9,22 +9,22 @@ import (
 templ Scoreboard(rankings []user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Scoreboard") {
 		<main class="w-full flex flex-col items-center overflow-x-auto">
-			<h1 class="text-3xl font-bold  mt-10">Scoreboard</h1>
+			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			<div class="mx-auto">
-				<table class="table-auto border-collapse border border-gray-200">
+				<table class="border-collapse border border-slate-500">
 					<thead>
 						<tr class="bg-pink-100">
-							<th class="text-left font-bold p-2 text-gray-800">Rank</th>
-							<th class="text-left font-bold p-2 text-gray-800">Email</th>
-							<th class="text-left font-bold p-2 text-gray-800">Points</th>
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Plass</th>
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Navn</th>
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Poeng</th>
 						</tr>
 					</thead>
 					<tbody>
 						for i, user := range rankings {
 							<tr class="border-b hover:bg-purple-100">
-								<td class="p2">{ fmt.Sprintf("%d", i+1) }</td>
-								<td class="p2">{ user.Email }</td>
-								<td class="p2">{ fmt.Sprintf("%d", user.Points) }</td>
+								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", i+1) }</td>
+								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%s %s", user.Username_adjective, user.Username_noun) }</td>
+								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
 							</tr>
 						}
 					</tbody>

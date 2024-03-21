@@ -3,14 +3,15 @@ package user_ranking
 import "database/sql"
 
 type UserRanking struct {
-	Email  string
+	Username_adjective string
+    Username_noun string
 	Points int
 }
 
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB) ([]UserRanking, error) {
 	rows, err := db.Query(`
-        SELECT email, pt.sum_points
+        SELECT username_adjective, username_noun, pt.sum_points
 FROM users
 JOIN (
 SELECT user_id, SUM(points_awarded) AS sum_points FROM user_answers
@@ -29,11 +30,11 @@ ORDER BY pt.sum_points DESC;
 	var rankings []UserRanking
 	for rows.Next() {
 		var ranking UserRanking
-		if err := rows.Scan(&ranking.Email, &ranking.Points); err != nil {
-			return nil, err
-		}
-		rankings = append(rankings, ranking)
-	}
+		if err := rows.Scan(&ranking.Username_adjective, &ranking.Username_noun, &ranking.Points); err != nil {
+                        return nil, err
+                }
+                rankings = append(rankings, ranking)
 
-	return rankings, nil
+        }
+        return rankings, nil
 }
