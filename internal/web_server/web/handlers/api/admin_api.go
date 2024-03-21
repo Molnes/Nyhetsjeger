@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -276,7 +275,6 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 
 	// Remove the article from the quiz
 	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &quiz_id, &article_id)
-	log.Println("Remove from DB:", err)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
 	}
