@@ -1,0 +1,130 @@
+package play_quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"github.com/google/uuid"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+)
+
+// Form with buttons for each alternative in a question
+templ AnswerButtons(question *questions.Question) {
+	<div
+		id="answer-buttons"
+		class="flex flex-col gap-8 items-center w-full"
+	>
+		<form
+			id="answer-form"
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+			hx-swap="outerHTML"
+			hx-target="#answer-buttons"
+			hx-indicator=".htmx-indicator"
+			class="grid grid-cols-2 gap-8 w-full isolate mt-2"
+		>
+			for _, alternative := range question.Alternatives {
+				<button
+					type="submit"
+					name="answer-id"
+					class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+					value={ alternative.ID.String() }
+				>
+					{ alternative.Text }
+				</button>
+			}
+		</form>
+		@components.LoadingIndicator()
+		@stopTimerBeforeRequest()
+	</div>
+}
+
+// Stops the timer right before the HTMX request is sent by the form.
+script stopTimerBeforeRequest() {
+	const answerForm = document.getElementById('answer-form');
+	answerForm.addEventListener('htmx:beforeRequest', function(evt) {
+		const timerELem = document.getElementById('timer');
+		timerELem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
+	});
+}
+
+// Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
+templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
+	<div class="flex flex-col gap-8 items-center w-full">
+		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">
+			for _, alt := range answered.Question.Alternatives {
+				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
+			}
+		</div>
+		if answered.NextQuestionID != uuid.Nil {
+			<button
+				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
+				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				hx-target="#quiz-play-content"
+				hx-swap="outerHTML"
+				hx-indicator=".htmx-indicator"
+			>
+				NESTE
+				@components.LoadingIndicator()
+			</button>
+		} else {
+			<a
+				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap"
+				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
+			>
+				FERDIG
+			</a>
+		}
+	</div>
+}
+
+templ feedbackButton(alternative questions.Alternative, isSelected bool) {
+	<button
+		disabled
+		if isSelected {
+			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
+		} else {
+			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+		}
+	>
+		{ alternative.Text }
+		<div class="absolute -top-4 -left-4 ">
+			if alternative.IsCorrect {
+				@feedbackCircle(true, isSelected)
+			} else {
+				@feedbackCircle(false, isSelected)
+			}
+		</div>
+		<div class="absolute -bottom-4 -right-4">
+			@feedbackPercentage(alternative.PercentChosen, isSelected)
+		</div>
+	</button>
+}
+
+templ feedbackCircle(correct bool, wasPicked bool) {
+	<div
+		if wasPicked {
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow border-4 border-blue-500"
+		} else {
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow"
+		}
+	>
+		if correct {
+			@icons.Checkmark(100, "green", 30, 30)
+		} else {
+			@icons.Cross(3, "red", 30, 30)
+		}
+	</div>
+}
+
+templ feedbackPercentage(percentage float64, wasPicked bool) {
+	<div
+		if wasPicked {
+			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm border-4 border-blue-500"
+		} else {
+			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm"
+		}
+	>
+		{ fmt.Sprintf("%v%%", percentage * 100) }
+	</div>
+}
