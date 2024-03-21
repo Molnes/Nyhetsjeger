@@ -13,6 +13,7 @@ import (
 )
 
 // The data structure for a third party article (Sunnmørsposten).
+/* This struct was automatically generated from a JSON file using https://transform.tools/json-to-go */
 type ArticleSMP struct {
 	SchemaVersion int    `json:"schemaVersion"`
 	SchemaType    string `json:"schemaType"`
