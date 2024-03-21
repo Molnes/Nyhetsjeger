@@ -21,7 +21,6 @@ templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
 			}
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-published-status?quiz-id=%s", quizID) }
 			hx-trigger="change"
-			hx-vals="true:false"
 			hx-swap="outerHTML"
 			hx-target="#quiz-is-hidden-label"
 			hx-sync="closest form:abort"

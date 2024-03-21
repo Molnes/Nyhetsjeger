@@ -9,7 +9,7 @@ import (
 // It will trigger the previous loading indicator to display.
 templ EditTitleInput(quizTitle string, quizID string, inputName string) {
 	<input
-		id="quiz-title"
+		id={ inputName }
 		name={ inputName }
 		class="bg-gray-200 w-full px-2 py-1"
 		type="text"

@@ -6,6 +6,8 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 )
 
+// An item in the list of questions.
+// Contains the question text and a button to edit the question.
 templ QuestionListItem(question *questions.Question) {
 	<li class="flex flex-row justify-between px-3 py-1">
 		{ question.Text }

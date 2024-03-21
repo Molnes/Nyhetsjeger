@@ -1,8 +1,10 @@
 package users
 
 import (
+	"context"
 	"database/sql"
 	"encoding/gob"
+	"log"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
@@ -12,7 +14,8 @@ import (
 type User struct {
 	ID                 uuid.UUID
 	SsoID              string
-	Username           string
+	usernameAdjective  string
+	usernameNoun       string
 	Email              string
 	Phone              string
 	OptInRanking       bool
@@ -20,6 +23,28 @@ type User struct {
 	AccessTokenCypher  []byte
 	Token_expire       time.Time
 	RefreshtokenCypher []byte
+}
+
+// New creates a new user with the provided parameters
+func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun string, Email string, Phone string, OptInRanking bool, Role user_roles.Role, AccessTokenCypher []byte, Token_expire time.Time, RefreshtokenCypher []byte) *User {
+	return &User{
+		ID:                 ID,
+		SsoID:              SsoID,
+		usernameAdjective:  usernameAdjective,
+		usernameNoun:       usernameNoun,
+		Email:              Email,
+		Phone:              Phone,
+		OptInRanking:       OptInRanking,
+		Role:               Role,
+		AccessTokenCypher:  AccessTokenCypher,
+		Token_expire:       Token_expire,
+		RefreshtokenCypher: RefreshtokenCypher,
+	}
+}
+
+// Username returns the username of the user as a single string
+func (u *User) Username() string {
+	return u.usernameAdjective + " " + u.usernameNoun
 }
 
 type UserSessionData struct {
@@ -41,30 +66,64 @@ func init() {
 	gob.Register(UserSessionData{})
 }
 
+// Returns a user from the database with the uuid provided
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		username_adjective, username_noun
 		FROM users
 		WHERE id = $1`,
 		id)
 	return scanUserFromFullRow(row)
 }
+
+// Returns a user from the database with the SSO ID provided
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		username_adjective, username_noun
 		FROM users
 		WHERE sso_user_id = $1`,
 		sso_id)
 	return scanUserFromFullRow(row)
 }
 
-func CreateUser(db *sql.DB, user *User) (*User, error) {
-	row := db.QueryRow(
-		`INSERT INTO users (id, username, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token`,
-		user.ID, user.Username, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
-	return scanUserFromFullRow(row)
+// Creates a new user in the database
+func CreateUser(db *sql.DB, user *User, ctx context.Context) (*User, error) {
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	var adjective string
+	var noun string
+	if err = tx.QueryRowContext(ctx,
+		`SELECT *
+			FROM available_usernames 
+			OFFSET floor(random() * (
+				SELECT COUNT(*) FROM available_usernames)
+		) 
+		LIMIT 1;`).Scan(&adjective, &noun); err != nil {
+		return nil, err
+	}
+
+	_, err = db.ExecContext(ctx,
+		`INSERT INTO users (id, sso_user_id, username_adjective, username_noun,email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+		--RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
+		`,
+		user.ID, user.SsoID, adjective, noun, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
+		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return GetUserByID(db, user.ID)
 }
 
 // Returns the role of the user with the ID provided
@@ -102,10 +161,36 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.AccessTokenCypher,
 		&user.Token_expire,
 		&user.RefreshtokenCypher,
+		&user.usernameAdjective,
+		&user.usernameNoun,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	user.Role = user_roles.RoleFromString(roleString)
 	return &user, err
+}
+
+// Returns a random available username from the database
+func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
+	var adjective string
+	var noun string
+	err := db.QueryRow(
+		`SELECT *
+			FROM available_usernames 
+			OFFSET floor(random() * (
+				SELECT COUNT(*) FROM available_usernames)
+		) 
+		LIMIT 1;`).Scan(&adjective, &noun)
+	return &adjective, &noun, err
+}
+
+// Assigns a username to a user in the database
+func assignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
+	_, err := db.Exec(
+		`UPDATE users
+			SET username_adjective = $2, username_noun = $3
+			WHERE id = $1`,
+		userID, adjective, noun)
+	return err
 }

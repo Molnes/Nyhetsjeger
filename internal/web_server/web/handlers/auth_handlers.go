@@ -81,7 +81,6 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 		newUser := users.User{
 			ID:                 uuid.New(),
 			SsoID:              googleUser.ID,
-			Username:           "", // TODO set random username and let user re-roll it on registration
 			Email:              googleUser.Email,
 			Phone:              "",   // TODO get phone number from user at registration
 			OptInRanking:       true, // TODO get opt in from user at registration
@@ -90,7 +89,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 			Token_expire:       token.Expiry,
 			RefreshtokenCypher: refreshTokenCypher,
 		}
-		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser)
+		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser, c.Request().Context())
 		if err != nil {
 			return fmt.Errorf("failed to create user: %s", err.Error())
 		}

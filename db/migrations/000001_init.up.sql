@@ -2,10 +2,19 @@ BEGIN;
 
 CREATE TYPE user_role AS ENUM ('user', 'quiz_admin', 'organization_admin');
 
+CREATE TABLE IF NOT EXISTS adjectives (
+    adjective TEXT PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS nouns (
+    noun TEXT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sso_user_id TEXT NOT NULL, -- The user id from the SSO provider
-    username TEXT,
+    username_adjective TEXT NOT NULL REFERENCES adjectives(adjective),
+    username_noun TEXT NOT NULL REFERENCES nouns(noun),
     email TEXT NOT NULL,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
@@ -18,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    url TEXT NOT NULL,
+    url TEXT NOT NULL UNIQUE,
     image_url TEXT
 );
 
@@ -30,7 +39,8 @@ CREATE TABLE IF NOT EXISTS quizzes (
     available_to TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     last_modified_at TIMESTAMP NOT NULL DEFAULT now(),
-    published BOOLEAN NOT NULL DEFAULT FALSE
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS quiz_articles (
@@ -152,20 +162,6 @@ CREATE TABLE IF NOT EXISTS http_sessions (
               CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
               CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
 
-CREATE TABLE IF NOT EXISTS adjectives (
-    adjective TEXT PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS nouns (
-    noun TEXT PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS usernames (
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    adjective TEXT NOT NULL REFERENCES adjectives(adjective),
-    noun TEXT NOT NULL REFERENCES nouns(noun),
-    PRIMARY KEY (adjective, noun)
-);
 
 CREATE VIEW available_usernames AS
     SELECT a.adjective, n.noun
@@ -173,7 +169,8 @@ CREATE VIEW available_usernames AS
     CROSS JOIN nouns n
     WHERE NOT EXISTS (
         SELECT 1
-        FROM usernames u
-        WHERE u.adjective = a.adjective AND u.noun = n.noun
-);
+        FROM users u
+        WHERE u.username_adjective = a.adjective AND u.username_noun = n.noun
+    );
+
 END;

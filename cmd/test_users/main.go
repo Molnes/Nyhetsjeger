@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -45,7 +46,7 @@ func main() {
 
 	for i, user := range usersList {
 		userSessionDatas[i] = user.IntoSessionData()
-		_, err := users.CreateUser(db, &user)
+		_, err := users.CreateUser(db, &user, context.Background())
 		if err != nil {
 			log.Errorf("Test users: Error inserting user: ", err)
 		}
@@ -99,42 +100,48 @@ func createUserList() []users.User {
 	uuid1, _ := uuid.Parse("7511ce90-87f1-4cef-8980-6b9aef71529c")
 	uuid2, _ := uuid.Parse("6d0d8550-703e-41c8-aed9-959d80752a4b")
 	uuid3, _ := uuid.Parse("c0f84533-7613-4fe2-90a5-c452a1e57121")
-	return []users.User{
-		{
-			ID:                 uuid1,
-			Username:           "test_user",
-			SsoID:              "test_user_sso_id",
-			Email:              "test1@email.com",
-			Phone:              "00000001",
-			OptInRanking:       true,
-			Role:               user_roles.User,
-			AccessTokenCypher:  []byte("token1"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh1"),
-		},
-		{
-			ID:                 uuid2,
-			Username:           "test_admin",
-			SsoID:              "test_admin_sso_id",
-			Email:              "test2@email.com",
-			Phone:              "00000002",
-			OptInRanking:       false,
-			Role:               user_roles.QuizAdmin,
-			AccessTokenCypher:  []byte("token2"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh2"),
-		},
-		{
-			ID:                 uuid3,
-			Username:           "test_organization_admin",
-			SsoID:              "test_organization_admin_sso_id",
-			Email:              "test3@email.com",
-			Phone:              "00000003",
-			OptInRanking:       false,
-			Role:               user_roles.OrganizationAdmin,
-			AccessTokenCypher:  []byte("token3"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh3"),
-		},
+
+	testUsers := []users.User{
+		*users.New(
+			uuid1,
+			"testende",
+			"tester",
+			"test_user_sso_id",
+			"test1@email.com",
+			"00000001",
+			true,
+			user_roles.User,
+			[]byte("token1"),
+			time.Now().Add(time.Hour*24),
+			[]byte("refresh1"),
+		),
+		*users.New(
+			uuid2,
+			"test",
+			"admin",
+			"test_admin_sso_id",
+			"test2@email.com",
+			"00000002",
+			false,
+			user_roles.QuizAdmin,
+			[]byte("token2"),
+			time.Now().Add(time.Hour*24),
+			[]byte("refresh2"),
+		),
+		*users.New(
+			uuid3,
+			"test_organization",
+			"admin",
+			"test_organization_admin_sso_id",
+			"test3@email.com",
+			"00000003",
+			false,
+			user_roles.OrganizationAdmin,
+			[]byte("token3"),
+			time.Now().Add(time.Hour*24),
+			[]byte("refresh3"),
+		),
 	}
+
+	return testUsers
 }

@@ -1,0 +1,32 @@
+package dashboard_components
+
+import (
+	"fmt"
+)
+
+// A row with a label and an input field.
+// The input field is for adding a new article to the list of articles.
+templ AddArticleInput(articlesLength int, articleNameInput string, quizID string, nameInput string) {
+	<div class="flex flex-row gap-5 mb-3">
+		<label for={ nameInput }>
+			Link
+			<input
+				id={ nameInput }
+				name={ nameInput }
+				type="text"
+				class="bg-gray-200 px-2 py-1 ml-3"
+			/>
+			// TODO: Clear the input field on form submitted
+		</label>
+		<button
+			class="bg-gray-300 px-5 py-1"
+			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
+			hx-swap="beforeend"
+			hx-target="#article-list"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+		>
+			Legg til ➕
+		</button>
+	</div>
+}
