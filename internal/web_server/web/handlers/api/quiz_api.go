@@ -72,7 +72,11 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 
 	answered, err := user_quiz.AnswerQuestion(qah.sharedData.DB, utils.GetUserIDFromCtx(c), questionID, pickedAnswerID)
 	if err != nil {
-		return err
+		if err == user_quiz.ErrQuestionAlreadyAnswered {
+			return echo.NewHTTPError(http.StatusConflict, "Question already answered")
+		} else {
+			return err
+		}
 	}
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
