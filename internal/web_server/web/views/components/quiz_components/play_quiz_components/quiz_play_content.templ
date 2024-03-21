@@ -13,7 +13,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 	>
 		<div class="flex justify-between items-center w-full ">
 			<a href="/quiz">
-				@icons.Cross(2, "black", 10, 10)
+				@icons.Cross(3, "black", 40, 40)
 			</a>
 			<h1 class="text-3xl font-bold">{ data.PartialQuiz.Title }</h1>
 			@timer(data.CurrentQuestion.TimeLimitSeconds)
