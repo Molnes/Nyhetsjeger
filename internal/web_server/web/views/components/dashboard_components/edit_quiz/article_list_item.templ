@@ -11,25 +11,30 @@ templ ArticleListItem(articleUrl string, articleID string, quizID string) {
 			{ articleUrl }
 		</a>
 		<button
-			id="delete-article-button"
+			id={ fmt.Sprintf("delete-article-%s", articleID) }
 			class="px-1"
 			title="Slett"
 			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
 			hx-swap="none"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
-			onclick={ deleteArticle(articleID) }
 		>
 			❌
 		</button>
+		@deleteArticle(articleID)
 	</li>
 }
 
 // Remove the article list item from the list of articles.
 
 script deleteArticle(articleID string) {
-	console.log(articleID)
-		let element = document.getElementById(articleID);
-		console.log(element)
-		element.parentNode.removeChild(element);
+		// Add event listener to the delete button for HTMX response
+		document.body.addEventListener('htmx:afterOnLoad', function (event) {
+			if (event.detail.elt.id === ('delete-article-'+articleID) && event.detail.xhr.status === 200) {
+				let element = document.getElementById(articleID);
+				console.log("Element", element, element.parentNode)
+
+				element.parentNode.removeChild(element);
+			}
+		}, {once: true});
 }
