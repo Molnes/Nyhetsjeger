@@ -234,7 +234,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
 		}
 		if articleInQuiz {
-			return echo.NewHTTPError(http.StatusBadRequest, "Article is already in quiz")
+			return echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
 		}
 	}
 
