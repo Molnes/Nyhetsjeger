@@ -26,7 +26,7 @@ templ AnswerButtons(question *questions.Question) {
 			for _, alternative := range question.Alternatives {
 				<button
 					type="submit"
-					name="answer"
+					name="answer-id"
 					class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
 					value={ alternative.ID.String() }
 				>

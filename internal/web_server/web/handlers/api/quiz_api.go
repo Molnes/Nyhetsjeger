@@ -65,7 +65,7 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question-id")
 	}
-	pickedAnswerID, err := uuid.Parse(c.FormValue("answer"))
+	pickedAnswerID, err := uuid.Parse(c.FormValue("answer-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answerid in formdata")
 	}
