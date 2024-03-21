@@ -9,6 +9,8 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/joho/godotenv"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -45,9 +47,9 @@ func populate_adjectives(db *sql.DB) {
 		log.Println(err)
 	}
 
-	tx.Exec("INSERT INTO adjectives VALUES ('raud')")
-	tx.Exec("INSERT INTO adjectives VALUES ('fin')")
-	tx.Exec("INSERT INTO adjectives VALUES ('brennande')")
+	tx.Exec("INSERT INTO adjectives VALUES ('Raud')")
+	tx.Exec("INSERT INTO adjectives VALUES ('Fin')")
+	tx.Exec("INSERT INTO adjectives VALUES ('Brennande')")
 
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
@@ -63,11 +65,11 @@ func populate_nouns(db *sql.DB) {
 		log.Println(err)
 	}
 
-	tx.Exec("INSERT INTO nouns VALUES ('lefse')")
-	tx.Exec("INSERT INTO nouns VALUES ('taco')")
-	tx.Exec("INSERT INTO nouns VALUES ('and')")
-	tx.Exec("INSERT INTO nouns VALUES ('stol')")
-	tx.Exec("INSERT INTO nouns VALUES ('appelsin')")
+	tx.Exec("INSERT INTO nouns VALUES ('Lefse')")
+	tx.Exec("INSERT INTO nouns VALUES ('Taco')")
+	tx.Exec("INSERT INTO nouns VALUES ('And')")
+	tx.Exec("INSERT INTO nouns VALUES ('Stol')")
+	tx.Exec("INSERT INTO nouns VALUES ('Appelsin')")
 
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
@@ -85,7 +87,7 @@ func populate_usernames(db *sql.DB) {
 		log.Println(err)
 	}
 
-	tx.Exec("INSERT INTO usernames VALUES ('raud', 'lefse')")
+	tx.Exec("INSERT INTO usernames VALUES ('Raud', 'Lefse')")
 
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
@@ -115,14 +117,17 @@ func loadDataFromCSV(db *sql.DB) {
 		log.Println(err)
 	}
 
+	c := cases.Title(language.Norwegian)
+
+
 	for _, record := range records {
 
 		//In case of an unbalanced csv file
 		if len(record[0]) > 0 {
-			tx.Exec("INSERT INTO adjectives VALUES ($1)", record[0])
+			tx.Exec("INSERT INTO adjectives VALUES ($1)", c.String(record[0]))
 		}
 		if len(record[1]) > 0 {
-			tx.Exec("INSERT INTO nouns VALUES ($1)", record[1])
+			tx.Exec("INSERT INTO nouns VALUES ($1)", c.String(record[1]))
 		}
 	}
 
