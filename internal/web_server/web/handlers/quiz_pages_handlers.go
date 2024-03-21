@@ -5,6 +5,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"

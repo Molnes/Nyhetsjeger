@@ -16,7 +16,7 @@ templ UsernamePage(u *users.User) {
 					</div>
 					<input id="tlfIn" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" name="mobilnummer" id="mobilnummer" required/>
 					<label for="usrnIn" class="font-bold">Brukernavn</label>
-					<input id="usrnIn" class="w-full h-7 rounded px-2" type="text" name="brukernavn" id="brukernavn" value={ u.Username() } readonly/>
+					<input id="usrnIn" class="w-full h-7 rounded px-2" type="text" name="brukernavn" id="brukernavn" value={ u.Username } readonly/>
 				</div>
 				<button class="flex items-center m-2" type="button">
 					Generer nytt navn
