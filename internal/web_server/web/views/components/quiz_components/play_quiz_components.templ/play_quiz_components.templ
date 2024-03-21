@@ -16,6 +16,7 @@ templ AnswerButtons(question *questions.Question) {
 		class="flex flex-col gap-8 items-center w-full"
 	>
 		<form
+			id="answer-form"
 			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 			hx-swap="outerHTML"
 			hx-target="#answer-buttons"
@@ -34,10 +35,18 @@ templ AnswerButtons(question *questions.Question) {
 			}
 		</form>
 		@components.LoadingIndicator()
+		@stopTimerBeforeRequest()
 	</div>
 }
 
-//
+script stopTimerBeforeRequest() {
+	const answerForm = document.getElementById('answer-form');
+	answerForm.addEventListener('htmx:beforeRequest', function(evt) {
+		const timerELem = document.getElementById('timer');
+		timerELem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
+	});
+}
+
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full">
 		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">

@@ -58,7 +58,28 @@ templ progressBar(current uint, total uint) {
 }
 
 templ timer(timeLeft uint) {
-	<div>
+	<div
+		id="timer"
+		class="text-xl font-bold h-16 w-16 bg-gray-300 rounded-full flex justify-center items-center"
+	>
 		{ fmt.Sprintf("%v", timeLeft) }
 	</div>
+	@setupTimer(timeLeft)
+}
+
+script setupTimer(timeLEft uint) {
+	let countDownTime = timeLEft;
+	const timerElem = document.getElementById("timer");
+	const timerIntervalId = setInterval(function() {
+		countDownTime--;
+		timerElem.innerHTML = countDownTime;
+		if (countDownTime <= 0) {
+			clearInterval(timerIntervalId);
+		}
+	}, 1000);
+
+	timerElem.addEventListener("quiz:stop-timer", function() {
+		clearInterval(timerIntervalId);
+	});
+	
 }
