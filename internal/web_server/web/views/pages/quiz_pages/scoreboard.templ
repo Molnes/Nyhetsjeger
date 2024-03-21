@@ -1,9 +1,35 @@
 package quiz_pages
 
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"fmt"
+)
 
-templ Scoreboard() {
-	@layout_components.QuizLayout("Scoreboard") {
-		<h1>Scoreboard</h1>
+templ Scoreboard(rankings []user_ranking.UserRanking) {
+	@layout_components.QuizLayoutMenu("Scoreboard") {
+		<main class="w-full flex flex-col items-center overflow-x-auto">
+			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
+			<div class="mx-auto">
+				<table class="border-collapse border border-slate-500">
+					<thead>
+						<tr class="bg-pink-100">
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Plass</th>
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Navn</th>
+							<th class="font-bold p-2 text-gray-800 border border-slate-600">Poeng</th>
+						</tr>
+					</thead>
+					<tbody>
+						for i, user := range rankings {
+							<tr class="border-b hover:bg-purple-100">
+								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", i+1) }</td>
+								<td class="text-center p-2 border border-slate-700">{ user.Username }</td>
+								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</main>
 	}
 }

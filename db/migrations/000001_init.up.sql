@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    url TEXT NOT NULL,
+    url TEXT NOT NULL UNIQUE,
     image_url TEXT
 );
 
@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS questions (
     arrangement INTEGER NOT NULL,
     article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    time_limit_seconds INTEGER NOT NULL DEFAULT 30 CHECK (time_limit_seconds > 0),
     points INTEGER NOT NULL,
     CONSTRAINT question_arrangement UNIQUE (arrangement, quiz_id)
 );

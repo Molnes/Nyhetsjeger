@@ -2,10 +2,10 @@ package icons
 
 import "fmt"
 
-//Cross icon. Parameters are strokeWidth, stroke, and tailwind integer of height and width.
+//Cross icon. Parameters stroke, height, width are all in pixels.
 templ Cross(strokeWidth float64, stroke string, height int, width int) {
-	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } class={ fmt.Sprintf("h-%d w-%d", height, width) }>
-		<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) }>
+		<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke }></path>
 	</svg>
 	<!-- MIT License
 

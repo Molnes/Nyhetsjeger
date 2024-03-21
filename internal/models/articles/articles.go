@@ -153,6 +153,82 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	return &articles, nil
 }
 
+// Get an Article ID by its URL.
+func GetArticleIDByURL(db *sql.DB, articleURL *url.URL) (*uuid.NullUUID, error) {
+	row := db.QueryRow(
+		`SELECT
+			id
+		FROM
+			articles
+		WHERE
+			url = $1`,
+		articleURL.String())
+
+	var articleID uuid.NullUUID
+	err := row.Scan(&articleID)
+
+	return &articleID, err
+}
+
+// Add an Article to the database.
+func AddArticle(db *sql.DB, article *Article) error {
+	_, err := db.Exec(
+		`INSERT INTO
+			articles (id, title, url, image_url)
+		VALUES
+			($1, $2, $3, $4)`,
+		article.ID, article.Title, article.ArticleURL.String(), article.ImgURL.String())
+
+	return err
+}
+
+// Add an Article to a Quiz.
+func AddArticleToQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error {
+	_, err := db.Exec(
+		`INSERT INTO
+			quiz_articles (quiz_id, article_id)
+		VALUES
+			($1, $2)`,
+		quizID, articleID)
+
+	return err
+}
+
+// Returns 'true' if it finds the article in the quiz in the DB.
+// Returns 'false' if it does not find it.
+func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool, error) {
+	row := db.QueryRow(
+		`SELECT
+			article_id
+		FROM
+			quiz_articles
+		WHERE
+			article_id = $1 AND quiz_id = $2`,
+		articleID, quizID)
+
+	var tempID uuid.UUID
+	err := row.Scan(&tempID)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	return true, err
+}
+
+func DeleteArticleFromQuiz(db *sql.DB, quizID *uuid.UUID, articleID *uuid.UUID) error {
+	_, err := db.Exec(
+		`DELETE FROM
+			quiz_articles
+		WHERE
+			quiz_id = $1 AND
+			article_id = $2`,
+		quizID,
+		articleID)
+
+	return err
+}
+
 var SampleArticles []Article = []Article{
 	{
 		ID: uuid.NullUUID{
@@ -167,8 +243,8 @@ var SampleArticles []Article = []Article{
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
 		},
 	},
 	{
@@ -184,8 +260,8 @@ var SampleArticles []Article = []Article{
 		},
 		ImgURL: url.URL{
 			Scheme: "https",
-			Host:   "unsplash.it",
-			Path:   "/200/200",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
 		},
 	},
 }
