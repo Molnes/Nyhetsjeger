@@ -56,16 +56,6 @@ func (q *Question) initPercentChosen() {
 	}
 }
 
-// Returns all questions for a given quiz.
-func GetAllQuestions(quizID uuid.UUID) ([]Question, error) {
-	return SampleQuestions, nil
-}
-
-// Returns a question by its ID.
-func GetQuestion(quizID uuid.UUID) (Question, error) {
-	return SampleQuestions[0], nil
-}
-
 // Returns the ID of first question in the given quiz.
 func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
 	var id uuid.UUID
@@ -78,32 +68,6 @@ func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
 	err := row.Scan(&id)
 
 	return id, err
-}
-
-// function for getting the next question in a quiz if there is one based on the arrangement, returns nil if there is no next question or an error
-// takes *sql.DB
-// takes the current question UUID to get the next question
-func GetNextQuestion(db *sql.DB, currentQuestionID uuid.UUID) (*Question, error) {
-	currentQuestion, err := GetQuestionByID(db, currentQuestionID)
-	if err != nil {
-		return nil, err
-	}
-	row := db.QueryRow(
-		`SELECT
-      id
-    FROM
-      questions
-    WHERE
-      quiz_id = $1 AND arrangement = $2`,
-		currentQuestion.QuizID, currentQuestion.Arrangement+1)
-
-	var nextQuestionID uuid.UUID
-	err = row.Scan(&nextQuestionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return GetQuestionByID(db, nextQuestionID)
 }
 
 // Returns all questions for a given quiz.
@@ -378,67 +342,4 @@ func PostNewQuestion(db *sql.DB, question Question) (uuid.UUID, error) {
 	)
 
 	return question.ID, nil
-}
-
-var SampleQuestions []Question = []Question{
-	{
-		ID:   uuid.New(),
-		Text: "What is the capital of Norway?",
-		Alternatives: []Alternative{
-			{
-				ID:        uuid.New(),
-				Text:      "Oslo",
-				IsCorrect: true,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Stockholm",
-				IsCorrect: false,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Copenhagen",
-				IsCorrect: false,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Helsinki",
-				IsCorrect: false,
-			},
-		},
-		Points:      10,
-		Article:     articles.SampleArticles[0],
-		Arrangement: 0,
-		QuizID:      uuid.New(),
-	},
-	{
-		ID:   uuid.New(),
-		Text: "What is the capital of Sweden?",
-		Alternatives: []Alternative{
-			{
-				ID:        uuid.New(),
-				Text:      "Oslo",
-				IsCorrect: false,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Stockholm",
-				IsCorrect: true,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Copenhagen",
-				IsCorrect: false,
-			},
-			{
-				ID:        uuid.New(),
-				Text:      "Helsinki",
-				IsCorrect: false,
-			},
-		},
-		Points:      10,
-		Article:     articles.SampleArticles[0],
-		Arrangement: 1,
-		QuizID:      uuid.New(),
-	},
 }

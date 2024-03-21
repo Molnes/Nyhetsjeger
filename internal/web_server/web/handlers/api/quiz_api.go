@@ -23,18 +23,11 @@ func NewQuizApiHandler(sharedData *config.SharedData) *QuizApiHandler {
 }
 
 func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
-	e.GET("/question", qah.getQuestion)
 	e.GET("/article", qah.getArticle)
 	e.GET("/articles", qah.getArticles)
 	e.GET("/next-question", qah.getNextQuestion)
 	e.POST("/user-answer", qah.postUserAnswer)
 
-}
-
-func (qah *QuizApiHandler) getQuestion(c echo.Context) error {
-	question := "Exampl question?"
-	alts := []string{"alt1", "alt2", "alt3", "alt4"}
-	return utils.Render(c, http.StatusOK, quiz_components.Question(question, alts))
 }
 
 func (qah *QuizApiHandler) getArticle(c echo.Context) error {

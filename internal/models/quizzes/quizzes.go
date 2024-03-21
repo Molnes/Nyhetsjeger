@@ -36,10 +36,6 @@ type PartialQuiz struct {
 	MaxScore       uint
 }
 
-func GetQuiz(quizID uuid.UUID) (Quiz, error) {
-	return SampleQuiz, nil
-}
-
 // Create a default quiz.
 // This function is used to create a new quiz with default values.
 func CreateDefaultQuiz() Quiz {
@@ -62,12 +58,6 @@ func CreateDefaultQuiz() Quiz {
 		IsDeleted:      false,
 		Questions:      []questions.Question{},
 	}
-}
-
-var SampleQuiz Quiz = Quiz{
-	ID:        uuid.New(),
-	Title:     "Eksempel quiz",
-	Questions: questions.SampleQuestions,
 }
 
 // Retrieves a quiz from the database by its ID.
