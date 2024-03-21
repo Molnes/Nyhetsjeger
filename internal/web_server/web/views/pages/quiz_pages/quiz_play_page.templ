@@ -7,7 +7,7 @@ import (
 )
 
 templ QuizPlayPage(title string, data *user_quiz.QuizData) {
-	@layout_components.QuizPlayLayout(title) {
+	@layout_components.QuizLayout(title) {
 		@play_quiz_components.QuizPlayContent(data)
 	}
 }

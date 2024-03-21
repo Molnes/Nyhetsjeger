@@ -3,7 +3,7 @@ package layout_components
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 
 templ QuizLayoutMenu(pageTitle string) {
-	@BaseLayout(pageTitle) {
+	@QuizLayout(pageTitle) {
 		@quiz_components.BurgerMenu()
 		{ children... }
 	}
