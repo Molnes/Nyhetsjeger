@@ -31,67 +31,23 @@ func main() {
 
 	defer db.Close()
 
-	populate_adjectives(db)
-	populate_nouns(db)
-	/* populate_usernames(db) */
+	// populate_adjectives(db)
+	// populate_nouns(db)
 
-	/* loadDataFromCSV(db) */
+	loadDataFromCSV(db)
 }
 
 // Populates the adjectives table
 func populate_adjectives(db *sql.DB) {
-	// Populate adjectives with raud, fin and brennande.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
 
-	tx.Exec("INSERT INTO adjectives VALUES ('Raud')")
-	tx.Exec("INSERT INTO adjectives VALUES ('Fin')")
-	tx.Exec("INSERT INTO adjectives VALUES ('Brennande')")
-
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
+	db.Exec("INSERT INTO adjectives VALUES ('Raud'), ('Fin'), ('Brennande')")
 }
 
 // Populates the nouns table
 func populate_nouns(db *sql.DB) {
-	// Populate nouns with lefse, taco, and, stol and appelsin.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
 
-	tx.Exec("INSERT INTO nouns VALUES ('Lefse')")
-	tx.Exec("INSERT INTO nouns VALUES ('Taco')")
-	tx.Exec("INSERT INTO nouns VALUES ('And')")
-	tx.Exec("INSERT INTO nouns VALUES ('Stol')")
-	tx.Exec("INSERT INTO nouns VALUES ('Appelsin')")
+	db.Exec("INSERT INTO nouns VALUES ('Lefse'), ('Taco'), ('And'), ('Stol'), ('Appelsin')")
 
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
-}
-
-// Populates the usernames table
-// This solution will not work at this moment.
-// Function will be used later to debug and test.
-func populate_usernames(db *sql.DB) {
-	// Populate usernames with raudlefse, fintaco, brennandeand, raudstol, and finappelsin.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	tx.Exec("INSERT INTO usernames VALUES ('Raud', 'Lefse')")
-
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
 }
 
 // Loads data from a csv file into the adjectives and nouns tables.
