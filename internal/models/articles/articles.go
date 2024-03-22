@@ -44,6 +44,9 @@ func GetArticle(articleID uuid.UUID) (Article, error) {
 	return SampleArticles[0], nil
 }
 
+// Get the articles by Quiz ID.
+// These are all the articles attached to a quiz.
+// This does not guarantee they are used in the questions.
 func GetArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
 	rows, err := db.Query(
 		`SELECT

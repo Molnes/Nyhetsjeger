@@ -16,7 +16,7 @@ templ AnswerButtons(question *questions.Question) {
 		class="flex flex-col gap-8 items-center w-full"
 	>
 		<form
-			id="answer-form"
+			id="question-answer-form"
 			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 			hx-swap="outerHTML"
 			hx-target="#answer-buttons"
@@ -35,17 +35,8 @@ templ AnswerButtons(question *questions.Question) {
 			}
 		</form>
 		@components.LoadingIndicator()
-		@stopTimerBeforeRequest()
+		@stopTimerOn("htmx:beforeRequest", "question-answer-form")
 	</div>
-}
-
-// Stops the timer right before the HTMX request is sent by the form.
-script stopTimerBeforeRequest() {
-	const answerForm = document.getElementById('answer-form');
-	answerForm.addEventListener('htmx:beforeRequest', function(evt) {
-		const timerELem = document.getElementById('timer');
-		timerELem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
-	});
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.

@@ -85,7 +85,7 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	// Set the default points to be 10.
 	newQuestion := questions.Question{
 		ID:           uuid.New(),
-		Text:         "SPØRSMÅL",
+		Text:         "",
 		ImageURL:     url.URL{},
 		Article:      articles.Article{},
 		QuizID:       quiz_id,
