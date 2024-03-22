@@ -14,8 +14,7 @@ import (
 type User struct {
 	ID                 uuid.UUID
 	SsoID              string
-	usernameAdjective  string
-	usernameNoun       string
+	Username           string
 	Email              string
 	Phone              string
 	OptInRanking       bool
@@ -23,28 +22,6 @@ type User struct {
 	AccessTokenCypher  []byte
 	Token_expire       time.Time
 	RefreshtokenCypher []byte
-}
-
-// New creates a new user with the provided parameters
-func New(ID uuid.UUID, SsoID string, usernameAdjective string, usernameNoun string, Email string, Phone string, OptInRanking bool, Role user_roles.Role, AccessTokenCypher []byte, Token_expire time.Time, RefreshtokenCypher []byte) *User {
-	return &User{
-		ID:                 ID,
-		SsoID:              SsoID,
-		usernameAdjective:  usernameAdjective,
-		usernameNoun:       usernameNoun,
-		Email:              Email,
-		Phone:              Phone,
-		OptInRanking:       OptInRanking,
-		Role:               Role,
-		AccessTokenCypher:  AccessTokenCypher,
-		Token_expire:       Token_expire,
-		RefreshtokenCypher: RefreshtokenCypher,
-	}
-}
-
-// Username returns the username of the user as a single string
-func (u *User) Username() string {
-	return u.usernameAdjective + " " + u.usernameNoun
 }
 
 type UserSessionData struct {
@@ -70,7 +47,7 @@ func init() {
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
-		username_adjective, username_noun
+		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE id = $1`,
 		id)
@@ -81,7 +58,7 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
-		username_adjective, username_noun
+		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE sso_user_id = $1`,
 		sso_id)
@@ -161,8 +138,7 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.AccessTokenCypher,
 		&user.Token_expire,
 		&user.RefreshtokenCypher,
-		&user.usernameAdjective,
-		&user.usernameNoun,
+		&user.Username,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil

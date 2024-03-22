@@ -51,7 +51,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 					MaxAge: 3600,
 				}
 				c.SetCookie(&cookie)
-				return c.Redirect(http.StatusFound, "/login")
+				return c.Redirect(http.StatusTemporaryRedirect, "/login")
 			} else {
 				return echo.NewHTTPError(http.StatusUnauthorized, "You are not authenticated")
 			}
