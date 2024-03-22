@@ -91,6 +91,7 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
 }
 
+// Handles patch request for a random username.
 func (qah *QuizApiHandler) patchRandomUsername(c echo.Context) error {
 	adjective, noun, err := users.GetRandomAvailableUsername(qah.sharedData.DB)
 	if err != nil {

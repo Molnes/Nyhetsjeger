@@ -126,6 +126,7 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
 }
 
+// Adds phone number and competition opt-in to user
 func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
 	phonenumber := c.FormValue("phonenumber")
 	match, _ := regexp.MatchString(`^(\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3}|\d{8})$`, phonenumber)

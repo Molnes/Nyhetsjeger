@@ -172,6 +172,7 @@ func AssignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun s
 	return err
 }
 
+// Assigns a username to a user in the database
 func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) error {
 	_, err := db.Exec(
 		`UPDATE users
@@ -182,6 +183,7 @@ func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) e
 	return err
 }
 
+// Assigns the opt-in ranking value to a user in the database
 func AssignOptInRankingToUser(db *sql.DB, userID uuid.UUID, optInRanking bool) error {
 	_, err := db.Exec(
 		`UPDATE users
