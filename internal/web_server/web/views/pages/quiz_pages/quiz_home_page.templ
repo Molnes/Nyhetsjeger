@@ -16,9 +16,9 @@ templ QuizHomePage(quizzes []quizzes.Quiz) {
 			</div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizzer</h2>
-				<div class="flex flex-wrap justify-center p-4 lg:gap-20 gap-10">
+				<div class="flex flex-wrap p-4 lg:gap-20 gap-10">
 					for _, quiz := range quizzes {
-						@quiz_components.QuizPreview(quiz)
+						@quiz_components.QuizCard(quiz)
 					}
 				</div>
 			</div>
