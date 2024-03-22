@@ -18,8 +18,8 @@ templ timer(timeLeft uint) {
 // sets up a timer that counts down from the given time.
 // Adds an event listener to stop the timer on "quiz:stop-timer"
 
-script setupTimer(timeLEft uint) {
-	let countDownTime = timeLEft;
+script setupTimer(timeLeft uint) {
+	let countDownTime = timeLeft;
 	const timerElem = document.getElementById("timer");
 	const timerIntervalId = setInterval(function() {
 		timerElem.innerHTML = countDownTime;
