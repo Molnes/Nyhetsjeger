@@ -3,7 +3,6 @@ package play_quiz_components
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
-	"fmt"
 )
 
 // Content of a quiz play page.
@@ -57,36 +56,4 @@ templ progressBar(current uint, total uint) {
 			</div>
 		}
 	</div>
-}
-
-// Template for a simple timer in a circle. Counts down from the given time.
-templ timer(timeLeft uint) {
-	<div
-		id="timer"
-		class="text-xl font-bold h-16 w-16 bg-gray-300 rounded-full flex justify-center items-center"
-	>
-		{ fmt.Sprintf("%v", timeLeft) }
-	</div>
-	@setupTimer(timeLeft)
-}
-
-// sets up a timer that counts down from the given time.
-// Adds an event listener to stop the timer on "quiz:stop-timer"
-
-script setupTimer(timeLEft uint) {
-	let countDownTime = timeLEft;
-	const timerElem = document.getElementById("timer");
-	const timerIntervalId = setInterval(function() {
-		timerElem.innerHTML = countDownTime;
-		if (countDownTime > 0) {
-			countDownTime--;
-		} else {
-			clearInterval(timerIntervalId);
-		}
-	}, 1000);
-
-	timerElem.addEventListener("quiz:stop-timer", function() {
-		clearInterval(timerIntervalId);
-	});
-	
 }
