@@ -22,9 +22,9 @@ script setupTimer(timeLeft uint) {
 	let countDownTime = timeLeft;
 	const timerElem = document.getElementById("timer");
 	const timerIntervalId = setInterval(function() {
-		timerElem.innerHTML = countDownTime;
 		if (countDownTime > 0) {
 			countDownTime--;
+			timerElem.innerHTML = countDownTime;
 		} else {
 			clearInterval(timerIntervalId);
 		}
