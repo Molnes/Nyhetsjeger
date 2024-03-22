@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -32,7 +33,7 @@ func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
 
 // Registers handlers for admin api
 func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
-	e.POST("/quiz/create-new", aah.postDefaultQuiz)
+	e.POST("/quiz/create-new", aah.createDefaultQuiz)
 	e.POST("/quiz/edit-title", aah.editQuizTitle)
 	e.POST("/quiz/edit-image", aah.editQuizImage)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
@@ -42,11 +43,12 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
+	e.POST("/question/create-new", aah.createQuestion)
 }
 
 // Handles the creation of a new default quiz in the DB.
 // Redirects to the edit quiz page for the newly created quiz.
-func (aah *AdminApiHandler) postDefaultQuiz(c echo.Context) error {
+func (aah *AdminApiHandler) createDefaultQuiz(c echo.Context) error {
 	// Create a default quiz object
 	quiz := quizzes.CreateDefaultQuiz()
 
@@ -98,7 +100,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(imageURL, quiz_id.String(), dashboard_pages.QuizImageURL))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
 }
 
 // Removes the image for a quiz in the database.
@@ -117,7 +119,8 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(&url.URL{}, quiz_id.String(), dashboard_pages.QuizImageURL))
+	return utils.Render(c, http.StatusOK,
+		dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
 }
 
 // Deletes a quiz from the database.
@@ -130,6 +133,8 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 
 	// Sets the quiz as deleted in the database
 	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+
+	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")
 	return c.Redirect(http.StatusOK, "/dashboard")
@@ -282,4 +287,16 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return c.NoContent(http.StatusOK)
+}
+
+// Creates a new question in the database with the given data.
+func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
+	// Get the data from the form
+
+	// Create a new question object
+
+	// Save the question to the database
+
+	// Return the "question item" element
+	return utils.Render(c, http.StatusOK, nil)
 }

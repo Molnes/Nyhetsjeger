@@ -5,30 +5,45 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
+
+// Constants for the input names (for HTTP requests)
+const QuestionArticle = "question-article"
+const QuestionText = "question-text"
+const QuestionAlternative1 = "question-alternative-1"
+const QuestionAlternative2 = "question-alternative-2"
+const QuestionAlternative3 = "question-alternative-3"
+const QuestionAlternative4 = "question-alternative-4"
+const QuestionImageURL = "question-image-url"
+const QuestionPoints = "question-points"
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
 templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string) {
-	<form hx-post="">
-		<h2 class="text-2xl mb-5">Rediger spørsmål</h2>
+	<form hx-post="" onsubmit="event.preventDefault();">
+		<div class="flex flex-row items-center gap-3">
+			<h2 class="text-2xl mb-5">Rediger spørsmål</h2>
+			@components.LoadingIndicator()
+		</div>
 		// Article
 		<label for="articles-list" class="block">Basert på artikkel (URL)</label>
-		<input list="articles" id="articles-list" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
+		<input id="articles-list" name={ QuestionArticle } list="articles" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
 		<datalist id="articles">
 			for _, article := range *articles {
 				<option value={ article.ArticleURL.String() }></option>
 			}
 		</datalist>
-		// Questions
+		// Question
 		<label for="question" class="block">Spørsmål</label>
-		<input type="text" id="question" class="bg-gray-200 px-3 py-1 w-full mb-5" value={ question.Text }/>
+		<input id="question" name={ QuestionText } type="text" class="bg-gray-200 px-3 py-1 w-full mb-5" value={ question.Text }/>
 		<fieldset class="block mb-5">
 			// Alternatives
 			<legend>Svar alternativer (Fyll inn mellom 2 til 4)</legend>
 			// TODO: Possibly do this better
 			<input
 				id="question-1"
+				name={ QuestionAlternative1 }
 				type="text"
 				class="bg-gray-200 px-3 py-1 w-full mb-2"
 				if len(question.Alternatives) >= 1 {
@@ -37,6 +52,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			/>
 			<input
 				id="question-2"
+				name={ QuestionAlternative2 }
 				type="text"
 				class="bg-gray-200 px-3 py-1 w-full mb-2"
 				if len(question.Alternatives) >= 2 {
@@ -45,6 +61,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			/>
 			<input
 				id="question-3"
+				name={ QuestionAlternative3 }
 				type="text"
 				class="bg-gray-200 px-3 py-1 w-full mb-2"
 				if len(question.Alternatives) >= 3 {
@@ -53,6 +70,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			/>
 			<input
 				id="question-4"
+				name={ QuestionAlternative4 }
 				type="text"
 				class="bg-gray-200 px-3 py-1 w-full"
 				if len(question.Alternatives) >= 4 {
@@ -62,15 +80,35 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</fieldset>
 		// Image
 		<label for="question-image" class="block">Bilde</label>
-		<input id="question-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-		@ImagePreview(&question.ImageURL, quizID)
+		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, false)
 		// Points
 		<label for="points" class="block mt-5">Poeng</label>
-		<input id="points" type="number" class="bg-gray-200 px-3 py-1 w-full mb-5" min="0" value={ fmt.Sprint(question.Points) }/>
+		<input
+			id="points"
+			name={ QuestionPoints }
+			type="number"
+			class="bg-gray-200 px-3 py-1 w-full mb-5"
+			min="0"
+			value={ fmt.Sprint(question.Points) }
+		/>
 		// Buttons
 		<div class="flex flex-row justify-between gap-5 mt-5">
-			<button id="close-modal-button" onclick="closeModal()" type="button" class="bg-gray-100 hover:bg-red-400 focus:bg-red-400 font-bold px-3 py-2 w-full">Avbryt</button>
-			<button id="submit-question-button" type="submit" class="bg-gray-200 hover:bg-gray-400 focus:bg-gray-400 font-bold px-3 py-2 w-full">Lagre</button>
+			<button
+				id="close-modal-button"
+				onclick="closeModal()"
+				type="button"
+				class="bg-gray-100 hover:bg-red-400 focus:bg-red-400 font-bold px-3 py-2 w-full"
+			>Avbryt</button>
+			<button
+				id="submit-question-button"
+				type="submit"
+				class="bg-gray-200 hover:bg-gray-400 focus:bg-gray-400 font-bold px-3 py-2 w-full"
+				hx-post={ fmt.Sprintf("/api/v1/admin/question/create-new?quiz-id=%s", quizID) }
+				hx-swap="beforeend"
+				hx-target="#question-list"
+				hx-sync="closest form:abort"
+				hx-indicator="previous .htmx-indicator"
+			>Lagre</button>
 		</div>
 	</form>
 	<script>
