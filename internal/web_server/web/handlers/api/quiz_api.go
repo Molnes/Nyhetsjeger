@@ -93,12 +93,10 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 
 // Handles patch request for a random username.
 func (qah *QuizApiHandler) patchRandomUsername(c echo.Context) error {
-	adjective, noun, err := users.GetRandomAvailableUsername(qah.sharedData.DB)
+	username, err := users.AssignUsernameToUser(qah.sharedData.DB, utils.GetUserIDFromCtx(c), c.Request().Context())
 	if err != nil {
 		return err
 	}
 
-	users.AssignUsernameToUser(qah.sharedData.DB, utils.GetUserIDFromCtx(c), *adjective, *noun)
-
-	return c.String(http.StatusOK, *adjective+" "+*noun)
+	return c.String(http.StatusOK, username)
 }
