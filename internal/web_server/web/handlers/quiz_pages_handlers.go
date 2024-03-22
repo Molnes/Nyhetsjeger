@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
@@ -34,6 +35,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/profil", qph.getQuizProfile)
 
 	e.GET("/username", qph.usernamePage)
+	e.POST("/username", qph.postUsername)
 }
 
 // Renders the quiz home page
@@ -122,4 +124,24 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
+}
+
+func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
+	phonenumber := c.FormValue("phonenumber")
+	match, _ := regexp.MatchString(`^(\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3}|\d{8})$`, phonenumber)
+	if !match {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid phone number")
+	}
+	enterCompetion := c.FormValue("competition") == "on"
+
+	err := users.AssignPhonenumberToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), phonenumber)
+	if err != nil {
+		return err
+	}
+	err = users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetion)
+	if err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusFound, "/quiz")
 }
