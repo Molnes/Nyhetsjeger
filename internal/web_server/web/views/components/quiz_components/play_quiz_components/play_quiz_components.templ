@@ -11,32 +11,26 @@ import (
 
 // Form with buttons for each alternative in a question
 templ AnswerButtons(question *questions.Question) {
-	<div
-		id="answer-buttons"
-		class="flex flex-col gap-8 items-center w-full"
+	<form
+		id="question-answer-form"
+		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		hx-swap="outerHTML"
+		hx-indicator=".htmx-indicator"
+		class="grid grid-cols-2 gap-8 w-full isolate mt-2"
 	>
-		<form
-			id="question-answer-form"
-			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
-			hx-swap="outerHTML"
-			hx-target="#answer-buttons"
-			hx-indicator=".htmx-indicator"
-			class="grid grid-cols-2 gap-8 w-full isolate mt-2"
-		>
-			for _, alternative := range question.Alternatives {
-				<button
-					type="submit"
-					name="answer-id"
-					class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline  gradient-shadow text-wrap w-full"
-					value={ alternative.ID.String() }
-				>
-					{ alternative.Text }
-				</button>
-			}
-		</form>
-		@components.LoadingIndicator()
-		@stopTimerOn("htmx:beforeRequest", "question-answer-form")
-	</div>
+		for _, alternative := range question.Alternatives {
+			<button
+				type="submit"
+				name="answer-id"
+				class="text-l p-2 h-28 rounded-lg bg-white gradient-outline  gradient-shadow text-wrap w-full"
+				value={ alternative.ID.String() }
+			>
+				{ alternative.Text }
+			</button>
+		}
+	</form>
+	@components.LoadingIndicator()
+	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
@@ -73,9 +67,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
+			class="text-l p-2 h-28 rounded-lg bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
 		} else {
-			class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline text-wrap w-full"
+			class="text-l p-2 h-28 rounded-lg bg-white gradient-outline text-wrap w-full"
 		}
 	>
 		{ alternative.Text }
