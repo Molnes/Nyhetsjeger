@@ -14,7 +14,7 @@ templ UsernamePage(u *users.User) {
 						<label for="tlfIn" class="inline font-bold mr-4">Mobilnummer</label>
 						<button class="inline rounded-full border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1" type="button">i</button>
 					</div>
-					<input id="tlfIn" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" name="mobilnummer" id="mobilnummer" required/>
+					<input id="tlfIn" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" id="mobilnummer" required/>
 					<label for="usrnIn" class="font-bold">Brukernavn</label>
 					<input id="usrnIn" class="w-full h-7 rounded px-2" type="text" name="brukernavn" id="brukernavn" value={ u.Username } readonly/>
 				</div>
