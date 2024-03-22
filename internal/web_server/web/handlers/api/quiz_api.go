@@ -5,6 +5,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
@@ -27,6 +28,7 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/articles", qah.getArticles)
 	e.GET("/next-question", qah.getNextQuestion)
 	e.POST("/user-answer", qah.postUserAnswer)
+	e.PATCH("/username", qah.patchRandomUsername)
 
 }
 
@@ -87,4 +89,15 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
+}
+
+func (qah *QuizApiHandler) patchRandomUsername(c echo.Context) error {
+	adjective, noun, err := users.GetRandomAvailableUsername(qah.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	users.AssignUsernameToUser(qah.sharedData.DB, utils.GetUserIDFromCtx(c), *adjective, *noun)
+
+	return c.String(http.StatusOK, *adjective+" "+*noun)
 }
