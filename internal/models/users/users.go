@@ -148,7 +148,7 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 }
 
 // Returns a random available username from the database
-func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
+func GetRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
 	var adjective string
 	var noun string
 	err := db.QueryRow(
@@ -162,7 +162,7 @@ func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
 }
 
 // Assigns a username to a user in the database
-func assignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
+func AssignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
 	_, err := db.Exec(
 		`UPDATE users
 			SET username_adjective = $2, username_noun = $3
