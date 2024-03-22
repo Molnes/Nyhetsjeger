@@ -74,7 +74,17 @@
     opacity: 1;
 }
 
-.gradient-outline::after {
+.gradient-outline,
+.gradient-outline-thick,
+.gradient-outline-circle,
+.gradient-outline-circle-thick {
+    position: relative;
+}
+
+.gradient-outline::after,
+.gradient-outline-thick::after,
+.gradient-outline-circle::after,
+.gradient-outline-circle-thick::after {
     content: "";
     position: absolute;
     inset: -3px;
@@ -82,4 +92,14 @@
     border-radius: 0.65rem;
     background: var(--cindigo);
     background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
+}
+
+.gradient-outline-thick::after,
+.gradient-outline-circle-thick::after {
+    inset: -6px;
+}
+
+.gradient-outline-circle::after,
+.gradient-outline-circle-thick::after {
+    border-radius: 50%;
 }
