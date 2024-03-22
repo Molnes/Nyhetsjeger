@@ -8,7 +8,7 @@ export default {
                         colors: {
                                 'cblue': '#0085FF',
                                 'cindigo': '#5B14F2',
-                                'cfuchsia': '#AD00FF',
+                                'cfuchsia': '##CA1FFF',
                                 'clightindigo': '#E3D8F1',
                         },
                 },

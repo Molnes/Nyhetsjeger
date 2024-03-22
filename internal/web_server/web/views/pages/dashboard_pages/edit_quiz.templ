@@ -106,7 +106,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<button class="bg-gray-100 font-bold px-3 py-2 w-40">OK</button>
+					<a href="/dashboard" class="bg-gray-100 font-bold px-3 py-2 w-40 text-center">Ferdig</a>
 				</div>
 			}
 		</div>

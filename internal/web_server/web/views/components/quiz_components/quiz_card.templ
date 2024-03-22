@@ -1,0 +1,25 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+)
+
+// QuizCard is a component that displays a preview of a quiz in the form of a card
+templ QuizCard(quiz quizzes.Quiz) {
+	<div class="bg-gray-200 rounded-lg max-w-60 gradient-shadow gradient-outline isolate">
+		<img
+			src="https://picsum.photos/300/200"
+			alt={ quiz.Title }
+			class="h-32 w-full bg-gray-500 rounded-t-lg object-cover"
+		/>
+		<div class="mt-0 grid grid-cols-1 gap-4 bg-gray-200 rounded-b-lg">
+			<h3 class="text-2xl mt-6 mx-auto text-center font-semibold text-gray-800 text-ellipsis w-60 overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
+			<a
+				class="text-white font-sans py-2 px-10 mx-auto my-6 rounded-lg bg-center text-center cgradient font-bold"
+				href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
+			>
+				SPILL
+			</a>
+		</div>
+	</div>
+}
