@@ -35,26 +35,25 @@ templ AnswerButtons(question *questions.Question) {
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
-	<div class="flex flex-col gap-8 items-center w-full">
-		<div class="grid grid-cols-2 gap-10 w-full isolate mt-8 px-4">
+	<div class="flex flex-col gap-8 items-center w-full isolate">
+		<div class="grid grid-cols-2 gap-10 w-full  mt-8 px-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
+				class="text-xl py-2 px-8 w-min rounded-lg bg-white gradient-outline gradient-shadow text-wrap"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
 			>
 				NESTE
-				@components.LoadingIndicator()
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-lg bg-white gradient-outline gradient-shadow text-wrap"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
