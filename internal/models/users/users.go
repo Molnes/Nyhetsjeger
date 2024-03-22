@@ -168,5 +168,16 @@ func AssignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun s
 			SET username_adjective = $2, username_noun = $3
 			WHERE id = $1`,
 		userID, adjective, noun)
+
+	return err
+}
+
+func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) error {
+	_, err := db.Exec(
+		`UPDATE users
+			SET phone = $2
+			WHERE id = $1`,
+		userID, phonenumber,
+	)
 	return err
 }
