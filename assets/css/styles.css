@@ -55,7 +55,8 @@
     position: relative;
 }
 
-.gradient-shadow::before {
+.gradient-shadow::before,
+.gradient-shadow-always::before {
     content: "";
     position: absolute;
     inset: 0px;
@@ -70,7 +71,8 @@
 
 /* When the gradient shadow element is either hovered or focused */
 /* Display the blurry background gradient (functions like a shadow) */
-.gradient-shadow:is(:hover, :focus-within)::before {
+.gradient-shadow:is(:hover, :focus-within)::before,
+.gradient-shadow-always::before {
     opacity: 1;
 }
 

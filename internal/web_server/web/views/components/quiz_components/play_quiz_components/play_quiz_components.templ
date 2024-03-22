@@ -27,7 +27,7 @@ templ AnswerButtons(question *questions.Question) {
 				<button
 					type="submit"
 					name="answer-id"
-					class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline text-wrap w-full"
+					class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline  gradient-shadow text-wrap w-full"
 					value={ alternative.ID.String() }
 				>
 					{ alternative.Text }
@@ -73,7 +73,7 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline-thick text-wrap w-full"
+			class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
 		} else {
 			class="text-xl p-2 h-28 rounded-lg bg-white gradient-outline text-wrap w-full"
 		}
@@ -95,7 +95,7 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 templ feedbackCircle(correct bool, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-outline-circle-thick"
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-outline-circle-thick gradient-shadow-always"
 		} else {
 			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-outline-circle"
 		}
@@ -111,7 +111,7 @@ templ feedbackCircle(correct bool, wasPicked bool) {
 templ feedbackPercentage(percentage float64, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-lg bg-white gradient-outline-thick text-sm"
+			class="flex items-center justify-center w-14 h-11 rounded-lg bg-white gradient-outline-thick text-sm gradient-shadow-always"
 		} else {
 			class="flex items-center justify-center w-14 h-11 rounded-lg bg-white gradient-outline text-sm"
 		}
