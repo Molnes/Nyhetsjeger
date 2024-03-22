@@ -6,11 +6,13 @@ import (
 
 // Template for a simple timer in a circle. Counts down from the given time.
 templ timer(timeLeft uint) {
-	<div
-		id="timer"
-		class="flex-shrink-0 text-xl font-bold h-12 w-12 bg-gray-300 rounded-full flex justify-center items-center"
-	>
-		{ fmt.Sprintf("%v", timeLeft) }
+	<div class="isolate">
+		<div
+			id="timer"
+			class="flex-shrink-0 text-xl font-bold h-12 w-12 bg-gray-300 rounded-full flex justify-center items-center gradient-outline-circle"
+		>
+			{ fmt.Sprintf("%v", timeLeft) }
+		</div>
 	</div>
 	@setupTimer(timeLeft)
 }
