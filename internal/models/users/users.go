@@ -181,3 +181,13 @@ func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) e
 	)
 	return err
 }
+
+func AssignOptInRankingToUser(db *sql.DB, userID uuid.UUID, optInRanking bool) error {
+	_, err := db.Exec(
+		`UPDATE users
+			SET opt_in_ranking = $2
+			WHERE id = $1`,
+		userID, optInRanking,
+	)
+	return err
+}
