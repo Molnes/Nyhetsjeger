@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -78,8 +77,6 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
 }
 
@@ -99,8 +96,6 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
 }
 
@@ -118,8 +113,6 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK,
 		dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
 }
@@ -134,8 +127,6 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 
 	// Sets the quiz as deleted in the database
 	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
-
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")
 	return c.Redirect(http.StatusOK, "/dashboard")
@@ -156,8 +147,6 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz published status")
 	}
-
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published != "on", quiz_id.String(), dashboard_pages.QuizPublished))
 }
@@ -183,8 +172,6 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active start time")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeStartTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
 
@@ -208,8 +195,6 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active end time")
 	}
-
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
@@ -274,8 +259,6 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Add the article to the quiz
 	err = articles.AddArticleToQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, article.ID.UUID.String(), quiz_id.String()))
 }
 
@@ -298,8 +281,6 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
 	}
-
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return c.NoContent(http.StatusOK)
 }
