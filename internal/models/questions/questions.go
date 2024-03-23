@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -342,6 +343,90 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 		return nil, err
 	}
 	return &a, nil
+}
+
+type QuestionForm struct {
+	Text                string
+	ImageURL            *url.URL
+	Article             *articles.Article
+	QuizID              *uuid.UUID
+	Points              uint
+	Alternative1        string
+	Alternative2        string
+	Alternative3        string
+	Alternative4        string
+	CorrectAnswerNumber string
+}
+
+// Parse and validate question data.
+// If the data is invalid, return an error describing the problem.
+// Returns the points, article URL, image URL and error text.
+func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string) (uint, *url.URL, *url.URL, string) {
+	if questionText == "" {
+		return 0, nil, nil, "Missing question text"
+	}
+
+	points, err := strconv.ParseInt(questionPoints, 10, 64)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse points"
+	}
+	if points < 0 {
+		return 0, nil, nil, "Points must be positive"
+	}
+
+	articleURL, err := url.Parse(articleURLString)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse article URL"
+	}
+
+	image, err := url.Parse(imageURL)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse image URL"
+	}
+
+	return uint(points), articleURL, image, ""
+}
+
+// Create a question object from a form.
+func CreateQuestionFromForm(form QuestionForm) Question {
+	questionID := uuid.New()
+
+	question := Question{
+		ID:       questionID,
+		Text:     form.Text,
+		ImageURL: *form.ImageURL,
+		Article:  *form.Article,
+		QuizID:   *form.QuizID,
+		Points:   form.Points,
+		Alternatives: []Alternative{
+			{
+				ID:         uuid.New(),
+				Text:       form.Alternative1,
+				IsCorrect:  form.CorrectAnswerNumber == "1",
+				QuestionID: questionID,
+			},
+			{
+				ID:         uuid.New(),
+				Text:       form.Alternative2,
+				IsCorrect:  form.CorrectAnswerNumber == "2",
+				QuestionID: questionID,
+			},
+			{
+				ID:         uuid.New(),
+				Text:       form.Alternative3,
+				IsCorrect:  form.CorrectAnswerNumber == "3",
+				QuestionID: questionID,
+			},
+			{
+				ID:         uuid.New(),
+				Text:       form.Alternative4,
+				IsCorrect:  form.CorrectAnswerNumber == "4",
+				QuestionID: questionID,
+			},
+		},
+	}
+
+	return question
 }
 
 // Add a new question to the database.

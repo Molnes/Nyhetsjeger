@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
@@ -215,6 +214,43 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
 
+// Adds the article to the database if it doesn't already exist.
+// If the article is already in the DB, it will check if it is already in the quiz.
+// If article already is in the quiz, return an error.
+// If not in the DB, it will fetch the relevant article data and add it to the DB.
+func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, error) {
+	// Check if the article is already in the DB
+	article, err := articles.GetArticleByURL(db, articleURL)
+	if err != nil && err != sql.ErrNoRows {
+		return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+	}
+
+	// If it exists, check if it already is in the quiz
+	if article != nil && article.ID.Valid {
+		articleInQuiz, err := articles.IsArticleInQuiz(db, &article.ID.UUID, quizID)
+		if err != nil {
+			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
+		}
+		if articleInQuiz {
+			return article, echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
+		}
+	} else {
+		// If not in DB, fetch the relevant article data and add it to the DB
+		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
+		if err != nil {
+			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+		}
+
+		// Add the article to the DB
+		articles.AddArticle(db, &tempArticle)
+
+		article = &tempArticle
+	}
+
+	return article, nil
+}
+
+// Adds an article to a quiz in the database.
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -229,31 +265,10 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
 	}
 
-	// Check if the article is already in the DB
-	article, err := articles.GetArticleByURL(aah.sharedData.DB, tempURL)
-	if err != nil && err != sql.ErrNoRows {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
-	}
-
-	// If it exists, check if it already is in the quiz
-	if article != nil && article.ID.Valid {
-		articleInQuiz, err := articles.IsArticleInQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
-		}
-		if articleInQuiz {
-			return echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
-		}
-	} else {
-		// If not in DB, fetch the relevant article data and add it to the DB
-		tempArticle, err := articles.GetSmpArticleByURL(articleURL)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
-		}
-
-		articles.AddArticle(aah.sharedData.DB, &tempArticle)
-
-		article = &tempArticle
+	// Ensure the article is in the database
+	article, err := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
+	if err != nil {
+		return err
 	}
 
 	// Add the article to the quiz
@@ -309,32 +324,13 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 	questionPoints := c.FormValue(dashboard_components.QuestionPoints)
 
 	// Parse the data and validate
-	if questionText == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Missing question text")
+	points, articleURL, image, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL)
+	if errorText != "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
-
-	points, err := strconv.ParseInt(questionPoints, 10, 64)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse points")
-	}
-	if points < 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Points must be positive")
-	}
-
-	tempArticleURL, err := url.Parse(articleURLString)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse article URL")
-	}
-
-	image, err := url.Parse(imageURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse image URL")
-	}
-
-	var article *articles.Article
 
 	// Check if the article URL is in the database
-	article, err = articles.GetArticleByURL(aah.sharedData.DB, tempArticleURL)
+	article, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
 	if err != nil && err != sql.ErrNoRows {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
 	}
@@ -351,48 +347,26 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 	}
 
 	// Create a new question object
-	questionID := uuid.New()
-
-	question := questions.Question{
-		ID:       questionID,
-		Text:     questionText,
-		ImageURL: *image,
-		Article:  *article,
-		QuizID:   quizID,
-		Points:   uint(points),
-		Alternatives: []questions.Alternative{
-			{
-				ID:         uuid.New(),
-				Text:       alternative1,
-				IsCorrect:  correctAnswerNumber == "1",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       alternative2,
-				IsCorrect:  correctAnswerNumber == "2",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       alternative3,
-				IsCorrect:  correctAnswerNumber == "3",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       alternative4,
-				IsCorrect:  correctAnswerNumber == "4",
-				QuestionID: questionID,
-			},
-		},
+	questionForm := questions.QuestionForm{
+		Text:                questionText,
+		ImageURL:            image,
+		Article:             article,
+		QuizID:              &quizID,
+		Points:              points,
+		CorrectAnswerNumber: correctAnswerNumber,
+		Alternative1:        alternative1,
+		Alternative2:        alternative2,
+		Alternative3:        alternative3,
+		Alternative4:        alternative4,
 	}
+	question := questions.CreateQuestionFromForm(questionForm)
 
 	// Save the question to the database
 	err = questions.AddNewQuestion(aah.sharedData.DB, question)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
 	}
+
 	// Return the "question item" element
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
 }
