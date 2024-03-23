@@ -7,14 +7,14 @@ import (
 // A row with a label and an input field.
 // The input field is for adding a new article to the list of articles.
 templ AddArticleInput(articlesLength int, articleNameInput string, quizID string, nameInput string) {
-	<div class="flex flex-row gap-5 mb-3">
+	<div class="flex flex-row flex-wrap gap-5 mb-3">
 		<label for={ nameInput }>
-			Link
+			Link&ensp;
 			<input
 				id={ nameInput }
 				name={ nameInput }
 				type="text"
-				class="bg-gray-200 px-2 py-1 ml-3"
+				class="bg-gray-200 px-2 py-1"
 			/>
 		</label>
 		<button

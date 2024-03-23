@@ -95,8 +95,13 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
 CREATE OR REPLACE FUNCTION insert_quiz_articles()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- If the article_id is not null, insert a new entry
-    IF NEW.article_id IS NOT NULL THEN
+    -- If the article_id is not null and the quiz_article combo does not already exist, insert a new entry
+    IF NEW.article_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1
+        FROM quiz_articles
+        WHERE quiz_id = NEW.quiz_id AND article_id = NEW.article_id
+    )
+    THEN
         INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id);
     END IF;
 
