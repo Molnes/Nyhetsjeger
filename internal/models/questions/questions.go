@@ -1,9 +1,11 @@
 package questions
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -343,15 +345,136 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 	return &a, nil
 }
 
-// Post a new question to the database.
+type QuestionForm struct {
+	Text                string
+	ImageURL            *url.URL
+	Article             *articles.Article
+	QuizID              *uuid.UUID
+	Points              uint
+	Alternative1        string
+	Alternative2        string
+	Alternative3        string
+	Alternative4        string
+	CorrectAnswerNumber string
+}
+
+// Parse and validate question data.
+// If the data is invalid, return an error describing the problem.
+// Returns the points, article URL, image URL and error text.
+func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string) (uint, *url.URL, *url.URL, string) {
+	if questionText == "" {
+		return 0, nil, nil, "Missing question text"
+	}
+
+	points, err := strconv.ParseInt(questionPoints, 10, 64)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse points"
+	}
+	if points < 0 {
+		return 0, nil, nil, "Points must be positive"
+	}
+
+	articleURL, err := url.Parse(articleURLString)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse article URL"
+	}
+
+	image, err := url.Parse(imageURL)
+	if err != nil {
+		return 0, nil, nil, "Failed to parse image URL"
+	}
+
+	return uint(points), articleURL, image, ""
+}
+
+// Create a question object from a form.
+// Returns the created question and an error message.
+func CreateQuestionFromForm(form QuestionForm) (Question, string) {
+	questionID := uuid.New()
+
+	question := Question{
+		ID:           questionID,
+		Text:         form.Text,
+		ImageURL:     *form.ImageURL,
+		Article:      *form.Article,
+		QuizID:       *form.QuizID,
+		Points:       form.Points,
+		Alternatives: []Alternative{},
+	}
+
+	hasCorrectAlternative := false
+
+	// Only add alternatives that are not empty
+	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
+		if alt != "" {
+			question.Alternatives = append(question.Alternatives, Alternative{
+				ID:        uuid.New(),
+				Text:      alt,
+				IsCorrect: form.Alternative1 == strconv.Itoa(index+1),
+			})
+
+			if form.CorrectAnswerNumber == strconv.Itoa(index+1) {
+				hasCorrectAlternative = true
+			}
+		}
+	}
+
+	// Check that there is a correct alternative
+	if !hasCorrectAlternative {
+		return question, "Question has no correct alternative"
+	}
+
+	// Check that there are two to four alternatives
+	if len(question.Alternatives) < 2 {
+		return question, "There must be at least two alternatives"
+	}
+	if len(question.Alternatives) > 4 {
+		return question, "There can be at most four alternatives"
+	}
+
+	return question, ""
+}
+
+// Add a new question to the database.
+// Adds the question alternatives to the database.
 // Returns the ID of the new question.
-func PostNewQuestion(db *sql.DB, question Question) (uuid.UUID, error) {
+func AddNewQuestion(db *sql.DB, question Question) error {
+	// Start a transaction
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	// Insert the question into the database
-	db.QueryRow(
+	_, err = tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
 		VALUES ($1, $2, $3, $4, $5, $6);`,
 		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points,
 	)
 
-	return question.ID, nil
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Insert the alternatives into the database
+	for _, a := range question.Alternatives {
+		tx.Exec(
+			`INSERT INTO answer_alternatives (id, text, correct, question_id)
+			VALUES ($1, $2, $3, $4);`,
+			a.ID, a.Text, a.IsCorrect, question.ID,
+		)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

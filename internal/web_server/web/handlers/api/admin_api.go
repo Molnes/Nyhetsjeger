@@ -2,12 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
@@ -32,7 +33,7 @@ func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
 
 // Registers handlers for admin api
 func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
-	e.POST("/quiz/create-new", aah.postDefaultQuiz)
+	e.POST("/quiz/create-new", aah.createDefaultQuiz)
 	e.POST("/quiz/edit-title", aah.editQuizTitle)
 	e.POST("/quiz/edit-image", aah.editQuizImage)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
@@ -42,11 +43,12 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
+	e.POST("/question/create-new", aah.createQuestion)
 }
 
 // Handles the creation of a new default quiz in the DB.
 // Redirects to the edit quiz page for the newly created quiz.
-func (aah *AdminApiHandler) postDefaultQuiz(c echo.Context) error {
+func (aah *AdminApiHandler) createDefaultQuiz(c echo.Context) error {
 	// Create a default quiz object
 	quiz := quizzes.CreateDefaultQuiz()
 
@@ -75,8 +77,6 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
 }
 
@@ -96,9 +96,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(imageURL, quiz_id.String(), dashboard_pages.QuizImageURL))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
 }
 
 // Removes the image for a quiz in the database.
@@ -115,9 +113,8 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(&url.URL{}, quiz_id.String(), dashboard_pages.QuizImageURL))
+	return utils.Render(c, http.StatusOK,
+		dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
 }
 
 // Deletes a quiz from the database.
@@ -151,8 +148,6 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz published status")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published != "on", quiz_id.String(), dashboard_pages.QuizPublished))
 }
 
@@ -176,8 +171,6 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active start time")
 	}
-
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeStartTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
@@ -203,11 +196,46 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active end time")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
 }
 
+// Adds the article to the database if it doesn't already exist.
+// If the article is already in the DB, it will check if it is already in the quiz.
+// If article already is in the quiz, return an error.
+// If not in the DB, it will fetch the relevant article data and add it to the DB.
+func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, error) {
+	// Check if the article is already in the DB
+	article, err := articles.GetArticleByURL(db, articleURL)
+	if err != nil && err != sql.ErrNoRows {
+		return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+	}
+
+	// If it exists, check if it already is in the quiz
+	if article != nil && article.ID.Valid {
+		articleInQuiz, err := articles.IsArticleInQuiz(db, &article.ID.UUID, quizID)
+		if err != nil {
+			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
+		}
+		if articleInQuiz {
+			return article, echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
+		}
+	} else {
+		// If not in DB, fetch the relevant article data and add it to the DB
+		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
+		if err != nil {
+			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+		}
+
+		// Add the article to the DB
+		articles.AddArticle(db, &tempArticle)
+
+		article = &tempArticle
+	}
+
+	return article, nil
+}
+
+// Adds an article to a quiz in the database.
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -222,41 +250,16 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
 	}
 
-	// Check if the article is already in the DB
-	articleID, err := articles.GetArticleIDByURL(aah.sharedData.DB, tempURL)
-	if err != nil && err != sql.ErrNoRows {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
-	}
-
-	// If it exists, check if it already is in the quiz
-	if articleID.Valid {
-		articleInQuiz, err := articles.IsArticleInQuiz(aah.sharedData.DB, &articleID.UUID, &quiz_id)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
-		}
-		if articleInQuiz {
-			return echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
-		}
-	}
-
-	// If not in DB, fetch the relevant article data and add it to the DB
-	if !articleID.Valid {
-		article, err := articles.GetArticleByURL(articleURL)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
-		}
-
-		articles.AddArticle(aah.sharedData.DB, &article)
-
-		articleID = &article.ID
+	// Ensure the article is in the database
+	article, err := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
+	if err != nil {
+		return err
 	}
 
 	// Add the article to the quiz
-	err = articles.AddArticleToQuiz(aah.sharedData.DB, &articleID.UUID, &quiz_id)
+	err = articles.AddArticleToQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
-	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, articleID.UUID.String(), quiz_id.String()))
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, article.ID.UUID.String(), quiz_id.String()))
 }
 
 // Deletes an article from a quiz in the database.
@@ -279,7 +282,75 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
 	}
 
-	time.Sleep(500 * time.Millisecond) // TODO: Remove
-
 	return c.NoContent(http.StatusOK)
+}
+
+// Creates a new question in the database with the given data.
+func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz ID")
+	}
+
+	// Get the data from the form
+	articleURLString := c.FormValue(dashboard_components.QuestionArticleURL)
+	questionText := c.FormValue(dashboard_components.QuestionText)
+	correctAnswerNumber := c.FormValue(dashboard_components.QuestionCorrectAlternative)
+	alternative1 := c.FormValue(dashboard_components.QuestionAlternative1)
+	alternative2 := c.FormValue(dashboard_components.QuestionAlternative2)
+	alternative3 := c.FormValue(dashboard_components.QuestionAlternative3)
+	alternative4 := c.FormValue(dashboard_components.QuestionAlternative4)
+	imageURL := c.FormValue(dashboard_components.QuestionImageURL)
+	questionPoints := c.FormValue(dashboard_components.QuestionPoints)
+
+	// Parse the data and validate
+	points, articleURL, image, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL)
+	if errorText != "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+	}
+
+	// Check if the article URL is in the database
+	article, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+	if err != nil && err != sql.ErrNoRows {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+	}
+
+	// If not in DB, fetch the relevant article data and add it to the DB
+	if article == nil {
+		tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+		}
+
+		articles.AddArticle(aah.sharedData.DB, &tempArticle)
+		article = &tempArticle
+	}
+
+	// Create a new question object
+	questionForm := questions.QuestionForm{
+		Text:                questionText,
+		ImageURL:            image,
+		Article:             article,
+		QuizID:              &quizID,
+		Points:              points,
+		CorrectAnswerNumber: correctAnswerNumber,
+		Alternative1:        alternative1,
+		Alternative2:        alternative2,
+		Alternative3:        alternative3,
+		Alternative4:        alternative4,
+	}
+	question, errorText := questions.CreateQuestionFromForm(questionForm)
+	if errorText != "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+	}
+
+	// Save the question to the database
+	err = questions.AddNewQuestion(aah.sharedData.DB, question)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+	}
+
+	// Return the "question item" element
+	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
 }

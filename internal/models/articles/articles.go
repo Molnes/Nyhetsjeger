@@ -9,10 +9,10 @@ import (
 )
 
 type Article struct {
-	ID         uuid.NullUUID
-	Title      string
-	ArticleURL url.URL
-	ImgURL     url.URL
+	ID         uuid.NullUUID // The ID of the article.
+	Title      string        // The title of the article.
+	ArticleURL url.URL       // The URL of the article.
+	ImgURL     url.URL       // The URL of the main image of the article.
 }
 
 func newArticleNoID(title string, articleURL url.URL, imgURL url.URL) Article {
@@ -156,21 +156,18 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	return &articles, nil
 }
 
-// Get an Article ID by its URL.
-func GetArticleIDByURL(db *sql.DB, articleURL *url.URL) (*uuid.NullUUID, error) {
+// Get an Article by its URL from database.
+func GetArticleByURL(db *sql.DB, articleURL *url.URL) (*Article, error) {
 	row := db.QueryRow(
 		`SELECT
-			id
+		id, title, url, image_url
 		FROM
 			articles
 		WHERE
 			url = $1`,
 		articleURL.String())
 
-	var articleID uuid.NullUUID
-	err := row.Scan(&articleID)
-
-	return &articleID, err
+	return scanArticleFromFullRow(row)
 }
 
 // Add an Article to the database.
