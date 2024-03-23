@@ -340,7 +340,10 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		Alternative3:        alternative3,
 		Alternative4:        alternative4,
 	}
-	question := questions.CreateQuestionFromForm(questionForm)
+	question, errorText := questions.CreateQuestionFromForm(questionForm)
+	if errorText != "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+	}
 
 	// Save the question to the database
 	err = questions.AddNewQuestion(aah.sharedData.DB, question)
