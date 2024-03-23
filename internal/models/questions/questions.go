@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/url"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
@@ -41,6 +42,17 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 		}
 	}
 	return isCorrect
+}
+
+// Subtract the given duration from the time limit of this question.
+// If the duration is greater than the time limit, the time limit is set to 0.
+func (q *Question) SubtractFromTimeLimit(duration time.Duration) {
+	diffSeconds := duration.Seconds()
+	if diffSeconds > float64(q.TimeLimitSeconds) {
+		q.TimeLimitSeconds = 0
+	} else {
+		q.TimeLimitSeconds -= uint(diffSeconds)
+	}
 }
 
 // Initializes the percentage of times each alternative has been chosen.

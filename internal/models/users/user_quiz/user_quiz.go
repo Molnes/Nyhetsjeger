@@ -64,6 +64,21 @@ func startQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) error {
 	return err
 }
 
+// Returns the time the use was presented with the question.
+// If the user has not been presented with the question, returns an error.
+func getQuestionPresentedAtTime(db *sql.DB, userId uuid.UUID, questionId uuid.UUID) (time.Time, error) {
+	var questionPresentedAt time.Time
+	err := db.QueryRow(
+		`SELECT question_presented_at
+		FROM user_answers
+		WHERE user_id = $1 AND question_id = $2;`, userId, questionId,
+	).Scan(&questionPresentedAt)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return questionPresentedAt, nil
+}
+
 type QuizData struct {
 	PartialQuiz     quizzes.PartialQuiz
 	CurrentQuestion questions.Question
@@ -109,8 +124,13 @@ func StartNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questio
 
 	err = startQuestion(db, userID, question.ID)
 	if err != nil {
-		if err != errQuestionAlreadyStarted {
-			// ignoring the question already started error, so the user can continue anytime
+		if err == errQuestionAlreadyStarted {
+			timePresented, err := getQuestionPresentedAtTime(db, userID, question.ID)
+			if err != nil {
+				return nil, err
+			}
+			question.SubtractFromTimeLimit(time.Since(timePresented))
+		} else {
 			return nil, err
 		}
 	}
