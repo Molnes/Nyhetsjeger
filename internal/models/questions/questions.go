@@ -388,7 +388,8 @@ func ParseAndValidateQuestionData(questionText string, questionPoints string, ar
 }
 
 // Create a question object from a form.
-func CreateQuestionFromForm(form QuestionForm) Question {
+// Returns the created question and an error message.
+func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 	questionID := uuid.New()
 
 	question := Question{
@@ -401,6 +402,8 @@ func CreateQuestionFromForm(form QuestionForm) Question {
 		Alternatives: []Alternative{},
 	}
 
+	hasCorrectAlternative := false
+
 	// Only add alternatives that are not empty
 	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
 		if alt != "" {
@@ -409,10 +412,27 @@ func CreateQuestionFromForm(form QuestionForm) Question {
 				Text:      alt,
 				IsCorrect: form.Alternative1 == strconv.Itoa(index+1),
 			})
+
+			if form.CorrectAnswerNumber == strconv.Itoa(index+1) {
+				hasCorrectAlternative = true
+			}
 		}
 	}
 
-	return question
+	// Check that there is a correct alternative
+	if !hasCorrectAlternative {
+		return question, "Question has no correct alternative"
+	}
+
+	// Check that there are two to four alternatives
+	if len(question.Alternatives) < 2 {
+		return question, "There must be at least two alternatives"
+	}
+	if len(question.Alternatives) > 4 {
+		return question, "There can be at most four alternatives"
+	}
+
+	return question, ""
 }
 
 // Add a new question to the database.
