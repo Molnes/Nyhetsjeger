@@ -27,7 +27,7 @@ templ AnswerButtons(question *questions.Question) {
 				<button
 					type="submit"
 					name="answer-id"
-					class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+					class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full"
 					value={ alternative.ID.String() }
 				>
 					{ alternative.Text }
@@ -49,7 +49,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
+				class="text-xl py-2 px-8 w-min rounded-button gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
@@ -60,7 +60,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-sm gradient-shadow bg-white text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button gradient-shadow bg-white text-wrap"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
@@ -73,9 +73,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
+			class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
 		} else {
-			class="text-xl p-2 h-28 rounded gradient-shadow bg-white text-wrap w-full"
+			class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full"
 		}
 	>
 		{ alternative.Text }
@@ -111,9 +111,9 @@ templ feedbackCircle(correct bool, wasPicked bool) {
 templ feedbackPercentage(percentage float64, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm border-4 border-blue-500"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-shadow text-sm border-4 border-blue-500"
 		} else {
-			class="flex items-center justify-center w-14 h-11 rounded-xl bg-white gradient-shadow text-sm"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-shadow text-sm"
 		}
 	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }

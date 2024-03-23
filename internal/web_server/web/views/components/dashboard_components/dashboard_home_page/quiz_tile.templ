@@ -2,9 +2,11 @@ package dashboard_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 
+// QuizTile is a component that displays a quiz card.
+// Redirects to the edit quiz page when clicked.
 templ QuizTile(quiz quizzes.Quiz) {
 	<a
-		class="bg-clightindigo border-clightindigo border rounded-lg max-w-56 overflow-hidden flex flex-col transition duration-100 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+		class="bg-clightindigo border-clightindigo border rounded-card max-w-56 overflow-hidden flex flex-col transition duration-100 ease-in-out transform hover:-translate-y-1 hover:scale-105"
 		href={ templ.SafeURL("/dashboard/edit-quiz?quiz-id=" + quiz.ID.String()) }
 	>
 		<img
