@@ -84,13 +84,21 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				<h2>Spørsmål</h2>
 				// List of all questions
 				<ul id="question-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
-					if len(quiz.Questions) == 0 {
-						<li class="text-center px-2 py-4">Ingen spørsmål lagt til enda.</li>
-					}
+					<li
+						id="no-questions-warning"
+						if len(quiz.Questions) == 0 {
+							class="text-center px-2 py-4"
+						} else {
+							class="text-center px-2 py-4 hidden"
+						}
+					>
+						<p>Ingen spørsmål lagt til enda.</p>
+					</li>
 					for _, question := range quiz.Questions {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>
+				@questionList()
 				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="innerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
@@ -141,7 +149,7 @@ script modalWindowScript() {
 }
 
 // This script is used to observe changes in the article list.
-// If the warning is displayed and  an article is added, hide the warning.
+// If the warning is displayed and an article is added, hide the warning.
 // If the last article is removed, the warning should be shown.
 
 script articleList() {
@@ -169,6 +177,39 @@ script articleList() {
 				noArticlesWarning.classList.add("hidden");
 			} else if (noArticlesWarning) {
 				noArticlesWarning.classList.remove("hidden");
+			}
+		}
+}
+
+// This script is used to observe changes in the question list.
+// If the warning is displayed and a question is added, hide the warning.
+// If the last question is removed, the warning should be shown.
+
+script questionList() {
+		const questionList = document.getElementById("question-list");
+		const noQuestionsWarning = document.getElementById("no-questions-warning");
+
+		// Observe if the children of question list are mutated (added or removed)
+		const observer = new MutationObserver(handleChanges);
+		const config = { childList: true };
+		observer.observe(questionList, config);
+
+		// If the question list is changed, this function is called
+		function handleChanges(mutationsList, observer) {
+				mutationsList.forEach(mutation => {
+						if (mutation.type === 'childList') {
+								updateWarningVisibility();
+						}
+				});
+		}
+
+		// Update if the warning should be shown or not
+		const updateWarningVisibility = () => {
+			// If the warning is shown, but a question is appended, hide the warning
+			if (noQuestionsWarning && questionList.children.length > 1) {
+				noQuestionsWarning.classList.add("hidden");
+			} else if (noQuestionsWarning) {
+				noQuestionsWarning.classList.remove("hidden");
 			}
 		}
 }
