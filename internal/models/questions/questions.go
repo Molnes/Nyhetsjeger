@@ -460,7 +460,7 @@ func AddNewQuestion(db *sql.DB, question Question) error {
 
 	// Insert the alternatives into the database
 	for _, a := range question.Alternatives {
-		tx.Exec(
+		_, err = tx.Exec(
 			`INSERT INTO answer_alternatives (id, text, correct, question_id)
 			VALUES ($1, $2, $3, $4);`,
 			a.ID, a.Text, a.IsCorrect, question.ID,
