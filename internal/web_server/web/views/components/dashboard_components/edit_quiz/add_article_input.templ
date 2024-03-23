@@ -2,6 +2,8 @@ package dashboard_components
 
 import (
 	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // A row with a label and an input field.
@@ -14,19 +16,20 @@ templ AddArticleInput(articlesLength int, articleNameInput string, quizID string
 				id={ nameInput }
 				name={ nameInput }
 				type="text"
-				class="bg-gray-200 px-2 py-1"
+				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2"
 			/>
 		</label>
 		<button
 			id="article-add-button"
-			class="bg-gray-300 px-5 py-1"
+			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
 			hx-swap="beforeend"
 			hx-target="#article-list"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		>
-			Legg til ➕
+			Legg til
+			@icons.Plus(80, "#5B14F2", 20, 20)
 		</button>
 		@clearArticleInput(nameInput)
 	</div>

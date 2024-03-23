@@ -2,24 +2,25 @@ package dashboard_components
 
 import (
 	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // An item in the list of articles the quiz questions are based on
 templ ArticleListItem(articleUrl string, articleID string, quizID string) {
-	<li id={ articleID } class="flex flex-row justify-between px-3 py-1">
+	<li id={ articleID } class="flex flex-row justify-between px-4 py-2">
 		<a target="blank_" href={ templ.SafeURL(articleUrl) } class="[&:hover]:underline">
 			{ articleUrl }
 		</a>
 		<button
 			id={ fmt.Sprintf("delete-article-%s", articleID) }
-			class="px-1"
 			title="Slett"
 			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
 			hx-swap="none"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		>
-			❌
+			// This red is the same color as Tailwind red-500
+			@icons.Cross(3, "#ef4444", 25, 25)
 		</button>
 		@deleteArticle(articleID)
 	</li>
@@ -28,6 +29,7 @@ templ ArticleListItem(articleUrl string, articleID string, quizID string) {
 // Remove the article list item from the list of articles.
 
 script deleteArticle(articleID string) {
+		console.log("deleteArticle called", articleID)
 		// Add event listener to the delete button for HTMX response
 		document.body.addEventListener('htmx:afterOnLoad', function (event) {
 			if (event.detail.elt.id === ('delete-article-'+articleID) && event.detail.xhr.status === 200) {
