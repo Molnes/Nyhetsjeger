@@ -392,38 +392,24 @@ func CreateQuestionFromForm(form QuestionForm) Question {
 	questionID := uuid.New()
 
 	question := Question{
-		ID:       questionID,
-		Text:     form.Text,
-		ImageURL: *form.ImageURL,
-		Article:  *form.Article,
-		QuizID:   *form.QuizID,
-		Points:   form.Points,
-		Alternatives: []Alternative{
-			{
-				ID:         uuid.New(),
-				Text:       form.Alternative1,
-				IsCorrect:  form.CorrectAnswerNumber == "1",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       form.Alternative2,
-				IsCorrect:  form.CorrectAnswerNumber == "2",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       form.Alternative3,
-				IsCorrect:  form.CorrectAnswerNumber == "3",
-				QuestionID: questionID,
-			},
-			{
-				ID:         uuid.New(),
-				Text:       form.Alternative4,
-				IsCorrect:  form.CorrectAnswerNumber == "4",
-				QuestionID: questionID,
-			},
-		},
+		ID:           questionID,
+		Text:         form.Text,
+		ImageURL:     *form.ImageURL,
+		Article:      *form.Article,
+		QuizID:       *form.QuizID,
+		Points:       form.Points,
+		Alternatives: []Alternative{},
+	}
+
+	// Only add alternatives that are not empty
+	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
+		if alt != "" {
+			question.Alternatives = append(question.Alternatives, Alternative{
+				ID:        uuid.New(),
+				Text:      alt,
+				IsCorrect: form.Alternative1 == strconv.Itoa(index+1),
+			})
+		}
 	}
 
 	return question
