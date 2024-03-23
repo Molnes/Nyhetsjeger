@@ -11,6 +11,11 @@ export default {
                                 'cfuchsia': '##CA1FFF',
                                 'clightindigo': '#E3D8F1',
                         },
+                        borderRadius: {
+                                'button': '0.5rem',
+                                'card': '0.5rem',
+                                'input': '0.5rem',
+                        }
                 },
                 fontFamily: {
                         body: ['Bitter', 'serif'],
