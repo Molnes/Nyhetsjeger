@@ -8,7 +8,7 @@ export default {
                         colors: {
                                 'cblue': '#0085FF',
                                 'cindigo': '#5B14F2',
-                                'cfuchsia': '##CA1FFF',
+                                'cfuchsia': '#CA1FFF',
                                 'clightindigo': '#E3D8F1',
                         },
                         borderRadius: {
