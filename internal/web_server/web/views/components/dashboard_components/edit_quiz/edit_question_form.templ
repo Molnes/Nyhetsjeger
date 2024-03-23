@@ -9,12 +9,13 @@ import (
 )
 
 // Constants for the input names (for HTTP requests)
-const QuestionArticle = "question-article"
+const QuestionArticleURL = "question-article-url"
 const QuestionText = "question-text"
 const QuestionAlternative1 = "question-alternative-1"
 const QuestionAlternative2 = "question-alternative-2"
 const QuestionAlternative3 = "question-alternative-3"
 const QuestionAlternative4 = "question-alternative-4"
+const QuestionCorrectAlternative = "correct-alternative"
 const QuestionImageURL = "question-image-url"
 const QuestionPoints = "question-points"
 
@@ -28,7 +29,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</div>
 		// Article
 		<label for="articles-list" class="block">Basert på artikkel (URL)</label>
-		<input id="articles-list" name={ QuestionArticle } list="articles" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
+		<input id="articles-list" name={ QuestionArticleURL } list="articles" class="bg-gray-200 px-3 py-1 w-full mb-5"/>
 		<datalist id="articles">
 			for _, article := range *articles {
 				<option value={ article.ArticleURL.String() }></option>
@@ -39,44 +40,81 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<input id="question" name={ QuestionText } type="text" class="bg-gray-200 px-3 py-1 w-full mb-5" value={ question.Text }/>
 		<fieldset class="block mb-5">
 			// Alternatives
-			<legend>Svar alternativer (Fyll inn mellom 2 til 4)</legend>
 			// TODO: Possibly do this better
-			<input
-				id="question-1"
-				name={ QuestionAlternative1 }
-				type="text"
-				class="bg-gray-200 px-3 py-1 w-full mb-2"
-				if len(question.Alternatives) >= 1 {
-					value={ question.Alternatives[0].Text }
-				}
-			/>
-			<input
-				id="question-2"
-				name={ QuestionAlternative2 }
-				type="text"
-				class="bg-gray-200 px-3 py-1 w-full mb-2"
-				if len(question.Alternatives) >= 2 {
-					value={ question.Alternatives[1].Text }
-				}
-			/>
-			<input
-				id="question-3"
-				name={ QuestionAlternative3 }
-				type="text"
-				class="bg-gray-200 px-3 py-1 w-full mb-2"
-				if len(question.Alternatives) >= 3 {
-					value={ question.Alternatives[2].Text }
-				}
-			/>
-			<input
-				id="question-4"
-				name={ QuestionAlternative4 }
-				type="text"
-				class="bg-gray-200 px-3 py-1 w-full"
-				if len(question.Alternatives) >= 4 {
-					value={ question.Alternatives[3].Text }
-				}
-			/>
+			<table>
+				<thead>
+					<tr>
+						<th class="w-full text-left">Svar alternativer (Fyll inn mellom 2 til 4)</th>
+						<th class="text-right">Riktig svar</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<input
+								id="question-1"
+								name={ QuestionAlternative1 }
+								type="text"
+								class="bg-gray-200 px-3 py-1 w-full my-1"
+								if len(question.Alternatives) >= 1 {
+									value={ question.Alternatives[0].Text }
+								}
+							/>
+						</td>
+						<td>
+							<input type="radio" name={ QuestionCorrectAlternative } value="1" class="block ml-auto mr-0" checked/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input
+								id="question-2"
+								name={ QuestionAlternative2 }
+								type="text"
+								class="bg-gray-200 px-3 py-1 w-full my-1"
+								if len(question.Alternatives) >= 2 {
+									value={ question.Alternatives[1].Text }
+								}
+							/>
+						</td>
+						<td>
+							<input type="radio" name={ QuestionCorrectAlternative } value="2" class="block ml-auto mr-0"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input
+								id="question-3"
+								name={ QuestionAlternative3 }
+								type="text"
+								class="bg-gray-200 px-3 py-1 w-full my-1"
+								if len(question.Alternatives) >= 3 {
+									value={ question.Alternatives[2].Text }
+								}
+							/>
+						</td>
+						<td>
+							<input type="radio" name={ QuestionCorrectAlternative } value="3" class="block ml-auto mr-0"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input
+								id="question-4"
+								name={ QuestionAlternative4 }
+								type="text"
+								class="bg-gray-200 px-3 py-1 w-full my-1"
+								if len(question.Alternatives) >= 4 {
+									value={ question.Alternatives[3].Text }
+								}
+							/>
+						</td>
+						<td>
+							<input type="radio" name={ QuestionCorrectAlternative } value="4" class="block ml-auto mr-0"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		</fieldset>
 		// Image
 		<label for="question-image" class="block">Bilde</label>

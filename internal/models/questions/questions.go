@@ -1,6 +1,7 @@
 package questions
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/url"
@@ -343,15 +344,46 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 	return &a, nil
 }
 
-// Post a new question to the database.
+// Add a new question to the database.
+// Adds the question alternatives to the database.
 // Returns the ID of the new question.
-func PostNewQuestion(db *sql.DB, question Question) (uuid.UUID, error) {
+func AddNewQuestion(db *sql.DB, question Question) error {
+	// Start a transaction
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	// Insert the question into the database
-	db.QueryRow(
+	_, err = tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
 		VALUES ($1, $2, $3, $4, $5, $6);`,
 		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points,
 	)
 
-	return question.ID, nil
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Insert the alternatives into the database
+	for _, a := range question.Alternatives {
+		tx.Exec(
+			`INSERT INTO answer_alternatives (id, text, correct, question_id)
+			VALUES ($1, $2, $3, $4);`,
+			a.ID, a.Text, a.IsCorrect, question.ID,
+		)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
