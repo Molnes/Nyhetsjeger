@@ -23,7 +23,9 @@ var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, 
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
-templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string) {
+// If the question isNew = true, it will be appended to the list of questions.
+// If the question isNew = false, it will replace the existing question in the list.
+templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
 	<form id="edit-question-form">
 		<div class="flex flex-row items-center gap-3 mb-5">
 			<h2 class="font-bold text-3xl">Rediger spørsmål</h2>
@@ -53,7 +55,6 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		/>
 		<fieldset class="block mb-5">
 			// Alternatives
-			// TODO: Possibly do this better
 			<table>
 				<thead>
 					<tr>
@@ -116,9 +117,14 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 				id="submit-question-button"
 				type="submit"
 				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
-				hx-post={ fmt.Sprintf("/api/v1/admin/question/create-new?quiz-id=%s", quizID) }
-				hx-swap="beforeend"
-				hx-target="#question-list"
+				hx-post={ fmt.Sprintf("/api/v1/admin/question/edit?quiz-id=%s&question-id=%s", quizID, question.ID) }
+				if isNew {
+					hx-swap="beforeend"
+					hx-target="#question-list"
+				} else {
+					hx-swap="outerHTML"
+					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+				}
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
@@ -126,7 +132,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 	</form>
 	<script>
 		// Prevent form submission by default
-    const inputs = document.querySelectorAll('#edit-question-form input');
+    inputs = document.querySelectorAll('#edit-question-form input');
 
     // Add event listener to each input element
     inputs.forEach(input => {
@@ -145,9 +151,9 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 
 		// Close the modal after successful submit
 		document.body.addEventListener("htmx:afterSwap", (event) => {
-			if (event.detail.target.id === "question-list") {
+			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
 				closeModal();
 			}
-		});
+		}, {once: true});
 	</script>
 }
