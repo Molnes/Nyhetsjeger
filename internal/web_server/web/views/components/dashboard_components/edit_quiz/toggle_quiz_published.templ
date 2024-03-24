@@ -9,12 +9,12 @@ import (
 // If the quiz is not published, the checkbox is checked.
 // While the request is pending, the previous indicator is displayed.
 templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
-	<label id="quiz-is-hidden-label" class="bg-gray-100 font-bold px-3 py-2 w-40 cursor-pointer text-center">
+	<label id="quiz-is-hidden-label" class="bg-clightindigo font-bold px-4 py-2 cursor-pointer text-center rounded-button">
 		Skjul quiz
 		<input
 			id={ inputName }
 			name={ inputName }
-			class="ml-3 mx-1 p-1"
+			class="ml-3 p-1 rounded-button"
 			type="checkbox"
 			if !isPublished {
 				checked

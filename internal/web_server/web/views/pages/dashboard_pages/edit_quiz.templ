@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 )
@@ -23,20 +24,20 @@ const ArticlesLength = "articles-length"
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
-		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto px-5 py-3">
-			<h1 class="text-2xl">Rediger Quiz</h1>
+		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
 			// Quiz Title
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
-				<div class="flex flex-row items-center gap-3">
-					<label for={ QuizTitle } class="block">Tittel</label>
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<label for={ QuizTitle } class="block font-bold">Tittel</label>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
 			}
 			// Quiz Image
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
-				<div class="flex flex-row items-center gap-3">
-					<label for={ QuizImageURL } class="block">Forside bilde</label>
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<label for={ QuizImageURL } class="block font-bold">Forside bilde</label>
 					@components.LoadingIndicator()
 				</div>
 				// TODO: Also support uploading an image
@@ -45,19 +46,22 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quiz.ID)) {
-				<div class="flex flex-row items-center gap-3">
-					<h2>Artikler i quizzen</h2>
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Artikler i quizzen</h2>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.AddArticleInput(len(*articles), ArticlesLength, quiz.ID.String(), QuizArticleURL)
 				// List of all articles
-				<ul id="article-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
+				<ul
+					id="article-list"
+					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden"
+				>
 					<li
 						id="no-articles-warning"
 						if len(*articles) == 0 {
-							class="text-center px-2 py-4"
+							class="text-center p-4"
 						} else {
-							class="text-center px-2 py-4 hidden"
+							class="text-center p-4 hidden"
 						}
 					>
 						<p>Ingen artikler lagt til enda.</p>
@@ -72,8 +76,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm("") {
-				<div class="flex flex-row items-center gap-3">
-					<h2>Aktiv</h2>
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Aktiv</h2>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
@@ -81,15 +85,21 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {
-				<h2>Spørsmål</h2>
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Spørsmål</h2>
+					@components.LoadingIndicator()
+				</div>
 				// List of all questions
-				<ul id="question-list" class="w-full bg-gray-300 [&>*:nth-child(odd)]:bg-gray-200">
+				<ul
+					id="question-list"
+					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden mb-3"
+				>
 					<li
 						id="no-questions-warning"
 						if len(quiz.Questions) == 0 {
-							class="text-center px-2 py-4"
+							class="text-center p-4"
 						} else {
-							class="text-center px-2 py-4 hidden"
+							class="text-center p-4 hidden"
 						}
 					>
 						<p>Ingen spørsmål lagt til enda.</p>
@@ -99,22 +109,33 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					}
 				</ul>
 				@questionList()
-				<button hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) } hx-swap="innerHTML" hx-target="#question-modal" hx-trigger="click" type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+				<button
+					id="new-question-button"
+					type="button"
+					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+					hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) }
+					hx-swap="innerHTML"
+					hx-target="#question-modal"
+					hx-trigger="click"
+				>
+					Legg til nytt spørsmål
+					@icons.Plus(80, "#5B14F2", 20, 20)
+				</button>
 				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			@components.LoadingIndicator()
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm("") {
-				<div class="flex flex-row flex-wrap justify-around w-full px-5 gap-3">
+				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
-						class="bg-gray-100 text-red-600 font-bold px-3 py-2 w-40"
+						class="bg-red-500 font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<a href="/dashboard" class="bg-gray-100 font-bold px-3 py-2 w-40 text-center">Ferdig</a>
+					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button">Ferdig</a>
 				</div>
 			}
 		</div>

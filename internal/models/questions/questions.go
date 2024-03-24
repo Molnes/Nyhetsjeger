@@ -410,7 +410,7 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 			question.Alternatives = append(question.Alternatives, Alternative{
 				ID:        uuid.New(),
 				Text:      alt,
-				IsCorrect: form.Alternative1 == strconv.Itoa(index+1),
+				IsCorrect: form.CorrectAnswerNumber == strconv.Itoa(index+1),
 			})
 
 			if form.CorrectAnswerNumber == strconv.Itoa(index+1) {

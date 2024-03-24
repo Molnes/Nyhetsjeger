@@ -21,7 +21,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
-				class="h-48 object-cover rounded-lg shadow-lg my-4 mx-auto"
+				class="h-48 object-cover rounded-card shadow-lg my-4 mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
 				alt=""
 			/>
