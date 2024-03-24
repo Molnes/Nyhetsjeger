@@ -29,7 +29,6 @@ templ ArticleListItem(articleUrl string, articleID string, quizID string) {
 // Remove the article list item from the list of articles.
 
 script deleteArticle(articleID string) {
-		console.log("deleteArticle called", articleID)
 		// Add event listener to the delete button for HTMX response
 		document.body.addEventListener('htmx:afterOnLoad', function (event) {
 			if (event.detail.elt.id === ('delete-article-'+articleID) && event.detail.xhr.status === 200) {
