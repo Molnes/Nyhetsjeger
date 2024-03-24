@@ -310,15 +310,17 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
 
-	// Check if the article URL is in the database
-	article, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-	if err != nil && err != sql.ErrNoRows {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
-	}
+	article := &articles.Article{}
 
-	// Only add article if it is not empty.
+	// Only add article to DB if it is not empty.
 	// I.e. allow for no article, but not invalid article.
 	if articleURLString != "" {
+		// Check if the article URL is in the database
+		article, err = articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+		if err != nil && err != sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+		}
+
 		// If not in DB, fetch the relevant article data and add it to the DB
 		if article == nil {
 			tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
@@ -329,8 +331,6 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 			articles.AddArticle(aah.sharedData.DB, &tempArticle)
 			article = &tempArticle
 		}
-	} else {
-		article = &articles.Article{}
 	}
 
 	// Create a new question object
