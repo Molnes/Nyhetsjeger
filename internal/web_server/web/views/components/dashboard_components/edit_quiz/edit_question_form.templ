@@ -19,6 +19,8 @@ const QuestionCorrectAlternative = "correct-alternative"
 const QuestionImageURL = "question-image-url"
 const QuestionPoints = "question-points"
 
+var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, QuestionAlternative3, QuestionAlternative4}
+
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
 templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string) {
@@ -60,91 +62,32 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-1"
-								name={ QuestionAlternative1 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 1 {
-									value={ question.Alternatives[0].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="1"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-								checked
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-2"
-								name={ QuestionAlternative2 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 2 {
-									value={ question.Alternatives[1].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="2"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-3"
-								name={ QuestionAlternative3 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 3 {
-									value={ question.Alternatives[2].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="3"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-4"
-								name={ QuestionAlternative4 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 4 {
-									value={ question.Alternatives[3].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="4"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
+					for index := range 4 {
+						<tr>
+							<td class="py-1">
+								<input
+									id={ fmt.Sprintf("question-%d", index+1) }
+									name={ QuestionAltneratives[index] }
+									type="text"
+									class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
+									if index < len(question.Alternatives) {
+										value={ question.Alternatives[index].Text }
+									}
+								/>
+							</td>
+							<td>
+								<input
+									type="radio"
+									name={ QuestionCorrectAlternative }
+									value={ fmt.Sprint(index + 1) }
+									class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
+									if index < len(question.Alternatives) && question.Alternatives[index].IsCorrect {
+										checked
+									}
+								/>
+							</td>
+						</tr>
+					}
 				</tbody>
 			</table>
 		</fieldset>
