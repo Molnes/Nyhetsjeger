@@ -170,7 +170,7 @@ func AssignUsernameToUser(db *sql.DB, userID uuid.UUID, ctx context.Context) (st
 	return username, err
 }
 
-// Assigns a username to a user in the database
+// Assigns the phone number to a user in the database
 func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) error {
 	_, err := db.Exec(
 		`UPDATE users
