@@ -2,9 +2,11 @@ package icons
 
 import "fmt"
 
-//Plus icon. Parameters are strokeWidth, stroke, and tailwind integer of height and width.
-//Example: Plus(32, "currentColor", 6, 6)
+// Plus icon. Parameters are all in pixels.
+//Example: Plus(80, "currentColor", 20, 20)
 templ Plus(strokeWidth float64, stroke string, height int, width int) {
-    <svg xmlns="http://www.w3.org/2000/svg" class={ fmt.Sprintf("h-%d w-%d", height, width)} viewBox="0 0 512 512"><path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M256 112v288M400 256H112"/></svg>
-//SVG from ionicons.com
+	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512">
+		<path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M256 112 v288 M400 256 H112"></path>
+	</svg>
+	//SVG from ionicons.com
 }

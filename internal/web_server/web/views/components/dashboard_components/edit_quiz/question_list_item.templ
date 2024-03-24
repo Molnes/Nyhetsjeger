@@ -4,15 +4,24 @@ import (
 	"fmt"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // An item in the list of questions.
 // Contains the question text and a button to edit the question.
 templ QuestionListItem(question *questions.Question) {
-	<li class="flex flex-row justify-between px-3 py-1">
+	<li class="flex flex-row justify-between px-4 py-2">
 		{ question.Text }
-		<button hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) } hx-target="#question-modal" hx-trigger="click" type="button" class="edit-question-button px-1" title="Rediger">
-			✏️
+		<button
+			id={ fmt.Sprintf("edit-question-%s", question.ID) }
+			title="Rediger"
+			hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) }
+			hx-target="#question-modal"
+			hx-trigger="click"
+			type="button"
+		>
+			// The same color as the custom indigo color in the tailwindcss config.
+			@icons.Pencil("#5B14F2", 20, 20)
 		</button>
 	</li>
 }
