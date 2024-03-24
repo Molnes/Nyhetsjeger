@@ -316,15 +316,21 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
 	}
 
-	// If not in DB, fetch the relevant article data and add it to the DB
-	if article == nil {
-		tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
-		}
+	// Only add article if it is not empty.
+	// I.e. allow for no article, but not invalid article.
+	if articleURLString != "" {
+		// If not in DB, fetch the relevant article data and add it to the DB
+		if article == nil {
+			tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+			}
 
-		articles.AddArticle(aah.sharedData.DB, &tempArticle)
-		article = &tempArticle
+			articles.AddArticle(aah.sharedData.DB, &tempArticle)
+			article = &tempArticle
+		}
+	} else {
+		article = &articles.Article{}
 	}
 
 	// Create a new question object
