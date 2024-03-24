@@ -9,6 +9,8 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/joho/godotenv"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -29,67 +31,23 @@ func main() {
 
 	defer db.Close()
 
-	populate_adjectives(db)
-	populate_nouns(db)
-	/* populate_usernames(db) */
+	// populate_adjectives(db)
+	// populate_nouns(db)
 
-	/* loadDataFromCSV(db) */
+	loadDataFromCSV(db)
 }
 
 // Populates the adjectives table
 func populate_adjectives(db *sql.DB) {
-	// Populate adjectives with raud, fin and brennande.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
 
-	tx.Exec("INSERT INTO adjectives VALUES ('raud')")
-	tx.Exec("INSERT INTO adjectives VALUES ('fin')")
-	tx.Exec("INSERT INTO adjectives VALUES ('brennande')")
-
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
+	db.Exec("INSERT INTO adjectives VALUES ('Raud'), ('Fin'), ('Brennande')")
 }
 
 // Populates the nouns table
 func populate_nouns(db *sql.DB) {
-	// Populate nouns with lefse, taco, and, stol and appelsin.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
 
-	tx.Exec("INSERT INTO nouns VALUES ('lefse')")
-	tx.Exec("INSERT INTO nouns VALUES ('taco')")
-	tx.Exec("INSERT INTO nouns VALUES ('and')")
-	tx.Exec("INSERT INTO nouns VALUES ('stol')")
-	tx.Exec("INSERT INTO nouns VALUES ('appelsin')")
+	db.Exec("INSERT INTO nouns VALUES ('Lefse'), ('Taco'), ('And'), ('Stol'), ('Appelsin')")
 
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
-}
-
-// Populates the usernames table
-// This solution will not work at this moment.
-// Function will be used later to debug and test.
-func populate_usernames(db *sql.DB) {
-	// Populate usernames with raudlefse, fintaco, brennandeand, raudstol, and finappelsin.
-	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	tx.Exec("INSERT INTO usernames VALUES ('raud', 'lefse')")
-
-	if err := tx.Commit(); err != nil {
-		log.Println(err)
-	}
 }
 
 // Loads data from a csv file into the adjectives and nouns tables.
@@ -115,14 +73,17 @@ func loadDataFromCSV(db *sql.DB) {
 		log.Println(err)
 	}
 
+	c := cases.Title(language.Norwegian)
+
+
 	for _, record := range records {
 
 		//In case of an unbalanced csv file
 		if len(record[0]) > 0 {
-			tx.Exec("INSERT INTO adjectives VALUES ($1)", record[0])
+			tx.Exec("INSERT INTO adjectives VALUES ($1)", c.String(record[0]))
 		}
 		if len(record[1]) > 0 {
-			tx.Exec("INSERT INTO nouns VALUES ($1)", record[1])
+			tx.Exec("INSERT INTO nouns VALUES ($1)", c.String(record[1]))
 		}
 	}
 

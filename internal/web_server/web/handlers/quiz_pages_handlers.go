@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
@@ -31,6 +33,9 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/fullforte", qph.getFinishedQuizzes)
 	e.GET("/arkiv", qph.getArchivedQuizzes)
 	e.GET("/profil", qph.getQuizProfile)
+
+	e.GET("/brukernavn", qph.usernamePage)
+	e.POST("/brukernavn", qph.postUsername)
 }
 
 // Renders the quiz home page
@@ -109,4 +114,35 @@ func (qph *QuizPagesHandler) getArchivedQuizzes(c echo.Context) error {
 
 func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
+}
+
+func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
+
+	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if error != nil {
+		return error
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
+}
+
+// Adds phone number and the leaderboards opt-in status to the user
+func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
+	phonenumber := c.FormValue("phonenumber")
+	match, _ := regexp.MatchString(`^(\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3}|\d{8})$`, phonenumber)
+	if !match {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid phone number")
+	}
+	enterCompetion := c.FormValue("competition") == "on"
+
+	err := users.AssignPhonenumberToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), phonenumber)
+	if err != nil {
+		return err
+	}
+	err = users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetion)
+	if err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusFound, "/quiz")
 }
