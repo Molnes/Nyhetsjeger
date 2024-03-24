@@ -1,40 +1,25 @@
 package quiz_components
 
 templ BurgerMenu() {
-	<div>
-		<!-- Button to toggle sidebar -->
-		<button id="toggleSidebar" class="fixed top-5 right-4 z-10">
+	<nav class="bg-cindigo text-white shadow-lg w-screen">
+		<button id="toggleSidebar" class="md:hidden z-10 focus:outline-none">
 			@burgerIcon()
 			@crossIcon()
 		</button>
-		<!-- Sidebar -->
-		<div id="sidebar" class="fixed right-0 top-0 h-screen w-64 bg-gray-300 text-black p-4 hidden shadow-lg text-2xl">
-			<ul class="space-y-2">
-				<li><a href="/quiz" class="hover:text-gray-600">Home</a></li>
-				<li><a href="/quiz/toppliste" class="hover:text-gray-600">Toppliste</a></li>
-				<li><a href="/quiz/fullforte" class="hover:text-gray-600">Fullførte quizzer</a></li>
-				<li><a href="/quiz/arkiv" class="hover:text-gray-600">Gamle quizzer</a></li>
-				<li><a href="/quiz/profil" class="hover:text-gray-600">Profil</a></li>
-				<!-- Add more menu items as needed -->
-			</ul>
-			<ul class="bottom-4 absolute w-full">
-				<li class="border-t-2 mt-4 pt-4 bottom-0"><button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 cursor-pointer">Logg ut</button></li>
+		<div id="navbar" class="hidden md:flex md:items-center md:justify-between w-11/12 md:w-3/4 lg:w-2/3 mx-auto h-screen md:h-12">
+			<ul class="flex flex-col  md:flex-row md:space-x-4 md:space-y-0 space-y-4 md:items-center md:justify-center w-full md:w-auto h-full md:h-auto">
+				<li><a href="/quiz" class="hover:text-gray-600 px-4 py-2">Home</a></li>
+				<li><a href="/quiz/toppliste" class="hover:text-gray-600 px-4 py-2">Toppliste</a></li>
+				<li><a href="/quiz/fullforte" class="hover:text-gray-600 px-4 py-2">Fullførte quizzer</a></li>
+				<li><a href="/quiz/arkiv" class="hover:text-gray-600 px-4 py-2">Gamle quizzer</a></li>
+				<li><a href="/quiz/profil" class="hover:text-gray-600 px-4 py-2">Profil</a></li>
+				<li class="">
+					<button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 focus:outline-none px-4 py-2">Logg ut</button>
+				</li>
 			</ul>
 		</div>
-		<!-- Inline JavaScript -->
-		<script>
-        const sidebar = document.getElementById('sidebar');
-        const burger = document.getElementById('burger');
-        const cross = document.getElementById('cross');
-        const toggleButton = document.getElementById('toggleSidebar');
-
-        toggleButton.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden'); // Toggle visibility of the sidebar
-            burger.classList.toggle('hidden'); // Toggle visibility of the burger icon
-            cross.classList.toggle('hidden'); // Toggle visibility of the cross icon
-        });
-    </script>
-	</div>
+	</nav>
+	@toggler()
 }
 
 templ burgerIcon() {
@@ -49,4 +34,16 @@ templ crossIcon() {
 	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="cross" class="hidden">
 		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
 	</svg>
+}
+
+script toggler() {
+
+  const navbar = document.getElementById('navbar'); 
+  const toggleButton = document.getElementById('toggleSidebar');
+
+  toggleButton.addEventListener('click', () => {
+    navbar.classList.toggle('hidden'); 
+            burger.classList.toggle('hidden'); // Toggle visibility of the burger icon
+            cross.classList.toggle('hidden'); // Toggle visibility of the cross icon
+  });
 }
