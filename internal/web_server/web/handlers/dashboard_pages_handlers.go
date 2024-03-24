@@ -31,6 +31,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
 	e.GET("", dph.dashboardHomePage)
 	e.GET("/edit-quiz", dph.dashboardEditQuiz)
 	e.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
+	e.GET("/edit-question", dph.dashboardEditQuestionModal)
 	e.GET("/leaderboard", dph.leaderboard)
 	e.GET("/access-settings", dph.accessSettings)
 	e.GET("/user-details", dph.userDetails)
@@ -54,11 +55,13 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 
 // Renders the page for editing quiz.
 func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
+	// Get the quiz ID.
 	uuid_id, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
+	// Get the quiz by ID.
 	quiz, err := quizzes.GetQuizByID(dph.sharedData.DB, uuid_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -68,7 +71,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 		}
 	}
 
-	// Get all the articles for a quiz.
+	// Get all the articles for the quiz by quiz ID.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles))
@@ -76,6 +79,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 
 // Renders the modal for creating a new question.
 func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) error {
+	// Get the quiz ID.
 	quiz_id, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
@@ -93,10 +97,34 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 		Alternatives: []questions.Alternative{},
 	}
 
-	// Get all the articles.
+	// Get all the articles for the quiz by quiz ID.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quiz_id.String()))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quiz_id.String(), true))
+}
+
+// Renders the modal for editing a question.
+func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) error {
+	// Get the question ID.
+	question_id, err := uuid.Parse(c.QueryParam("question-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question-id")
+	}
+
+	// Get the question by ID from the database.
+	question, err := questions.GetQuestionByID(dph.sharedData.DB, question_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "No question with given question-id found.")
+		} else {
+			return err
+		}
+	}
+
+	// Get all the articles for the quiz by quiz ID.
+	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, question.QuizID)
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(*question, articles, question.QuizID.String(), false))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {

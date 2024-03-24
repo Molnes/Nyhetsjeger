@@ -346,6 +346,7 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 }
 
 type QuestionForm struct {
+	ID                  uuid.UUID
 	Text                string
 	ImageURL            *url.URL
 	Article             *articles.Article
@@ -390,10 +391,8 @@ func ParseAndValidateQuestionData(questionText string, questionPoints string, ar
 // Create a question object from a form.
 // Returns the created question and an error message.
 func CreateQuestionFromForm(form QuestionForm) (Question, string) {
-	questionID := uuid.New()
-
 	question := Question{
-		ID:           questionID,
+		ID:           form.ID,
 		Text:         form.Text,
 		ImageURL:     *form.ImageURL,
 		Article:      *form.Article,
@@ -451,6 +450,60 @@ func AddNewQuestion(db *sql.DB, question Question) error {
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
 		VALUES ($1, $2, $3, $4, $5, $6);`,
 		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Insert the alternatives into the database
+	for _, a := range question.Alternatives {
+		_, err = tx.Exec(
+			`INSERT INTO answer_alternatives (id, text, correct, question_id)
+			VALUES ($1, $2, $3, $4);`,
+			a.ID, a.Text, a.IsCorrect, question.ID,
+		)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update a question in the database.
+func UpdateQuestion(db *sql.DB, question *Question) error {
+	// Start a transaction
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(
+		`UPDATE questions
+		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5
+		WHERE id = $6;`,
+		question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.ID,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete old alternatives
+	_, err = tx.Exec(
+		`DELETE FROM answer_alternatives
+		WHERE question_id = $1;`,
+		question.ID,
 	)
 
 	if err != nil {

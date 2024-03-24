@@ -43,7 +43,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
-	e.POST("/question/create-new", aah.createQuestion)
+	e.POST("/question/edit", aah.editQuestion)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -285,8 +285,10 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// Creates a new question in the database with the given data.
-func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
+// Edit a question with the given data.
+// If the question ID is not found, a new question will be created.
+// If the question ID is found, the question will be updated.
+func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
@@ -333,8 +335,15 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		}
 	}
 
+	// Get the question ID.
+	questionID, err := uuid.Parse(c.QueryParam("question-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question ID")
+	}
+
 	// Create a new question object
 	questionForm := questions.QuestionForm{
+		ID:                  questionID,
 		Text:                questionText,
 		ImageURL:            image,
 		Article:             article,
@@ -351,12 +360,22 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
 
-	// Save the question to the database
-	err = questions.AddNewQuestion(aah.sharedData.DB, question)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+	// Get the question by ID from the database.
+	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
+
+	// If doesn't exist in the database.
+	if err != nil && err == sql.ErrNoRows {
+		// Save the question to the database.
+		err = questions.AddNewQuestion(aah.sharedData.DB, question)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+		}
+	} else if tempQuestion.ID == questionID {
+		// If the question ID is found, update the question.
+		question.ID = questionID
+		err = questions.UpdateQuestion(aah.sharedData.DB, &question)
 	}
 
-	// Return the "question item" element
+	// Return the "question item" element.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
 }
