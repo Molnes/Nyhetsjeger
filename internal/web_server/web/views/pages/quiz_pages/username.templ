@@ -18,7 +18,7 @@ templ UsernamePage(u *users.User) {
 					<label for="usrnIn" class="font-bold">Brukernavn</label>
 					<p id="usrnIn" class="w-full h-7 rounded px-2 bg-white" type="text" id="brukernavn">{ u.Username }</p>
 				</div>
-				<button class="flex items-center m-2" type="button" hx-patch="/api/v1/quiz/username" hx-trigger="click" hx-target="#usrnIn">
+				<button class="flex items-center m-2" type="button" hx-patch="/api/v1/quiz/brukernavn" hx-trigger="click" hx-target="#usrnIn">
 					Generer nytt navn
 					@icons.Dice(16, "currentColor", 28, 28)
 				</button>

@@ -28,7 +28,7 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/articles", qah.getArticles)
 	e.GET("/next-question", qah.getNextQuestion)
 	e.POST("/user-answer", qah.postUserAnswer)
-	e.PATCH("/username", qah.patchRandomUsername)
+	e.PATCH("/brukernavn", qah.patchRandomUsername)
 
 }
 

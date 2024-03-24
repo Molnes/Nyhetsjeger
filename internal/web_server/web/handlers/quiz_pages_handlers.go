@@ -34,8 +34,8 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/arkiv", qph.getArchivedQuizzes)
 	e.GET("/profil", qph.getQuizProfile)
 
-	e.GET("/username", qph.usernamePage)
-	e.POST("/username", qph.postUsername)
+	e.GET("/brukernavn", qph.usernamePage)
+	e.POST("/brukernavn", qph.postUsername)
 }
 
 // Renders the quiz home page
