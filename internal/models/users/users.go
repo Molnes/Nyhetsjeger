@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/gob"
-	"log"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
@@ -33,7 +32,7 @@ type PartialUser struct {
 	SsoID        string
 	Email        string
 	AccessToken  string
-	TokenExpire time.Time
+	TokenExpire  time.Time
 	Refreshtoken string
 }
 
@@ -79,7 +78,7 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 }
 
 // Creates a new user in the database
-func CreateUser(db *sql.DB, partialUser *PartialUser, ctx context.Context) (*User, error) {
+func CreateUser(db *sql.DB, partialUser *PartialUser) (*User, error) {
 	accessTokenCypher := []byte("TODO")
 	refreshtokenCypher := []byte("TODO")
 	user := User{
@@ -94,39 +93,22 @@ func CreateUser(db *sql.DB, partialUser *PartialUser, ctx context.Context) (*Use
 		RefreshtokenCypher: refreshtokenCypher,
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	defer tx.Rollback()
-
-	var adjective string
-	var noun string
-	if err = tx.QueryRowContext(ctx,
-		`SELECT *
+	row := db.QueryRow(
+		`INSERT INTO users
+		(id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token, username_adjective, username_noun)
+		SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, random_username.adjective, random_username.noun
+		FROM (
+			SELECT adjective, noun
 			FROM available_usernames 
-			OFFSET floor(random() * (
-				SELECT COUNT(*) FROM available_usernames)
-		) 
-		LIMIT 1;`).Scan(&adjective, &noun); err != nil {
-		return nil, err
-	}
-
-	_, err = db.ExecContext(ctx,
-		`INSERT INTO users (id, sso_user_id, username_adjective, username_noun,email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
-		--RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
-		`,
-		user.ID, user.SsoID, adjective, noun, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
+			OFFSET floor(random() * (SELECT COUNT(*) FROM available_usernames)) 
+		LIMIT 1) AS random_username
+		RETURNING
+		id, sso_user_id, email, phone, opt_in_ranking, role, access_token,
+		token_expires_at, refresh_token,CONCAT(username_adjective, ' ', username_noun) AS username;`,
+		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
 		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
 
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	return GetUserByID(db, user.ID)
+	return scanUserFromFullRow(row)
 }
 
 // Returns the role of the user with the ID provided
