@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
@@ -111,7 +112,11 @@ func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 	addMenuContext(c, side_menu.AccessSettings)
-	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage())
+	admins, err := access_control.GetAllAdmins(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage(admins))
 }
 
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {

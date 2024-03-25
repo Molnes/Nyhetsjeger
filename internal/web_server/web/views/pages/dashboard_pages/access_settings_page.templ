@@ -1,10 +1,16 @@
 package dashboard_pages
 
 import (
+	"fmt"
+
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 )
 
-templ AccessSettingsPage() {
+templ AccessSettingsPage(admins *[]access_control.UserAdmin) {
 	@layout_components.DashBoardLayout("Tilgangs innstillinger") {
+		for _,admin := range *admins {
+			<p>{ admin.Email }, { admin.Role.String() }, { fmt.Sprint(admin.IsActive) } </p>
+		}
 	}
 }
