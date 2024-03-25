@@ -73,7 +73,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 			TokenExpire:  token.Expiry,
 			Refreshtoken: token.RefreshToken,
 		}
-		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser)
+		createdUser, err := users.CreateUser(ah.sharedData.DB, c.Request().Context(), &newUser)
 		if err != nil {
 			return fmt.Errorf("failed to create user: %s", err.Error())
 		}

@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/google/uuid"
 )
@@ -78,7 +79,7 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 }
 
 // Creates a new user in the database
-func CreateUser(db *sql.DB, partialUser *PartialUser) (*User, error) {
+func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*User, error) {
 	accessTokenCypher := []byte("TODO")
 	refreshtokenCypher := []byte("TODO")
 	user := User{
@@ -108,7 +109,21 @@ func CreateUser(db *sql.DB, partialUser *PartialUser) (*User, error) {
 		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
 		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
 
-	return scanUserFromFullRow(row)
+	insertedUser, err := scanUserFromFullRow(row)
+	if err != nil {
+		return nil, err
+	}
+	newRole, err := access_control.ApplyPreassignedRole(db, ctx, user.Email)
+	if err != nil {
+		if err == access_control.ErrNoPreassignedRole {
+			newRole = user_roles.User
+		} else {
+			return nil, err
+		}
+	}
+	insertedUser.Role = newRole
+
+	return insertedUser, nil
 }
 
 // Returns the role of the user with the ID provided
