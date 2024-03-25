@@ -178,4 +178,12 @@ CREATE VIEW available_usernames AS
         WHERE u.username_adjective = a.adjective AND u.username_noun = n.noun
     );
 
+-- Emails of users who should be granted a role when they sign up
+CREATE TABLE IF NOT EXISTS preassigned_roles(
+    email TEXT NOT NULL PRIMARY KEY,
+    role user_role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+    CONSTRAINT not_user_role CHECK (role != 'user')
+);
+
 END;
