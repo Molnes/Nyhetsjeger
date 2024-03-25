@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     sso_user_id TEXT NOT NULL, -- The user id from the SSO provider
     username_adjective TEXT NOT NULL REFERENCES adjectives(adjective),
     username_noun TEXT NOT NULL REFERENCES nouns(noun),
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
     role user_role NOT NULL DEFAULT 'user',
