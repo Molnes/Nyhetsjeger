@@ -24,7 +24,6 @@ func NewQuizApiHandler(sharedData *config.SharedData) *QuizApiHandler {
 }
 
 func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
-	e.GET("/article", qah.getArticle)
 	e.GET("/articles", qah.getArticles)
 	e.GET("/next-question", qah.getNextQuestion)
 	e.POST("/user-answer", qah.postUserAnswer)
@@ -32,10 +31,6 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 
 }
 
-func (qah *QuizApiHandler) getArticle(c echo.Context) error {
-	article := articles.SampleArticles[0]
-	return utils.Render(c, http.StatusOK, quiz_components.ArticleCard(&article))
-}
 
 func (qah *QuizApiHandler) getArticles(c echo.Context) error {
 	articles := articles.SampleArticles
