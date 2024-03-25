@@ -213,23 +213,33 @@ func IsCorrectAnswer(db *sql.DB, questionID uuid.UUID, answerID uuid.UUID) (bool
 }
 
 // Get specific question by ID.
+// Includes the article for the question.
+// Includes the answer altneratives for the question.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
 	var imageUrlString sql.NullString
+	var articleUrlString string
+	var articleImgUrlString sql.NullString
 	row := db.QueryRow(
 		`
 		SELECT
-		id, question, image_url, arrangement, article_id, quiz_id, time_limit_seconds, points
-		FROM questions
-		WHERE id = $1;
+			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points,
+			a.title, a.url, a.image_url as article_image
+		FROM
+			questions q
+		LEFT JOIN
+			articles a ON q.article_id = a.id
+		WHERE
+			q.id = $1;
 		`, id)
 	err := row.Scan(
-		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
+		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points, &q.Article.Title, &articleUrlString, &articleImgUrlString,
 	)
 	if err != nil {
 		return nil, err
 	}
 
+	// Parse the image URL
 	imageUrl, err := data_handling.ConvertNullStringToURL(&imageUrlString)
 	if err != nil {
 		return nil, err
@@ -237,12 +247,33 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		q.ImageURL = *imageUrl
 	}
 
+	// Parse the article URL.
+	tempArticleURL, err := url.Parse(articleUrlString)
+	if err != nil {
+		return nil, err
+	} else {
+		q.Article.ArticleURL = *tempArticleURL
+	}
+
+	// Parse the article image URL.
+	tempArticleImgURL, err := data_handling.ConvertNullStringToURL(&articleImgUrlString)
+	if err != nil {
+		return nil, err
+	} else {
+		q.Article.ImgURL = *tempArticleImgURL
+	}
+
 	answerRows, err := db.Query(
-		`SELECT aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
-		FROM answer_alternatives aa
-		LEFT JOIN user_answers ua ON aa.id = ua.chosen_answer_alternative_id
-		WHERE aa.question_id = $1
-		GROUP BY aa.id;
+		`SELECT
+			aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
+		FROM
+			answer_alternatives aa
+		LEFT JOIN
+			user_answers ua ON aa.id = ua.chosen_answer_alternative_id
+		WHERE
+			aa.question_id = $1
+		GROUP BY
+			aa.id;
 		`, id)
 	if err != nil {
 		return nil, err
