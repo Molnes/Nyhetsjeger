@@ -1,6 +1,7 @@
 package access_control
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
@@ -115,4 +116,49 @@ func RemovePreassignedAdmin(db *sql.DB, email string) error {
 	DELETE FROM preassigned_roles
 	WHERE email=$1;`, email)
 	return err
+}
+
+// If there is no preassigned role for the given email.
+var ErrNoPreassignedRole = errors.New("no preassigned role found")
+
+// Assigns the preassigned role to the user with the given email. The preassigned role is then removed.
+//
+// Returns the role that was assigned.
+//
+// If there is no preassigned role for the given email, ErrNoPreassignedRole is returned.
+func ApplyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_roles.Role, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx, `
+	UPDATE users u
+	SET role=pr.role
+	FROM preassigned_roles pr
+	WHERE u.email=$1 AND pr.email=$1
+	RETURNING u.role;`, email)
+	var roleString string
+	err = row.Scan(&roleString)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, ErrNoPreassignedRole
+		}
+		return 0, err
+	}
+
+	_, err = tx.ExecContext(ctx, `
+	DELETE FROM preassigned_roles
+	WHERE email=$1;`, email)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return user_roles.RoleFromString(roleString), nil
 }
