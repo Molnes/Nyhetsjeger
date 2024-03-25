@@ -27,20 +27,28 @@ var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, 
 // If the question isNew = false, it will replace the existing question in the list.
 templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
 	<form id="edit-question-form">
-		<h2 class="font-bold text-3xl">Rediger spørsmål</h2>
+		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
 		// Article
 		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel (URL)</label>
-		<input
+		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			list="articles"
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
-		/>
-		<datalist id="articles">
-			for _, article := range *articles {
-				<option value={ article.ArticleURL.String() }></option>
+		>
+			if len(*articles) == 0 {
+				<option value="" disabled selected>Ingen artikler lagt til enda</option>
+			} else {
+				<option value="">Ingen artikkel</option>
 			}
-		</datalist>
+			for _, article := range *articles {
+				<option
+					value={ article.ArticleURL.String() }
+					if question.Article.ArticleURL == article.ArticleURL {
+						selected
+					}
+				>{  article.ArticleURL.String() }</option>
+			}
+		</select>
 		// Question
 		<label for="question" class="block font-bold mb-1">Spørsmål</label>
 		<input
