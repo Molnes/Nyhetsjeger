@@ -11,6 +11,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	USER_ID_CONTEXT_KEY = "userID" // The key used to store the user ID in the context
+)
+
 type User struct {
 	ID                 uuid.UUID
 	SsoID              string
