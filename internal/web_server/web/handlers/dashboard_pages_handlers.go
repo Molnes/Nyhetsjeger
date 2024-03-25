@@ -9,7 +9,9 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/side_menu"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
@@ -27,13 +29,16 @@ func NewDashboardPagesHandler(sharedData *config.SharedData) *DashboardPagesHand
 }
 
 // Registers handlers for dashboard related pages.
-func (dph *DashboardPagesHandler) RegisterDashboardHandlers(e *echo.Group) {
-	e.GET("", dph.dashboardHomePage)
-	e.GET("/edit-quiz", dph.dashboardEditQuiz)
-	e.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
-	e.GET("/leaderboard", dph.leaderboard)
-	e.GET("/access-settings", dph.accessSettings)
-	e.GET("/user-details", dph.userDetails)
+func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
+	g.GET("", dph.dashboardHomePage)
+	g.GET("/edit-quiz", dph.dashboardEditQuiz)
+	g.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
+	g.GET("/leaderboard", dph.leaderboard)
+	g.GET("/user-details", dph.userDetails)
+
+	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
+	organizationAdminGroup := g.Group("", mw.EnforceRole)
+	organizationAdminGroup.GET("/access-settings", dph.accessSettings)
 }
 
 // Renders the dashboard home page.

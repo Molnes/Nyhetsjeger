@@ -6,6 +6,8 @@ const (
 	User              Role = 0
 	QuizAdmin         Role = 1
 	OrganizationAdmin Role = 2
+
+	ROLE_CONTEXT_KEY = "user-role" // The key used to store the user role in the context
 )
 
 const (
