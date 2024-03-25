@@ -36,6 +36,8 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 	e.GET("/brukernavn", qph.usernamePage)
 	e.POST("/brukernavn", qph.postUsername)
+
+	e.GET("/profil", qph.getProfile)
 }
 
 // Renders the quiz home page
@@ -145,4 +147,14 @@ func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusFound, "/quiz")
+}
+
+func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
+
+	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if error != nil {
+		return error
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
 }
