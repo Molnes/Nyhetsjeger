@@ -29,7 +29,6 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/play", qph.getPlayQuizPage)
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
-	e.GET("/arkiv", qph.getArchivedQuizzes)
 	e.GET("/profil", qph.getQuizProfile)
 }
 
@@ -101,10 +100,6 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
-}
-
-func (qph *QuizPagesHandler) getArchivedQuizzes(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, quiz_pages.ArchivedQuizzes())
 }
 
 func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
