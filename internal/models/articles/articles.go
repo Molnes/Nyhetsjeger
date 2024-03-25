@@ -100,7 +100,7 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	// Parse the article URL.
 	tempArticleURL, err := url.Parse(articleURL)
 	article.ArticleURL = *tempArticleURL
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return nil, err
 	}
 
