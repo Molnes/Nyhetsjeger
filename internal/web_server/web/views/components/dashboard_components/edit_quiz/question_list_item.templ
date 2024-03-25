@@ -25,6 +25,7 @@ templ QuestionListItem(question *questions.Question) {
 			hx-swap="innerHTML"
 			hx-target="#question-modal"
 			hx-trigger="click"
+			hx-indicator="previous .htmx-indicator"
 		>
 			// The same color as the custom indigo color in the tailwindcss config.
 			@icons.Pencil("#5B14F2", 20, 20)
