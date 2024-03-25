@@ -99,7 +99,9 @@ func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 			WHERE
 				quiz_id = $1
 			GROUP BY
-				q.id`,
+				q.id
+			ORDER BY
+				q.arrangement ASC`,
 		id)
 	if err != nil {
 		return nil, err
@@ -218,22 +220,17 @@ func IsCorrectAnswer(db *sql.DB, questionID uuid.UUID, answerID uuid.UUID) (bool
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
 	var imageUrlString sql.NullString
-	var articleUrlString string
-	var articleImgUrlString sql.NullString
 	row := db.QueryRow(
 		`
 		SELECT
-			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points,
-			a.title, a.url, a.image_url as article_image
+			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
 		FROM
 			questions q
-		LEFT JOIN
-			articles a ON q.article_id = a.id
 		WHERE
 			q.id = $1;
 		`, id)
 	err := row.Scan(
-		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points, &q.Article.Title, &articleUrlString, &articleImgUrlString,
+		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
@@ -247,20 +244,13 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		q.ImageURL = *imageUrl
 	}
 
-	// Parse the article URL.
-	tempArticleURL, err := url.Parse(articleUrlString)
-	if err != nil {
-		return nil, err
-	} else {
-		q.Article.ArticleURL = *tempArticleURL
-	}
-
-	// Parse the article image URL.
-	tempArticleImgURL, err := data_handling.ConvertNullStringToURL(&articleImgUrlString)
-	if err != nil {
-		return nil, err
-	} else {
-		q.Article.ImgURL = *tempArticleImgURL
+	// Get the article if it exists
+	if q.Article.ID.Valid {
+		article, err := articles.GetArticleByID(db, q.Article.ID.UUID)
+		if err != nil {
+			return nil, err
+		}
+		q.Article = *article
 	}
 
 	answerRows, err := db.Query(
@@ -573,13 +563,27 @@ func DeleteQuestionByID(db *sql.DB, id uuid.UUID) error {
 		return err
 	}
 
+	// Get the question's quiz ID and arrangement number
+	var quizID uuid.UUID
+	var arrangement uint
+	row := tx.QueryRow(
+		`SELECT quiz_id, arrangement
+		FROM questions
+		WHERE id = $1;`,
+		id,
+	)
+	err = row.Scan(&quizID, &arrangement)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	// Delete the question from the database
 	_, err = tx.Exec(
 		`DELETE FROM questions
 		WHERE id = $1;`,
 		id,
 	)
-
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -591,7 +595,19 @@ func DeleteQuestionByID(db *sql.DB, id uuid.UUID) error {
 		WHERE question_id = $1;`,
 		id,
 	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
+	// Update the arrangement numbers of the remaining questions
+	// (decrement all questions' arrangement with higher arrangement number)
+	_, err = tx.Exec(
+		`UPDATE questions
+		SET arrangement = arrangement - 1
+		WHERE quiz_id = $1 AND arrangement > $2;`,
+		quizID, arrangement,
+	)
 	if err != nil {
 		tx.Rollback()
 		return err
