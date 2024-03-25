@@ -22,7 +22,7 @@ templ AnswerButtons(question *questions.Question) {
 			<button
 				type="submit"
 				name="answer-id"
-				class="text-l p-2 h-28 rounded-lg bg-white gradient-outline  gradient-shadow text-wrap w-full"
+				class="text-l p-2 h-28 rounded-button bg-white gradient-outline  gradient-shadow text-wrap w-full"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -43,7 +43,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-lg bg-white gradient-outline gradient-shadow text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
@@ -53,7 +53,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-lg bg-white gradient-outline gradient-shadow text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
@@ -66,9 +66,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-l p-2 h-28 rounded-lg bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
+			class="text-l p-2 h-28 rounded-button bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
 		} else {
-			class="text-l p-2 h-28 rounded-lg bg-white gradient-outline text-wrap w-full"
+			class="text-l p-2 h-28 rounded-button bg-white gradient-outline text-wrap w-full"
 		}
 	>
 		{ alternative.Text }
@@ -104,9 +104,9 @@ templ feedbackCircle(correct bool, wasPicked bool) {
 templ feedbackPercentage(percentage float64, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-lg bg-white gradient-outline-thick text-sm gradient-shadow-always"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline-thick text-sm gradient-shadow-always"
 		} else {
-			class="flex items-center justify-center w-14 h-11 rounded-lg bg-white gradient-outline text-sm"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline text-sm"
 		}
 	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }
