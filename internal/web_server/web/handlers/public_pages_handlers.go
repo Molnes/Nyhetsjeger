@@ -31,7 +31,7 @@ func (pph *PublicPagesHandler) homePage(c echo.Context) error {
 
 func (pph *PublicPagesHandler) loginPage(c echo.Context) error {
 	session, err := pph.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
-	if err == nil && session.Values["user"] !=nil {
+	if err == nil && session.Values["user"] != nil {
 		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
 	}
 	return utils.Render(c, http.StatusOK, public_pages.LoginPage())

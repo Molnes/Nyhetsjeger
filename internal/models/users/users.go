@@ -147,26 +147,47 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 	return &user, err
 }
 
-// Returns a random available username from the database
-func getRandomAvailableUsername(db *sql.DB) (*string, *string, error) {
-	var adjective string
-	var noun string
-	err := db.QueryRow(
-		`SELECT *
-			FROM available_usernames 
-			OFFSET floor(random() * (
-				SELECT COUNT(*) FROM available_usernames)
-		) 
-		LIMIT 1;`).Scan(&adjective, &noun)
-	return &adjective, &noun, err
+// Assigns a random username to a user in the database
+func AssignUsernameToUser(db *sql.DB, userID uuid.UUID, ctx context.Context) (string, error) {
+	var username string
+	err := db.QueryRow(`
+			UPDATE users
+			SET
+				username_adjective = random_username.adjective,
+				username_noun = random_username.noun
+			FROM (
+				SELECT adjective, noun
+            	FROM available_usernames 
+            	OFFSET floor(random() * (
+                	SELECT COUNT(*) FROM available_usernames)
+        		) 
+        	LIMIT 1) AS random_username
+			WHERE users.id = $1
+			RETURNING CONCAT(random_username.adjective, ' ', random_username.noun);`,
+		userID,
+	).Scan(&username)
+
+	return username, err
 }
 
-// Assigns a username to a user in the database
-func assignUsernameToUser(db *sql.DB, userID uuid.UUID, adjective string, noun string) error {
+// Assigns the phone number to a user in the database
+func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) error {
 	_, err := db.Exec(
 		`UPDATE users
-			SET username_adjective = $2, username_noun = $3
+			SET phone = $2
 			WHERE id = $1`,
-		userID, adjective, noun)
+		userID, phonenumber,
+	)
+	return err
+}
+
+// Assigns the opt-in ranking value to a user in the database
+func AssignOptInRankingToUser(db *sql.DB, userID uuid.UUID, optInRanking bool) error {
+	_, err := db.Exec(
+		`UPDATE users
+			SET opt_in_ranking = $2
+			WHERE id = $1`,
+		userID, optInRanking,
+	)
 	return err
 }

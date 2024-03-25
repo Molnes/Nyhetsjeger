@@ -112,8 +112,8 @@ func getMainImageOfArticle(article ArticleSMP) (*url.URL, error) {
 	return &url.URL{}, nil
 }
 
-// Get an Article by its URL.
-func GetArticleByURL(articleUrl string) (Article, error) {
+// Get an SMP Article by its URL.
+func GetSmpArticleByURL(articleUrl string) (Article, error) {
 	// TODO: Update this to fetch the article from the web instead of reading it from JSON.
 
 	// Get article's SMP ID
@@ -134,6 +134,7 @@ func GetArticleByURL(articleUrl string) (Article, error) {
 		return Article{}, err
 	}
 
+	// Get the main image of the article
 	mainImage, err := getMainImageOfArticle(articleSMP)
 	if err != nil {
 		return Article{}, err
