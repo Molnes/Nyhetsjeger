@@ -531,3 +531,44 @@ func UpdateQuestion(db *sql.DB, question *Question) error {
 
 	return nil
 }
+
+// Delete a question from the database.
+// Deletes the question alternatives from the database.
+func DeleteQuestionByID(db *sql.DB, id uuid.UUID) error {
+	// Start a transaction
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Delete the question from the database
+	_, err = tx.Exec(
+		`DELETE FROM questions
+		WHERE id = $1;`,
+		id,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete the alternatives from the database
+	_, err = tx.Exec(
+		`DELETE FROM answer_alternatives
+		WHERE question_id = $1;`,
+		id,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}

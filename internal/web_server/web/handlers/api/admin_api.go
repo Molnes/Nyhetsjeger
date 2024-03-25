@@ -23,8 +23,10 @@ type AdminApiHandler struct {
 }
 
 // Constants
-const errorInvalidQuizID = "Invalid or missing quiz id"
 const queryParamQuizID = "quiz-id"
+const errorInvalidQuizID = "Invalid or missing quiz-id"
+const queryParamQuestionID = "question-id"
+const errorInvalidQuestionID = "Invalid or missing question-id"
 
 // Creates a new AdminApiHandler
 func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
@@ -44,6 +46,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
 	e.POST("/question/edit", aah.editQuestion)
+	e.DELETE("/question/delete", aah.deleteQuestion)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -290,9 +293,9 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 // If the question ID is found, the question will be updated.
 func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
-	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz ID")
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
 	}
 
 	// Get the data from the form
@@ -336,9 +339,9 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 
 	// Get the question ID.
-	questionID, err := uuid.Parse(c.QueryParam("question-id"))
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question ID")
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
 	}
 
 	// Create a new question object
@@ -378,4 +381,21 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 
 	// Return the "question item" element.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
+}
+
+// Delete a question with the given ID from the database.
+func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Delete the question from the database
+	err = questions.DeleteQuestionByID(aah.sharedData.DB, questionID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete question")
+	}
+
+	return c.NoContent(http.StatusOK)
 }
