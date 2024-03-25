@@ -9,6 +9,10 @@ import (
 
 templ AccessSettingsPage(admins *[]access_control.UserAdmin) {
 	@layout_components.DashBoardLayout("Tilgangs innstillinger") {
+		<form hx-post="/api/v1/organization-admin/access-control/admin">
+			<input type="email" name="email" id="email"/>
+			<input type="submit" value="Legg til"/>
+		</form>
 		for _,admin := range *admins {
 			<p>{ admin.Email }, { admin.Role.String() }, { fmt.Sprint(admin.IsActive) } </p>
 		}
