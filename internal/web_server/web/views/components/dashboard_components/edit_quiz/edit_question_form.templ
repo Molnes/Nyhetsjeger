@@ -162,11 +162,18 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		}
 
 		// Close the modal after successful submit.
-		// This applies to creating, updating, or deleting questions.
+		// This applies to creating or updating questions.
 		document.body.addEventListener("htmx:afterSwap", (event) => {
 			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
 				closeModal();
 			}
 		}, {once: true});
+
+		// Close the modal after successful deletion.
+		document.addEventListener('htmx:afterRequest', function(event) {
+      if (event.detail.target.dataset.elementType === "question-list-item" && event.detail.xhr.status === 200) {
+        closeModal();
+      }
+    }, {once: true});
 	</script>
 }
