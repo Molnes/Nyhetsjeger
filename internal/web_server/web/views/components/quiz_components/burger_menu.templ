@@ -1,40 +1,52 @@
 package quiz_components
 
 templ BurgerMenu() {
-	<div>
-		<!-- Button to toggle sidebar -->
-		<button id="toggleSidebar" class="fixed top-5 right-4 z-10">
-			@burgerIcon()
-			@crossIcon()
-		</button>
-		<!-- Sidebar -->
-		<div id="sidebar" class="fixed right-0 top-0 h-screen w-64 bg-gray-300 text-black p-4 hidden shadow-lg text-2xl">
-			<ul class="space-y-2">
-				<li><a href="/quiz" class="hover:text-gray-600">Home</a></li>
-				<li><a href="/quiz/toppliste" class="hover:text-gray-600">Toppliste</a></li>
-				<li><a href="/quiz/fullforte" class="hover:text-gray-600">Fullførte quizzer</a></li>
-				<li><a href="/quiz/arkiv" class="hover:text-gray-600">Gamle quizzer</a></li>
-				<li><a href="/quiz/profil" class="hover:text-gray-600">Profil</a></li>
-				<!-- Add more menu items as needed -->
-			</ul>
-			<ul class="bottom-4 absolute w-full">
-				<li class="border-t-2 mt-4 pt-4 bottom-0"><button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 cursor-pointer">Logg ut</button></li>
-			</ul>
-		</div>
-		<!-- Inline JavaScript -->
-		<script>
-        const sidebar = document.getElementById('sidebar');
-        const burger = document.getElementById('burger');
-        const cross = document.getElementById('cross');
-        const toggleButton = document.getElementById('toggleSidebar');
-
-        toggleButton.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden'); // Toggle visibility of the sidebar
-            burger.classList.toggle('hidden'); // Toggle visibility of the burger icon
-            cross.classList.toggle('hidden'); // Toggle visibility of the cross icon
-        });
-    </script>
-	</div>
+	<header class="bg-cindigo text-white py-4">
+    <!-- with inspiration from https://www.geeksforgeeks.org/how-to-create-a-responsive-navigation-bar-in-tailwind-css/ -->
+		<nav
+			class="flex justify-between  
+                    items-center w-[92%]  mx-auto"
+		>
+			<div class="w-16 font-bold">
+				Nyhetsjeger
+			</div>
+			<div
+				id="navbar"
+				class="nav-links duration-500 md:static absolute md:min-h-fit min-h-[94vh] left-0 top-[-100%] md:w-auto w-full flex items-center px-5"
+			>
+				<ul
+					class="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-28"
+				>
+					<li><a href="/quiz" class="hover:text-gray-600 px-4 py-2">Home</a></li>
+					<li><a href="/quiz/toppliste" class="hover:text-gray-600 px-4 py-2">Toppliste</a></li>
+					<li><a href="/quiz/fullforte" class="hover:text-gray-600 px-4 py-2">Fullførte quizzer</a></li>
+					<li><a href="/quiz/profil" class="hover:text-gray-600 px-4 py-2">Profil</a></li>
+					<li class="">
+						<button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 focus:outline-none px-4 py-2">Logg ut</button>
+					</li>
+				</ul>
+			</div>
+			<div class="flex items-center gap-6">
+				<button
+					id="toggleSidebar" onclick="onToggleMenu(this)" name="menu"
+					class="text-3xl cursor-pointer md:hidden text-white"
+				>
+					@burgerIcon()
+					@crossIcon()
+				</button>
+			</div>
+		</nav>
+        <script>
+        const navLinks = document.querySelector('.nav-links') 
+        function onToggleMenu(e) { 
+                e.name = e.name === 'menu' ? 'close' : 'menu' 
+                        navLinks.classList.toggle('top-[6%]')
+                        navLinks.classList.toggle('bg-cindigo')
+                        
+                        navLinks.classList.toggle('z-10')
+        } 
+        </script>
+	</header>
 }
 
 templ burgerIcon() {
