@@ -28,6 +28,15 @@ type User struct {
 	RefreshtokenCypher []byte
 }
 
+// Parital User struct contains only fields needed for creating a new user
+type PartialUser struct {
+	SsoID        string
+	Email        string
+	AccessToken  string
+	TokenExpire time.Time
+	Refreshtoken string
+}
+
 type UserSessionData struct {
 	ID    uuid.UUID
 	SsoID string
@@ -70,7 +79,20 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 }
 
 // Creates a new user in the database
-func CreateUser(db *sql.DB, user *User, ctx context.Context) (*User, error) {
+func CreateUser(db *sql.DB, partialUser *PartialUser, ctx context.Context) (*User, error) {
+	accessTokenCypher := []byte("TODO")
+	refreshtokenCypher := []byte("TODO")
+	user := User{
+		ID:                 uuid.New(),
+		SsoID:              partialUser.SsoID,
+		Email:              partialUser.Email,
+		Phone:              "No phone number provided",
+		OptInRanking:       true,
+		Role:               user_roles.User,
+		AccessTokenCypher:  accessTokenCypher,
+		Token_expire:       partialUser.TokenExpire,
+		RefreshtokenCypher: refreshtokenCypher,
+	}
 
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
