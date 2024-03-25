@@ -16,6 +16,7 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
 			type="text"
 			value={ imageURL.String() }
+			placeholder="https://picsum.photos/id/1/300/200"
 			if post {
 				hx-post={ requestURL }
 				hx-trigger="change"

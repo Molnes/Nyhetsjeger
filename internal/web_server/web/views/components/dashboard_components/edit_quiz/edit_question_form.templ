@@ -38,7 +38,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			if len(*articles) == 0 {
 				<option value="" disabled selected>Ingen artikler lagt til enda</option>
 			} else {
-				<option value="">Ingen artikkel</option>
+				<option value="">Ingen artikkel valgt</option>
 			}
 			for _, article := range *articles {
 				<option
@@ -57,6 +57,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			type="text"
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
 			value={ question.Text }
+			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
 		<fieldset class="block mb-5">
 			// Alternatives
@@ -79,6 +80,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 									if index < len(question.Alternatives) {
 										value={ question.Alternatives[index].Text }
 									}
+									placeholder={ fmt.Sprintf("%d", 1813+index) }
 								/>
 							</td>
 							<td>
@@ -112,6 +114,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
 			min="0"
 			value={ fmt.Sprint(question.Points) }
+			placeholder="10"
 		/>
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
