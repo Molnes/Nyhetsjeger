@@ -4,11 +4,15 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	"strconv"
+	"fmt"
 )
 
 templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	@layout_components.QuizLayout("Oppsummering") {
-		<div class="flex flex-col justify-start items-center px-1 py-5 h-screen">
+		<div
+			id="quiz-summary"
+			class="flex flex-col justify-start items-center px-1 py-5 h-screen isolate"
+		>
 			<section class="flex flex-col items-center">
 				<h1 class="font-bold text-3xl">RESULTAT</h1>
 				<div class="rounded-full size-24 bg-gray-200 flex justify-center items-center mt-2 mb-5">
@@ -33,7 +37,12 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 					}
 				</ol>
 			</section>
-			<button class="bg-gray-200 text-blackd px-10 py-1 font-bold" onclick="window.location.href = '/quiz'">NESTE</button>
+			<button
+				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
+				hx-target="#quiz-summary"
+				hx-swap="outerHTML"
+				class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+			>NESTE</button>
 		</div>
 	}
 }
