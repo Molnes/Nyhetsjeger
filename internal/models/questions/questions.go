@@ -603,3 +603,33 @@ func DeleteQuestionByID(db *sql.DB, id uuid.UUID) error {
 
 	return nil
 }
+
+// Update the image URL for a question by question ID.
+func SetImageByQuestionID(db *sql.DB, id *uuid.UUID, imageURL *url.URL) error {
+	_, err := db.Exec(
+		`UPDATE
+			questions
+		SET
+			image_url = $1
+		WHERE
+			id = $2;`,
+		imageURL.String(), id,
+	)
+
+	return err
+}
+
+// Remove the image URL for a question by question ID.
+func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
+	_, err := db.Exec(
+		`UPDATE
+			questions
+		SET
+			image_url = NULL
+		WHERE
+			id = $1;`,
+		id,
+	)
+
+	return err
+}

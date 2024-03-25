@@ -46,6 +46,8 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
 	e.POST("/question/edit", aah.editQuestion)
+	e.POST("/question/edit-image", aah.editQuestionImage)
+	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
 }
 
@@ -99,7 +101,8 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
 }
 
 // Removes the image for a quiz in the database.
@@ -116,8 +119,8 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
 	}
 
-	return utils.Render(c, http.StatusOK,
-		dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
 }
 
 // Deletes a quiz from the database.
@@ -398,4 +401,44 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+// Edit the image for a question in the database.
+func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Get the new image URL
+	image := c.FormValue(dashboard_components.QuestionImageURL)
+	imageURL, _ := url.Parse(image)
+
+	// Set the image URL for the question
+	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageURL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question image")
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), imageURL, dashboard_components.QuestionImageURL, true))
+}
+
+// Delete the image for a question in the database.
+func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Remove the image URL from the question
+	err = questions.RemoveImageByQuestionID(aah.sharedData.DB, &questionID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove question image")
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), &url.URL{}, dashboard_components.QuestionImageURL, true))
 }
