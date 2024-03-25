@@ -67,6 +67,26 @@ func GetArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
 	return scanArticlesFromFullRows(rows)
 }
 
+// Get the articles used in a quiz.
+// These articles are guaranteed to be used in the questions of the quiz.
+func GetUsedArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
+	rows, err := db.Query(
+		`SELECT a.id, a.title, a.url, a.image_url 
+		FROM articles a 
+		LEFT JOIN quiz_articles q ON q.article_id = a.id 
+		JOIN questions qu ON qu.article_id = a.id 
+		WHERE
+		q.quiz_id = $1`,
+		quizID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanArticlesFromFullRows(rows)
+}
+
 // Get an Article by its ID.
 func GetArticleByID(db *sql.DB, id uuid.UUID) (*Article, error) {
 	row := db.QueryRow(
