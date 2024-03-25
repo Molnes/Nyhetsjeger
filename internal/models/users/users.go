@@ -122,14 +122,16 @@ func GetUserRole(db *sql.DB, id uuid.UUID) (user_roles.Role, error) {
 	return user_roles.RoleFromString(role), err
 }
 
-// Updates the user with the ID of the user provided
-func UpdateUser(db *sql.DB, user *User) error {
-
+// Updates the token of the given user in the database.
+func UpdateUserToken(db *sql.DB, userId uuid.UUID, newAccessToken string, newExpiry time.Time, newRefreshToken string) error {
+	accessTokenCypher := []byte("TODO")
+	refreshtokenCypher := []byte("TODO")
 	_, err := db.Exec(
 		`UPDATE users
-		SET sso_user_id = $2, email = $3, phone = $4, opt_in_ranking = $5, role = $6, access_token = $7, token_expires_at = $8, refresh_token = $9
+		SET access_token = $2, token_expires_at = $3, refresh_token = $4
 		WHERE id = $1`,
-		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+		userId, accessTokenCypher, newExpiry, refreshtokenCypher,
+	)
 	return err
 }
 

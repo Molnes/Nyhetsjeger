@@ -8,7 +8,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
-	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
@@ -80,19 +79,7 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 		}
 		user = createdUser
 	} else {
-		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt access token: %s", err.Error())
-		}
-		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt refresh token: %s", err.Error())
-		}
-
-		user.AccessTokenCypher = accessTokenCypher
-		user.Token_expire = token.Expiry
-		user.RefreshtokenCypher = refreshTokenCypher
-		err = users.UpdateUser(ah.sharedData.DB, user)
+		err = users.UpdateUserToken(ah.sharedData.DB, user.ID, token.AccessToken, token.Expiry, token.RefreshToken)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %s", err.Error())
 		}
