@@ -37,12 +37,19 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 					}
 				</ol>
 			</section>
-			<button
-				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
-				hx-target="#quiz-summary"
-				hx-swap="outerHTML"
-				class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-			>NESTE</button>
+			if summary.HasArticlesToShow {
+				<button
+					hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
+					hx-target="#quiz-summary"
+					hx-swap="outerHTML"
+					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				>NESTE</button>
+			} else {
+				<a
+					href="/quiz"
+					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				>FERDIG</a>
+			}
 		</div>
 	}
 }
