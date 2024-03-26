@@ -176,11 +176,11 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.RefreshtokenCypher,
 		&user.Username,
 	)
-	if err == sql.ErrNoRows {
-		return nil, nil
+	if err != nil {
+		return nil, err
 	}
 	user.Role = user_roles.RoleFromString(roleString)
-	return &user, err
+	return &user, nil
 }
 
 // Assigns a random username to a user in the database
