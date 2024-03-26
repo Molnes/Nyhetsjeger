@@ -59,6 +59,8 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 			</tr>
 		</thead>
 		<tbody
+			hx-target="closest tr"
+			hx-swap="outerHTML"
 			id={ _ADMINS_TABLE_BODY }
 		>
 			for _, admin := range *admins {
@@ -75,9 +77,7 @@ templ AdminTableRow(admin *access_control.UserAdmin) {
 		<td class="px-2">
 			<button
 				title="Slett administrator"
-				hx-delete="/api/v1/organization-admin/access-control/admin"
-				value={ admin.Email }
-				hx-swap="outerHTML"
+				hx-delete={ "/api/v1/organization-admin/access-control/admin?email=" + admin.Email }
 			>
 				@icons.Cross(3, "#ef4444", 25, 25)
 			</button>

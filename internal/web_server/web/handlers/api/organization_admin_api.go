@@ -22,6 +22,7 @@ func NewOrganizationAdminApiHandler(sharedData *config.SharedData) *Organization
 // Registers the organization admin related handlers to the given echo group
 func (oah *OrganizationAdminApiHandler) RegisterOrganizationAdminHandlers(g *echo.Group) {
 	g.POST("/access-control/admin", oah.postAddAdminByEmail)
+	g.DELETE("/access-control/admin", oah.deleteAdminByEmail)
 }
 
 // Handles a post request to add an admin by email. Email expected in form data.
@@ -37,4 +38,22 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	}
 
 	return utils.Render(c, http.StatusCreated, access_settings_components.AdminTableRow(useradmin))
+}
+
+// expects email in json body
+func (oah *OrganizationAdminApiHandler) deleteAdminByEmail(c echo.Context) error {
+	email := c.QueryParam("email")
+	if email == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing email")
+	}
+
+	err := access_control.RemoveAdminByEmail(oah.sharedData.DB, email)
+	if err != nil {
+		if err == access_control.ErrNoAdminWithGivenEmail {
+			return echo.NewHTTPError(http.StatusNotFound, "No admin with given email found")
+		}
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
 }
