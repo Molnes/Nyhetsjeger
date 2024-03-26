@@ -41,6 +41,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 	e.GET("/profil", qph.getProfile)
 	e.DELETE("/profil", qph.deleteProfile)
+	e.POST("/profil", qph.postUsername)
 }
 
 // Renders the quiz home page
