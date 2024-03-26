@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
@@ -38,6 +40,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.POST("/brukernavn", qph.postUsername)
 
 	e.GET("/profil", qph.getProfile)
+	e.DELETE("/profil", qph.deleteProfile)
 }
 
 // Renders the quiz home page
@@ -157,4 +160,14 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
+}
+
+// Deletes the user from the database and logs the user out
+func (qph *QuizPagesHandler) deleteProfile(c echo.Context) error {
+	//TODO: Avoid duplicate logout code. Have agreed to look at it later.
+	err := users.DeleteUserByUUID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
+	}
+
 }
