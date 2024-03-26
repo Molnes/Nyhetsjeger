@@ -2,7 +2,7 @@ package quiz_components
 
 templ BurgerMenu() {
 	<header class="bg-cindigo text-white py-4">
-    <!-- with inspiration from https://www.geeksforgeeks.org/how-to-create-a-responsive-navigation-bar-in-tailwind-css/ -->
+		<!-- with inspiration from https://www.geeksforgeeks.org/how-to-create-a-responsive-navigation-bar-in-tailwind-css/ -->
 		<nav
 			class="flex justify-between  
                     items-center w-[92%]  mx-auto"
@@ -12,7 +12,7 @@ templ BurgerMenu() {
 			</div>
 			<div
 				id="navbar"
-				class="nav-links duration-500 md:static absolute md:min-h-fit min-h-[94vh] left-0 top-[-100%] md:w-auto w-full flex items-center px-5"
+				class="z-50 nav-links duration-500 md:static absolute md:min-h-fit min-h-[94vh] left-0 top-[-100%] md:w-auto w-full flex items-center px-5"
 			>
 				<ul
 					class="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-28"
@@ -28,37 +28,37 @@ templ BurgerMenu() {
 			</div>
 			<div class="flex items-center gap-6">
 				<button
-					id="toggleSidebar" onclick="onToggleMenu(this)" name="menu"
+					id="toggleSidebar"
+					onclick="onToggleMenu(this)"
+					name="menu"
 					class="text-3xl cursor-pointer md:hidden text-white"
 				>
-					@burgerIcon()
-					@crossIcon()
+					@burgerIcon("white")
+					@crossIcon("white")
 				</button>
 			</div>
 		</nav>
-        <script>
+		<script>
         const navLinks = document.querySelector('.nav-links') 
         function onToggleMenu(e) { 
                 e.name = e.name === 'menu' ? 'close' : 'menu' 
                         navLinks.classList.toggle('top-[6%]')
                         navLinks.classList.toggle('bg-cindigo')
-                        
-                        navLinks.classList.toggle('z-10')
         } 
         </script>
 	</header>
 }
 
-templ burgerIcon() {
+templ burgerIcon(color string) {
 	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="burger">
-		<path d="M4 18L20 18" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
-		<path d="M4 12L20 12" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
-		<path d="M4 6L20 6" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+		<path d="M4 18L20 18" stroke={ color } stroke-width="2" stroke-linecap="round"></path>
+		<path d="M4 12L20 12" stroke={ color } stroke-width="2" stroke-linecap="round"></path>
+		<path d="M4 6L20 6" stroke={ color } stroke-width="2" stroke-linecap="round"></path>
 	</svg>
 }
 
-templ crossIcon() {
+templ crossIcon(color string) {
 	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="cross" class="hidden">
-		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke={ color } stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
 	</svg>
 }
