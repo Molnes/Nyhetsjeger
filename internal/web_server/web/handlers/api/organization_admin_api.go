@@ -5,6 +5,8 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/access_settings_components"
 	"github.com/labstack/echo/v4"
 )
 
@@ -34,5 +36,5 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 		return err
 	}
 
-	return c.String(http.StatusOK, useradmin.Email)
+	return utils.Render(c, http.StatusCreated, access_settings_components.AdminTableRow(useradmin))
 }
