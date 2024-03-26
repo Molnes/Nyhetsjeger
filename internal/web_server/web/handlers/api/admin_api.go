@@ -372,14 +372,14 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// If doesn't exist in the database.
 	if err != nil && err == sql.ErrNoRows {
 		// Save the question to the database.
-		err = questions.AddNewQuestion(aah.sharedData.DB, question)
+		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
 		}
 	} else if tempQuestion.ID == questionID {
 		// If the question ID is found, update the question.
 		question.ID = questionID
-		err = questions.UpdateQuestion(aah.sharedData.DB, &question)
+		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 	}
 
 	// Return the "question item" element.
@@ -395,7 +395,7 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	}
 
 	// Delete the question from the database
-	err = questions.DeleteQuestionByID(aah.sharedData.DB, questionID)
+	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete question")
 	}

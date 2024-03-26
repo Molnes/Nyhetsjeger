@@ -458,9 +458,8 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 // Add a new question to the database.
 // Adds the question alternatives to the database.
 // Returns the ID of the new question.
-func AddNewQuestion(db *sql.DB, question Question) error {
+func AddNewQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 	// Start a transaction
-	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -500,9 +499,8 @@ func AddNewQuestion(db *sql.DB, question Question) error {
 }
 
 // Update a question in the database.
-func UpdateQuestion(db *sql.DB, question *Question) error {
+func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 	// Start a transaction
-	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -555,9 +553,8 @@ func UpdateQuestion(db *sql.DB, question *Question) error {
 
 // Delete a question from the database.
 // Deletes the question alternatives from the database.
-func DeleteQuestionByID(db *sql.DB, id uuid.UUID) error {
+func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 	// Start a transaction
-	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
