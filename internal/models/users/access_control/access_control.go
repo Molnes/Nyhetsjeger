@@ -106,15 +106,51 @@ func preAssignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) 
 }
 
 // Revokes the QuizAdmin role from a user with the given email.
-func RevokeAdmin(db *sql.DB, email string) error {
+func revokeAdmin(db *sql.DB, email string) error {
 	return assignRoleToUseByEmail(db, email, user_roles.User)
 }
 
+var errNoPreassignedRoleForEmail = errors.New("no preassigned role for the given email")
+
 // Removes a preassigned QuizAdmin role from the given email.
-func RemovePreassignedAdmin(db *sql.DB, email string) error {
-	_, err := db.Exec(`
+func removePreassignedAdmin(db *sql.DB, email string) error {
+	result, err := db.Exec(`
 	DELETE FROM preassigned_roles
 	WHERE email=$1;`, email)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected < 1 {
+		return errNoPreassignedRoleForEmail
+	}
+	return nil
+
+}
+
+var ErrNoAdminWithGivenEmail = errors.New("no admin with given email found")
+
+// Removes the QuizAdmin from the given email. If the user exists the role is revoked. If the user does not exist, the preassigned role is removed.
+//
+// Returns ErrNoAdminWithGivenEmail if there is no user or preassigned role for the given email.
+func RemoveAdminByEmail(db *sql.DB, email string) error {
+	err := revokeAdmin(db, email)
+	if err == nil {
+		return nil
+	}
+
+	if err == errNoUserFound {
+		err = removePreassignedAdmin(db, email)
+		if err == nil {
+			return nil
+		}
+		if err == errNoPreassignedRoleForEmail {
+			return ErrNoAdminWithGivenEmail
+		}
+	}
 	return err
 }
 
