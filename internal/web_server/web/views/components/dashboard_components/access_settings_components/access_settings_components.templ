@@ -8,6 +8,8 @@ import (
 
 const (
 	_ADD_ADMIN_FORM    = "add-admin-form"
+	_ADMINS_TABLE      = "admins-table"
+	_NO_ADMINS_MESSAGE = "no-admins-message"
 	_ADMINS_TABLE_BODY = "admin-table-body"
 )
 
@@ -48,7 +50,14 @@ script resetFormAfterEvent(formId string, event string) {
 }
 
 templ AdminsTable(admins *[]access_control.UserAdmin) {
-	<table class="border-collapse border border-slate-500 mr-auto text-left">
+	<table
+		id={ _ADMINS_TABLE }
+		if len(*admins) == 0 {
+			class="border-collapse border border-slate-500 mr-auto text-left hidden"
+		} else {
+			class="border-collapse border border-slate-500 mr-auto text-left"
+		}
+	>
 		<thead>
 			<tr
 				class="border-collapse border border-slate-500"
@@ -68,6 +77,47 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 			}
 		</tbody>
 	</table>
+	<p
+		id={ _NO_ADMINS_MESSAGE }
+		if len(*admins) > 0 {
+			class="hidden"
+		} else {
+			class=""
+		}
+	>
+		Ingen administratorer funnet! 
+		<br/>
+		Du kan legge til en ny administrator ved å fylle ut skjemaet over.
+	</p>
+	@showTableIfAdminsExist(_ADMINS_TABLE, _NO_ADMINS_MESSAGE, _ADMINS_TABLE_BODY)
+}
+
+// Shows or hides the table and `no admins` information based on if there are any admins in the table
+
+script showTableIfAdminsExist(tableID string, noAdminsMessageId string, tableBodyID string) {
+	adminsTable = document.getElementById(tableID);
+	adminsTableBody = document.getElementById(tableBodyID);
+	noAdminsMessage = document.getElementById(noAdminsMessageId);
+	
+	const observer = new MutationObserver(handleChanges);
+	observer.observe(adminsTableBody, { childList: true });
+
+	function handleChanges(mutationsList, observer) {
+			mutationsList.forEach(mutation => {
+					if (mutation.type === 'childList') {
+							updateVisibility();
+					}
+			});
+	}
+	const updateVisibility = () => {
+		if (adminsTableBody.children.length < 1) {
+			adminsTable.classList.add("hidden");
+			noAdminsMessage.classList.remove("hidden");
+		} else {
+			adminsTable.classList.remove("hidden");
+			noAdminsMessage.classList.add("hidden");
+		}
+	}
 }
 
 templ AdminTableRow(admin *access_control.UserAdmin) {
