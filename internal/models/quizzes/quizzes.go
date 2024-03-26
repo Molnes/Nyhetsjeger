@@ -195,7 +195,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		&quiz.Published,
 		&quiz.IsDeleted,
 	)
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return nil, err
 	}
 
@@ -206,9 +206,6 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	}
 	quiz.ImageURL = *tempURL
 
-	if err != nil {
-		return nil, err
-	}
 	return &quiz, err
 }
 

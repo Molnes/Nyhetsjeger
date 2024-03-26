@@ -93,7 +93,7 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 		&imageURL,
 	)
 
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return nil, err
 	}
 
@@ -129,7 +129,7 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 			&articleURL,
 			&imageURL,
 		)
-		if err == sql.ErrNoRows {
+		if err != nil {
 			return nil, err
 		}
 
