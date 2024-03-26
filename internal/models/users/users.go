@@ -191,3 +191,12 @@ func AssignOptInRankingToUser(db *sql.DB, userID uuid.UUID, optInRanking bool) e
 	)
 	return err
 }
+
+func DeleteUserByUUID(db *sql.DB, userID uuid.UUID) error {
+	_, err := db.Exec(
+		`DELETE FROM users
+			WHERE id = $1`,
+		userID,
+	)
+	return err
+}
