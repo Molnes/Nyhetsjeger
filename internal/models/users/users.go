@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/gob"
+	"errors"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/google/uuid"
 )
@@ -67,6 +67,17 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	return scanUserFromFullRow(row)
 }
 
+// Returns a user from the database with the email provided
+func GetUserByEmail(db *sql.DB, email string) (*User, error) {
+	row := db.QueryRow(
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		CONCAT(username_adjective, ' ', username_noun) AS username
+		FROM users
+		WHERE email = $1`,
+		email)
+	return scanUserFromFullRow(row)
+}
+
 // Returns a user from the database with the SSO ID provided
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
@@ -113,9 +124,9 @@ func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*Use
 	if err != nil {
 		return nil, err
 	}
-	newRole, err := access_control.ApplyPreassignedRole(db, ctx, user.Email)
+	newRole, err := applyPreassignedRole(db, ctx, user.Email)
 	if err != nil {
-		if err == access_control.ErrNoPreassignedRole {
+		if err == errNoPreassignedRole {
 			newRole = user_roles.User
 		} else {
 			return nil, err
@@ -224,4 +235,49 @@ func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 		userID,
 	)
 	return err
+}
+
+// If there is no preassigned role for the given email.
+var errNoPreassignedRole = errors.New("no preassigned role found")
+
+// Assigns the preassigned role to the user with the given email. The preassigned role is then removed.
+//
+// Returns the role that was assigned.
+//
+// If there is no preassigned role for the given email, ErrNoPreassignedRole is returned.
+func applyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_roles.Role, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx, `
+	UPDATE users u
+	SET role=pr.role
+	FROM preassigned_roles pr
+	WHERE u.email=$1 AND pr.email=$1
+	RETURNING u.role;`, email)
+	var roleString string
+	err = row.Scan(&roleString)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errNoPreassignedRole
+		}
+		return 0, err
+	}
+
+	_, err = tx.ExecContext(ctx, `
+	DELETE FROM preassigned_roles
+	WHERE email=$1;`, email)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return user_roles.RoleFromString(roleString), nil
 }
