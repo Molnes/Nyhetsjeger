@@ -161,7 +161,7 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 // Deletes the user from the database and logs the user out
 func (qph *QuizPagesHandler) deleteProfile(c echo.Context) error {
 	//TODO: Avoid duplicate logout code. Have agreed to look at it later.
-	err := users.DeleteUserByUUID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	err := users.DeleteUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {
 		return err
 	}
