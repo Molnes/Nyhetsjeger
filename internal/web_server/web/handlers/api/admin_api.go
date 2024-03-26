@@ -229,7 +229,15 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 		// If not in DB, fetch the relevant article data and add it to the DB
 		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
 		if err != nil {
-			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+			if err == articles.ErrInvalidArticleID {
+				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article ID")
+			} else if err == articles.ErrInvalidArticleURL {
+				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
+			} else if err == articles.ErrArticleNotFound {
+				return article, echo.NewHTTPError(http.StatusBadRequest, "Article not found")
+			} else {
+				return article, err
+			}
 		}
 
 		// Add the article to the DB
@@ -380,6 +388,10 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		// If the question ID is found, update the question.
 		question.ID = questionID
 		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question")
+		}
 	}
 
 	// Return the "question item" element.

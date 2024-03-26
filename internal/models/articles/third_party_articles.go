@@ -2,6 +2,7 @@ package articles
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,11 @@ import (
 
 	"github.com/google/uuid"
 )
+
+var ErrInvalidArticleID = errors.New("third_party_articles: invalid article ID")
+var ErrInvalidArticleURL = errors.New("third_party_articles: invalid article URL")
+var ErrArticleNotFound = errors.New("third_party_articles: could not find article")
+var ErrUnableToFetchData = errors.New("third_party_articles: unable to fetch article data")
 
 // The data structure for a third party article (Sunnmørsposten).
 /* This struct was automatically generated from a JSON file using https://transform.tools/json-to-go */
@@ -62,7 +68,7 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 
 	if err != nil {
 		log.Println("Error opening file: ", err)
-		return ArticleSMP{}, err
+		return ArticleSMP{}, ErrArticleNotFound
 	}
 	defer file.Close()
 
@@ -74,7 +80,7 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	err = json.Unmarshal(byteValue, &article)
 	if err != nil {
 		log.Println("Error parsing JSON: ", err)
-		return ArticleSMP{}, err
+		return ArticleSMP{}, ErrUnableToFetchData
 	}
 
 	return article, nil
@@ -119,17 +125,17 @@ func GetSmpArticleByURL(articleUrl string) (Article, error) {
 	// Get article's SMP ID
 	articleID, err := getSmpIdFromString(articleUrl)
 	if err != nil {
-		return Article{}, err
-	}
-
-	// Get the article data from the JSON file
-	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
-	if err != nil {
-		return Article{}, err
+		return Article{}, ErrInvalidArticleID
 	}
 
 	// Parse the article URL
 	tempURL, err := url.Parse(articleUrl)
+	if err != nil {
+		return Article{}, ErrInvalidArticleURL
+	}
+
+	// Get the article data from the JSON file
+	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
 	if err != nil {
 		return Article{}, err
 	}
