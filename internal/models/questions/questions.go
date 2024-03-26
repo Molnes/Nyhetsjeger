@@ -14,6 +14,10 @@ import (
 	"github.com/lib/pq"
 )
 
+var ErrNoQuestionDeleted = errors.New("questions: no question deleted")
+var ErrNoImageRemoved = errors.New("questions: no image removed")
+var ErrNoImageUpdated = errors.New("questions: no image updated")
+
 type Question struct {
 	ID               uuid.UUID
 	Text             string
@@ -576,7 +580,7 @@ func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 	}
 
 	// Delete the question from the database
-	_, err = tx.Exec(
+	result, err := tx.Exec(
 		`DELETE FROM questions
 		WHERE id = $1;`,
 		id,
@@ -584,6 +588,11 @@ func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		tx.Rollback()
+		return ErrNoQuestionDeleted
 	}
 
 	// Delete the alternatives from the database
@@ -619,7 +628,7 @@ func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 
 // Update the image URL for a question by question ID.
 func SetImageByQuestionID(db *sql.DB, id *uuid.UUID, imageURL *url.URL) error {
-	_, err := db.Exec(
+	result, err := db.Exec(
 		`UPDATE
 			questions
 		SET
@@ -629,12 +638,16 @@ func SetImageByQuestionID(db *sql.DB, id *uuid.UUID, imageURL *url.URL) error {
 		imageURL.String(), id,
 	)
 
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		return ErrNoImageUpdated
+	}
+
 	return err
 }
 
 // Remove the image URL for a question by question ID.
 func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
-	_, err := db.Exec(
+	result, err := db.Exec(
 		`UPDATE
 			questions
 		SET
@@ -643,6 +656,10 @@ func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
 			id = $1;`,
 		id,
 	)
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		return ErrNoImageRemoved
+	}
 
 	return err
 }

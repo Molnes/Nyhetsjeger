@@ -98,7 +98,11 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	imageURL, _ := url.Parse(image)
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
+		if err == questions.ErrNoImageUpdated {
+			return echo.NewHTTPError(http.StatusNotFound, "Quiz image not found")
+		}
+
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
@@ -234,7 +238,7 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 			} else if err == articles.ErrInvalidArticleURL {
 				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
 			} else if err == articles.ErrArticleNotFound {
-				return article, echo.NewHTTPError(http.StatusBadRequest, "Article not found")
+				return article, echo.NewHTTPError(http.StatusNotFound, "Article not found")
 			} else {
 				return article, err
 			}
@@ -392,6 +396,8 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question")
 		}
+	} else if err != nil {
+		return err
 	}
 
 	// Return the "question item" element.
@@ -409,7 +415,11 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	// Delete the question from the database
 	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete question")
+		if err == questions.ErrNoQuestionDeleted {
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		return err
 	}
 
 	return c.NoContent(http.StatusNoContent)
@@ -448,7 +458,11 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	// Remove the image URL from the question
 	err = questions.RemoveImageByQuestionID(aah.sharedData.DB, &questionID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove question image")
+		if err == questions.ErrNoImageRemoved {
+			return echo.NewHTTPError(http.StatusNotFound, "Question image not found")
+		}
+
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
