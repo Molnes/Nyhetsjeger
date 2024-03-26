@@ -170,4 +170,15 @@ func (qph *QuizPagesHandler) deleteProfile(c echo.Context) error {
 		return err
 	}
 
+	session, err := qph.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %s", err.Error())
+	}
+	session.Options.MaxAge = -1
+	err = session.Save(c.Request(), c.Response())
+	if err != nil {
+		return fmt.Errorf("failed to save session: %s", err.Error())
+	}
+	c.Response().Header().Set("HX-Redirect", "/")
+	return c.NoContent(http.StatusNoContent)
 }
