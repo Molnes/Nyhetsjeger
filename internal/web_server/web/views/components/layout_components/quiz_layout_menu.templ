@@ -3,8 +3,10 @@ package layout_components
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 
 templ QuizLayoutMenu(pageTitle string) {
-	@QuizLayout(pageTitle) {
+	@BaseLayout(pageTitle) {
 		@quiz_components.BurgerMenu()
+        <div class="w-11/12 md:w-3/4 lg:w-2/3 mx-auto">
 		{ children... }
+        </div>
 	}
 }
