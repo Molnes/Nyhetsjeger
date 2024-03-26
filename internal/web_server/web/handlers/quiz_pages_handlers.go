@@ -109,10 +109,6 @@ func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
 }
 
-func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, quiz_pages.QuizProfile())
-}
-
 func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
 	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
