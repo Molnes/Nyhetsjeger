@@ -1,0 +1,74 @@
+package access_settings_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+)
+
+templ AddEmailForm() {
+	<form
+		class="flex flex-row flex-wrap gap-5 mb-3"
+		hx-post="/api/v1/organization-admin/access-control/admin"
+	>
+		<label for="email">
+			Epost
+			<input
+				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2"
+				type="email"
+				name="email"
+				id="email"
+				placeholder="epost@gmail.com"
+			/>
+		</label>
+		<button
+			type="submit"
+			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+		>
+			Legg til
+			@icons.Plus(80, "#5B14F2", 20, 20)
+		</button>
+	</form>
+}
+
+templ AdminsTable(admins *[]access_control.UserAdmin) {
+	<table class="border-collapse border border-slate-500 mr-auto text-left">
+		<thead>
+			<tr
+				class="border-collapse border border-slate-500"
+			>
+				<th class="px-2">Epost</th>
+				<th class="px-2">Status</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, admin := range *admins {
+				@AdminTableRow(admin)
+			}
+		</tbody>
+	</table>
+}
+
+templ AdminTableRow(admin access_control.UserAdmin) {
+	<tr>
+		<td class="px-2">{ admin.Email }</td>
+		<td class="px-2">{ boolToActiveString(admin.IsActive) }</td>
+		<td class="px-2">
+			<button
+				title="Slett administrator"
+				hx-delete="/api/v1/organization-admin/access-control/admin"
+				value={ admin.Email }
+				hx-swap="outerHTML"
+			>
+				@icons.Cross(3, "#ef4444", 25, 25)
+			</button>
+		</td>
+	</tr>
+}
+
+func boolToActiveString(isActive bool) string {
+	if isActive {
+		return "Aktiv"
+	}
+	return "Inaktiv"
+}
