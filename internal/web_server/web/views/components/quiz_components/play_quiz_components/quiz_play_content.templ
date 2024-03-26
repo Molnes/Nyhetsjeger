@@ -15,7 +15,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 			<a href="/quiz">
 				@icons.Cross(3, "black", 40, 40)
 			</a>
-			<h1 class="text-3xl font-bold">{ data.PartialQuiz.Title }</h1>
+			<h1 class="text-3xl font-bold text-center">{ data.PartialQuiz.Title }</h1>
 			@timer(data.CurrentQuestion.TimeLimitSeconds)
 		</div>
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)

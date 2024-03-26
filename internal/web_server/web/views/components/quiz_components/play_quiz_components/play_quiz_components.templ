@@ -11,56 +11,49 @@ import (
 
 // Form with buttons for each alternative in a question
 templ AnswerButtons(question *questions.Question) {
-	<div
-		id="answer-buttons"
-		class="flex flex-col gap-8 items-center w-full"
+	<form
+		id="question-answer-form"
+		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		hx-swap="outerHTML"
+		hx-indicator=".htmx-indicator"
+		class="grid grid-cols-2 gap-10 w-full isolate mt-8 px-4"
 	>
-		<form
-			id="question-answer-form"
-			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
-			hx-swap="outerHTML"
-			hx-target="#answer-buttons"
-			hx-indicator=".htmx-indicator"
-			class="grid grid-cols-2 gap-8 w-full isolate mt-2"
-		>
-			for _, alternative := range question.Alternatives {
-				<button
-					type="submit"
-					name="answer-id"
-					class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full"
-					value={ alternative.ID.String() }
-				>
-					{ alternative.Text }
-				</button>
-			}
-		</form>
-		@components.LoadingIndicator()
-		@stopTimerOn("htmx:beforeRequest", "question-answer-form")
-	</div>
+		for _, alternative := range question.Alternatives {
+			<button
+				type="submit"
+				name="answer-id"
+				class="text-l p-2 h-28 rounded-button bg-white gradient-outline  gradient-shadow text-wrap w-full"
+				value={ alternative.ID.String() }
+			>
+				{ alternative.Text }
+			</button>
+		}
+	</form>
+	@components.LoadingIndicator()
+	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
-	<div class="flex flex-col gap-8 items-center w-full">
-		<div class="grid grid-cols-2 gap-8 w-full isolate mt-2">
+	<div class="flex flex-col gap-8 items-center w-full isolate">
+		<div class="grid grid-cols-2 gap-10 w-full  mt-8 px-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-button gradient-shadow bg-white text-wrap flex flex-row items-center gap-2"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
 			>
 				NESTE
-				@components.LoadingIndicator()
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-button gradient-shadow bg-white text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				FERDIG
@@ -73,9 +66,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full border-4 border-blue-500"
+			class="text-l p-2 h-28 rounded-button bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
 		} else {
-			class="text-xl p-2 h-28 rounded-button gradient-shadow bg-white text-wrap w-full"
+			class="text-l p-2 h-28 rounded-button bg-white gradient-outline text-wrap w-full"
 		}
 	>
 		{ alternative.Text }
@@ -95,9 +88,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 templ feedbackCircle(correct bool, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow border-4 border-blue-500"
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-outline-circle-thick gradient-shadow-always"
 		} else {
-			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-shadow"
+			class="flex items-center justify-center w-12 h-12 rounded-full bg-white gradient-outline-circle"
 		}
 	>
 		if correct {
@@ -111,9 +104,9 @@ templ feedbackCircle(correct bool, wasPicked bool) {
 templ feedbackPercentage(percentage float64, wasPicked bool) {
 	<div
 		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-shadow text-sm border-4 border-blue-500"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline-thick text-sm gradient-shadow-always"
 		} else {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-shadow text-sm"
+			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline text-sm"
 		}
 	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }
