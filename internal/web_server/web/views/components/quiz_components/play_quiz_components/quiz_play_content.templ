@@ -37,9 +37,9 @@ templ progressBar(current uint, total uint) {
 		for i := uint(0); i < total; i++ {
 			<div
 				if i < current {
-					class="w-8 h-8 bg-gray-500 rounded-full"
+					class="w-8 h-8 bg-gray-500 rounded-1/2"
 				} else {
-					class="w-8 h-8 bg-gray-300 rounded-full"
+					class="w-8 h-8 bg-gray-300 rounded-1/2"
 				}
 			>
 				if i < total-1 {
