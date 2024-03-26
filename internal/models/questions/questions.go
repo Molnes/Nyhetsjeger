@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -431,7 +432,8 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Only add alternatives that are not empty
 	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
-		if alt != "" {
+		// Do not count empty white space as an alternative
+		if strings.TrimSpace(alt) != "" {
 			question.Alternatives = append(question.Alternatives, Alternative{
 				ID:        uuid.New(),
 				Text:      alt,
@@ -451,7 +453,7 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Check that there are two to four alternatives
 	if len(question.Alternatives) < 2 {
-		return question, "There must be at least two alternatives"
+		return question, "There must be at least two alternatives. Empty alternatives do not count."
 	}
 	if len(question.Alternatives) > 4 {
 		return question, "There can be at most four alternatives"
