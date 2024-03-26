@@ -15,6 +15,7 @@ import (
 )
 
 var ErrNoQuestionDeleted = errors.New("questions: no question deleted")
+var ErrNoQuestionUpdated = errors.New("questions: no question updated")
 var ErrNoImageRemoved = errors.New("questions: no image removed")
 var ErrNoImageUpdated = errors.New("questions: no image updated")
 
@@ -510,7 +511,7 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 		return err
 	}
 
-	_, err = tx.Exec(
+	result, err := tx.Exec(
 		`UPDATE questions
 		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5
 		WHERE id = $6;`,
@@ -520,6 +521,11 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		tx.Rollback()
+		return ErrNoQuestionUpdated
 	}
 
 	// Delete old alternatives

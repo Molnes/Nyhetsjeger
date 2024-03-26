@@ -394,7 +394,11 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question")
+			if err == questions.ErrNoQuestionUpdated {
+				return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+			}
+
+			return err
 		}
 	} else if err != nil {
 		return err
