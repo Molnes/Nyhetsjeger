@@ -14,11 +14,12 @@ templ AccessSettingsPage(admins *[]access_control.UserAdmin) {
 					class="text-3xl font-bold text-gray-800"
 				>Tilgang administrering</h1>
 				<p>
-					Her kan du adminstrere hvem har tilgang til admin dashboard.
+					Her kan du adminstrere hvem har tilgang til <b>Quiz Admin Panel</b>.
+					<br/>
 					Hust at desse personene kan publisere quizzer, redigere dem,
 					og har tilgang til brukerinformasjon.
 					<br/>
-					Kun bestemte adminer har tilgang til tilgang administrering.
+					Kun ogranisasjonens administratorer har tilgang til denne siden.
 				</p>
 			</section>
 			@access_settings_components.AddEmailForm()
