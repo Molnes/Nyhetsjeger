@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/access_settings_components"
@@ -32,12 +34,24 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 		return echo.NewHTTPError(http.StatusBadRequest, "Missing email")
 	}
 
-	useradmin, err := access_control.AddAdmin(oah.sharedData.DB, email)
+	session, err := oah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
 		return err
 	}
+	caller := session.Values[sessions.USER_DATA_VALUE].(users.UserSessionData)
+	if caller.Email == email {
+		return echo.NewHTTPError(http.StatusBadRequest, "Cannot modify own admin status")
+	}
 
-	return utils.Render(c, http.StatusCreated, access_settings_components.AdminTableRow(useradmin))
+	userAdmin, err := access_control.AddAdmin(oah.sharedData.DB, email)
+	if err != nil {
+		if err == access_control.ErrEmailAlreadyAdmin {
+			return echo.NewHTTPError(http.StatusConflict, "Email is already an admin")
+		}
+		return err
+	}
+
+	return utils.Render(c, http.StatusCreated, access_settings_components.AdminTableRow(userAdmin))
 }
 
 // expects email in json body
@@ -47,7 +61,17 @@ func (oah *OrganizationAdminApiHandler) deleteAdminByEmail(c echo.Context) error
 		return echo.NewHTTPError(http.StatusBadRequest, "Missing email")
 	}
 
-	err := access_control.RemoveAdminByEmail(oah.sharedData.DB, email)
+	session, err := oah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
+	if err != nil {
+		return err
+	}
+
+	caller := session.Values[sessions.USER_DATA_VALUE].(users.UserSessionData)
+	if caller.Email == email {
+		return echo.NewHTTPError(http.StatusBadRequest, "Cannot modify own admin status")
+	}
+
+	err = access_control.RemoveAdminByEmail(oah.sharedData.DB, email)
 	if err != nil {
 		if err == access_control.ErrNoAdminWithGivenEmail {
 			return echo.NewHTTPError(http.StatusNotFound, "No admin with given email found")

@@ -1,11 +1,12 @@
 package access_control
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
+	"github.com/lib/pq"
 )
 
 type UserAdmin struct {
@@ -46,23 +47,29 @@ func GetAllAdmins(db *sql.DB) (*[]UserAdmin, error) {
 	return &admins, nil
 }
 
+var ErrEmailAlreadyAdmin = errors.New("email is already an admin")
+
 // Adds a QuizAdmin role to a user with the given email.
 //
 // If the user does not exist, the role is preassigned and will be assigned upon registration.
+//
+// Returns ErrEmailAlreadyAdmin if the user already has the role.
 func AddAdmin(db *sql.DB, email string) (*UserAdmin, error) {
 	var isActive bool
-	err := assignRoleToUseByEmail(db, email, user_roles.QuizAdmin)
+	err := assignRoleToUserByEmail(db, email, user_roles.QuizAdmin)
 	if err == nil {
 		isActive = true
+	} else if err == errUserAlreadyHasRole {
+		return nil, ErrEmailAlreadyAdmin
 	} else {
-		if err != errNoUserFound {
-			return nil, err
-		} else {
+		if err == errNoUserFound {
 			err = preAssignRoleToUserByEmail(db, email, user_roles.QuizAdmin)
 			if err != nil {
 				return nil, err
 			}
 			isActive = false
+		} else {
+			return nil, err
 		}
 	}
 
@@ -74,9 +81,23 @@ func AddAdmin(db *sql.DB, email string) (*UserAdmin, error) {
 }
 
 var errNoUserFound = errors.New("no user with given email found")
+var errUserAlreadyHasRole = errors.New("user already has the given role")
 
 // Assigns a role to a user with the given email.
-func assignRoleToUseByEmail(db *sql.DB, email string, role user_roles.Role) error {
+func assignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) error {
+	user, err := users.GetUserByEmail(db, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errNoUserFound
+		} else {
+			return err
+		}
+	}
+
+	if user.Role == role {
+		return errUserAlreadyHasRole
+	}
+
 	result, err := db.Exec(`
 	UPDATE users
 	SET role=$1
@@ -91,7 +112,9 @@ func assignRoleToUseByEmail(db *sql.DB, email string, role user_roles.Role) erro
 	if rowsAffected < 1 {
 		return errNoUserFound
 	}
-	return nil
+
+	return err
+
 }
 
 // Preassigns a role to a user with the given email.
@@ -100,14 +123,12 @@ func preAssignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) 
 	INSERT INTO preassigned_roles(email, role)
 	VALUES ($1, $2);`, email, role.String())
 	if err != nil {
-		return err
+		// if unique constraint violated, the role is already preassigned
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return ErrEmailAlreadyAdmin
+		}
 	}
-	return nil
-}
-
-// Revokes the QuizAdmin role from a user with the given email.
-func revokeAdmin(db *sql.DB, email string) error {
-	return assignRoleToUseByEmail(db, email, user_roles.User)
+	return err
 }
 
 var errNoPreassignedRoleForEmail = errors.New("no preassigned role for the given email")
@@ -137,64 +158,18 @@ var ErrNoAdminWithGivenEmail = errors.New("no admin with given email found")
 //
 // Returns ErrNoAdminWithGivenEmail if there is no user or preassigned role for the given email.
 func RemoveAdminByEmail(db *sql.DB, email string) error {
-	err := revokeAdmin(db, email)
+	err := assignRoleToUserByEmail(db, email, user_roles.User)
 	if err == nil {
 		return nil
-	}
-
-	if err == errNoUserFound {
+	} else if err == errUserAlreadyHasRole {
+		return ErrNoAdminWithGivenEmail
+	} else if err == errNoUserFound {
 		err = removePreassignedAdmin(db, email)
-		if err == nil {
-			return nil
-		}
-		if err == errNoPreassignedRoleForEmail {
-			return ErrNoAdminWithGivenEmail
+		if err != nil {
+			if err == errNoPreassignedRoleForEmail {
+				return ErrNoAdminWithGivenEmail
+			}
 		}
 	}
 	return err
-}
-
-// If there is no preassigned role for the given email.
-var ErrNoPreassignedRole = errors.New("no preassigned role found")
-
-// Assigns the preassigned role to the user with the given email. The preassigned role is then removed.
-//
-// Returns the role that was assigned.
-//
-// If there is no preassigned role for the given email, ErrNoPreassignedRole is returned.
-func ApplyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_roles.Role, error) {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
-
-	row := tx.QueryRowContext(ctx, `
-	UPDATE users u
-	SET role=pr.role
-	FROM preassigned_roles pr
-	WHERE u.email=$1 AND pr.email=$1
-	RETURNING u.role;`, email)
-	var roleString string
-	err = row.Scan(&roleString)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, ErrNoPreassignedRole
-		}
-		return 0, err
-	}
-
-	_, err = tx.ExecContext(ctx, `
-	DELETE FROM preassigned_roles
-	WHERE email=$1;`, email)
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return 0, err
-	}
-
-	return user_roles.RoleFromString(roleString), nil
 }
