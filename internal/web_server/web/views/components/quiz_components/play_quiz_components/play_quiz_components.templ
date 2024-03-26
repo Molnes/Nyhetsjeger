@@ -72,14 +72,14 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 		}
 	>
 		{ alternative.Text }
-		<div class="absolute -top-4 -left-4 ">
+		<div class="absolute -top-4 -left-4 z-10">
 			if alternative.IsCorrect {
 				@feedbackCircle(true, isSelected)
 			} else {
 				@feedbackCircle(false, isSelected)
 			}
 		</div>
-		<div class="absolute -bottom-4 -right-4">
+		<div class="absolute -bottom-4 -right-4 z-10">
 			@feedbackPercentage(alternative.PercentChosen, isSelected)
 		</div>
 	</button>
