@@ -3,12 +3,21 @@ package access_settings_components
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+	"fmt"
+)
+
+const (
+	_ADD_ADMIN_FORM    = "add-admin-form"
+	_ADMINS_TABLE_BODY = "admin-table-body"
 )
 
 templ AddEmailForm() {
 	<form
+		id={ _ADD_ADMIN_FORM }
 		class="flex flex-row flex-wrap gap-5 mb-3"
 		hx-post="/api/v1/organization-admin/access-control/admin"
+		hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
+		hx-swap="beforeend"
 	>
 		<label for="email">
 			Epost
@@ -28,6 +37,14 @@ templ AddEmailForm() {
 			@icons.Plus(80, "#5B14F2", 20, 20)
 		</button>
 	</form>
+	@resetFormAfterEvent(_ADD_ADMIN_FORM, "htmx:afterSwap")
+}
+
+script resetFormAfterEvent(formId string, event string) {
+    formElem = document.getElementById(formId);
+    document.body.addEventListener(event, (e) => {
+        formElem.reset();
+    });
 }
 
 templ AdminsTable(admins *[]access_control.UserAdmin) {
@@ -41,15 +58,17 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 				<th></th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody
+			id={ _ADMINS_TABLE_BODY }
+		>
 			for _, admin := range *admins {
-				@AdminTableRow(admin)
+				@AdminTableRow(&admin)
 			}
 		</tbody>
 	</table>
 }
 
-templ AdminTableRow(admin access_control.UserAdmin) {
+templ AdminTableRow(admin *access_control.UserAdmin) {
 	<tr>
 		<td class="px-2">{ admin.Email }</td>
 		<td class="px-2">{ boolToActiveString(admin.IsActive) }</td>
