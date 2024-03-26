@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
-	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
@@ -33,13 +31,11 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/play", qph.getPlayQuizPage)
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
-	e.GET("/profil", qph.getQuizProfile)
 
 	e.GET("/brukernavn", qph.usernamePage)
 	e.POST("/brukernavn", qph.postUsername)
 
 	e.GET("/profil", qph.getProfile)
-	e.DELETE("/profil", qph.deleteProfile)
 	e.POST("/profil", qph.postUsername)
 }
 
@@ -158,23 +154,4 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
 }
 
-// Deletes the user from the database and logs the user out
-func (qph *QuizPagesHandler) deleteProfile(c echo.Context) error {
-	//TODO: Avoid duplicate logout code. Have agreed to look at it later.
-	err := users.DeleteUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
-	if err != nil {
-		return err
-	}
 
-	session, err := qph.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
-	if err != nil {
-		return fmt.Errorf("failed to get session: %s", err.Error())
-	}
-	session.Options.MaxAge = -1
-	err = session.Save(c.Request(), c.Response())
-	if err != nil {
-		return fmt.Errorf("failed to save session: %s", err.Error())
-	}
-	c.Response().Header().Set("HX-Redirect", "/")
-	return c.NoContent(http.StatusNoContent)
-}
