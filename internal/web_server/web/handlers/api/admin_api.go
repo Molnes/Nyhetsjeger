@@ -300,7 +300,7 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }
 
 // Edit a question with the given data.
@@ -426,7 +426,7 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }
 
 // Edit the image for a question in the database.
