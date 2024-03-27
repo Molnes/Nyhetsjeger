@@ -379,6 +379,7 @@ type QuestionForm struct {
 	Article             *articles.Article
 	QuizID              *uuid.UUID
 	Points              uint
+	TimeLimitSeconds    uint
 	Alternative1        string
 	Alternative2        string
 	Alternative3        string
@@ -389,43 +390,52 @@ type QuestionForm struct {
 // Parse and validate question data.
 // If the data is invalid, return an error describing the problem.
 // Returns the points, article URL, image URL and error text.
-func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string) (uint, *url.URL, *url.URL, string) {
+func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string, timeLimit string) (uint, *url.URL, *url.URL, uint, string) {
 	if questionText == "" {
-		return 0, nil, nil, "Missing question text"
+		return 0, nil, nil, 0, "Missing question text"
 	}
 
 	points, err := strconv.ParseInt(questionPoints, 10, 64)
 	if err != nil {
-		return 0, nil, nil, "Failed to parse points"
+		return 0, nil, nil, 0, "Failed to parse points"
 	}
 	if points < 0 {
-		return 0, nil, nil, "Points must be positive"
+		return 0, nil, nil, 0, "Points must be positive"
+	}
+
+	time, err := strconv.ParseInt(timeLimit, 10, 64)
+	if err != nil {
+		return 0, nil, nil, 0, "Failed to parse time limit"
+	}
+	if time < 0 {
+		return 0, nil, nil, 0, "Time limit must be positive"
 	}
 
 	articleURL, err := url.Parse(articleURLString)
 	if err != nil {
-		return 0, nil, nil, "Failed to parse article URL"
+		return 0, nil, nil, 0, "Failed to parse article URL"
 	}
 
 	image, err := url.Parse(imageURL)
 	if err != nil {
-		return 0, nil, nil, "Failed to parse image URL"
+		return 0, nil, nil, 0, "Failed to parse image URL"
 	}
 
-	return uint(points), articleURL, image, ""
+	return uint(points), articleURL, image, uint(time), ""
 }
 
 // Create a question object from a form.
 // Returns the created question and an error message.
 func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 	question := Question{
-		ID:           form.ID,
-		Text:         form.Text,
-		ImageURL:     *form.ImageURL,
-		Article:      *form.Article,
-		QuizID:       *form.QuizID,
-		Points:       form.Points,
-		Alternatives: []Alternative{},
+		ID:               form.ID,
+		Text:             form.Text,
+		ImageURL:         *form.ImageURL,
+		Article:          *form.Article,
+		QuizID:           *form.QuizID,
+		Points:           form.Points,
+		TimeLimitSeconds: form.TimeLimitSeconds,
+		Alternatives:     []Alternative{},
 	}
 
 	hasCorrectAlternative := false
@@ -474,9 +484,9 @@ func AddNewQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 
 	// Insert the question into the database
 	_, err = tx.Exec(
-		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
-		VALUES ($1, $2, $3, $4, $5, $6);`,
-		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points,
+		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points, time_limit_seconds)
+		VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.TimeLimitSeconds,
 	)
 
 	if err != nil {
@@ -515,9 +525,9 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 
 	result, err := tx.Exec(
 		`UPDATE questions
-		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5
-		WHERE id = $6;`,
-		question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.ID,
+		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5, time_limit_seconds = $6
+		WHERE id = $7;`,
+		question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.TimeLimitSeconds, question.ID,
 	)
 
 	if err != nil {
