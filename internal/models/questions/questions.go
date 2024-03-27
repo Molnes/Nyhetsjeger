@@ -12,7 +12,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 var ErrNoQuestionDeleted = errors.New("questions: no question deleted")
@@ -96,8 +95,7 @@ func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
 func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 	rows, err := db.Query(
 		`SELECT
-				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points,
-				array_agg(a.id)
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
 			FROM
 				questions q
 			LEFT JOIN
@@ -121,11 +119,9 @@ func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
-	var alternativeIDs []uuid.UUID
 	var imageURL sql.NullString
 	err := row.Scan(
 		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
-		pq.Array(&alternativeIDs),
 	)
 	if err != nil {
 		return nil, err
@@ -145,12 +141,11 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	}
 
 	// Add the alternatives to the question
-	for _, id := range alternativeIDs {
-		alternative, _ := GetAlternativeByID(db, id)
-		if alternative != nil {
-			q.Alternatives = append(q.Alternatives, *alternative)
-		}
+	altneratives, err := GetAlternativesByQuestionID(db, q.ID)
+	if err != nil {
+		return nil, err
 	}
+	q.Alternatives = *altneratives
 
 	return &q, nil
 }
@@ -162,11 +157,9 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 	for rows.Next() {
 		var q Question
 		var articleID uuid.UUID
-		var alternativeIDs []uuid.UUID
 		var imageURL sql.NullString
 		err := rows.Scan(
 			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
-			pq.Array(&alternativeIDs),
 		)
 		if err != nil {
 			return nil, err
@@ -186,12 +179,11 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 		}
 
 		// Add the alternatives to the question
-		for _, id := range alternativeIDs {
-			alternative, _ := GetAlternativeByID(db, id)
-			if alternative != nil {
-				q.Alternatives = append(q.Alternatives, *alternative)
-			}
+		altneratives, err := GetAlternativesByQuestionID(db, q.ID)
+		if err != nil {
+			return nil, err
 		}
+		q.Alternatives = *altneratives
 
 		// Add the question to the list of questions
 		questions = append(questions, q)
@@ -389,7 +381,7 @@ type QuestionForm struct {
 
 // Parse and validate question data.
 // If the data is invalid, return an error describing the problem.
-// Returns the points, article URL, image URL and error text.
+// Returns the points, article URL, image URL, time limit and error text.
 func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string, timeLimit string) (uint, *url.URL, *url.URL, uint, string) {
 	if questionText == "" {
 		return 0, nil, nil, 0, "Missing question text"
