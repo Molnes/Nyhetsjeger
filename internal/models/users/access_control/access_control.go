@@ -165,10 +165,8 @@ func RemoveAdminByEmail(db *sql.DB, email string) error {
 		return ErrNoAdminWithGivenEmail
 	} else if err == errNoUserFound {
 		err = removePreassignedAdmin(db, email)
-		if err != nil {
-			if err == errNoPreassignedRoleForEmail {
-				return ErrNoAdminWithGivenEmail
-			}
+		if err != nil && err == errNoPreassignedRoleForEmail {
+			return ErrNoAdminWithGivenEmail
 		}
 	}
 	return err
