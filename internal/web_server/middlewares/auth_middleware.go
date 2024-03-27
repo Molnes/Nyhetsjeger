@@ -17,7 +17,6 @@ type AuthenticationMiddleware struct {
 
 const (
 	REDIRECT_COOKIE_NAME = "redirect-after-login"
-	USER_ID_KEY          = "userID"
 )
 
 func NewAuthenticationMiddleware(data *config.SharedData, redirectToLogin bool) *AuthenticationMiddleware {
@@ -39,7 +38,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 				return fmt.Errorf("AuthenticationMiddleware: failed to cast user data to UserSessionData")
 			}
 			userID := sessiondata.ID
-			c.Set(USER_ID_KEY, userID)
+			c.Set(users.USER_ID_CONTEXT_KEY, userID)
 			return next(c)
 		} else {
 			if am.redirectToLogin {

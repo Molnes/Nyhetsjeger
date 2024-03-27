@@ -1,0 +1,142 @@
+package access_settings_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+	"fmt"
+)
+
+const (
+	_ADD_ADMIN_FORM    = "add-admin-form"
+	_ADMINS_TABLE      = "admins-table"
+	_NO_ADMINS_MESSAGE = "no-admins-message"
+	_ADMINS_TABLE_BODY = "admins-table-body"
+)
+
+templ AddEmailForm() {
+	<form
+		id={ _ADD_ADMIN_FORM }
+		class="flex flex-row flex-wrap gap-5 mb-3"
+		hx-post="/api/v1/organization-admin/access-control/admin"
+		hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
+		hx-swap="beforeend"
+	>
+		<label for="email">
+			Epost
+			<input
+				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2"
+				type="email"
+				name="email"
+				id="email"
+				placeholder="epost@gmail.com"
+				required
+			/>
+		</label>
+		<button
+			type="submit"
+			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+		>
+			Legg til
+			@icons.Plus(80, "#5B14F2", 20, 20)
+		</button>
+	</form>
+	@resetFormAfterEvent(_ADD_ADMIN_FORM, "htmx:afterSwap")
+}
+
+script resetFormAfterEvent(formId string, event string) {
+    formElem = document.getElementById(formId);
+    document.body.addEventListener(event, (e) => {
+        formElem.reset();
+    });
+}
+
+templ AdminsTable(admins *[]access_control.UserAdmin) {
+	<table
+		id={ _ADMINS_TABLE }
+		if len(*admins) == 0 {
+			class="border-collapse border border-slate-500 mr-auto text-left hidden"
+		} else {
+			class="border-collapse border border-slate-500 mr-auto text-left"
+		}
+	>
+		<thead>
+			<tr
+				class="border-collapse border border-slate-500"
+			>
+				<th class="px-2">Epost</th>
+				<th class="px-2">Status</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody
+			hx-target="closest tr"
+			hx-swap="outerHTML"
+			id={ _ADMINS_TABLE_BODY }
+		>
+			for _, admin := range *admins {
+				@AdminTableRow(&admin)
+			}
+		</tbody>
+	</table>
+	<p
+		id={ _NO_ADMINS_MESSAGE }
+		if len(*admins) > 0 {
+			class="hidden"
+		}
+	>
+		Ingen administratorer funnet! 
+		<br/>
+		Du kan legge til en ny administrator ved å fylle ut skjemaet over.
+	</p>
+	@showTableIfAdminsExist(_ADMINS_TABLE, _NO_ADMINS_MESSAGE, _ADMINS_TABLE_BODY)
+}
+
+// Shows or hides the table and `no admins` information based on if there are any admins in the table
+
+script showTableIfAdminsExist(tableID string, noAdminsMessageId string, tableBodyID string) {
+	adminsTable = document.getElementById(tableID);
+	adminsTableBody = document.getElementById(tableBodyID);
+	noAdminsMessage = document.getElementById(noAdminsMessageId);
+	
+	const observer = new MutationObserver(handleChanges);
+	observer.observe(adminsTableBody, { childList: true });
+
+	function handleChanges(mutationsList, observer) {
+			mutationsList.forEach(mutation => {
+					if (mutation.type === 'childList') {
+							updateVisibility();
+					}
+			});
+	}
+	const updateVisibility = () => {
+		if (adminsTableBody.children.length < 1) {
+			adminsTable.classList.add("hidden");
+			noAdminsMessage.classList.remove("hidden");
+		} else {
+			adminsTable.classList.remove("hidden");
+			noAdminsMessage.classList.add("hidden");
+		}
+	}
+}
+
+templ AdminTableRow(admin *access_control.UserAdmin) {
+	<tr>
+		<td class="px-2">{ admin.Email }</td>
+		<td class="px-2">{ boolToActiveString(admin.IsActive) }</td>
+		<td class="px-2">
+			<button
+				title="Slett administrator"
+				hx-delete={ "/api/v1/organization-admin/access-control/admin?email=" + admin.Email }
+			>
+				@icons.Cross(3, "#ef4444", 25, 25)
+			</button>
+		</td>
+	</tr>
+}
+
+func boolToActiveString(isActive bool) string {
+	if isActive {
+		return "Aktiv"
+	}
+	return "Inaktiv"
+}
