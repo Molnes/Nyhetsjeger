@@ -24,8 +24,8 @@ type User struct {
 	OptInRanking       bool
 	Role               user_roles.Role
 	AccessTokenCypher  []byte
-	Token_expire       time.Time
-	RefreshtokenCypher []byte
+	TokenExpire        time.Time
+	RefreshTokenCypher []byte
 }
 
 // Parital User struct contains only fields needed for creating a new user
@@ -34,7 +34,7 @@ type PartialUser struct {
 	Email        string
 	AccessToken  string
 	TokenExpire  time.Time
-	Refreshtoken string
+	RefreshToken string
 }
 
 type UserSessionData struct {
@@ -101,8 +101,8 @@ func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*Use
 		OptInRanking:       true,
 		Role:               user_roles.User,
 		AccessTokenCypher:  accessTokenCypher,
-		Token_expire:       partialUser.TokenExpire,
-		RefreshtokenCypher: refreshtokenCypher,
+		TokenExpire:        partialUser.TokenExpire,
+		RefreshTokenCypher: refreshtokenCypher,
 	}
 
 	row := db.QueryRow(
@@ -118,7 +118,7 @@ func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*Use
 		id, sso_user_id, email, phone, opt_in_ranking, role, access_token,
 		token_expires_at, refresh_token,CONCAT(username_adjective, ' ', username_noun) AS username;`,
 		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
-		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+		user.AccessTokenCypher, user.TokenExpire, user.RefreshTokenCypher)
 
 	insertedUser, err := scanUserFromFullRow(row)
 	if err != nil {
@@ -172,8 +172,8 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.OptInRanking,
 		&roleString,
 		&user.AccessTokenCypher,
-		&user.Token_expire,
-		&user.RefreshtokenCypher,
+		&user.TokenExpire,
+		&user.RefreshTokenCypher,
 		&user.Username,
 	)
 	if err != nil {

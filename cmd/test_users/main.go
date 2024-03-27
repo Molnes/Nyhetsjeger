@@ -18,6 +18,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
+
 // Simple server used in API tests to create sessions for different user roles.
 //
 // This code is used only in testing and is NEVER deployed to production.
@@ -49,11 +50,11 @@ func main() {
 	for i, user := range usersList {
 		createdUser, err := users.CreateUser(db, context.Background(), &user)
 		if err != nil {
-			createdUser,err = users.GetUserByEmail(db, user.Email)
+			createdUser, err = users.GetUserByEmail(db, user.Email)
 			if err != nil {
 				log.Fatal("Test users: Error getting user: ", err)
 			}
-		} 
+		}
 		err = setRole(db, createdUser.ID, user_roles.Role(i))
 		if err != nil {
 			log.Errorf("Test users: Error setting role: ", err)
@@ -121,21 +122,21 @@ func createUserList() []users.PartialUser {
 			Email:        "test1@email.com",
 			AccessToken:  "token1",
 			TokenExpire:  time.Now().Add(time.Hour * 24),
-			Refreshtoken: "refresh1",
+			RefreshToken: "refresh1",
 		},
 		{
 			SsoID:        "test_admin_sso_id",
 			Email:        "test2@email.com",
 			AccessToken:  "token2",
 			TokenExpire:  time.Now().Add(time.Hour * 24),
-			Refreshtoken: "refresh2",
+			RefreshToken: "refresh2",
 		},
 		{
 			SsoID:        "test_organization_admin_sso_id",
 			Email:        "test3@email.com",
 			AccessToken:  "token3",
 			TokenExpire:  time.Now().Add(time.Hour * 24),
-			Refreshtoken: "refresh3",
+			RefreshToken: "refresh3",
 		},
 	}
 }
