@@ -54,7 +54,7 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	return utils.Render(c, http.StatusCreated, access_settings_components.AdminTableRow(userAdmin))
 }
 
-// expects email in json body
+// Handles delete request to remove an admin by email. Email expected in query param 'email'.
 func (oah *OrganizationAdminApiHandler) deleteAdminByEmail(c echo.Context) error {
 	email := c.QueryParam("email")
 	if email == "" {
