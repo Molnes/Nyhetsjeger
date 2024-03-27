@@ -49,8 +49,14 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
+	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
+	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		quizzList,
+        userRankingInfo,
 	))
 }
 
