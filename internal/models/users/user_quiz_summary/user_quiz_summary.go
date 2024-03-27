@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/google/uuid"
 )
 
@@ -13,6 +14,7 @@ type UserQuizSummary struct {
 	MaxScore          uint
 	AchievedScore     uint
 	AnsweredQuestions []AnsweredQuestion
+	HasArticlesToShow	 bool
 }
 
 type AnsweredQuestion struct {
@@ -60,6 +62,12 @@ func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSu
 	for _, aq := range answeredQuestions {
 		summary.AchievedScore += aq.PointsAwarded
 	}
+
+	articles, err := articles.GetUsedArticlesByQuizID(db, quizID)
+	if err != nil {
+		return nil, err
+	}
+	summary.HasArticlesToShow = len(*articles) > 0
 
 	return &summary, nil
 }

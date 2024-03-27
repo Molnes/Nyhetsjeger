@@ -89,6 +89,16 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	adminApiHandler := api.NewAdminApiHandler(sharedData)
 	adminApiHandler.RegisterAdminApiHandlers(adminApiGroup)
 
+	organizationAdminApiGroup := apiGroup.Group("/organization-admin")
+	enforceOrganizationAdminMiddleware :=
+		middlewares.NewAuthorizationMiddleware(
+			sharedData,
+			[]user_roles.Role{user_roles.OrganizationAdmin})
+	organizationAdminApiGroup.Use(enforceOrganizationAdminMiddleware.EnforceRole)
+	
+	organizationAdminApiHandler := api.NewOrganizationAdminApiHandler(sharedData)
+	organizationAdminApiHandler.RegisterOrganizationAdminHandlers(organizationAdminApiGroup)
+
 	// static files
 	e.Static("/static", "assets")
 	e.File("/favicon.ico", "assets/favicon.ico")

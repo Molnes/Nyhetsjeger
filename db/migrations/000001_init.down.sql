@@ -1,5 +1,7 @@
 BEGIN;
 
+DROP TABLE IF EXISTS preassigned_roles;
+
 DROP TABLE IF EXISTS http_sessions;
 DROP INDEX IF EXISTS http_sessions_expiry_idx;
 DROP INDEX IF EXISTS http_sessions_key_idx;
