@@ -11,7 +11,7 @@ import (
 
 type UserAdmin struct {
 	Email    string
-	IsActive bool // Whether the role is in use or it waits for a user to register (preassigned role)
+	IsActive bool // Whether the role is assigned to an existing user or preassigned to an email
 	Role     user_roles.Role
 }
 
