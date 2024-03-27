@@ -128,7 +128,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
-						class="bg-red-500 font-bold px-4 py-2 rounded-button"
+						type="button"
+						class="bg-red-500 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
@@ -151,8 +152,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 
 script modalWindowScript() {
 		const questionModal = document.getElementById("question-modal");
-		const editQuestionButtons = document.getElementsByClassName("edit-question-button");
-		const newQuestionButton = document.getElementById("new-question-button");
 
 		// Open the modal window
 		function openQuestionModal() {
@@ -161,12 +160,13 @@ script modalWindowScript() {
 			}
 		}
 
-		// Add event listeners to the buttons for opening the modal
-		for (let i = 0; i < editQuestionButtons.length; i++) {
-    	editQuestionButtons[i].addEventListener('click', openQuestionModal);
-		}
-
-		newQuestionButton.addEventListener("click", openQuestionModal);
+		// Add event listener to 'add' and 'edit' question buttons.
+		// When the button is clicked, open the modal window.
+		document.body.addEventListener('htmx:afterOnLoad', function (event) {
+			if (event.detail.elt.id === 'new-question-button' || event.detail.elt.dataset.elementType === 'edit-question-button') {
+				openQuestionModal();
+			}
+		});
 }
 
 // This script is used to observe changes in the article list.

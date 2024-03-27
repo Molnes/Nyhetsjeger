@@ -23,8 +23,10 @@ type AdminApiHandler struct {
 }
 
 // Constants
-const errorInvalidQuizID = "Invalid or missing quiz id"
 const queryParamQuizID = "quiz-id"
+const errorInvalidQuizID = "Invalid or missing quiz-id"
+const queryParamQuestionID = "question-id"
+const errorInvalidQuestionID = "Invalid or missing question-id"
 
 // Creates a new AdminApiHandler
 func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
@@ -43,7 +45,10 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
-	e.POST("/question/create-new", aah.createQuestion)
+	e.POST("/question/edit", aah.editQuestion)
+	e.POST("/question/edit-image", aah.editQuestionImage)
+	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
+	e.DELETE("/question/delete", aah.deleteQuestion)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -93,10 +98,15 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	imageURL, _ := url.Parse(image)
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz image")
+		if err == questions.ErrNoImageUpdated {
+			return echo.NewHTTPError(http.StatusNotFound, "Quiz image not found")
+		}
+
+		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
 }
 
 // Removes the image for a quiz in the database.
@@ -113,8 +123,8 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
 	}
 
-	return utils.Render(c, http.StatusOK,
-		dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
 }
 
 // Deletes a quiz from the database.
@@ -223,7 +233,15 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 		// If not in DB, fetch the relevant article data and add it to the DB
 		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
 		if err != nil {
-			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+			if err == articles.ErrInvalidArticleID {
+				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article ID")
+			} else if err == articles.ErrInvalidArticleURL {
+				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
+			} else if err == articles.ErrArticleNotFound {
+				return article, echo.NewHTTPError(http.StatusNotFound, "Article not found")
+			} else {
+				return article, err
+			}
 		}
 
 		// Add the article to the DB
@@ -285,12 +303,14 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// Creates a new question in the database with the given data.
-func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
+// Edit a question with the given data.
+// If the question ID is not found, a new question will be created.
+// If the question ID is found, the question will be updated.
+func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
-	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz ID")
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
 	}
 
 	// Get the data from the form
@@ -310,25 +330,38 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
 
-	// Check if the article URL is in the database
-	article, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-	if err != nil && err != sql.ErrNoRows {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
-	}
+	article := &articles.Article{}
 
-	// If not in DB, fetch the relevant article data and add it to the DB
-	if article == nil {
-		tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+	// Only add article to DB if it is not empty.
+	// I.e. allow for no article, but not invalid article.
+	if articleURLString != "" {
+		// Check if the article URL is in the database
+		article, err = articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+		if err != nil && err != sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
 		}
 
-		articles.AddArticle(aah.sharedData.DB, &tempArticle)
-		article = &tempArticle
+		// If not in DB, fetch the relevant article data and add it to the DB
+		if article == nil {
+			tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
+			}
+
+			articles.AddArticle(aah.sharedData.DB, &tempArticle)
+			article = &tempArticle
+		}
+	}
+
+	// Get the question ID.
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
 	}
 
 	// Create a new question object
 	questionForm := questions.QuestionForm{
+		ID:                  questionID,
 		Text:                questionText,
 		ImageURL:            image,
 		Article:             article,
@@ -345,12 +378,97 @@ func (aah *AdminApiHandler) createQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
 
-	// Save the question to the database
-	err = questions.AddNewQuestion(aah.sharedData.DB, question)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+	// Get the question by ID from the database.
+	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
+
+	// If doesn't exist in the database.
+	if err != nil && err == sql.ErrNoRows {
+		// Save the question to the database.
+		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+		}
+	} else if tempQuestion.ID == questionID {
+		// If the question ID is found, update the question.
+		question.ID = questionID
+		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
+
+		if err != nil {
+			if err == questions.ErrNoQuestionUpdated {
+				return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+			}
+
+			return err
+		}
+	} else if err != nil {
+		return err
 	}
 
-	// Return the "question item" element
+	// Return the "question item" element.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
+}
+
+// Delete a question with the given ID from the database.
+func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Delete the question from the database
+	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
+	if err != nil {
+		if err == questions.ErrNoQuestionDeleted {
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+// Edit the image for a question in the database.
+func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Get the new image URL
+	image := c.FormValue(dashboard_components.QuestionImageURL)
+	imageURL, _ := url.Parse(image)
+
+	// Set the image URL for the question
+	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageURL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question image")
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), imageURL, dashboard_components.QuestionImageURL, true))
+}
+
+// Delete the image for a question in the database.
+func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
+	// Get the question ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+	}
+
+	// Remove the image URL from the question
+	err = questions.RemoveImageByQuestionID(aah.sharedData.DB, &questionID)
+	if err != nil {
+		if err == questions.ErrNoImageRemoved {
+			return echo.NewHTTPError(http.StatusNotFound, "Question image not found")
+		}
+
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), &url.URL{}, dashboard_components.QuestionImageURL, true))
 }

@@ -206,9 +206,6 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	}
 	quiz.ImageURL = *tempURL
 
-	if err == sql.ErrNoRows {
-		return nil, err
-	}
 	return &quiz, err
 }
 

@@ -19,27 +19,36 @@ const QuestionCorrectAlternative = "correct-alternative"
 const QuestionImageURL = "question-image-url"
 const QuestionPoints = "question-points"
 
+var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, QuestionAlternative3, QuestionAlternative4}
+
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
-templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string) {
+// If the question isNew = true, it will be appended to the list of questions.
+// If the question isNew = false, it will replace the existing question in the list.
+templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
 	<form id="edit-question-form">
-		<div class="flex flex-row items-center gap-3 mb-5">
-			<h2 class="font-bold text-3xl">Rediger spørsmål</h2>
-			@components.LoadingIndicator()
-		</div>
+		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
 		// Article
 		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel (URL)</label>
-		<input
+		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			list="articles"
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
-		/>
-		<datalist id="articles">
-			for _, article := range *articles {
-				<option value={ article.ArticleURL.String() }></option>
+		>
+			if len(*articles) == 0 {
+				<option value="" disabled selected>Ingen artikler lagt til enda</option>
+			} else {
+				<option value="">Ingen artikkel valgt</option>
 			}
-		</datalist>
+			for _, article := range *articles {
+				<option
+					value={ article.ArticleURL.String() }
+					if question.Article.ArticleURL == article.ArticleURL {
+						selected
+					}
+				>{  article.ArticleURL.String() }</option>
+			}
+		</select>
 		// Question
 		<label for="question" class="block font-bold mb-1">Spørsmål</label>
 		<input
@@ -48,10 +57,10 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			type="text"
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
 			value={ question.Text }
+			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
 		<fieldset class="block mb-5">
 			// Alternatives
-			// TODO: Possibly do this better
 			<table>
 				<thead>
 					<tr>
@@ -60,97 +69,42 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-1"
-								name={ QuestionAlternative1 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 1 {
-									value={ question.Alternatives[0].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="1"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-								checked
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-2"
-								name={ QuestionAlternative2 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 2 {
-									value={ question.Alternatives[1].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="2"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-3"
-								name={ QuestionAlternative3 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 3 {
-									value={ question.Alternatives[2].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="3"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
-					<tr>
-						<td class="py-1">
-							<input
-								id="question-4"
-								name={ QuestionAlternative4 }
-								type="text"
-								class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-								if len(question.Alternatives) >= 4 {
-									value={ question.Alternatives[3].Text }
-								}
-							/>
-						</td>
-						<td>
-							<input
-								type="radio"
-								name={ QuestionCorrectAlternative }
-								value="4"
-								class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-							/>
-						</td>
-					</tr>
+					for index := range 4 {
+						<tr>
+							<td class="py-1">
+								<input
+									id={ fmt.Sprintf("question-%d", index+1) }
+									name={ QuestionAltneratives[index] }
+									type="text"
+									class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
+									if index < len(question.Alternatives) {
+										value={ question.Alternatives[index].Text }
+									}
+									placeholder={ fmt.Sprintf("%d", 1813+index) }
+								/>
+							</td>
+							<td>
+								<input
+									type="radio"
+									name={ QuestionCorrectAlternative }
+									value={ fmt.Sprint(index + 1) }
+									class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
+									if index < len(question.Alternatives) && question.Alternatives[index].IsCorrect {
+										checked
+									}
+								/>
+							</td>
+						</tr>
+					}
 				</tbody>
 			</table>
 		</fieldset>
 		// Image
-		<label for="question-image" class="block font-bold mb-1">Bilde</label>
-		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, false)
+		<div class="flex flex-row items-center gap-3 mb-1">
+			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde</label>
+			@components.LoadingIndicator()
+		</div>
+		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew)
 		// Points
 		<label for="points" class="block mt-5 font-bold mb-1">Poeng</label>
 		<input
@@ -160,22 +114,43 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
 			min="0"
 			value={ fmt.Sprint(question.Points) }
+			placeholder="10"
 		/>
+		<div class="block mx-auto w-fit">
+			@components.LoadingIndicator()
+		</div>
 		// Buttons
 		<div class="flex flex-row justify-between gap-5 mt-5">
 			<button
 				id="close-modal-button"
-				onclick="closeModal()"
 				type="button"
-				class="bg-red-400 font-bold px-4 py-2 w-full rounded-button"
+				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
+				onclick="closeModal()"
 			>Avbryt</button>
+			if !isNew {
+				<button
+					id="delete-question-button"
+					type="button"
+					class="bg-red-500 text-white font-bold px-4 py-2 w-full rounded-button"
+					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
+					hx-swap="outerHTML"
+					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+					hx-confirm="Er du sikker på at du ønsker å slette dette spørsmålet?"
+					hx-indicator="previous .htmx-indicator"
+				>Slett</button>
+			}
 			<button
 				id="submit-question-button"
 				type="submit"
 				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
-				hx-post={ fmt.Sprintf("/api/v1/admin/question/create-new?quiz-id=%s", quizID) }
-				hx-swap="beforeend"
-				hx-target="#question-list"
+				hx-post={ fmt.Sprintf("/api/v1/admin/question/edit?quiz-id=%s&question-id=%s", quizID, question.ID) }
+				if isNew {
+					hx-swap="beforeend"
+					hx-target="#question-list"
+				} else {
+					hx-swap="outerHTML"
+					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+				}
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
@@ -183,7 +158,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 	</form>
 	<script>
 		// Prevent form submission by default
-    const inputs = document.querySelectorAll('#edit-question-form input');
+    inputs = document.querySelectorAll('#edit-question-form input');
 
     // Add event listener to each input element
     inputs.forEach(input => {
@@ -200,11 +175,22 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			modal.close();
 		}
 
-		// Close the modal after successful submit
-		document.body.addEventListener("htmx:afterSwap", (event) => {
-			if (event.detail.target.id === "question-list") {
-				closeModal();
+		// Close the modal after successful submit.
+		// This applies to creating or updating questions.
+		const afterSwapListener = (event) => {
+			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
+					closeModal();
+					// Remove the event listener after the modal is closed.
+					document.body.removeEventListener("htmx:afterSwap", afterSwapListener);
 			}
-		});
+		};
+		document.body.addEventListener("htmx:afterSwap", afterSwapListener);
+
+		// Close the modal after successful deletion.
+		document.addEventListener('htmx:afterRequest', function(event) {
+      if (event.detail.target.dataset.elementType === "question-list-item" && event.detail.xhr.status === 200) {
+        closeModal();
+      }
+    }, {once: true});
 	</script>
 }

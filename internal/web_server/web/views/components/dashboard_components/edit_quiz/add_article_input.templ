@@ -9,16 +9,15 @@ import (
 // A row with a label and an input field.
 // The input field is for adding a new article to the list of articles.
 templ AddArticleInput(articlesLength int, articleNameInput string, quizID string, nameInput string) {
-	<div class="flex flex-row flex-wrap gap-5 mb-3">
-		<label for={ nameInput }>
-			Link&ensp;
-			<input
-				id={ nameInput }
-				name={ nameInput }
-				type="text"
-				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2"
-			/>
-		</label>
+	<div class="flex flex-row items-center flex-wrap gap-3 mb-3">
+		<label for={ nameInput }>Link</label>
+		<input
+			id={ nameInput }
+			name={ nameInput }
+			type="text"
+			class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-1/2"
+			placeholder="https://www.smp.no/i/abcdef"
+		/>
 		<button
 			id="article-add-button"
 			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"

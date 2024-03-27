@@ -7,19 +7,21 @@ import (
 // An input field for updating the image.
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
+// If post is set to false, it will not send a request when the value is changed.
 templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool) {
-	<div id="image-input-wrapper">
+	<div class="image-input-wrapper">
 		<input
 			id={ inputName }
 			name={ inputName }
 			class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
 			type="text"
 			value={ imageURL.String() }
+			placeholder="https://picsum.photos/id/1/300/200"
 			if post {
 				hx-post={ requestURL }
 				hx-trigger="change"
 				hx-swap="outerHTML"
-				hx-target="#image-input-wrapper"
+				hx-target="closest .image-input-wrapper"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			}
@@ -35,10 +37,12 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 				id="remove-image-button"
 				type="button"
 				class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
-				hx-delete={ requestURL }
-				hx-swap="outerHTML"
-				hx-target="#image-input-wrapper"
-				hx-indicator="previous .htmx-indicator"
+				if post {
+					hx-delete={ requestURL }
+					hx-swap="outerHTML"
+					hx-target="closest .image-input-wrapper"
+					hx-indicator="previous .htmx-indicator"
+				}
 			>Fjern bilde</button>
 		}
 	</div>

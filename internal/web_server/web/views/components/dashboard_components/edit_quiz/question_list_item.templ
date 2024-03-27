@@ -10,15 +10,22 @@ import (
 // An item in the list of questions.
 // Contains the question text and a button to edit the question.
 templ QuestionListItem(question *questions.Question) {
-	<li class="flex flex-row justify-between px-4 py-2">
+	<li
+		id={ fmt.Sprintf("question-%s", question.ID) }
+		class="flex flex-row justify-between px-4 py-2"
+		data-element-type="question-list-item"
+	>
 		{ question.Text }
 		<button
 			id={ fmt.Sprintf("edit-question-%s", question.ID) }
+			data-element-type="edit-question-button"
+			type="button"
 			title="Rediger"
 			hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) }
+			hx-swap="innerHTML"
 			hx-target="#question-modal"
 			hx-trigger="click"
-			type="button"
+			hx-indicator="previous .htmx-indicator"
 		>
 			// The same color as the custom indigo color in the tailwindcss config.
 			@icons.Pencil("#5B14F2", 20, 20)

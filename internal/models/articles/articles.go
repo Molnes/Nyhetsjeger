@@ -120,7 +120,7 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 	// Parse the article URL.
 	tempArticleURL, err := url.Parse(articleURL)
 	article.ArticleURL = *tempArticleURL
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return nil, err
 	}
 
@@ -137,17 +137,18 @@ func scanArticleFromFullRow(row *sql.Row) (*Article, error) {
 // Convert a set of rows from the database to a list of Articles.
 func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 	var articles []Article
+
 	for rows.Next() {
 		var article Article
 		var articleURL string
 		var imageURL sql.NullString
+
 		err := rows.Scan(
 			&article.ID,
 			&article.Title,
 			&articleURL,
 			&imageURL,
 		)
-
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +156,7 @@ func scanArticlesFromFullRows(rows *sql.Rows) (*[]Article, error) {
 		// Parse the article URL.
 		tempArticleURL, err := url.Parse(articleURL)
 		article.ArticleURL = *tempArticleURL
-		if err == sql.ErrNoRows {
+		if err != nil {
 			return nil, err
 		}
 

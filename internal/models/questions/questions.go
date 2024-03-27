@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -13,6 +14,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+var ErrNoQuestionDeleted = errors.New("questions: no question deleted")
+var ErrNoQuestionUpdated = errors.New("questions: no question updated")
+var ErrNoImageRemoved = errors.New("questions: no image removed")
+var ErrNoImageUpdated = errors.New("questions: no image updated")
 
 type Question struct {
 	ID               uuid.UUID
@@ -99,7 +105,9 @@ func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
 			WHERE
 				quiz_id = $1
 			GROUP BY
-				q.id`,
+				q.id
+			ORDER BY
+				q.arrangement ASC`,
 		id)
 	if err != nil {
 		return nil, err
@@ -213,15 +221,19 @@ func IsCorrectAnswer(db *sql.DB, questionID uuid.UUID, answerID uuid.UUID) (bool
 }
 
 // Get specific question by ID.
+// Includes the article for the question.
+// Includes the answer altneratives for the question.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
 	var imageUrlString sql.NullString
 	row := db.QueryRow(
 		`
 		SELECT
-		id, question, image_url, arrangement, article_id, quiz_id, time_limit_seconds, points
-		FROM questions
-		WHERE id = $1;
+			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+		FROM
+			questions q
+		WHERE
+			q.id = $1;
 		`, id)
 	err := row.Scan(
 		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
@@ -230,6 +242,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		return nil, err
 	}
 
+	// Parse the image URL
 	imageUrl, err := data_handling.ConvertNullStringToURL(&imageUrlString)
 	if err != nil {
 		return nil, err
@@ -237,12 +250,26 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		q.ImageURL = *imageUrl
 	}
 
+	// Get the article if it exists
+	if q.Article.ID.Valid {
+		article, err := articles.GetArticleByID(db, q.Article.ID.UUID)
+		if err != nil {
+			return nil, err
+		}
+		q.Article = *article
+	}
+
 	answerRows, err := db.Query(
-		`SELECT aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
-		FROM answer_alternatives aa
-		LEFT JOIN user_answers ua ON aa.id = ua.chosen_answer_alternative_id
-		WHERE aa.question_id = $1
-		GROUP BY aa.id;
+		`SELECT
+			aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
+		FROM
+			answer_alternatives aa
+		LEFT JOIN
+			user_answers ua ON aa.id = ua.chosen_answer_alternative_id
+		WHERE
+			aa.question_id = $1
+		GROUP BY
+			aa.id;
 		`, id)
 	if err != nil {
 		return nil, err
@@ -346,6 +373,7 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 }
 
 type QuestionForm struct {
+	ID                  uuid.UUID
 	Text                string
 	ImageURL            *url.URL
 	Article             *articles.Article
@@ -390,10 +418,8 @@ func ParseAndValidateQuestionData(questionText string, questionPoints string, ar
 // Create a question object from a form.
 // Returns the created question and an error message.
 func CreateQuestionFromForm(form QuestionForm) (Question, string) {
-	questionID := uuid.New()
-
 	question := Question{
-		ID:           questionID,
+		ID:           form.ID,
 		Text:         form.Text,
 		ImageURL:     *form.ImageURL,
 		Article:      *form.Article,
@@ -406,7 +432,8 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Only add alternatives that are not empty
 	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
-		if alt != "" {
+		// Do not count empty white space as an alternative
+		if strings.TrimSpace(alt) != "" {
 			question.Alternatives = append(question.Alternatives, Alternative{
 				ID:        uuid.New(),
 				Text:      alt,
@@ -426,7 +453,7 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Check that there are two to four alternatives
 	if len(question.Alternatives) < 2 {
-		return question, "There must be at least two alternatives"
+		return question, "There must be at least two alternatives. Empty alternatives do not count."
 	}
 	if len(question.Alternatives) > 4 {
 		return question, "There can be at most four alternatives"
@@ -438,9 +465,8 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 // Add a new question to the database.
 // Adds the question alternatives to the database.
 // Returns the ID of the new question.
-func AddNewQuestion(db *sql.DB, question Question) error {
+func AddNewQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 	// Start a transaction
-	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -460,7 +486,7 @@ func AddNewQuestion(db *sql.DB, question Question) error {
 
 	// Insert the alternatives into the database
 	for _, a := range question.Alternatives {
-		tx.Exec(
+		_, err = tx.Exec(
 			`INSERT INTO answer_alternatives (id, text, correct, question_id)
 			VALUES ($1, $2, $3, $4);`,
 			a.ID, a.Text, a.IsCorrect, question.ID,
@@ -477,4 +503,171 @@ func AddNewQuestion(db *sql.DB, question Question) error {
 	}
 
 	return nil
+}
+
+// Update a question in the database.
+func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
+	// Start a transaction
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	result, err := tx.Exec(
+		`UPDATE questions
+		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5
+		WHERE id = $6;`,
+		question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.ID,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		tx.Rollback()
+		return ErrNoQuestionUpdated
+	}
+
+	// Delete old alternatives
+	_, err = tx.Exec(
+		`DELETE FROM answer_alternatives
+		WHERE question_id = $1;`,
+		question.ID,
+	)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Insert the alternatives into the database
+	for _, a := range question.Alternatives {
+		_, err = tx.Exec(
+			`INSERT INTO answer_alternatives (id, text, correct, question_id)
+			VALUES ($1, $2, $3, $4);`,
+			a.ID, a.Text, a.IsCorrect, question.ID,
+		)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete a question from the database.
+// Deletes the question alternatives from the database.
+func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
+	// Start a transaction
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Get the question's quiz ID and arrangement number
+	var quizID uuid.UUID
+	var arrangement uint
+	row := tx.QueryRow(
+		`SELECT quiz_id, arrangement
+		FROM questions
+		WHERE id = $1;`,
+		id,
+	)
+	err = row.Scan(&quizID, &arrangement)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete the question from the database
+	result, err := tx.Exec(
+		`DELETE FROM questions
+		WHERE id = $1;`,
+		id,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		tx.Rollback()
+		return ErrNoQuestionDeleted
+	}
+
+	// Delete the alternatives from the database
+	_, err = tx.Exec(
+		`DELETE FROM answer_alternatives
+		WHERE question_id = $1;`,
+		id,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Update the arrangement numbers of the remaining questions
+	// (decrement all questions' arrangement with higher arrangement number)
+	_, err = tx.Exec(
+		`UPDATE questions
+		SET arrangement = arrangement - 1
+		WHERE quiz_id = $1 AND arrangement > $2;`,
+		quizID, arrangement,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update the image URL for a question by question ID.
+func SetImageByQuestionID(db *sql.DB, id *uuid.UUID, imageURL *url.URL) error {
+	result, err := db.Exec(
+		`UPDATE
+			questions
+		SET
+			image_url = $1
+		WHERE
+			id = $2;`,
+		imageURL.String(), id,
+	)
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		return ErrNoImageUpdated
+	}
+
+	return err
+}
+
+// Remove the image URL for a question by question ID.
+func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
+	result, err := db.Exec(
+		`UPDATE
+			questions
+		SET
+			image_url = NULL
+		WHERE
+			id = $1;`,
+		id,
+	)
+
+	if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		return ErrNoImageRemoved
+	}
+
+	return err
 }
