@@ -46,7 +46,7 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	userAdmin, err := access_control.AddAdmin(oah.sharedData.DB, email)
 	if err != nil {
 		if err == access_control.ErrEmailAlreadyAdmin {
-			return echo.NewHTTPError(http.StatusConflict, "Email is already an admin")
+			return echo.NewHTTPError(http.StatusConflict, "Given email already has admin role assigned")
 		}
 		return err
 	}
