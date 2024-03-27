@@ -10,7 +10,7 @@ const (
 	_ADD_ADMIN_FORM    = "add-admin-form"
 	_ADMINS_TABLE      = "admins-table"
 	_NO_ADMINS_MESSAGE = "no-admins-message"
-	_ADMINS_TABLE_BODY = "admin-table-body"
+	_ADMINS_TABLE_BODY = "admins-table-body"
 )
 
 templ AddEmailForm() {
@@ -82,8 +82,6 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 		id={ _NO_ADMINS_MESSAGE }
 		if len(*admins) > 0 {
 			class="hidden"
-		} else {
-			class=""
 		}
 	>
 		Ingen administratorer funnet! 
