@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -77,12 +78,18 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 
 	// Update the quiz title
 	title := c.FormValue(dashboard_pages.QuizTitle)
-	err = quizzes.UpdateTitleByQuizID(aah.sharedData.DB, quiz_id, title)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz title")
+	if strings.TrimSpace(title) == "" {
+		return utils.Render(c, http.StatusOK,
+			dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, "Tittelen kan ikke være tom"),
+		)
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle))
+	err = quizzes.UpdateTitleByQuizID(aah.sharedData.DB, quiz_id, title)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
 }
 
 // Updates the image of a quiz in the database.
@@ -323,9 +330,10 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	alternative4 := c.FormValue(dashboard_components.QuestionAlternative4)
 	imageURL := c.FormValue(dashboard_components.QuestionImageURL)
 	questionPoints := c.FormValue(dashboard_components.QuestionPoints)
+	timeLimit := c.FormValue(dashboard_components.QuestionTimeLimit)
 
 	// Parse the data and validate
-	points, articleURL, image, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL)
+	points, articleURL, image, time, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL, timeLimit)
 	if errorText != "" {
 		return echo.NewHTTPError(http.StatusBadRequest, errorText)
 	}
@@ -367,6 +375,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		Article:             article,
 		QuizID:              &quizID,
 		Points:              points,
+		TimeLimitSeconds:    time,
 		CorrectAnswerNumber: correctAnswerNumber,
 		Alternative1:        alternative1,
 		Alternative2:        alternative2,
@@ -381,7 +390,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the question by ID from the database.
 	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
 
-	// If doesn't exist in the database.
+	// If the question doesn't exist in the database.
 	if err != nil && err == sql.ErrNoRows {
 		// Save the question to the database.
 		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)

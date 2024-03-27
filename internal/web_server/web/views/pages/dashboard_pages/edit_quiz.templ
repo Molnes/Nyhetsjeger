@@ -32,7 +32,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					<label for={ QuizTitle } class="block font-bold">Tittel</label>
 					@components.LoadingIndicator()
 				</div>
-				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
+				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
 			// Quiz Image
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {

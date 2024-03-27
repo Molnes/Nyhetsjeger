@@ -18,6 +18,7 @@ const QuestionAlternative4 = "question-alternative-4"
 const QuestionCorrectAlternative = "correct-alternative"
 const QuestionImageURL = "question-image-url"
 const QuestionPoints = "question-points"
+const QuestionTimeLimit = "question-time-limit"
 
 var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, QuestionAlternative3, QuestionAlternative4}
 
@@ -105,17 +106,39 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew)
-		// Points
-		<label for="points" class="block mt-5 font-bold mb-1">Poeng</label>
-		<input
-			id="points"
-			name={ QuestionPoints }
-			type="number"
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
-			min="0"
-			value={ fmt.Sprint(question.Points) }
-			placeholder="10"
-		/>
+		<div class="flex flex-row items-center flex-wrap mt-5 mb-3 gap-5 justify-between">
+			// Points
+			<div>
+				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
+				<input
+					id={ QuestionPoints }
+					name={ QuestionPoints }
+					type="number"
+					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-24"
+					min="0"
+					value={ fmt.Sprint(question.Points) }
+					placeholder="10"
+				/>
+			</div>
+			// Time limit
+			<div>
+				<label for={ QuestionTimeLimit } class="font-bold mr-1">Tidsbegrensning</label>
+				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+					for _, seconds := range []uint{10, 15, 30, 45, 60} {
+						/* The time limit is default 30 */
+						<option
+							value={ fmt.Sprint(seconds) }
+							if question.TimeLimitSeconds == seconds {
+								selected
+							}
+							if isNew && seconds == 30 {
+								selected
+							}
+						>{ fmt.Sprintf("%d sekunder", seconds) }</option>
+					}
+				</select>
+			</div>
+		</div>
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
