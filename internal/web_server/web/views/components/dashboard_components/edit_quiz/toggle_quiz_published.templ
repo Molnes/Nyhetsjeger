@@ -28,6 +28,11 @@ templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
 			hx-target="#quiz-is-hidden-label"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
+			if isPublished {
+				hx-confirm="Er du sikker på at du ønsker å skjule denne quizen? Brukerne kan ikke lenger se eller spille den."
+			} else {
+				hx-confirm="Er du sikker på at du ønsker å publisere denne quizen? Brukerne kan nå se og spille den (etter første tidspunkt den blir aktiv). Pass på at alt er riktig!"
+			}
 		/>
 	</label>
 }
