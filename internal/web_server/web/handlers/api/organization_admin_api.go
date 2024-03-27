@@ -78,6 +78,8 @@ func (oah *OrganizationAdminApiHandler) deleteAdminByEmail(c echo.Context) error
 		}
 		return err
 	}
-
+	// Returning no content with `200 OK` instead of `204 No Content`
+	// due to HTMX refusing to replace content if response code is 204.
+	// This is necessary to remove the row from the table.
 	return c.NoContent(http.StatusOK)
 }
