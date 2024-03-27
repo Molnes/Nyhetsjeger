@@ -15,6 +15,7 @@ export default {
                                 'button': '0.5rem',
                                 'card': '0.5rem',
                                 'input': '0.5rem',
+                                '1/2': '50%',
                         }
                 },
                 fontFamily: {
