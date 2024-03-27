@@ -63,7 +63,7 @@ func AddAdmin(db *sql.DB, email string) (*UserAdmin, error) {
 		return nil, ErrEmailAlreadyAdmin
 	} else {
 		if err == errNoUserFound {
-			err = preAssignRoleToUserByEmail(db, email, user_roles.QuizAdmin)
+			err = preassignRoleToUserByEmail(db, email, user_roles.QuizAdmin)
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +118,7 @@ func assignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) err
 }
 
 // Preassigns a role to a user with the given email.
-func preAssignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) error {
+func preassignRoleToUserByEmail(db *sql.DB, email string, role user_roles.Role) error {
 	_, err := db.Exec(`
 	INSERT INTO preassigned_roles(email, role)
 	VALUES ($1, $2);`, email, role.String())
