@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -61,11 +62,11 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 	}
 
 	user, err := users.GetUserBySsoID(ah.sharedData.DB, googleUser.ID)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("failed to get user from user store: %s", err.Error())
 	}
 
-	if user == nil {
+	if err == sql.ErrNoRows {
 		newUser := users.PartialUser{
 			SsoID:        googleUser.ID,
 			Email:        googleUser.Email,
