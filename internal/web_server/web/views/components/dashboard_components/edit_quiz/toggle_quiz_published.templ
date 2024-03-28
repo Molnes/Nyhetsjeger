@@ -28,11 +28,38 @@ templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
 			hx-target="#quiz-is-hidden-label"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
-			if isPublished {
-				hx-confirm="Er du sikker på at du ønsker å skjule denne quizen? Brukerne kan ikke lenger se eller spille den."
-			} else {
-				hx-confirm="Er du sikker på at du ønsker å publisere denne quizen? Brukerne kan nå se og spille den (etter første tidspunkt den blir aktiv). Pass på at alt er riktig!"
-			}
+			hx-confirm="Er du sikker?"
 		/>
+		@toggleQuizPublished(inputName, isPublished)
 	</label>
+}
+
+script toggleQuizPublished(inputName string, isPublished bool) {
+	let togglePublishedInput = document.getElementById(inputName);
+
+	// Choose which confirmation text to show based on checkbox state.
+	let confirmText = "Er du sikker?";
+	if (isPublished) {
+		confirmText = "Er du sikker på at du ønsker å skjule denne quizen? Brukerne kan ikke lenger se eller spille den.";
+	} else {
+		confirmText = "Er du sikker på at du ønsker å publisere denne quizen? Brukerne kan nå se og spille den (etter første tidspunkt den blir aktiv). Pass på at alt er riktig!";
+	}
+
+	// Override the default htmx confirm dialog with a custom one.
+	// If the user confirms, the request is issued. If not, the checkbox is reset.
+	const confirmListener = (event) => {
+			event.preventDefault();
+
+			const proceed = window.confirm(confirmText);
+			if (proceed) {
+				// If confirmed, proceed with the action by manually dispatching the event.
+				// Remove the event listener to avoid multiple confirm dialogs.
+				document.body.removeEventListener("htmx:confirm", confirmListener);
+				event.detail.issueRequest(true)
+			} else {
+				// Reset the checkbox if confirmation is canceled
+				togglePublishedInput.checked = !togglePublishedInput.checked;
+			}
+		}
+		document.body.addEventListener("htmx:confirm", confirmListener);
 }
