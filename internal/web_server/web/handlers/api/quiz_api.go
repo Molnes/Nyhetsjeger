@@ -1,10 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
@@ -28,6 +30,7 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.GET("/next-question", qah.getNextQuestion)
 	e.POST("/user-answer", qah.postUserAnswer)
 	e.PATCH("/brukernavn", qah.patchRandomUsername)
+	e.DELETE("/profil", qah.deleteProfile)
 
 }
 
@@ -101,4 +104,25 @@ func (qah *QuizApiHandler) patchRandomUsername(c echo.Context) error {
 	}
 
 	return c.String(http.StatusOK, username)
+}
+
+// Deletes the user from the database and logs the user out
+func (qah *QuizApiHandler) deleteProfile(c echo.Context) error {
+	//TODO: Avoid duplicate logout code. Have agreed to look at it later.
+	err := users.DeleteUserByID(qah.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
+	}
+
+	session, err := qah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %s", err.Error())
+	}
+	session.Options.MaxAge = -1
+	err = session.Save(c.Request(), c.Response())
+	if err != nil {
+		return fmt.Errorf("failed to save session: %s", err.Error())
+	}
+	c.Response().Header().Set("HX-Redirect", "/")
+	return c.NoContent(http.StatusNoContent)
 }

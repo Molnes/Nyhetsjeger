@@ -30,9 +30,9 @@ script showDeleteConfirmationModal() {
 }
 
 templ UserProfile(u *users.User) {
-	@layout_components.BaseLayout("Nyhetsjeger - Profil") {
+	@layout_components.QuizLayoutMenu("Nyhetsjeger - Profil") {
 		@showDeleteConfirmationModal()
-		<div class="h-screen flex justify-center items-center">
+		<div class="h-full mt-20 flex justify-center items-center">
 			<form class="w-1/3 h-3/4 bg-purple-400 rounded-lg flex flex-col items-center" action="" method="post">
 				<h1 class="text-3xl my-4 font-bold">Oppdater profil</h1>
 				<div class="w-3/4">
