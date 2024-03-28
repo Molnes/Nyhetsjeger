@@ -166,6 +166,89 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return quizzes, nil
 }
 
+func GetUnfinishedQuizzesByUserID(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
+	rows, err := db.Query(
+		`SELECT 
+
+        quizzes.id,
+        quizzes.title,
+        quizzes.image_url,
+        quizzes.available_from,
+        quizzes.available_to,
+        quizzes.created_at,
+        quizzes.last_modified_at,
+        quizzes.published,
+        quizzes.is_deleted
+
+
+
+         FROM quizzes
+        JOIN (
+
+
+        SELECT *
+        FROM quizzes
+        JOIN
+          (SELECT COUNT(id) AS existing_questions,
+                  quiz_id
+           FROM questions
+           GROUP BY quiz_id) AS q ON quizzes.id = q.quiz_id
+        JOIN
+          (
+        SELECT user_id,
+        quiz_id,
+        COUNT(answered_at) AS answered_questions
+           FROM user_answers
+           JOIN
+             (SELECT *
+              FROM questions) AS questions ON questions.id = user_answers.question_id
+        WHERE chosen_answer_alternative_id IS NOT NULL
+        GROUP BY user_id, quiz_id
+        
+        ) AS a ON a.quiz_id = quizzes.id
+        
+        ) AS counting ON counting.id = quizzes.id
+        WHERE answered_questions < existing_questions
+        AND user_id = $1
+        `, userID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quizzes := []Quiz{}
+	for rows.Next() {
+		var quiz Quiz
+		var imageURL sql.NullString
+		err := rows.Scan(
+			&quiz.ID,
+			&quiz.Title,
+			&imageURL,
+			&quiz.AvailableFrom,
+			&quiz.AvailableTo,
+			&quiz.CreatedAt,
+			&quiz.LastModifiedAt,
+			&quiz.Published,
+			&quiz.IsDeleted,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
+
+}
+
 func GetNonPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
 	return GetQuizzes(db)
 }

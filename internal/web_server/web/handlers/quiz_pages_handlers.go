@@ -45,7 +45,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 // Renders the quiz home page
 func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
-	quizzList, err := quizzes.GetQuizzes(qph.sharedData.DB)
+	quizzList, err := quizzes.GetUnfinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {
 		return err
 	}
