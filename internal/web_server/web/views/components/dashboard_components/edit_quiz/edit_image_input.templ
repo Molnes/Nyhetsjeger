@@ -8,7 +8,7 @@ import (
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool) {
+templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool, errorText string) {
 	<div class="image-input-wrapper">
 		<input
 			id={ inputName }
@@ -20,6 +20,7 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			if post {
 				hx-post={ requestURL }
 				hx-trigger="change"
+				hx-select-oob="#error-image"
 				hx-swap="outerHTML"
 				hx-target="closest .image-input-wrapper"
 				hx-sync="closest form:abort"
@@ -46,4 +47,5 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			>Fjern bilde</button>
 		}
 	</div>
+	<p id="error-image" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
 }

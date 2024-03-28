@@ -43,7 +43,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true)
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true, "")
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quiz.ID)) {

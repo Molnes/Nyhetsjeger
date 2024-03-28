@@ -25,9 +25,13 @@ type AdminApiHandler struct {
 
 // Constants
 const queryParamQuizID = "quiz-id"
-const errorInvalidQuizID = "Invalid or missing quiz-id"
+const errorInvalidQuizID = "Ugyldig eller manglende quiz-id"
 const queryParamQuestionID = "question-id"
-const errorInvalidQuestionID = "Invalid or missing question-id"
+const errorInvalidQuestionID = "Ugyldig eller manglende question-id"
+
+// URLs
+const editQuizURL = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
+const editQuestionURL = "/api/v1/admin/question/edit-image?question-id=%s"
 
 // Creates a new AdminApiHandler
 func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
@@ -97,23 +101,31 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
 	}
 
 	// Update the quiz image
 	image := c.FormValue(dashboard_pages.QuizImageURL)
-	imageURL, _ := url.Parse(image)
+	imageURL, err := url.Parse(image)
+	if err != nil {
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Ugyldig bilde URL"))
+	}
+
+	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
 		if err == questions.ErrNoImageUpdated {
-			return echo.NewHTTPError(http.StatusNotFound, "Quiz image not found")
+			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+				fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli oppdatert. Prøv igjen senere"))
 		}
 
 		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), imageURL, dashboard_pages.QuizImageURL, true))
+		fmt.Sprintf(editQuizURL, quiz_id), imageURL, dashboard_pages.QuizImageURL, true, ""))
 }
 
 // Removes the image for a quiz in the database.
@@ -121,17 +133,19 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
 	}
 
 	// Set the image URL to nil
 	err = quizzes.RemoveImageByQuizID(dph.sharedData.DB, quiz_id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to remove quiz image")
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli fjernet. Prøv igjen senere"))
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true))
+		fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, ""))
 }
 
 // Deletes a quiz from the database.
@@ -443,21 +457,27 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
 	}
 
 	// Get the new image URL
 	image := c.FormValue(dashboard_components.QuestionImageURL)
-	imageURL, _ := url.Parse(image)
+	imageURL, err := url.Parse(image)
+	if err != nil {
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Ugyldig bilde URL"))
+	}
 
 	// Set the image URL for the question
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageURL)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update question image")
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli oppdatert. Prøv igjen senere"))
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), imageURL, dashboard_components.QuestionImageURL, true))
+		fmt.Sprintf(editQuestionURL, questionID), imageURL, dashboard_components.QuestionImageURL, true, ""))
 }
 
 // Delete the image for a question in the database.
@@ -465,19 +485,21 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
 	}
 
 	// Remove the image URL from the question
 	err = questions.RemoveImageByQuestionID(aah.sharedData.DB, &questionID)
 	if err != nil {
 		if err == questions.ErrNoImageRemoved {
-			return echo.NewHTTPError(http.StatusNotFound, "Question image not found")
+			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+				fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere"))
 		}
 
 		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", questionID), &url.URL{}, dashboard_components.QuestionImageURL, true))
+		fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
 }
