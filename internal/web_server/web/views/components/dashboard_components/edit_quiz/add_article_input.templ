@@ -8,8 +8,8 @@ import (
 
 // A row with a label and an input field.
 // The input field is for adding a new article to the list of articles.
-templ AddArticleInput(articlesLength int, articleNameInput string, quizID string, nameInput string) {
-	<div class="flex flex-row items-center flex-wrap gap-3 mb-3">
+templ AddArticleInput(quizID string, nameInput string, errorText string) {
+	<div class="flex flex-row items-center flex-wrap gap-3">
 		<label for={ nameInput }>Link</label>
 		<input
 			id={ nameInput }
@@ -22,6 +22,8 @@ templ AddArticleInput(articlesLength int, articleNameInput string, quizID string
 			id="article-add-button"
 			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
+			hx-select="[data-element-type=article-list-item]"
+			hx-select-oob="#error-article"
 			hx-swap="beforeend"
 			hx-target="#article-list"
 			hx-sync="closest form:abort"
@@ -30,16 +32,6 @@ templ AddArticleInput(articlesLength int, articleNameInput string, quizID string
 			Legg til
 			@icons.Plus(80, "#5B14F2", 20, 20)
 		</button>
-		@clearArticleInput(nameInput)
 	</div>
-}
-
-// Clears the article input after an article is addeed.
-
-script clearArticleInput(inputID string) {
-	document.body.addEventListener('htmx:afterOnLoad', function (event) {
-    if (event.detail.elt.id === 'article-add-button') {
-        document.getElementById(inputID).value = '';
-    }
-	});
+	<p id="error-article" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
 }

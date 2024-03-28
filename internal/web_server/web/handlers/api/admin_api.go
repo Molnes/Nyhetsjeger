@@ -14,6 +14,7 @@ import (
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -234,34 +235,34 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 // If the article is already in the DB, it will check if it is already in the quiz.
 // If article already is in the quiz, return an error.
 // If not in the DB, it will fetch the relevant article data and add it to the DB.
-func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, error) {
+func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, string) {
 	// Check if the article is already in the DB
 	article, err := articles.GetArticleByURL(db, articleURL)
 	if err != nil && err != sql.ErrNoRows {
-		return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+		return article, "Klarte ikke å finne artikkel ID i URL"
 	}
 
 	// If it exists, check if it already is in the quiz
 	if article != nil && article.ID.Valid {
 		articleInQuiz, err := articles.IsArticleInQuiz(db, &article.ID.UUID, quizID)
 		if err != nil {
-			return article, echo.NewHTTPError(http.StatusBadRequest, "Failed to check if article is in quiz")
+			return article, "Klarte ikke å sjekke om artikkelen allerede er i quizen. Prøv igjen senere"
 		}
 		if articleInQuiz {
-			return article, echo.NewHTTPError(http.StatusConflict, "Article is already in quiz")
+			return article, "Artikkelen er allerede i quizen"
 		}
 	} else {
 		// If not in DB, fetch the relevant article data and add it to the DB
 		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
 		if err != nil {
 			if err == articles.ErrInvalidArticleID {
-				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article ID")
+				return article, "Ugyldig artikkel ID"
 			} else if err == articles.ErrInvalidArticleURL {
-				return article, echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
+				return article, "Ugyldig artikkel URL"
 			} else if err == articles.ErrArticleNotFound {
-				return article, echo.NewHTTPError(http.StatusNotFound, "Article not found")
+				return article, "Klarte ikke å finne artikkel data for denne URLen. Sjekk at URLen er riktig eller prøv igjen senere"
 			} else {
-				return article, err
+				return article, err.Error()
 			}
 		}
 
@@ -271,7 +272,7 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 		article = &tempArticle
 	}
 
-	return article, nil
+	return article, ""
 }
 
 // Adds an article to a quiz in the database.
@@ -279,26 +280,35 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
+			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errorInvalidQuizID))
 	}
 
 	// Get the article URL
 	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
 	tempURL, err := url.Parse(articleURL)
 	if err != nil && err == sql.ErrNoRows {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid article URL")
+		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
+			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Ugyldig artikkel URL"))
 	}
 
 	// Ensure the article is in the database
-	article, err := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
-	if err != nil {
-		return err
+	article, errText := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
+	if errText != "" {
+		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
+			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errText))
 	}
 
 	// Add the article to the quiz
 	err = articles.AddArticleToQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
+	if err != nil {
+		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
+			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Artikkelen kunne ikke bli lagt til. Prøv igjen senere"))
+	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(articleURL, article.ID.UUID.String(), quiz_id.String()))
+	return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
+		articleURL, article.ID.UUID.String(), quiz_id.String(), dashboard_pages.QuizArticleURL, ""),
+	)
 }
 
 // Deletes an article from a quiz in the database.
