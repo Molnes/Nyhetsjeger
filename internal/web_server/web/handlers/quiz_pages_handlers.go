@@ -45,7 +45,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 // Renders the quiz home page
 func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
-	quizzList, err := quizzes.GetUnfinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	quizList, err := quizzes.GetUnfinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		return err
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
-		quizzList,
+		quizList,
         userRankingInfo,
 	))
 }
@@ -116,11 +116,11 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
-        quizzList, err := quizzes.GetFinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+        quizList, err := quizzes.GetFinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
         if err != nil {
                 return err
         }
-        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizzList))
+        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizList))
 }
 
 func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
