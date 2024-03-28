@@ -48,18 +48,19 @@ script toggleQuizPublished(inputName string, isPublished bool) {
 	// Override the default htmx confirm dialog with a custom one.
 	// If the user confirms, the request is issued. If not, the checkbox is reset.
 	const confirmListener = (event) => {
-			event.preventDefault();
+		event.preventDefault();
 
-			const proceed = window.confirm(confirmText);
-			if (proceed) {
-				// If confirmed, proceed with the action by manually dispatching the event.
-				// Remove the event listener to avoid multiple confirm dialogs.
-				document.body.removeEventListener("htmx:confirm", confirmListener);
-				event.detail.issueRequest(true)
-			} else {
-				// Reset the checkbox if confirmation is canceled
-				togglePublishedInput.checked = !togglePublishedInput.checked;
-			}
+		const proceed = window.confirm(confirmText);
+		if (proceed) {
+			// If confirmed, proceed with the action by manually dispatching the event.
+			// Remove the event listener to avoid multiple confirm dialogs.
+			togglePublishedInput.removeEventListener("htmx:confirm", confirmListener);
+			event.detail.issueRequest(true)
+		} else {
+			// Reset the checkbox if confirmation is canceled
+			togglePublishedInput.checked = !togglePublishedInput.checked;
 		}
-		document.body.addEventListener("htmx:confirm", confirmListener);
+	}
+
+	togglePublishedInput.addEventListener("htmx:confirm", confirmListener);
 }
