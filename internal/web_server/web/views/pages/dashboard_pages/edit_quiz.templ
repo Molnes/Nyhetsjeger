@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 )
 
 // Constants for the input names (for HTTP requests)
@@ -22,7 +23,7 @@ const ArticlesLength = "articles-length"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
-templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
+templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
@@ -96,7 +97,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				>
 					<li
 						id="no-questions-warning"
-						if len(quiz.Questions) == 0 {
+						if len(*questions) == 0 {
 							class="text-center p-4"
 						} else {
 							class="text-center p-4 hidden"
@@ -104,7 +105,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					>
 						<p>Ingen spørsmål lagt til enda.</p>
 					</li>
-					for _, question := range quiz.Questions {
+					for _, question := range *questions {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>

@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -22,7 +21,6 @@ type Quiz struct {
 	LastModifiedAt time.Time
 	Published      bool
 	IsDeleted      bool
-	Questions      []questions.Question
 }
 
 type PartialQuiz struct {
@@ -56,14 +54,10 @@ func CreateDefaultQuiz() Quiz {
 		LastModifiedAt: time.Now(),
 		Published:      false,
 		IsDeleted:      false,
-		Questions:      []questions.Question{},
 	}
 }
 
 // Retrieves a quiz from the database by its ID.
-// Includes the questions for the quiz.
-// Includes the articles for each question.
-// Includes the alternatives for each question.
 func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
@@ -79,12 +73,6 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
-	if err != nil {
-		return nil, err
-	}
-	quiz.Questions = *tempQuestions
 
 	return quiz, nil
 }
@@ -129,7 +117,9 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
     FROM
 			quizzes
 		WHERE
-			is_deleted = false`)
+			is_deleted = false
+		ORDER BY
+			available_from DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -139,35 +129,18 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 }
 
 // Get all the quizzes that are not published and not deleted.
-func GetNonPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
+func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT
 			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
 		FROM
 			quizzes
 		WHERE
-			published = false AND
-			is_deleted = false`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Scan the quizzes from the database.
-	return scanQuizzesFromFullRows(rows)
-}
-
-// Get all the quizzes that are published and not deleted.
-func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
-	// Get quizzes from database that are not published.
-	rows, err := db.Query(
-		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
-		FROM
-			quizzes
-		WHERE
-			published = true AND
-			is_deleted = false`)
+			published = $1 AND
+			is_deleted = false
+		ORDER BY
+			available_from DESC`,
+		published)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +152,7 @@ func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
 
 // Converts a row from the database to a Quiz.
 // It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
-// Note that it does not include the questions for the quiz.
+// It will return a Quiz with these values.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
 	var imageURL sql.NullString
@@ -210,7 +183,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 
 // Converts rows from the database to a list of Quizzes.
 // It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
-// Note that it does not include the questions for the quiz.
+// It will return a Quiz with these values.
 func scanQuizzesFromFullRows(rows *sql.Rows) ([]Quiz, error) {
 	quizzes := []Quiz{}
 	for rows.Next() {
