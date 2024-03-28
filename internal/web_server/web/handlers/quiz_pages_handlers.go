@@ -45,7 +45,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 
 // Renders the quiz home page
 func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
-	quizList, err := quizzes.GetUnfinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	quizList, err := quizzes.GetQuizzesByUserIDAndFinishedOrNot(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
-        quizList, err := quizzes.GetFinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+        quizList, err := quizzes.GetQuizzesByUserIDAndFinishedOrNot(qph.sharedData.DB, utils.GetUserIDFromCtx(c),true)
         if err != nil {
                 return err
         }
