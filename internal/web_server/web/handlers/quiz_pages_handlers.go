@@ -116,7 +116,11 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes())
+        quizzList, err := quizzes.GetFinishedQuizzesByUserID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+        if err != nil {
+                return err
+        }
+        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizzList))
 }
 
 func (qph *QuizPagesHandler) getQuizProfile(c echo.Context) error {
