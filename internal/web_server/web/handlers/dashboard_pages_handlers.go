@@ -47,11 +47,11 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	addMenuContext(c, side_menu.Home)
 
-	nonPublishedQuizzes, err := quizzes.GetNonPublishedQuizzes(dph.sharedData.DB)
+	nonPublishedQuizzes, err := quizzes.GetQuizzesByPublishStatus(dph.sharedData.DB, false)
 	if err != nil {
 		return err
 	}
-	publishedQuizzes, err := quizzes.GetAllPublishedQuizzes(dph.sharedData.DB)
+	publishedQuizzes, err := quizzes.GetQuizzesByPublishStatus(dph.sharedData.DB, true)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,10 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	// Get all the articles for the quiz by quiz ID.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles))
+	// Get all the questions for the quiz by quiz ID.
+	questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, uuid_id)
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions))
 }
 
 // Renders the modal for creating a new question.
