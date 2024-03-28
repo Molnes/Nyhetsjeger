@@ -1,23 +1,37 @@
 package user_ranking
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/google/uuid"
+)
 
 type UserRanking struct {
-	Username string
-	Points int
+	Username  string
+	Points    int
+	Placement int
 }
 
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB) ([]UserRanking, error) {
 	rows, err := db.Query(`
-        SELECT CONCAT(username_adjective, ' ', username_noun) AS Username, pt.sum_points
+SELECT 
+CONCAT(username_adjective, ' ', username_noun) AS username,
+total_points,
+placement
+
 FROM users
 JOIN (
-SELECT user_id, SUM(points_awarded) AS sum_points FROM user_answers
+SELECT
+   user_id,
+   SUM(points_awarded) AS total_points,
+   RANK() OVER (ORDER BY SUM(points_awarded) DESC) AS placement
+FROM user_answers
 GROUP BY user_id
-) AS pt ON users.id = pt.user_id
-WHERE opt_in_ranking = true
-ORDER BY pt.sum_points DESC;
+) AS ua ON ua.user_id =users.id
+
+WHERE opt_in_ranking = true;
+
     `)
 
 	if err != nil {
@@ -29,11 +43,44 @@ ORDER BY pt.sum_points DESC;
 	var rankings []UserRanking
 	for rows.Next() {
 		var ranking UserRanking
-		if err := rows.Scan(&ranking.Username, &ranking.Points); err != nil {
-                        return nil, err
-                }
-                rankings = append(rankings, ranking)
+		if err := rows.Scan(&ranking.Username, &ranking.Points, &ranking.Placement); err != nil {
+			return nil, err
+		}
+		rankings = append(rankings, ranking)
 
-        }
-        return rankings, nil
+	}
+	return rankings, nil
 }
+
+// Returns the ranking of the specified user.
+func GetUserRanking(db *sql.DB, userID uuid.UUID) (UserRanking, error) {
+	row := db.QueryRow(`
+SELECT 
+CONCAT(username_adjective, ' ', username_noun) AS username,
+total_points,
+placement
+
+FROM users
+JOIN (
+SELECT
+   user_id,
+   SUM(points_awarded) AS total_points,
+   RANK() OVER (ORDER BY SUM(points_awarded) DESC) AS placement
+FROM user_answers
+GROUP BY user_id
+) AS ua ON ua.user_id =users.id
+
+WHERE opt_in_ranking = true AND users.id = $1;
+
+    `, userID)
+    ranking := UserRanking{}
+ err := row.Scan(&ranking.Username, &ranking.Points, &ranking.Placement)
+        if err != nil {
+                return UserRanking{}, err
+                }
+        return ranking, nil
+}
+
+
+
+
