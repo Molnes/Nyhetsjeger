@@ -203,8 +203,8 @@ func AddArticle(db *sql.DB, article *Article) error {
 	return err
 }
 
-// Add an Article to a Quiz.
-func AddArticleToQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error {
+// Add an Article to a Quiz by IDs.
+func AddArticleToQuizByID(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) error {
 	_, err := db.Exec(
 		`INSERT INTO
 			quiz_articles (quiz_id, article_id)

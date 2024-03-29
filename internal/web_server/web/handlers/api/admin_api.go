@@ -78,14 +78,16 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
+			"", quiz_id.String(), dashboard_pages.QuizTitle, errorInvalidQuizID),
+		)
 	}
 
 	// Update the quiz title
 	title := c.FormValue(dashboard_pages.QuizTitle)
 	if strings.TrimSpace(title) == "" {
-		return utils.Render(c, http.StatusOK,
-			dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, "Tittelen kan ikke være tom"),
+		return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
+			title, quiz_id.String(), dashboard_pages.QuizTitle, "Tittelen kan ikke være tom"),
 		)
 	}
 
@@ -94,7 +96,8 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
+		title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
 }
 
 // Updates the image of a quiz in the database.
@@ -336,7 +339,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	}
 
 	// Add the article to the quiz
-	err = articles.AddArticleToQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
+	err = articles.AddArticleToQuizByID(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
 	if err != nil {
 		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
 			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Artikkelen kunne ikke bli lagt til. Prøv igjen senere"))
@@ -377,7 +380,8 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+			&questions.Question{}, errorInvalidQuizID))
 	}
 
 	// Get the data from the form
@@ -395,7 +399,8 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Parse the data and validate
 	points, articleURL, image, time, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL, timeLimit)
 	if errorText != "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+			&questions.Question{}, errorText))
 	}
 
 	article := &articles.Article{}
@@ -403,28 +408,23 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Only add article to DB if it is not empty.
 	// I.e. allow for no article, but not invalid article.
 	if articleURLString != "" {
-		// Check if the article URL is in the database
-		article, err = articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-		if err != nil && err != sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+		tempArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+		if err == sql.ErrNoRows {
+			return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+				&questions.Question{}, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
+		} else if err != nil {
+			return err
 		}
 
-		// If not in DB, fetch the relevant article data and add it to the DB
-		if article == nil {
-			tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
-			}
-
-			articles.AddArticle(aah.sharedData.DB, &tempArticle)
-			article = &tempArticle
-		}
+		articles.AddArticle(aah.sharedData.DB, tempArticle)
+		article = tempArticle
 	}
 
 	// Get the question ID.
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+			&questions.Question{}, errorInvalidQuestionID))
 	}
 
 	// Create a new question object
@@ -444,29 +444,29 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+			&questions.Question{}, errorText))
 	}
 
 	// Get the question by ID from the database.
 	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
 
 	// If the question doesn't exist in the database.
-	if err != nil && err == sql.ErrNoRows {
+	if err == sql.ErrNoRows {
 		// Save the question to the database.
 		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+			return err
 		}
 	} else if tempQuestion.ID == questionID {
 		// If the question ID is found, update the question.
 		question.ID = questionID
 		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 
-		if err != nil {
-			if err == questions.ErrNoQuestionUpdated {
-				return echo.NewHTTPError(http.StatusNotFound, "Question not found")
-			}
-
+		if err == questions.ErrNoQuestionUpdated {
+			return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+				&questions.Question{}, "Klarte ikke å oppdatere spørsmålet i databasen. Prøv igjen senere"))
+		} else if err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -474,7 +474,8 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 
 	// Return the "question item" element.
-	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
+	return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
+		&question, ""))
 }
 
 // Delete a question with the given ID from the database.

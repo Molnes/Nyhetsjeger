@@ -9,8 +9,8 @@ import (
 // It contains the QuestionListItem and ErrorText components.
 // If the question is nil or the question text is empty, the QuestionListItem will not be rendered.
 templ EditQuestionItem(question *questions.Question, errorText string) {
-	if question != nil || question.Text == "" {
-		QuestionListItem(question)
+	if question.Text != "" {
+		@dashboard_components.QuestionListItem(question)
 	}
 	@dashboard_components.ErrorText("error-question", errorText)
 }

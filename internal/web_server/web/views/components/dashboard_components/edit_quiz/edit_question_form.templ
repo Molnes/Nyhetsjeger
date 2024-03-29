@@ -142,6 +142,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
+		@ErrorText("error-question", "")
 		// Buttons
 		<div class="flex flex-row justify-between gap-5 mt-5">
 			<button
@@ -170,16 +171,17 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 				if isNew {
 					hx-swap="beforeend"
 					hx-target="#question-list"
+					hx-select="[data-element-type=question-list-item]"
 				} else {
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+					hx-select="[data-element-type=question-list-item]"
 				}
 				hx-select-oob="#error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
 		</div>
-		@ErrorText("error-question", "")
 	</form>
 	<script>
     // Add event listener to each input element
@@ -201,7 +203,10 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		// Close the modal after successful submit.
 		// This applies to creating or updating questions.
 		function afterSwapListener(event) {
-			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
+			const errorText = document.getElementById("error-question");
+			// If the error text is empty and the question list or its items has been updated
+			if (errorText.innerHTML == "" &&
+				(event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item")) {
 					closeModal();
 					// Remove the event listener after the modal is closed.
 					document.body.removeEventListener("htmx:afterSwap", afterSwapListener);
