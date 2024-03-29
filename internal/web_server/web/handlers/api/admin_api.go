@@ -187,48 +187,84 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
-	}
 
 	// Get the time in Norway's timezone
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	activeStartTime, startErr := data_handling.DateStringToNorwayTime(activeStart, c)
+	if startErr != nil {
+		return startErr
+	}
+
+	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
+	activeEndTime, endErr := data_handling.DateStringToNorwayTime(activeEnd, c)
+	if endErr != nil {
+		return endErr
+	}
+
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+			activeEndTime, dashboard_pages.QuizActiveTo, errorInvalidQuizID))
+	}
+
+	// Ensure that the start time is before end time
+	if activeStartTime.After(activeEndTime) {
+		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+			activeEndTime, dashboard_pages.QuizActiveTo, "Starttidspunktet kan ikke være etter sluttidspunktet"))
 	}
 
 	// Update the quiz active start
 	err = quizzes.UpdateActiveStartByQuizID(aah.sharedData.DB, quiz_id, activeStartTime)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active start time")
+		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeStartTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+	return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+		quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+		activeEndTime, dashboard_pages.QuizActiveTo, ""))
 }
 
 // Updates the active end time of a quiz in the database.
 func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
-	}
 
 	// Get the time in Norway's timezone
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	activeEndTime, startErr := data_handling.DateStringToNorwayTime(activeEnd, c)
+	if startErr != nil {
+		return startErr
+	}
+
+	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
+	activeStartTime, endErr := data_handling.DateStringToNorwayTime(activeStart, c)
+	if endErr != nil {
+		return endErr
+	}
+
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+			activeEndTime, dashboard_pages.QuizActiveTo, errorInvalidQuizID))
+	}
+
+	// Ensure that the end time is after start time
+	if activeEndTime.Before(activeStartTime) {
+		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+			activeEndTime, dashboard_pages.QuizActiveTo, "Sluttidspunktet kan ikke være før starttidspunktet"))
 	}
 
 	// Update the quiz active end
 	err = quizzes.UpdateActiveEndByQuizID(aah.sharedData.DB, quiz_id, activeEndTime)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active end time")
+		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+	return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+		quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+		activeEndTime, dashboard_pages.QuizActiveTo, ""))
 }
 
 // Adds the article to the database if it doesn't already exist.

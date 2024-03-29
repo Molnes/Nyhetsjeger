@@ -19,6 +19,7 @@ const QuizPublished = "quiz-is-published"
 const QuizArticleURL = "quiz-article-url"
 const QuizActiveFrom = "quiz-active-from"
 const QuizActiveTo = "quiz-active-to"
+const ErrorActivetime = "error-active-time"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -83,7 +84,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
 				@dashboard_components.EditActiveEndInput(quiz.AvailableTo, quiz.ID.String(), QuizActiveTo)
-				@dashboard_components.ErrorText("error-active-time", "")
+				@dashboard_components.ErrorText(ErrorActivetime, "")
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {
