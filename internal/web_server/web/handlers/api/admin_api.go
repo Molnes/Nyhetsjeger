@@ -208,10 +208,10 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 	}
 
 	// Ensure that the start time is before end time
-	if activeStartTime.After(activeEndTime) {
+	if !activeStartTime.Before(activeEndTime) {
 		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
 			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, "Starttidspunktet kan ikke være etter sluttidspunktet"))
+			activeEndTime, dashboard_pages.QuizActiveTo, "Starttidspunktet må være før sluttidspunktet"))
 	}
 
 	// Update the quiz active start
@@ -250,10 +250,10 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	}
 
 	// Ensure that the end time is after start time
-	if activeEndTime.Before(activeStartTime) {
+	if !activeEndTime.After(activeStartTime) {
 		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
 			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, "Sluttidspunktet kan ikke være før starttidspunktet"))
+			activeEndTime, dashboard_pages.QuizActiveTo, "Sluttidspunktet må være etter starttidspunktet"))
 	}
 
 	// Update the quiz active end
