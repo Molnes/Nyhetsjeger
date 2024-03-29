@@ -1,11 +1,11 @@
 build:
 	templ generate -path ./internal/web_server/web/
-	npx tailwindcss -o assets/css/tailwind.css
+	npx --yes tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
 	go build -o bin/main cmd/server/main.go
 
 run:
 	templ generate -path ./internal/web_server/web/
-	npx tailwindcss -o assets/css/tailwind.css
+	npx --yes tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
 	go run cmd/server/main.go
 
 live-reload:
