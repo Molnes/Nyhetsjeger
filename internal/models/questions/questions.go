@@ -384,33 +384,33 @@ type QuestionForm struct {
 // Returns the points, article URL, image URL, time limit and error text.
 func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string, timeLimit string) (uint, *url.URL, *url.URL, uint, string) {
 	if questionText == "" {
-		return 0, nil, nil, 0, "Missing question text"
+		return 0, nil, nil, 0, "Spørsmålsteksten kan ikke være tom"
 	}
 
 	points, err := strconv.ParseInt(questionPoints, 10, 64)
 	if err != nil {
-		return 0, nil, nil, 0, "Failed to parse points"
+		return 0, nil, nil, 0, "Klarte ikke å tolke poeng verdien"
 	}
 	if points < 0 {
-		return 0, nil, nil, 0, "Points must be positive"
+		return 0, nil, nil, 0, "Poeng kan ikke være negative"
 	}
 
 	time, err := strconv.ParseInt(timeLimit, 10, 64)
 	if err != nil {
-		return 0, nil, nil, 0, "Failed to parse time limit"
+		return 0, nil, nil, 0, "Klarte ikke å tolke tidsbegrensningen"
 	}
 	if time < 0 {
-		return 0, nil, nil, 0, "Time limit must be positive"
+		return 0, nil, nil, 0, "Tidsbegrensningen kan ikke være negativ"
 	}
 
 	articleURL, err := url.Parse(articleURLString)
 	if err != nil {
-		return 0, nil, nil, 0, "Failed to parse article URL"
+		return 0, nil, nil, 0, "Klarte ikke å tolke artikkel URL"
 	}
 
 	image, err := url.Parse(imageURL)
 	if err != nil {
-		return 0, nil, nil, 0, "Failed to parse image URL"
+		return 0, nil, nil, 0, "Klarte ikke å tolke bilde URL"
 	}
 
 	return uint(points), articleURL, image, uint(time), ""
@@ -450,15 +450,15 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Check that there is a correct alternative
 	if !hasCorrectAlternative {
-		return question, "Question has no correct alternative"
+		return question, "Spørsmålet har ingen korrekt svar alternativ"
 	}
 
 	// Check that there are two to four alternatives
 	if len(question.Alternatives) < 2 {
-		return question, "There must be at least two alternatives. Empty alternatives do not count."
+		return question, "Spørsmålet må ha minst 2 svar alternativer. Tomme alternativer teller ikke"
 	}
 	if len(question.Alternatives) > 4 {
-		return question, "There can be at most four alternatives"
+		return question, "Spørsmålet kan ha maks 4 svar alternativer"
 	}
 
 	return question, ""

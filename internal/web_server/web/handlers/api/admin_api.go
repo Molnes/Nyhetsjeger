@@ -66,7 +66,7 @@ func (aah *AdminApiHandler) createDefaultQuiz(c echo.Context) error {
 	// Add quiz to database
 	quizID, err := quizzes.CreateQuiz(aah.sharedData.DB, quiz)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new quiz")
+		return err
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?quiz-id="+quizID.String())
@@ -177,7 +177,7 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	published := c.FormValue(dashboard_pages.QuizPublished)
 	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, published != "on")
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz published status")
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published != "on", quiz_id.String(), dashboard_pages.QuizPublished))
