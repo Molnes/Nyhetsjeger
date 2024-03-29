@@ -322,13 +322,13 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Get the article ID
 	article_id, err := uuid.Parse(c.QueryParam("article-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing article ID")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende artikkel ID")
 	}
 
 	// Remove the article from the quiz
 	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &quiz_id, &article_id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to delete article from quiz")
+		return err
 	}
 
 	return c.NoContent(http.StatusOK)

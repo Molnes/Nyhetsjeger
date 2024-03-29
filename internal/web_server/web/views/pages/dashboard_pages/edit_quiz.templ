@@ -72,6 +72,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						}
 					}
 				</ul>
+				<p id="error-article-list" class="text-red-500 text-sm text-left mt-1"></p>
 				@articleList()
 			}
 			// Quiz Active Time
@@ -176,6 +177,7 @@ script modalWindowScript() {
 script articleList() {
 		const articleList = document.getElementById("article-list");
 		const noArticlesWarning = document.getElementById("no-articles-warning");
+		const articleListError = document.getElementById("error-article-list");
 
 		// Observe if the children of article list are mutated (added or removed)
 		const observer = new MutationObserver(handleChanges);
@@ -200,6 +202,17 @@ script articleList() {
 				noArticlesWarning.classList.remove("hidden");
 			}
 		}
+
+		articleList.addEventListener('htmx:afterRequest', function (event) {
+			console.log(event);
+			if (event.detail.xhr.status === 400) {
+				// resposetext is a JSON string and contains "status" and "message"
+				json = JSON.parse(event.detail.xhr.responseText);
+				articleListError.innerText = json.message;
+			} else {
+				articleListError.innerText = "";
+			}
+		});
 }
 
 // This script is used to observe changes in the question list.
