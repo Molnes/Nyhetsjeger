@@ -174,10 +174,12 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
 				}
+				hx-select-oob="#error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
 		</div>
+		@ErrorText("error-question", "")
 	</form>
 	<script>
     // Add event listener to each input element
