@@ -7,7 +7,7 @@ import (
 // An input field for editing the title of a quiz.
 // When the value is changed, send a POST request to the server to update the title.
 // It will trigger the previous loading indicator to display.
-templ EditTitleInput(quizTitle string, quizID string, inputName string) {
+templ EditTitleInput(quizTitle string, quizID string, inputName string, errorText string) {
 	<input
 		id={ inputName }
 		name={ inputName }
@@ -16,9 +16,12 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string) {
 		value={ quizTitle }
 		hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quizID) }
 		hx-trigger="change"
+		hx-select-oob="#error-title"
 		hx-swap="outerHTML"
 		hx-target="this"
 		hx-sync="closest form:abort"
 		hx-indicator="previous .htmx-indicator"
+		placeholder="Quiz: Uke X"
 	/>
+	<p id="error-title" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
 }

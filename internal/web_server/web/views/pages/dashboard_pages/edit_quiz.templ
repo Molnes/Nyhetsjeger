@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 )
 
 // Constants for the input names (for HTTP requests)
@@ -18,11 +19,10 @@ const QuizPublished = "quiz-is-published"
 const QuizArticleURL = "quiz-article-url"
 const QuizActiveFrom = "quiz-active-from"
 const QuizActiveTo = "quiz-active-to"
-const ArticlesLength = "articles-length"
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
-templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
+templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
@@ -32,7 +32,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					<label for={ QuizTitle } class="block font-bold">Tittel</label>
 					@components.LoadingIndicator()
 				</div>
-				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle)
+				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
 			// Quiz Image
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
@@ -42,7 +42,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				</div>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true)
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true, "")
 			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quiz.ID)) {
@@ -50,11 +50,11 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					<h2 class="font-bold">Artikler i quizzen</h2>
 					@components.LoadingIndicator()
 				</div>
-				@dashboard_components.AddArticleInput(len(*articles), ArticlesLength, quiz.ID.String(), QuizArticleURL)
+				@dashboard_components.AddArticleInput(quiz.ID.String(), QuizArticleURL, "")
 				// List of all articles
 				<ul
 					id="article-list"
-					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden"
+					class="mt-3 border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden"
 				>
 					<li
 						id="no-articles-warning"
@@ -72,6 +72,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 						}
 					}
 				</ul>
+				<p id="error-article-list" class="text-red-500 text-sm text-left mt-1"></p>
 				@articleList()
 			}
 			// Quiz Active Time
@@ -96,7 +97,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 				>
 					<li
 						id="no-questions-warning"
-						if len(quiz.Questions) == 0 {
+						if len(*questions) == 0 {
 							class="text-center p-4"
 						} else {
 							class="text-center p-4 hidden"
@@ -104,7 +105,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 					>
 						<p>Ingen spørsmål lagt til enda.</p>
 					</li>
-					for _, question := range quiz.Questions {
+					for _, question := range *questions {
 						@dashboard_components.QuestionListItem(&question)
 					}
 				</ul>
@@ -128,7 +129,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
-						class="bg-red-500 font-bold px-4 py-2 rounded-button"
+						type="button"
+						class="bg-red-500 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
@@ -151,8 +153,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article) {
 
 script modalWindowScript() {
 		const questionModal = document.getElementById("question-modal");
-		const editQuestionButtons = document.getElementsByClassName("edit-question-button");
-		const newQuestionButton = document.getElementById("new-question-button");
 
 		// Open the modal window
 		function openQuestionModal() {
@@ -161,12 +161,13 @@ script modalWindowScript() {
 			}
 		}
 
-		// Add event listeners to the buttons for opening the modal
-		for (let i = 0; i < editQuestionButtons.length; i++) {
-    	editQuestionButtons[i].addEventListener('click', openQuestionModal);
-		}
-
-		newQuestionButton.addEventListener("click", openQuestionModal);
+		// Add event listener to 'add' and 'edit' question buttons.
+		// When the button is clicked, open the modal window.
+		document.body.addEventListener('htmx:afterOnLoad', function (event) {
+			if (event.detail.elt.id === 'new-question-button' || event.detail.elt.dataset.elementType === 'edit-question-button') {
+				openQuestionModal();
+			}
+		});
 }
 
 // This script is used to observe changes in the article list.
@@ -176,6 +177,7 @@ script modalWindowScript() {
 script articleList() {
 		const articleList = document.getElementById("article-list");
 		const noArticlesWarning = document.getElementById("no-articles-warning");
+		const articleListError = document.getElementById("error-article-list");
 
 		// Observe if the children of article list are mutated (added or removed)
 		const observer = new MutationObserver(handleChanges);
@@ -200,6 +202,17 @@ script articleList() {
 				noArticlesWarning.classList.remove("hidden");
 			}
 		}
+
+		articleList.addEventListener('htmx:afterRequest', function (event) {
+			console.log(event);
+			if (event.detail.xhr.status === 400) {
+				// resposetext is a JSON string and contains "status" and "message"
+				json = JSON.parse(event.detail.xhr.responseText);
+				articleListError.innerText = json.message;
+			} else {
+				articleListError.innerText = "";
+			}
+		});
 }
 
 // This script is used to observe changes in the question list.

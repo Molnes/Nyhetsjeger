@@ -1,6 +1,7 @@
 package side_menu
 
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 
 type SideMenuItem int
 
@@ -26,8 +27,10 @@ templ SideMenu() {
 				@menuItem("Toppliste", "/dashboard/leaderboard", isSelected(ctx, Leaderboard)) {
 					@icons.Trophy(20, "currentColor", 20, 20)
 				}
-				@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
-					@icons.Gear(20, "currentColor", 20, 20)
+				if isUserOrganizationAdmin(ctx) {
+					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
+						@icons.Gear(20, "currentColor", 20, 20)
+					}
 				}
 			</ul>
 		</nav>
@@ -42,6 +45,15 @@ func isSelected(ctx context.Context, item SideMenuItem) bool {
 		return false
 	}
 	return chosen == item
+}
+
+// Checks if the current user's role is user_roles.OrganizationAdmin
+func isUserOrganizationAdmin(ctx context.Context) bool {
+	user, ok := ctx.Value(user_roles.ROLE_CONTEXT_KEY).(user_roles.Role)
+	if !ok {
+		return false
+	}
+	return user == user_roles.OrganizationAdmin
 }
 
 templ menuItem(text string, href string, highlight bool) {

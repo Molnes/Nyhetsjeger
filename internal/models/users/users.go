@@ -4,11 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"encoding/gob"
-	"log"
+	"errors"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/google/uuid"
+)
+
+const (
+	USER_ID_CONTEXT_KEY = "userID" // The key used to store the user ID in the context
 )
 
 type User struct {
@@ -20,8 +24,17 @@ type User struct {
 	OptInRanking       bool
 	Role               user_roles.Role
 	AccessTokenCypher  []byte
-	Token_expire       time.Time
-	RefreshtokenCypher []byte
+	TokenExpire        time.Time
+	RefreshTokenCypher []byte
+}
+
+// Parital User struct contains only fields needed for creating a new user
+type PartialUser struct {
+	SsoID        string
+	Email        string
+	AccessToken  string
+	TokenExpire  time.Time
+	RefreshToken string
 }
 
 type UserSessionData struct {
@@ -54,6 +67,17 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	return scanUserFromFullRow(row)
 }
 
+// Returns a user from the database with the email provided
+func GetUserByEmail(db *sql.DB, email string) (*User, error) {
+	row := db.QueryRow(
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		CONCAT(username_adjective, ' ', username_noun) AS username
+		FROM users
+		WHERE email = $1`,
+		email)
+	return scanUserFromFullRow(row)
+}
+
 // Returns a user from the database with the SSO ID provided
 func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 	row := db.QueryRow(
@@ -66,41 +90,51 @@ func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
 }
 
 // Creates a new user in the database
-func CreateUser(db *sql.DB, user *User, ctx context.Context) (*User, error) {
-
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
+func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*User, error) {
+	accessTokenCypher := []byte("TODO")
+	refreshtokenCypher := []byte("TODO")
+	user := User{
+		ID:                 uuid.New(),
+		SsoID:              partialUser.SsoID,
+		Email:              partialUser.Email,
+		Phone:              "No phone number provided",
+		OptInRanking:       true,
+		Role:               user_roles.User,
+		AccessTokenCypher:  accessTokenCypher,
+		TokenExpire:        partialUser.TokenExpire,
+		RefreshTokenCypher: refreshtokenCypher,
 	}
 
-	defer tx.Rollback()
-
-	var adjective string
-	var noun string
-	if err = tx.QueryRowContext(ctx,
-		`SELECT *
+	row := db.QueryRow(
+		`INSERT INTO users
+		(id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token, username_adjective, username_noun)
+		SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, random_username.adjective, random_username.noun
+		FROM (
+			SELECT adjective, noun
 			FROM available_usernames 
-			OFFSET floor(random() * (
-				SELECT COUNT(*) FROM available_usernames)
-		) 
-		LIMIT 1;`).Scan(&adjective, &noun); err != nil {
-		return nil, err
-	}
+			OFFSET floor(random() * (SELECT COUNT(*) FROM available_usernames)) 
+		LIMIT 1) AS random_username
+		RETURNING
+		id, sso_user_id, email, phone, opt_in_ranking, role, access_token,
+		token_expires_at, refresh_token,CONCAT(username_adjective, ' ', username_noun) AS username;`,
+		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
+		user.AccessTokenCypher, user.TokenExpire, user.RefreshTokenCypher)
 
-	_, err = db.ExecContext(ctx,
-		`INSERT INTO users (id, sso_user_id, username_adjective, username_noun,email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
-		--RETURNING id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token
-		`,
-		user.ID, user.SsoID, adjective, noun, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
-		user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
-
+	insertedUser, err := scanUserFromFullRow(row)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
+	newRole, err := applyPreassignedRole(db, ctx, user.Email)
+	if err != nil {
+		if err == errNoPreassignedRole {
+			newRole = user_roles.User
+		} else {
+			return nil, err
+		}
+	}
+	insertedUser.Role = newRole
 
-	return GetUserByID(db, user.ID)
+	return insertedUser, nil
 }
 
 // Returns the role of the user with the ID provided
@@ -114,14 +148,16 @@ func GetUserRole(db *sql.DB, id uuid.UUID) (user_roles.Role, error) {
 	return user_roles.RoleFromString(role), err
 }
 
-// Updates the user with the ID of the user provided
-func UpdateUser(db *sql.DB, user *User) error {
-
+// Updates the token of the given user in the database.
+func UpdateUserToken(db *sql.DB, userId uuid.UUID, newAccessToken string, newExpiry time.Time, newRefreshToken string) error {
+	accessTokenCypher := []byte("TODO")
+	refreshTokenCypher := []byte("TODO")
 	_, err := db.Exec(
 		`UPDATE users
-		SET sso_user_id = $2, email = $3, phone = $4, opt_in_ranking = $5, role = $6, access_token = $7, token_expires_at = $8, refresh_token = $9
+		SET access_token = $2, token_expires_at = $3, refresh_token = $4
 		WHERE id = $1`,
-		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(), user.AccessTokenCypher, user.Token_expire, user.RefreshtokenCypher)
+		userId, accessTokenCypher, newExpiry, refreshTokenCypher,
+	)
 	return err
 }
 
@@ -136,15 +172,15 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.OptInRanking,
 		&roleString,
 		&user.AccessTokenCypher,
-		&user.Token_expire,
-		&user.RefreshtokenCypher,
+		&user.TokenExpire,
+		&user.RefreshTokenCypher,
 		&user.Username,
 	)
-	if err == sql.ErrNoRows {
-		return nil, nil
+	if err != nil {
+		return nil, err
 	}
 	user.Role = user_roles.RoleFromString(roleString)
-	return &user, err
+	return &user, nil
 }
 
 // Assigns a random username to a user in the database
@@ -199,4 +235,49 @@ func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 		userID,
 	)
 	return err
+}
+
+// If there is no preassigned role for the given email.
+var errNoPreassignedRole = errors.New("no preassigned role found")
+
+// Assigns the preassigned role to the user with the given email. The preassigned role is then removed.
+//
+// Returns the role that was assigned.
+//
+// If there is no preassigned role for the given email, ErrNoPreassignedRole is returned.
+func applyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_roles.Role, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx, `
+	UPDATE users u
+	SET role=pr.role
+	FROM preassigned_roles pr
+	WHERE u.email=$1 AND pr.email=$1
+	RETURNING u.role;`, email)
+	var roleString string
+	err = row.Scan(&roleString)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errNoPreassignedRole
+		}
+		return 0, err
+	}
+
+	_, err = tx.ExecContext(ctx, `
+	DELETE FROM preassigned_roles
+	WHERE email=$1;`, email)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return user_roles.RoleFromString(roleString), nil
 }

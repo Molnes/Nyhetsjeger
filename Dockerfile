@@ -19,7 +19,7 @@ WORKDIR /app
 
 COPY --from=builder /app .
 
-RUN npx tailwindcss -o assets/css/tailwind.css 
+RUN npx --yes tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
 
 EXPOSE 8080
 
