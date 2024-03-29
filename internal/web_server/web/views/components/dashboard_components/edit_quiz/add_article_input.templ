@@ -33,5 +33,5 @@ templ AddArticleInput(quizID string, nameInput string, errorText string) {
 			@icons.Plus(80, "#5B14F2", 20, 20)
 		</button>
 	</div>
-	<p id="error-article" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
+	@ErrorText("error-article", errorText)
 }

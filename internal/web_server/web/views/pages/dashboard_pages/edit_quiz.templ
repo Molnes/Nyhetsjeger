@@ -72,7 +72,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						}
 					}
 				</ul>
-				<p id="error-article-list" class="text-red-500 text-sm text-left mt-1"></p>
+				@dashboard_components.ErrorText("error-article-list", "")
 				@articleList()
 			}
 			// Quiz Active Time
@@ -83,6 +83,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
 				@dashboard_components.EditActiveEndInput(quiz.AvailableTo, quiz.ID.String(), QuizActiveTo)
+				@dashboard_components.ErrorText("error-active-time", "")
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {

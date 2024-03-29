@@ -23,5 +23,5 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string, errorTex
 		hx-indicator="previous .htmx-indicator"
 		placeholder="Quiz: Uke X"
 	/>
-	<p id="error-title" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
+	@ErrorText("error-title", errorText)
 }

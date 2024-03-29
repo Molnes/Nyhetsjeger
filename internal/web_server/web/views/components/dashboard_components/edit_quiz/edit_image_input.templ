@@ -47,5 +47,5 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			>Fjern bilde</button>
 		}
 	</div>
-	<p id="error-image" class="text-red-500 text-sm text-left mt-1">{ errorText }</p>
+	@ErrorText("error-image", errorText)
 }
