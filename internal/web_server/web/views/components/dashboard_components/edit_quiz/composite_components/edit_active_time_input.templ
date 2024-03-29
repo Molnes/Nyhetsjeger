@@ -6,6 +6,8 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 )
 
+// This is a composite component and is used to return multiple components from the server.
+// It contains the EditActiveStartInput, EditActiveEndInput and ErrorText components.
 templ EditActiveTimeInput(quizID string, startTime time.Time, inputNameStart string, endTime time.Time, inputNameEnd string, errorText string) {
 	@dashboard_components.EditActiveStartInput(startTime, quizID, inputNameStart)
 	@dashboard_components.EditActiveEndInput(endTime, quizID, inputNameEnd)
