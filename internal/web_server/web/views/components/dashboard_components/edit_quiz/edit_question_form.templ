@@ -180,11 +180,9 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</div>
 	</form>
 	<script>
-		// Prevent form submission by default
-    inputs = document.querySelectorAll('#edit-question-form input');
-
     // Add event listener to each input element
-    inputs.forEach(input => {
+		// Prevent the form from submitting when pressing enter
+    document.querySelectorAll('#edit-question-form input').forEach(input => {
         input.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -200,7 +198,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 
 		// Close the modal after successful submit.
 		// This applies to creating or updating questions.
-		const afterSwapListener = (event) => {
+		function afterSwapListener(event) {
 			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
 					closeModal();
 					// Remove the event listener after the modal is closed.
@@ -210,7 +208,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		document.body.addEventListener("htmx:afterSwap", afterSwapListener);
 
 		// Close the modal after successful deletion.
-		document.addEventListener('htmx:afterRequest', function(event) {
+		document.body.addEventListener('htmx:afterRequest', function(event) {
       if (event.detail.target.dataset.elementType === "question-list-item" && event.detail.xhr.status === 200) {
         closeModal();
       }
