@@ -16,9 +16,10 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string, errorTex
 		value={ quizTitle }
 		hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quizID) }
 		hx-trigger="change"
+		hx-target="this"
+		hx-select={ fmt.Sprintf("#%s", inputName) }
 		hx-select-oob="#error-title"
 		hx-swap="outerHTML"
-		hx-target="this"
 		hx-sync="closest form:abort"
 		hx-indicator="previous .htmx-indicator"
 		placeholder="Quiz: Uke X"

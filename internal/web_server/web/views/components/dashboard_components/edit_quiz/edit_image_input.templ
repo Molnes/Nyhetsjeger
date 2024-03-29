@@ -20,6 +20,7 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			if post {
 				hx-post={ requestURL }
 				hx-trigger="change"
+				hx-select=".image-input-wrapper"
 				hx-select-oob="#error-image"
 				hx-swap="outerHTML"
 				hx-target="closest .image-input-wrapper"
