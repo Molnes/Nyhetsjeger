@@ -105,7 +105,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde</label>
 			@components.LoadingIndicator()
 		</div>
-		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew)
+		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew, "")
 		<div class="flex flex-row items-center flex-wrap mt-5 mb-3 gap-5 justify-between">
 			// Points
 			<div>

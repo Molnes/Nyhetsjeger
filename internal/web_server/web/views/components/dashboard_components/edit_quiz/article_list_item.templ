@@ -10,6 +10,7 @@ templ ArticleListItem(articleUrl string, articleID string, quizID string) {
 	<li
 		id={ fmt.Sprintf("article-%s", articleID) }
 		class="flex flex-row justify-between px-4 py-2"
+		data-element-type="article-list-item"
 	>
 		<a target="blank_" href={ templ.SafeURL(articleUrl) } class="[&:hover]:underline">
 			{ articleUrl }
