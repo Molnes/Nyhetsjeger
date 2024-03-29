@@ -7,9 +7,9 @@ import (
 
 // This is a composite component and is used to return multiple components from the server.
 // It contains the QuestionListItem and ErrorText components.
-// If the question ID is empty, the QuestionListItem will not be rendered.
+// If the question is nil or the question text is empty, the QuestionListItem will not be rendered.
 templ EditQuestionItem(question *questions.Question, errorText string) {
-	if question != nil {
+	if question != nil || question.Text == "" {
 		QuestionListItem(question)
 	}
 	@dashboard_components.ErrorText("error-question", errorText)
