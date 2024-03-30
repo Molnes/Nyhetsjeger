@@ -21,8 +21,9 @@ templ UsernamePage(u *users.User) {
 					<input id="tlf-in" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" required/>
 					<label for="usrn-in" class="font-bold">Brukernavn</label>
 					<p id="usrn-in" class="w-full h-7 rounded px-2 bg-white" type="text">{ u.Username }</p>
+					@user_management.UsernameInput("usrn-in", u.Username)
 				</div>
-				<button class="flex items-center m-2" type="button" hx-patch="/api/v1/quiz/brukernavn" hx-trigger="click" hx-target="#usrn-in">
+				<button class="flex items-center m-3 mt-4" type="button" hx-patch="/api/v1/quiz/brukernavn" hx-trigger="click" hx-swap="outerHTML" hx-target="#usrn-in">
 					Generer nytt navn
 					@icons.Dice(16, "currentColor", 28, 28)
 				</button>
