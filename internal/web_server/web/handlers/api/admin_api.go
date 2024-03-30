@@ -474,7 +474,7 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuestionID))
 	}
 
 	// Get the new image URL
