@@ -116,6 +116,6 @@
     border-radius: 50%;
 }
 
-.tooltip-parent {
-    @apply hover:[&>p]:bg-red-600;
+.tooltip-parent:hover>.tooltip {
+    display: inline-block;
 }
