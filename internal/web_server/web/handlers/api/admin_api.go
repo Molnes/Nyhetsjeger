@@ -363,8 +363,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-			&questions.Question{}, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorInvalidQuizID))
 	}
 
 	// Get the data from the form
@@ -382,8 +381,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Parse the data and validate
 	points, articleURL, image, time, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL, timeLimit)
 	if errorText != "" {
-		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-			&questions.Question{}, errorText))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorText))
 	}
 
 	article := &articles.Article{}
@@ -393,8 +391,8 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	if articleURLString != "" {
 		tempArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
 		if err == sql.ErrNoRows {
-			return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-				&questions.Question{}, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+				"error-question", "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
 		} else if err != nil {
 			return err
 		}
@@ -406,8 +404,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the question ID.
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-			&questions.Question{}, errorInvalidQuestionID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorInvalidQuestionID))
 	}
 
 	// Create a new question object
@@ -427,8 +424,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
-		return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-			&questions.Question{}, errorText))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorText))
 	}
 
 	// Get the question by ID from the database.
@@ -446,10 +442,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		question.ID = questionID
 		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 
-		if err == questions.ErrNoQuestionUpdated {
-			return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-				&questions.Question{}, "Klarte ikke å oppdatere spørsmålet i databasen. Prøv igjen senere"))
-		} else if err != nil {
+		if err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -457,8 +450,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 
 	// Return the "question item" element.
-	return utils.Render(c, http.StatusOK, composite_components.EditQuestionItem(
-		&question, ""))
+	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
 }
 
 // Delete a question with the given ID from the database.

@@ -171,13 +171,11 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 				if isNew {
 					hx-swap="beforeend"
 					hx-target="#question-list"
-					hx-select="[data-element-type=question-list-item]"
 				} else {
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
-					hx-select="[data-element-type=question-list-item]"
 				}
-				hx-select-oob="#error-question"
+				hx-target-4*="#error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
@@ -205,7 +203,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		function afterSwapListener(event) {
 			const errorText = document.getElementById("error-question");
 			// If the error text is empty and the question list or its items has been updated
-			if (errorText.innerHTML == "" &&
+			if (event.detail.xhr.status === 200 && 
 				(event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item")) {
 					closeModal();
 					// Remove the event listener after the modal is closed.
