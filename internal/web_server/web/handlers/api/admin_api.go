@@ -78,17 +78,13 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
-			"", quiz_id.String(), dashboard_pages.QuizTitle, errorInvalidQuizID),
-		)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-title", errorInvalidQuizID))
 	}
 
 	// Update the quiz title
 	title := c.FormValue(dashboard_pages.QuizTitle)
 	if strings.TrimSpace(title) == "" {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
-			title, quiz_id.String(), dashboard_pages.QuizTitle, "Tittelen kan ikke være tom"),
-		)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-title", "Tittelen kan ikke være tom"))
 	}
 
 	err = quizzes.UpdateTitleByQuizID(aah.sharedData.DB, quiz_id, title)
