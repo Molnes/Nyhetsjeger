@@ -19,7 +19,7 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string, errorTex
 			hx-trigger="change"
 			hx-swap="outerHTML"
 			hx-target="#title-input-wrapper"
-			hx-target-4*="#error-title"
+			hx-target-4*=".error-title"
 			hx-indicator="previous .htmx-indicator"
 			placeholder="Quiz: Uke X"
 		/>

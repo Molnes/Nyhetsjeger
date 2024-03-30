@@ -26,7 +26,7 @@ templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
 			hx-trigger="change"
 			hx-swap="outerHTML"
 			hx-target="#quiz-is-hidden-label"
-			hx-target-4*="#error-quiz"
+			hx-target-4*=".error-quiz"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 			hx-confirm="Er du sikker?"

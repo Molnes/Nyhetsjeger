@@ -1,6 +1,8 @@
 package dashboard_components
 
+import "fmt"
+
 // Shows an error message.
 templ ErrorText(elementID string, errorText string) {
-	<p id={ elementID } class="text-red-500 text-left mt-1 font-sans">{ errorText }</p>
+	<p class={ fmt.Sprintf("text-red-500 text-left mt-1 font-sans %s", elementID) }>{ errorText }</p>
 }
