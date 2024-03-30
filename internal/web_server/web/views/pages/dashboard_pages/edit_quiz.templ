@@ -10,6 +10,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
 )
 
 // Constants for the input names (for HTTP requests)
@@ -72,7 +73,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						}
 					}
 				</ul>
-				<p id="error-article-list" class="text-red-500 text-sm text-left mt-1"></p>
+				@dashboard_components.ErrorText("error-article-list", "")
 				@articleList()
 			}
 			// Quiz Active Time
@@ -81,8 +82,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					<h2 class="font-bold">Aktiv</h2>
 					@components.LoadingIndicator()
 				</div>
-				@dashboard_components.EditActiveStartInput(quiz.AvailableFrom, quiz.ID.String(), QuizActiveFrom)
-				@dashboard_components.EditActiveEndInput(quiz.AvailableTo, quiz.ID.String(), QuizActiveTo)
+				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.AvailableFrom, QuizActiveFrom, quiz.AvailableTo, QuizActiveTo, "")
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm("") {
@@ -125,6 +125,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			@components.LoadingIndicator()
+			@dashboard_components.ErrorText("error-quiz", "")
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
@@ -132,6 +133,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						type="button"
 						class="bg-red-500 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
+						hx-target-4*=".error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"

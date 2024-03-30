@@ -2,6 +2,9 @@ package composite_components
 
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 
+// This is a composite component and is used to return multiple components from the server.
+// It contains the ArticleListItem and AddArticleInput components.
+// If the articleID is empty, the ArticleListItem will not be rendered.
 templ ArticleInputAndItem(articleUrl string, articleID string, quizID string, nameInput string, errorText string) {
 	if articleID != "" {
 		@dashboard_components.ArticleListItem(articleUrl, articleID, quizID)

@@ -142,6 +142,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
+		@ErrorText("error-question", "")
 		// Buttons
 		<div class="flex flex-row justify-between gap-5 mt-5">
 			<button
@@ -158,6 +159,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+					hx-target-4*=".error-question"
 					hx-confirm="Er du sikker på at du ønsker å slette dette spørsmålet?"
 					hx-indicator="previous .htmx-indicator"
 				>Slett</button>
@@ -174,17 +176,16 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
 				}
+				hx-target-4*=".error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>
 		</div>
 	</form>
 	<script>
-		// Prevent form submission by default
-    inputs = document.querySelectorAll('#edit-question-form input');
-
     // Add event listener to each input element
-    inputs.forEach(input => {
+		// Prevent the form from submitting when pressing enter
+    document.querySelectorAll('#edit-question-form input').forEach(input => {
         input.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -200,8 +201,10 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 
 		// Close the modal after successful submit.
 		// This applies to creating or updating questions.
-		const afterSwapListener = (event) => {
-			if (event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item") {
+		function afterSwapListener(event) {
+			// If the error text is empty and the question list or its items has been updated
+			if (event.detail.xhr.status === 200 && 
+				(event.detail.target.id === "question-list" || event.detail.target.dataset.elementType === "question-list-item")) {
 					closeModal();
 					// Remove the event listener after the modal is closed.
 					document.body.removeEventListener("htmx:afterSwap", afterSwapListener);
@@ -210,7 +213,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		document.body.addEventListener("htmx:afterSwap", afterSwapListener);
 
 		// Close the modal after successful deletion.
-		document.addEventListener('htmx:afterRequest', function(event) {
+		document.body.addEventListener('htmx:afterRequest', function(event) {
       if (event.detail.target.dataset.elementType === "question-list-item" && event.detail.xhr.status === 200) {
         closeModal();
       }

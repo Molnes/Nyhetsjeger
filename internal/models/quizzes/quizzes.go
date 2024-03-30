@@ -129,12 +129,12 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 }
 
 func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finished bool) ([]Quiz, error) {
-        sign := ""
-        if is_finished {
-                sign = "="
-        } else {
-                sign = "<"
-        }
+	sign := ""
+	if is_finished {
+		sign = "="
+	} else {
+		sign = "<"
+	}
 	rows, err := db.Query(
 		fmt.Sprint(`SELECT 
 
@@ -230,7 +230,7 @@ func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
 		ORDER BY
 			available_from DESC`,
 		published)
-  
+
 	if err != nil {
 		return nil, err
 	}

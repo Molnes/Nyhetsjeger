@@ -1,0 +1,16 @@
+package composite_components
+
+import (
+	"time"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
+)
+
+// This is a composite component and is used to return multiple components from the server.
+// It contains the EditActiveStartInput, EditActiveEndInput and ErrorText components.
+templ EditActiveTimeInput(quizID string, startTime time.Time, inputNameStart string, endTime time.Time, inputNameEnd string, errorText string) {
+	<div id="active-time-wrapper">
+		@dashboard_components.EditActiveStartInput(startTime, quizID, inputNameStart)
+		@dashboard_components.EditActiveEndInput(endTime, quizID, inputNameEnd)
+		@dashboard_components.ErrorText("error-active-time", errorText)
+	</div>
+}

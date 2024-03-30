@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -66,7 +67,7 @@ func (aah *AdminApiHandler) createDefaultQuiz(c echo.Context) error {
 	// Add quiz to database
 	quizID, err := quizzes.CreateQuiz(aah.sharedData.DB, quiz)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new quiz")
+		return err
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard/edit-quiz?quiz-id="+quizID.String())
@@ -78,15 +79,13 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-title", errorInvalidQuizID))
 	}
 
 	// Update the quiz title
 	title := c.FormValue(dashboard_pages.QuizTitle)
 	if strings.TrimSpace(title) == "" {
-		return utils.Render(c, http.StatusOK,
-			dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, "Tittelen kan ikke være tom"),
-		)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-title", "Tittelen kan ikke være tom"))
 	}
 
 	err = quizzes.UpdateTitleByQuizID(aah.sharedData.DB, quiz_id, title)
@@ -94,7 +93,8 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditTitleInput(
+		title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
 }
 
 // Updates the image of a quiz in the database.
@@ -102,26 +102,19 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
 	}
 
 	// Update the quiz image
 	image := c.FormValue(dashboard_pages.QuizImageURL)
 	imageURL, err := url.Parse(image)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Ugyldig bilde URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", "Ugyldig bilde URL"))
 	}
 
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
-		if err == questions.ErrNoImageUpdated {
-			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-				fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli oppdatert. Prøv igjen senere"))
-		}
-
 		return err
 	}
 
@@ -134,15 +127,13 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
 	}
 
 	// Set the image URL to nil
 	err = quizzes.RemoveImageByQuizID(dph.sharedData.DB, quiz_id)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli fjernet. Prøv igjen senere"))
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
@@ -154,11 +145,15 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 	// Parse the quiz ID from the query parameter
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+			fmt.Sprintf("Kunne ikke slette quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
 	// Sets the quiz as deleted in the database
-	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+	err = quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+	if err != nil {
+		return err
+	}
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")
 	return c.Redirect(http.StatusOK, "/dashboard")
@@ -170,14 +165,15 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+			fmt.Sprintf("Kunne ikke skjule/publisere quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
 	// Update the quiz published status
 	published := c.FormValue(dashboard_pages.QuizPublished)
 	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, published != "on")
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz published status")
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published != "on", quiz_id.String(), dashboard_pages.QuizPublished))
@@ -188,7 +184,7 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-active-time", errorInvalidQuizID))
 	}
 
 	// Get the time in Norway's timezone
@@ -198,13 +194,27 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 		return err
 	}
 
+	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	if err != nil {
+		return err
+	}
+
+	// Ensure that the start time is before end time
+	if !activeStartTime.Before(activeEndTime) {
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+			"error-active-time", "Starttidspunktet må være før sluttidspunktet"))
+	}
+
 	// Update the quiz active start
 	err = quizzes.UpdateActiveStartByQuizID(aah.sharedData.DB, quiz_id, activeStartTime)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active start time")
+		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveStartInput(activeStartTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+	return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+		quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+		activeEndTime, dashboard_pages.QuizActiveTo, ""))
 }
 
 // Updates the active end time of a quiz in the database.
@@ -212,7 +222,7 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-active-time", errorInvalidQuizID))
 	}
 
 	// Get the time in Norway's timezone
@@ -222,13 +232,27 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 		return err
 	}
 
+	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	if err != nil {
+		return err
+	}
+
+	// Ensure that the end time is after start time
+	if !activeEndTime.After(activeStartTime) {
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+			"error-active-time", "Sluttidspunktet må være etter starttidspunktet"))
+	}
+
 	// Update the quiz active end
 	err = quizzes.UpdateActiveEndByQuizID(aah.sharedData.DB, quiz_id, activeEndTime)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to update quiz active end time")
+		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditActiveEndInput(activeEndTime, quiz_id.String(), dashboard_pages.QuizActiveFrom))
+	return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
+		quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
+		activeEndTime, dashboard_pages.QuizActiveTo, ""))
 }
 
 // Adds the article to the database if it doesn't already exist.
@@ -280,30 +304,26 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", errorInvalidQuizID))
 	}
 
 	// Get the article URL
 	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
 	tempURL, err := url.Parse(articleURL)
 	if err != nil && err == sql.ErrNoRows {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", "Ugyldig artikkel URL"))
 	}
 
 	// Ensure the article is in the database
 	article, errText := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
 	if errText != "" {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errText))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", errText))
 	}
 
 	// Add the article to the quiz
-	err = articles.AddArticleToQuiz(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
+	err = articles.AddArticleToQuizByID(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Artikkelen kunne ikke bli lagt til. Prøv igjen senere"))
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
@@ -316,13 +336,13 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", fmt.Sprintf("Kunne ikke slette artikkel: %s", errorInvalidQuizID)))
 	}
 
 	// Get the article ID
 	article_id, err := uuid.Parse(c.QueryParam("article-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende artikkel ID")
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", "Kunne ikke slette artikkel: Ugyldig eller manglende artikkel ID"))
 	}
 
 	// Remove the article from the quiz
@@ -341,7 +361,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorInvalidQuizID))
 	}
 
 	// Get the data from the form
@@ -359,7 +379,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Parse the data and validate
 	points, articleURL, image, time, errorText := questions.ParseAndValidateQuestionData(questionText, questionPoints, articleURLString, imageURL, timeLimit)
 	if errorText != "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorText))
 	}
 
 	article := &articles.Article{}
@@ -367,28 +387,22 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Only add article to DB if it is not empty.
 	// I.e. allow for no article, but not invalid article.
 	if articleURLString != "" {
-		// Check if the article URL is in the database
-		article, err = articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-		if err != nil && err != sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to get article ID")
+		tempArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+		if err == sql.ErrNoRows {
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+				"error-question", "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
+		} else if err != nil {
+			return err
 		}
 
-		// If not in DB, fetch the relevant article data and add it to the DB
-		if article == nil {
-			tempArticle, err := articles.GetSmpArticleByURL(articleURLString)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "Failed to fetch article data")
-			}
-
-			articles.AddArticle(aah.sharedData.DB, &tempArticle)
-			article = &tempArticle
-		}
+		articles.AddArticle(aah.sharedData.DB, tempArticle)
+		article = tempArticle
 	}
 
 	// Get the question ID.
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorInvalidQuestionID))
 	}
 
 	// Create a new question object
@@ -408,18 +422,18 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errorText)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question", errorText))
 	}
 
 	// Get the question by ID from the database.
 	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
 
 	// If the question doesn't exist in the database.
-	if err != nil && err == sql.ErrNoRows {
+	if err == sql.ErrNoRows {
 		// Save the question to the database.
 		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Failed to create new question")
+			return err
 		}
 	} else if tempQuestion.ID == questionID {
 		// If the question ID is found, update the question.
@@ -427,10 +441,6 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
 
 		if err != nil {
-			if err == questions.ErrNoQuestionUpdated {
-				return echo.NewHTTPError(http.StatusNotFound, "Question not found")
-			}
-
 			return err
 		}
 	} else if err != nil {
@@ -446,16 +456,13 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question",
+			fmt.Sprintf("Kunne ikke slette spørsmål: %s", errorInvalidQuestionID)))
 	}
 
 	// Delete the question from the database
 	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
-		if err == questions.ErrNoQuestionDeleted {
-			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
-		}
-
 		return err
 	}
 
@@ -467,23 +474,25 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuestionID))
 	}
 
 	// Get the new image URL
 	image := c.FormValue(dashboard_components.QuestionImageURL)
 	imageURL, err := url.Parse(image)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Ugyldig bilde URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", "Ugyldig bilde URL"))
 	}
 
 	// Set the image URL for the question
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageURL)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli oppdatert. Prøv igjen senere"))
+		if err == questions.ErrNoImageUpdated {
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image",
+				"Quiz bilde kunne ikke bli oppdatert. Sjekk at informasjonen er korrekt eller prøv igjen senere"))
+		}
+
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
