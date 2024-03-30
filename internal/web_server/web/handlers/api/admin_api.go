@@ -153,7 +153,10 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 	}
 
 	// Sets the quiz as deleted in the database
-	quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+	err = quizzes.DeleteQuizByID(aah.sharedData.DB, quiz_id)
+	if err != nil {
+		return err
+	}
 
 	c.Response().Header().Set("HX-Redirect", "/dashboard")
 	return c.Redirect(http.StatusOK, "/dashboard")
@@ -311,30 +314,26 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", errorInvalidQuizID))
 	}
 
 	// Get the article URL
 	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
 	tempURL, err := url.Parse(articleURL)
 	if err != nil && err == sql.ErrNoRows {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", "Ugyldig artikkel URL"))
 	}
 
 	// Ensure the article is in the database
 	article, errText := conditionallyAddArticle(aah.sharedData.DB, tempURL, &quiz_id)
 	if errText != "" {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, errText))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", errText))
 	}
 
 	// Add the article to the quiz
 	err = articles.AddArticleToQuizByID(aah.sharedData.DB, &article.ID.UUID, &quiz_id)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-			"", "", quiz_id.String(), dashboard_pages.QuizArticleURL, "Artikkelen kunne ikke bli lagt til. Prøv igjen senere"))
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
@@ -347,13 +346,13 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", fmt.Sprintf("Kunne ikke slette artikkel: %s", errorInvalidQuizID)))
 	}
 
 	// Get the article ID
 	article_id, err := uuid.Parse(c.QueryParam("article-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende artikkel ID")
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-article", "Kunne ikke slette artikkel: Ugyldig eller manglende artikkel ID"))
 	}
 
 	// Remove the article from the quiz

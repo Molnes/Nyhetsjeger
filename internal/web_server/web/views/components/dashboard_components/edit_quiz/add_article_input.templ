@@ -22,10 +22,11 @@ templ AddArticleInput(quizID string, nameInput string, errorText string) {
 			id="article-add-button"
 			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
+			hx-swap="beforeend"
 			hx-select="[data-element-type=article-list-item]"
 			hx-select-oob="#error-article"
-			hx-swap="beforeend"
 			hx-target="#article-list"
+			hx-target-4*="#error-article"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		>
