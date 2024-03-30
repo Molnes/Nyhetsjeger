@@ -21,9 +21,8 @@ templ EditActiveStartInput(startTime time.Time, quizID string, inputName string)
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-start?quiz-id=%s", quizID) }
 			hx-trigger="blur"
 			hx-swap="outerHTML"
-			hx-target="#quiz-active-start"
-			hx-select="#quiz-active-start"
-			hx-select-oob="#error-active-time"
+			hx-target="#active-time-wrapper"
+			hx-target-4*="#error-active-time"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		/>

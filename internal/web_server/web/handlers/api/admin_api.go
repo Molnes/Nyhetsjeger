@@ -185,31 +185,27 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-active-time", errorInvalidQuizID))
+	}
 
 	// Get the time in Norway's timezone
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, startErr := data_handling.DateStringToNorwayTime(activeStart, c)
-	if startErr != nil {
-		return startErr
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	if err != nil {
+		return err
 	}
 
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, endErr := data_handling.DateStringToNorwayTime(activeEnd, c)
-	if endErr != nil {
-		return endErr
-	}
-
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
-			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, errorInvalidQuizID))
+		return err
 	}
 
 	// Ensure that the start time is before end time
 	if !activeStartTime.Before(activeEndTime) {
-		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
-			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, "Starttidspunktet må være før sluttidspunktet"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+			"error-active-time", "Starttidspunktet må være før sluttidspunktet"))
 	}
 
 	// Update the quiz active start
@@ -227,31 +223,27 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-active-time", errorInvalidQuizID))
+	}
 
 	// Get the time in Norway's timezone
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, startErr := data_handling.DateStringToNorwayTime(activeEnd, c)
-	if startErr != nil {
-		return startErr
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	if err != nil {
+		return err
 	}
 
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, endErr := data_handling.DateStringToNorwayTime(activeStart, c)
-	if endErr != nil {
-		return endErr
-	}
-
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
-			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, errorInvalidQuizID))
+		return err
 	}
 
 	// Ensure that the end time is after start time
 	if !activeEndTime.After(activeStartTime) {
-		return utils.Render(c, http.StatusOK, composite_components.EditActiveTimeInput(
-			quiz_id.String(), activeStartTime, dashboard_pages.QuizActiveFrom,
-			activeEndTime, dashboard_pages.QuizActiveTo, "Sluttidspunktet må være etter starttidspunktet"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(
+			"error-active-time", "Sluttidspunktet må være etter starttidspunktet"))
 	}
 
 	// Update the quiz active end
