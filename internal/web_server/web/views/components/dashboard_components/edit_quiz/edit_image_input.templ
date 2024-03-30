@@ -20,10 +20,9 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 			if post {
 				hx-post={ requestURL }
 				hx-trigger="change"
-				hx-select=".image-input-wrapper"
-				hx-select-oob="#error-image"
 				hx-swap="outerHTML"
 				hx-target="closest .image-input-wrapper"
+				hx-target-4*="#error-image"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			}
@@ -47,6 +46,6 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 				}
 			>Fjern bilde</button>
 		}
+		@ErrorText("error-image", errorText)
 	</div>
-	@ErrorText("error-image", errorText)
 }

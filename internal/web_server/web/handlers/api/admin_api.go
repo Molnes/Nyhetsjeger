@@ -101,24 +101,22 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
 	}
 
 	// Update the quiz image
 	image := c.FormValue(dashboard_pages.QuizImageURL)
 	imageURL, err := url.Parse(image)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Ugyldig bilde URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", "Ugyldig bilde URL"))
 	}
 
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
 		if err == questions.ErrNoImageUpdated {
-			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-				fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli oppdatert. Prøv igjen senere"))
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image",
+				"Quiz bilde kunne ikke bli oppdatert. Sjekk at informasjonen er korrekt eller prøv igjen senere"))
 		}
 
 		return err
@@ -133,15 +131,13 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
 	}
 
 	// Set the image URL to nil
 	err = quizzes.RemoveImageByQuizID(dph.sharedData.DB, quiz_id)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, "Quiz bilde kunne ikke bli fjernet. Prøv igjen senere"))
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
