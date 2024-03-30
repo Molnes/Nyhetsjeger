@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -22,7 +21,6 @@ type Quiz struct {
 	LastModifiedAt time.Time
 	Published      bool
 	IsDeleted      bool
-	Questions      []questions.Question
 }
 
 type PartialQuiz struct {
@@ -56,14 +54,10 @@ func CreateDefaultQuiz() Quiz {
 		LastModifiedAt: time.Now(),
 		Published:      false,
 		IsDeleted:      false,
-		Questions:      []questions.Question{},
 	}
 }
 
 // Retrieves a quiz from the database by its ID.
-// Includes the questions for the quiz.
-// Includes the articles for each question.
-// Includes the alternatives for each question.
 func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
@@ -79,12 +73,6 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	tempQuestions, err := questions.GetQuestionsByQuizID(db, id)
-	if err != nil {
-		return nil, err
-	}
-	quiz.Questions = *tempQuestions
 
 	return quiz, nil
 }
@@ -129,7 +117,69 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
     FROM
 			quizzes
 		WHERE
-			is_deleted = false`)
+			is_deleted = false
+		ORDER BY
+			available_from DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanQuizzesFromFullRows(rows)
+}
+
+func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finished bool) ([]Quiz, error) {
+	sign := ""
+	if is_finished {
+		sign = "="
+	} else {
+		sign = "<"
+	}
+	rows, err := db.Query(
+		fmt.Sprint(`SELECT 
+
+        quizzes.id,
+        quizzes.title,
+        quizzes.image_url,
+        quizzes.available_from,
+        quizzes.available_to,
+        quizzes.created_at,
+        quizzes.last_modified_at,
+        quizzes.published,
+        quizzes.is_deleted
+
+
+
+         FROM quizzes
+        JOIN (
+
+
+        SELECT *
+        FROM quizzes
+        JOIN
+          (SELECT COUNT(id) AS existing_questions,
+                  quiz_id
+           FROM questions
+           GROUP BY quiz_id) AS q ON quizzes.id = q.quiz_id
+        JOIN
+          (
+        SELECT user_id,
+        quiz_id,
+        COUNT(answered_at) AS answered_questions
+           FROM user_answers
+           JOIN
+             (SELECT *
+              FROM questions) AS questions ON questions.id = user_answers.question_id
+        WHERE chosen_answer_alternative_id IS NOT NULL
+        GROUP BY user_id, quiz_id
+        
+        ) AS a ON a.quiz_id =  quizzes.id
+        
+        ) AS counting ON counting.id = quizzes.id
+        WHERE answered_questions`, sign, ` existing_questions
+        AND user_id = $1
+        `), userID)
+
 	if err != nil {
 		return nil, err
 	}
@@ -164,23 +214,35 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 		quizzes = append(quizzes, quiz)
 	}
 	return quizzes, nil
+
 }
 
-func GetNonPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
-	return GetQuizzes(db)
-}
+// Get all the quizzes that are not published and not deleted.
+func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
+	rows, err := db.Query(
+		`SELECT
+			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
+		FROM
+			quizzes
+		WHERE
+			published = $1 AND
+			is_deleted = false
+		ORDER BY
+			available_from DESC`,
+		published)
 
-func GetAllPublishedQuizzes(db *sql.DB) ([]Quiz, error) {
-	quizzes, err := GetQuizzes(db)
 	if err != nil {
 		return nil, err
 	}
-	quizzes = append(quizzes, quizzes...)
-	quizzes = append(quizzes, quizzes...)
-	return quizzes, nil
+	defer rows.Close()
+
+	// Scan the quizzes from the database.
+	return scanQuizzesFromFullRows(rows)
 }
 
 // Converts a row from the database to a Quiz.
+// It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
+// It will return a Quiz with these values.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
 	var imageURL sql.NullString
@@ -206,10 +268,42 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	}
 	quiz.ImageURL = *tempURL
 
-	if err == sql.ErrNoRows {
-		return nil, err
-	}
 	return &quiz, err
+}
+
+// Converts rows from the database to a list of Quizzes.
+// It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
+// It will return a Quiz with these values.
+func scanQuizzesFromFullRows(rows *sql.Rows) ([]Quiz, error) {
+	quizzes := []Quiz{}
+	for rows.Next() {
+		var quiz Quiz
+		var imageURL sql.NullString
+		err := rows.Scan(
+			&quiz.ID,
+			&quiz.Title,
+			&imageURL,
+			&quiz.AvailableFrom,
+			&quiz.AvailableTo,
+			&quiz.CreatedAt,
+			&quiz.LastModifiedAt,
+			&quiz.Published,
+			&quiz.IsDeleted,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
 }
 
 // Create a Quiz in the DB.
@@ -260,7 +354,7 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 		`SELECT qz.id, qz.title, qz.image_url, qz.available_from, qz.available_to, qz.published, count(q.id), sum(q.points)
 		FROM quizzes qz 
 		LEFT JOIN questions q ON q.quiz_id = qz.id
-		WHERE qz.id = $1
+		WHERE qz.id = $1 AND qz.is_deleted = false
 		GROUP BY qz.id;`, quizid)
 
 	var pq PartialQuiz

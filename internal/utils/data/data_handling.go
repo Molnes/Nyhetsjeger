@@ -35,13 +35,13 @@ func DateStringToNorwayTime(dateTime string, c echo.Context) (time.Time, error) 
 	}
 
 	// Parse the time
-	activeStartTime, err := time.ParseInLocation("2006-01-02T15:04", dateTime, norwayLocation)
-	activeStartTime = activeStartTime.UTC()
+	tempTime, err := time.ParseInLocation("2006-01-02T15:04", dateTime, norwayLocation)
+	tempTime = tempTime.UTC()
 	if err != nil {
-		return time.Unix(0, 0), echo.NewHTTPError(http.StatusBadRequest, "Failed to parse active start time")
+		return time.Unix(0, 0), echo.NewHTTPError(http.StatusBadRequest, "Failed to parse time")
 	}
 
-	return activeStartTime, nil
+	return tempTime, nil
 }
 
 // Converts any time to Norway's timezone

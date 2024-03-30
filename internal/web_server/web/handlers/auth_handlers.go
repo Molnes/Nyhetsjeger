@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -8,10 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
-	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
 )
@@ -64,50 +62,25 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 	}
 
 	user, err := users.GetUserBySsoID(ah.sharedData.DB, googleUser.ID)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("failed to get user from user store: %s", err.Error())
 	}
 
-	if user == nil {
-		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt access token: %s", err.Error())
+	if err == sql.ErrNoRows {
+		newUser := users.PartialUser{
+			SsoID:        googleUser.ID,
+			Email:        googleUser.Email,
+			AccessToken:  token.AccessToken,
+			TokenExpire:  token.Expiry,
+			RefreshToken: token.RefreshToken,
 		}
-		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt refresh token: %s", err.Error())
-		}
-
-		newUser := users.User{
-			ID:                 uuid.New(),
-			SsoID:              googleUser.ID,
-			Email:              googleUser.Email,
-			Phone:              "",   // TODO get phone number from user at registration
-			OptInRanking:       true, // TODO get opt in from user at registration
-			Role:               user_roles.User,
-			AccessTokenCypher:  accessTokenCypher,
-			Token_expire:       token.Expiry,
-			RefreshtokenCypher: refreshTokenCypher,
-		}
-		createdUser, err := users.CreateUser(ah.sharedData.DB, &newUser, c.Request().Context())
+		createdUser, err := users.CreateUser(ah.sharedData.DB, c.Request().Context(), &newUser)
 		if err != nil {
 			return fmt.Errorf("failed to create user: %s", err.Error())
 		}
 		user = createdUser
 	} else {
-		accessTokenCypher, err := utils.Encrypt([]byte(token.AccessToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt access token: %s", err.Error())
-		}
-		refreshTokenCypher, err := utils.Encrypt([]byte(token.RefreshToken), ah.sharedData.CryptoKey)
-		if err != nil {
-			return fmt.Errorf("failed to encrypt refresh token: %s", err.Error())
-		}
-
-		user.AccessTokenCypher = accessTokenCypher
-		user.Token_expire = token.Expiry
-		user.RefreshtokenCypher = refreshTokenCypher
-		err = users.UpdateUser(ah.sharedData.DB, user)
+		err = users.UpdateUserToken(ah.sharedData.DB, user.ID, token.AccessToken, token.Expiry, token.RefreshToken)
 		if err != nil {
 			return fmt.Errorf("failed to update user: %s", err.Error())
 		}

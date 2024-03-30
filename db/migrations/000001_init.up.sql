@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     sso_user_id TEXT NOT NULL, -- The user id from the SSO provider
     username_adjective TEXT NOT NULL REFERENCES adjectives(adjective),
     username_noun TEXT NOT NULL REFERENCES nouns(noun),
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
     role user_role NOT NULL DEFAULT 'user',
@@ -177,5 +177,13 @@ CREATE VIEW available_usernames AS
         FROM users u
         WHERE u.username_adjective = a.adjective AND u.username_noun = n.noun
     );
+
+-- Emails of users who should be granted a role when they sign up
+CREATE TABLE IF NOT EXISTS preassigned_roles(
+    email TEXT NOT NULL PRIMARY KEY,
+    role user_role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+    CONSTRAINT not_user_role CHECK (role != 'user')
+);
 
 END;
