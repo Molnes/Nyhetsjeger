@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -114,11 +115,6 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
-		if err == questions.ErrNoImageUpdated {
-			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image",
-				"Quiz bilde kunne ikke bli oppdatert. Sjekk at informasjonen er korrekt eller prøv igjen senere"))
-		}
-
 		return err
 	}
 
@@ -149,7 +145,8 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 	// Parse the quiz ID from the query parameter
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+			fmt.Sprintf("Kunne ikke slette quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
 	// Sets the quiz as deleted in the database
@@ -168,7 +165,8 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuizID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+			fmt.Sprintf("Kunne ikke skjule/publisere quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
 	// Update the quiz published status
@@ -458,16 +456,13 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errorInvalidQuestionID)
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-question",
+			fmt.Sprintf("Kunne ikke slette spørsmål: %s", errorInvalidQuestionID)))
 	}
 
 	// Delete the question from the database
 	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
-		if err == questions.ErrNoQuestionDeleted {
-			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
-		}
-
 		return err
 	}
 
@@ -479,23 +474,25 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	// Get the question ID
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", errorInvalidQuizID))
 	}
 
 	// Get the new image URL
 	image := c.FormValue(dashboard_components.QuestionImageURL)
 	imageURL, err := url.Parse(image)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Ugyldig bilde URL"))
+		return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image", "Ugyldig bilde URL"))
 	}
 
 	// Set the image URL for the question
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageURL)
 	if err != nil {
-		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli oppdatert. Prøv igjen senere"))
+		if err == questions.ErrNoImageUpdated {
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-image",
+				"Quiz bilde kunne ikke bli oppdatert. Sjekk at informasjonen er korrekt eller prøv igjen senere"))
+		}
+
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(

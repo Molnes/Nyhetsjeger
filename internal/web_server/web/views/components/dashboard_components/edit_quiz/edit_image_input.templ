@@ -22,7 +22,7 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 				hx-trigger="change"
 				hx-swap="outerHTML"
 				hx-target="closest .image-input-wrapper"
-				hx-target-4*="#error-image"
+				hx-target-4*="next #error-image"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			}

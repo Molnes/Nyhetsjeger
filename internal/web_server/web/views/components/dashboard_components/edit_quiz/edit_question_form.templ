@@ -159,6 +159,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
+					hx-target-4*="#error-question"
 					hx-confirm="Er du sikker på at du ønsker å slette dette spørsmålet?"
 					hx-indicator="previous .htmx-indicator"
 				>Slett</button>

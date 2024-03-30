@@ -125,6 +125,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			@components.LoadingIndicator()
+			@dashboard_components.ErrorText("error-quiz", "")
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
@@ -132,6 +133,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						type="button"
 						class="bg-red-500 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
+						hx-target-4*="#error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
