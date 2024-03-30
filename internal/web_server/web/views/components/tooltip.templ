@@ -1,6 +1,21 @@
+// Package components contains reusable components that can be used in multiple
+// places in the application.
+import "html"
+import "golang.org/x/net/html"
+import "golang.org/x/net/html"
+
 package components
 
 // Tooltip works by putting the class inside of a tooltip button.
-templ Tooltip(tooltipButtonID string, tooltipText string) {
-	<span class="z-10 relative -top-2 left-full tooltip">Tooltip text</span>
+// The activatorID must be the ID of the element that will show the tooltip.
+// The tooltipText is the text that will be shown.
+// The tooltip itself will be relative to its parent element. It is therefore
+// recommended to put the tooltip inside of the element that will show it.
+//
+// Example:
+//	<button class="tooltip-parent" >
+// 		@components.Tooltip("This is a tooltip")
+//	</button>
+templ Tooltip( tooltipText string) {
+	<span class="z-10 relative -top-2 left-full hidden tooltip">{ tooltipText }</span>
 }
