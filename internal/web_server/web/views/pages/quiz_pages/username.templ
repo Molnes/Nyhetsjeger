@@ -15,7 +15,7 @@ templ UsernamePage(u *users.User) {
 						<label for="tlf-in" class="inline font-bold mr-4">Mobilnummer</label>
 						<button class="inline rounded-1/2 border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1 tooltip-parent" type="button">
 							i
-							@components.Tooltip("Some text")
+							@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
 						</button>
 					</div>
 					<input id="tlf-in" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" required/>

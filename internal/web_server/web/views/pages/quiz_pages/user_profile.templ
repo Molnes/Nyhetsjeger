@@ -3,6 +3,7 @@ package quiz_pages
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 
 //Javascript function to show the delete confirmation modal
 
@@ -38,7 +39,10 @@ templ UserProfile(u *users.User) {
 				<div class="w-3/4">
 					<div>
 						<label for="tlf-in" class="inline font-bold mr-4">Mobilnummer</label>
-						<button class="inline rounded-full border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1" type="button">i</button>
+						<button class="inline rounded-full border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1 tooltip-parent" type="button">
+							i
+							@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
+						</button>
 					</div>
 					<input id="tlf-in" class="w-full h-7 rounded px-2" type="tel" placeholder="123 45 678" value={ u.Phone } pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" required/>
 					<label for="usrn-in" class="font-bold">Brukernavn</label>
