@@ -7,8 +7,7 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
 
 templ UsernamePage(u *users.User) {
-	@layout_components.QuizLayout("Nyhetsjeger - Brukernavn") {
-		<div class="h-screen flex justify-center items-center">
+	@layout_components.CenteredLayout("Nyhetsjeger - Brukernavn", false) {
 			<form class="w-full sm:w-2/5 h-3/4 max-w-md min-w-60 max-h-[34rem] min-h-96 border border-clightindigo bg-white flex flex-col items-center rounded-lg" action="" method="post">
 				<h1 class="text-3xl my-4 font-bold">Lag bruker</h1>
 				<div class="w-3/4">
@@ -34,6 +33,5 @@ templ UsernamePage(u *users.User) {
 				</div>
 				<a class="mt-10" href="#">Terms of services</a>
 			</form>
-		</div>
 	}
 }

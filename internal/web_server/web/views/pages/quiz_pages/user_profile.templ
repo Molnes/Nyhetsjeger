@@ -32,42 +32,40 @@ script showDeleteConfirmationModal() {
 }
 
 templ UserProfile(u *users.User) {
-	@layout_components.QuizLayoutMenu("Nyhetsjeger - Profil") {
+	@layout_components.CenteredLayout("Nyhetsjeger - Profil", true) {
 		@showDeleteConfirmationModal()
-		<div class="h-full mt-20 flex justify-center items-center">
-			<form class="w-full sm:w-2/5 h-3/4 max-w-md min-w-60 max-h-[34rem] min-h-96 bg-white flex flex-col items-center rounded-lg" action="" method="post">
-				<h1 class="text-3xl my-4 font-bold">Oppdater profil</h1>
-				<div class="w-3/4">
-					<div>
-						<label for="tlf-in" class="inline-block font-bold mr-4 my-2">Mobilnummer</label>
-						<button class="inline rounded-full border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1 tooltip-parent" type="button">
-							i
-							@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
-						</button>
-					</div>
-					<input id="tlf-in" class="w-full h-7 rounded px-4 bg-gray-200" type="tel" placeholder="123 45 678" value={ u.Phone } pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" required/>
-					<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
-					@user_management.UsernameInput("usrn-in", u.Username)
+		<form class="w-full sm:w-2/5 h-3/4 max-w-md min-w-60 max-h-[34rem] min-h-96 bg-white flex flex-col items-center rounded-lg" action="" method="post">
+			<h1 class="text-3xl my-4 font-bold">Oppdater profil</h1>
+			<div class="w-3/4">
+				<div>
+					<label for="tlf-in" class="inline-block font-bold mr-4 my-2">Mobilnummer</label>
+					<button class="inline rounded-full border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1 tooltip-parent" type="button">
+						i
+						@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
+					</button>
 				</div>
-				<button id="randomize" class="flex items-center  m-3 mt-4" type="button" hx-patch="/api/v1/quiz/brukernavn" hx-trigger="click" hx-swap="outerHTML" hx-target="#usrn-in">
-					Generer nytt navn
-					@icons.Dice(16, "currentColor", 28, 28)
-				</button>
-				<div class="flex items-center">
-					<input id="comp-check" class="inline w-6 h-6" type="checkbox" name="competition"/>
-					<p for="comp-check" class="inline ml-2">Bli med i konkurranser</p>
-				</div>
-				<input class="mb-4 mt-5 py-2 px-8 bg-gray-200 border-2 rounded-lg font-bold" type="submit" value="Lagre"/>
-				<button hx-post="/auth/logout" class="mb-4 mt-5 py-1 px-8 bg-gray-200 border-2 rounded-lg font-bold" type="button">Logg ut</button>
-				<button id="delete-button" hx-delete="" hx-confirm="" class="bg-red-500 px-4 py-2 rounded-button text-white font-bold mt-auto mb-4" type="button">SLETT KONTO</button>
-			</form>
-			<div id="modal" class="bg-black bg-opacity-40 w-full h-full z-50 fixed hidden justify-center items-center">
-				<div class="w-1/4 h-1/3 bg-white rounded-xl grid">
-					<p class="mx-2 mt-2 font-bold text-lg">Er du sikker på at du ønsker å slette din konto? Dette kan ikke angres!</p>
-					<div class="mt-auto mb-3 flex justify-evenly">
-						<button id="accept-button" class="mb-4 mt-5 py-1 px-8 bg-white border-2 rounded-lg font-bold">Ja</button>
-						<button id="refuse-button" class="mb-4 mt-5 py-1 px-8 bg-white border-2 rounded-lg font-bold">Nei</button>
-					</div>
+				<input id="tlf-in" class="w-full h-7 rounded px-4 bg-gray-200" type="tel" placeholder="123 45 678" value={ u.Phone } pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$" name="phonenumber" required/>
+				<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
+				@user_management.UsernameInput("usrn-in", u.Username)
+			</div>
+			<button id="randomize" class="flex items-center  m-3 mt-4" type="button" hx-patch="/api/v1/quiz/brukernavn" hx-trigger="click" hx-swap="outerHTML" hx-target="#usrn-in">
+				Generer nytt navn
+				@icons.Dice(16, "currentColor", 28, 28)
+			</button>
+			<div class="flex items-center">
+				<input id="comp-check" class="inline w-6 h-6" type="checkbox" name="competition"/>
+				<p for="comp-check" class="inline ml-2">Bli med i konkurranser</p>
+			</div>
+			<input class="mb-4 mt-5 py-2 px-8 bg-gray-200 border-2 rounded-lg font-bold" type="submit" value="Lagre"/>
+			<button hx-post="/auth/logout" class="mb-4 mt-5 py-1 px-8 bg-gray-200 border-2 rounded-lg font-bold" type="button">Logg ut</button>
+			<button id="delete-button" hx-delete="" hx-confirm="" class="bg-red-500 px-4 py-2 rounded-button text-white font-bold mt-auto mb-4" type="button">SLETT KONTO</button>
+		</form>
+		<div id="modal" class="bg-black bg-opacity-40 w-full h-full z-50 fixed hidden justify-center items-center">
+			<div class="w-1/4 h-1/3 bg-white rounded-xl grid">
+				<p class="mx-2 mt-2 font-bold text-lg">Er du sikker på at du ønsker å slette din konto? Dette kan ikke angres!</p>
+				<div class="mt-auto mb-3 flex justify-evenly">
+					<button id="accept-button" class="mb-4 mt-5 py-1 px-8 bg-white border-2 rounded-lg font-bold">Ja</button>
+					<button id="refuse-button" class="mb-4 mt-5 py-1 px-8 bg-white border-2 rounded-lg font-bold">Nei</button>
 				</div>
 			</div>
 		</div>
