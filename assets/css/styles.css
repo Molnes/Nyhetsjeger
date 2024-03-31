@@ -115,3 +115,7 @@
 .gradient-outline-circle-thick::after {
     border-radius: 50%;
 }
+
+.tooltip-parent:hover>.tooltip {
+    display: inline-block;
+}
