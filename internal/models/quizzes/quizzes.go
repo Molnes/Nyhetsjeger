@@ -9,8 +9,16 @@ import (
 
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
+type QuizWithCompletion struct {
+	UserID            uuid.UUID
+	QuizID            uuid.UUID
+	AnsweredQuestions int
+	TotalQuestions    int
+	CompletionStatus  bool
+}
 type Quiz struct {
 	ID             uuid.UUID
 	Title          string
@@ -128,15 +136,72 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return scanQuizzesFromFullRows(rows)
 }
 
-func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finished bool) ([]Quiz, error) {
-	sign := ""
-	if is_finished {
-		sign = "="
-	} else {
-		sign = "<"
-	}
+func GetIsQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID) ([]QuizWithCompletion, error) {
 	rows, err := db.Query(
-		fmt.Sprint(`SELECT 
+		`SELECT
+    u.id AS user_id,
+    q.id AS quiz_id,
+    COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) AS answered_questions,
+    COALESCE(COUNT(DISTINCT qz.id), 0) AS total_questions,
+    CASE
+        WHEN COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) = COALESCE(COUNT(DISTINCT qz.id), 0) THEN true
+        ELSE false
+    END AS completion_status
+FROM
+    users u
+INNER JOIN
+    quizzes q ON 1=1
+LEFT JOIN
+    questions qz ON q.id = qz.quiz_id
+LEFT JOIN
+    user_answers ua ON u.id = ua.user_id AND qz.id = ua.question_id
+WHERE u.id = $1
+GROUP BY
+    u.id, q.id;`, userID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quizzes := []QuizWithCompletion{}
+	for rows.Next() {
+		var quiz QuizWithCompletion
+		err := rows.Scan(
+			&quiz.UserID,
+			&quiz.QuizID,
+			&quiz.AnsweredQuestions,
+			&quiz.TotalQuestions,
+			&quiz.CompletionStatus,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
+}
+
+func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finished bool) ([]Quiz, error) {
+
+	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	quiz_ids := []uuid.UUID{}
+	for _, q := range quiz {
+		if q.CompletionStatus == is_finished {
+			quiz_ids = append(quiz_ids, q.QuizID)
+		}
+	}
+
+	if len(quiz_ids) == 0 {
+		return []Quiz{}, nil
+	}
+
+	q := `SELECT 
 
         quizzes.id,
         quizzes.title,
@@ -151,34 +216,10 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finishe
 
 
          FROM quizzes
-        JOIN (
+         WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
+         ORDER BY quizzes.available_from DESC;`
 
-
-        SELECT *
-        FROM quizzes
-        JOIN
-          (SELECT COUNT(id) AS existing_questions,
-                  quiz_id
-           FROM questions
-           GROUP BY quiz_id) AS q ON quizzes.id = q.quiz_id
-        JOIN
-          (
-        SELECT user_id,
-        quiz_id,
-        COUNT(answered_at) AS answered_questions
-           FROM user_answers
-           JOIN
-             (SELECT *
-              FROM questions) AS questions ON questions.id = user_answers.question_id
-        WHERE chosen_answer_alternative_id IS NOT NULL
-        GROUP BY user_id, quiz_id
-        
-        ) AS a ON a.quiz_id =  quizzes.id
-        
-        ) AS counting ON counting.id = quizzes.id
-        WHERE answered_questions`, sign, ` existing_questions
-        AND user_id = $1
-        `), userID)
+	rows, err := db.Query(q, pq.Array(quiz_ids))
 
 	if err != nil {
 		return nil, err
