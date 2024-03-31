@@ -44,7 +44,7 @@ templ UserProfile(u *users.User) {
 				<div class="mb-2">
 					<label for="tlf-in" class="inline-block font-bold mr-1">Mobilnummer</label>
 					<button
-						class="inline rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent"
+						class="inline rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
 						type="button"
 					>
 						i
@@ -53,7 +53,7 @@ templ UserProfile(u *users.User) {
 				</div>
 				<input
 					id="tlf-in"
-					class="w-full bg-gray-200 rounded-input border border-black px-4 py-2"
+					class="w-full bg-gray-100 rounded-input border border-gray-900 px-4 py-2"
 					type="tel"
 					placeholder="123 45 678"
 					value={ u.Phone }
@@ -66,7 +66,7 @@ templ UserProfile(u *users.User) {
 			</div>
 			<button
 				id="randomize"
-				class="flex items-center gap-3 rounded-button border border-indigo px-4 py-2"
+				class="flex items-center gap-3 rounded-button border-2 border-gray-200 px-4 py-1"
 				type="button"
 				hx-patch="/api/v1/quiz/brukernavn"
 				hx-trigger="click"
@@ -77,17 +77,25 @@ templ UserProfile(u *users.User) {
 				@icons.Dice(16, "currentColor", 28, 28)
 			</button>
 			<div class="flex items-center">
-				<input id="comp-check" class="inline w-6 h-6 accent-cindigo" type="checkbox" name="competition"/>
-				<label for="comp-check" class="inline ml-2">Bli med i konkurranser</label>
+				<input
+					id="comp-check"
+					class="inline w-6 h-6 accent-cindigo cursor-pointer"
+					type="checkbox"
+					name="competition"
+					if u.OptInRanking {
+						checked
+					}
+				/>
+				<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
 			</div>
-			<button class="py-2 px-8 bg-gray-200 border-2 rounded-input font-bold" type="submit">Lagre</button>
+			<button class="py-2 px-8 bg-cindigo text-white border-2 rounded-input font-bold" type="submit">Lagre</button>
 			<button
 				id="delete-button"
 				hx-delete="/api/v1/quiz/profil"
 				hx-confirm=""
-				class="bg-red-500 px-4 py-2 rounded-button text-white font-bold"
+				class="text-red-500 mt-5"
 				type="button"
-			>SLETT KONTO</button>
+			>Slett konto</button>
 		</form>
 		<div id="modal" class="bg-black bg-opacity-40 w-full h-full z-50 fixed hidden justify-center items-center">
 			<div class="w-1/3 bg-white rounded-card grid px-6 py-4 gap-3">
