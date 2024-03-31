@@ -1,0 +1,18 @@
+package layout_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+
+templ CenteredLayout(pageTitle string, showBurgerMenu bool) {
+	@BaseLayout(pageTitle) {
+		if showBurgerMenu {
+			@quiz_components.BurgerMenu()
+			<div class="h-[calc(100vh-4.5rem)] flex flex-auto justify-center items-center bg-gray-200">
+				{ children... }
+			</div>
+		} else {
+			<div class="h-screen flex flex-auto justify-center items-center bg-gray-200">
+				{ children... }
+			</div>
+		}
+	}
+}
