@@ -18,7 +18,7 @@ func GetRanking(db *sql.DB) ([]UserRanking, error) {
 SELECT 
     CONCAT(username_adjective, ' ', username_noun) AS username,
     COALESCE(total_points, 0) AS total_points,
-    placement
+    COALESCE(placement, 0) AS placement
 FROM 
     users
 LEFT JOIN (
@@ -60,7 +60,7 @@ func GetUserRanking(db *sql.DB, userID uuid.UUID) (UserRanking, error) {
 SELECT 
     CONCAT(username_adjective, ' ', username_noun) AS username,
     COALESCE(total_points, 0) AS total_points,
-    placement
+   COALESCE(placement, 0) AS placement
 FROM 
     users
 LEFT JOIN (
