@@ -138,27 +138,26 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 
 func GetIsQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID) ([]QuizWithCompletion, error) {
 	rows, err := db.Query(
-		` SELECT
+		`SELECT
     u.id AS user_id,
     q.id AS quiz_id,
     COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) AS answered_questions,
-    COUNT(DISTINCT qz.id) AS total_questions,
+    COALESCE(COUNT(DISTINCT qz.id), 0) AS total_questions,
     CASE
-        WHEN COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) = COUNT(DISTINCT qz.id) THEN true
+        WHEN COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) = COALESCE(COUNT(DISTINCT qz.id), 0) THEN true
         ELSE false
     END AS completion_status
 FROM
     users u
 INNER JOIN
     quizzes q ON 1=1
-INNER JOIN
+LEFT JOIN
     questions qz ON q.id = qz.quiz_id
 LEFT JOIN
     user_answers ua ON u.id = ua.user_id AND qz.id = ua.question_id
 WHERE u.id = $1
 GROUP BY
-    u.id, q.id
-;`, userID)
+    u.id, q.id;`, userID)
 
 	if err != nil {
 		return nil, err
