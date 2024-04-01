@@ -49,14 +49,6 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	}
 }
 
-// determine color of the answer based on if it is correct or not
-func getColor(correct bool) string {
-	if correct {
-		return "text-cyan-900"
-	}
-	return "text-orange-900"
-}
-
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 	<li
 		class="mb-2"
@@ -68,7 +60,7 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 			} else {
 				@icons.Cross(3, "red", 20, 20)
 			}
-			<p class="text-gray-600">{ aq.ChosenAlternativeText }</p>
+			<p class="text-gray-700">{ aq.ChosenAlternativeText }</p>
 		</div>
 	</li>
 }
