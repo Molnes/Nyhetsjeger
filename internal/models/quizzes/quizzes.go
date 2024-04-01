@@ -183,21 +183,21 @@ GROUP BY
 	return quizzes, nil
 }
 
-func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finished bool) ([]Quiz, error) {
+func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
 
 	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	quiz_ids := []uuid.UUID{}
+	quizIDs := []uuid.UUID{}
 	for _, q := range quiz {
-		if q.CompletionStatus == is_finished {
-			quiz_ids = append(quiz_ids, q.QuizID)
+		if q.CompletionStatus == isFinished {
+			quizIDs = append(quizIDs, q.QuizID)
 		}
 	}
 
-	if len(quiz_ids) == 0 {
+	if len(quizIDs) == 0 {
 		return []Quiz{}, nil
 	}
 
@@ -219,7 +219,7 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, is_finishe
          WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
          ORDER BY quizzes.available_from DESC;`
 
-	rows, err := db.Query(q, pq.Array(quiz_ids))
+	rows, err := db.Query(q, pq.Array(quizIDs))
 
 	if err != nil {
 		return nil, err
