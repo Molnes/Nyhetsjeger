@@ -84,24 +84,24 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 }
 
 func createSampleQuiz(db *sql.DB, title string) {
-	var quiz_id uuid.UUID
+	var quizID uuid.UUID
 	row := db.QueryRow(
 		`INSERT INTO quizzes (title, available_from, available_to, image_url, published)
 		values ($1, $2, $3, $4, true)
 		RETURNING id;`,
 		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://picsum.photos/id/1062/500/300")
 
-	err := row.Scan(&quiz_id)
+	err := row.Scan(&quizID)
 	if err != nil {
 		log.Println(err)
 	}
 
-	createSampleQuizArticle(db, quiz_id)
+	createSampleQuizArticle(db, quizID)
 
 	for range 3 {
-		createQuestion(db, quiz_id, sampleQuestion1)
-		createQuestion(db, quiz_id, sampleQuestion2)
-		createQuestion(db, quiz_id, sampleQuestion3)
+		createQuestion(db, quizID, sampleQuestion1)
+		createQuestion(db, quizID, sampleQuestion2)
+		createQuestion(db, quizID, sampleQuestion3)
 	}
 }
 
@@ -115,8 +115,8 @@ type question struct {
 	answer_alts []answerAlt
 }
 
-func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
-	question_id := uuid.New()
+func createQuestion(db *sql.DB, quizID uuid.UUID, question question) {
+	questionID := uuid.New()
 
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
@@ -126,14 +126,14 @@ func createQuestion(db *sql.DB, quiz_id uuid.UUID, question question) {
 	tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
 		VALUES ($1, $2, $3, $4, $5, $6);`,
-		question_id, question.text, "https://picsum.photos/id/1062/500/300", nil, quiz_id, 10)
+		questionID, question.text, "https://picsum.photos/id/1062/500/300", nil, quizID, 10)
 
 	for _, a := range question.answer_alts {
-		alternative_id := uuid.New()
+		alternativeID := uuid.New()
 		tx.Exec(
 			`INSERT INTO answer_alternatives (id, question_id, text, correct)
 			VALUES ($1, $2, $3, $4);`,
-			alternative_id, question_id, a.answer, a.correct)
+			alternativeID, questionID, a.answer, a.correct)
 	}
 	if err := tx.Commit(); err != nil {
 		log.Println(err)

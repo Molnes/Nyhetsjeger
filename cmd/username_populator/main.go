@@ -38,13 +38,13 @@ func main() {
 }
 
 // Populates the adjectives table
-func populate_adjectives(db *sql.DB) {
+func populateAdjectives(db *sql.DB) {
 
 	db.Exec("INSERT INTO adjectives VALUES ('Raud'), ('Fin'), ('Brennande')")
 }
 
 // Populates the nouns table
-func populate_nouns(db *sql.DB) {
+func populateNouns(db *sql.DB) {
 
 	db.Exec("INSERT INTO nouns VALUES ('Lefse'), ('Taco'), ('And'), ('Stol'), ('Appelsin')")
 

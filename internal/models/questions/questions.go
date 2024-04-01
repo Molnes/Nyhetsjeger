@@ -268,10 +268,6 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	}
 	defer answerRows.Close()
 
-	if err != nil {
-		return nil, err
-	}
-
 	var alternatives []Alternative
 	for answerRows.Next() {
 		var a Alternative
