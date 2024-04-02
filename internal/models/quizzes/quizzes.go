@@ -183,6 +183,7 @@ GROUP BY
 	return quizzes, nil
 }
 
+// Get quizzes that a user has finished or not. Quiz has to be published and not deleted.
 func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
 
 	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
@@ -217,6 +218,7 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
 
          FROM quizzes
          WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
+				 	AND published = true
          ORDER BY quizzes.available_from DESC;`
 
 	rows, err := db.Query(q, pq.Array(quizIDs))
