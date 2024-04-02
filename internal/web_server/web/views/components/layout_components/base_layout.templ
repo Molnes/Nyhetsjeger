@@ -1,0 +1,30 @@
+package layout_components
+
+import "os"
+
+// Layout for all pages.
+templ BaseLayout(pageTitle string) {
+	<!DOCTYPE html>
+	<html lang="no">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta nanme="keywords" content="Quiz, Nyheter, Nyhetsjeger, Nyhetsquiz"/>
+			<meta name="description" content="Nyhetsquiz basert på aktuelle nyhetsartikler"/>
+			<title>{ pageTitle }</title>
+			<link rel="stylesheet" href="/static/css/tailwind.css"/>
+			<link rel="stylesheet" href="/static/css/styles.css?v=1.2"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/response-targets.js"></script>
+		</head>
+		<body class="font-body">
+			{ children... }
+			if os.Getenv("COMPOSE_PROFILES") == "dev" {
+				<script src="/static/js/livereload.js"></script>
+			}
+		</body>
+	</html>
+}

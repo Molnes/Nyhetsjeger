@@ -39,8 +39,8 @@ import (
 // 	log.Println("Database connection successful")
 // }
 
-func NewDatabaseConnection(db_url string) (*sql.DB, error) {
-	sql_db, err := sql.Open("postgres", db_url)
+func NewDatabaseConnection(dbURL string) (*sql.DB, error) {
+	sql_db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		return nil, err
 	}

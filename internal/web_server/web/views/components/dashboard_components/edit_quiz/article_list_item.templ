@@ -1,0 +1,32 @@
+package dashboard_components
+
+import (
+	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+)
+
+// An item in the list of articles the quiz questions are based on
+templ ArticleListItem(articleUrl string, articleID string, quizID string) {
+	<li
+		id={ fmt.Sprintf("article-%s", articleID) }
+		class="flex flex-row justify-between px-4 py-2"
+		data-element-type="article-list-item"
+	>
+		<a target="blank_" href={ templ.SafeURL(articleUrl) } class="[&:hover]:underline">
+			{ articleUrl }
+		</a>
+		<button
+			id={ fmt.Sprintf("delete-article-%s", articleID) }
+			title="Slett"
+			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
+			hx-swap="outerHTML"
+			hx-target={ fmt.Sprintf("#article-%s", articleID) }
+			hx-target-4*=".error-article"
+			hx-indicator="previous .htmx-indicator"
+			hx-confirm="Er du sikker på at du ønsker å fjerne denne artikkelen?"
+		>
+			// This red is the same color as Tailwind red-500
+			@icons.Cross(3, "#ef4444", 25, 25)
+		</button>
+	</li>
+}

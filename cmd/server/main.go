@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Molnes/Nyhetsjeger/internal/api"
+	api "github.com/Molnes/Nyhetsjeger/internal/web_server"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"

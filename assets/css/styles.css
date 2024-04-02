@@ -3,7 +3,21 @@
 @tailwind utilities;
 
 
+/* Custom variables */
+:root {
+    /* Color */
+    --cblue: #0085FF;
+    --cindigo: #5B14F2;
+    --cfuchsia: #CA1FFF;
 
+    /* Border radius */
+    --br-button: 0.5rem;
+    --br-card: 0.5rem;
+    --br-input: 0.5rem;
+
+    /* The inset of the gradient outline */
+    --outline-inset: -3px;
+}
 
 /* CSS classes ".scrollbar-hide" and ".scrollbar-hide::-webkit-scrollbar" (next 2) taken from https://design2tailwind.com/blog/tailwindcss-hide-scrollbar/ */
 /* For Webkit-based browsers (Chrome, Safari and Opera) */
@@ -17,4 +31,91 @@
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
+}
+
+
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 100ms ease-in
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+
+/* Background Gradient */
+.cgradient {
+    background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+}
+
+/* Gradient Border */
+.cgradient-border {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.gradient-shadow {
+    position: relative;
+}
+
+.gradient-shadow::before,
+.gradient-shadow-always::before {
+    content: "";
+    position: absolute;
+    inset: var(--outline-inset);
+    z-index: -1;
+    background-color: var(--cindigo);
+    border-radius: calc(var(--br-button) - var(--outline-inset));
+    /* gradient using the custom properties */
+    background-image: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
+    filter: blur(0.5rem);
+    opacity: 0;
+    transition: opacity 100ms linear;
+}
+
+/* When the gradient shadow element is either hovered or focused */
+/* Display the blurry background gradient (functions like a shadow) */
+.gradient-shadow:is(:hover, :focus-within)::before,
+.gradient-shadow-always::before {
+    opacity: 1;
+}
+
+.gradient-outline,
+.gradient-outline-thick,
+.gradient-outline-circle,
+.gradient-outline-circle-thick {
+    position: relative;
+}
+
+.gradient-outline::after,
+.gradient-outline-thick::after,
+.gradient-outline-circle::after,
+.gradient-outline-circle-thick::after {
+    content: "";
+    position: absolute;
+    inset: var(--outline-inset);
+    z-index: -1;
+    border-radius: calc(var(--br-button) - var(--outline-inset));
+    background: var(--cindigo);
+    background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
+}
+
+.gradient-outline-thick::after,
+.gradient-outline-circle-thick::after {
+    inset: -6px;
+}
+
+.gradient-outline-circle::after,
+.gradient-outline-circle-thick::after {
+    border-radius: 50%;
+}
+
+.tooltip-parent:hover>.tooltip {
+    display: inline-block;
 }

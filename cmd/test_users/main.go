@@ -1,16 +1,17 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/data/sessions"
-	"github.com/Molnes/Nyhetsjeger/internal/data/users"
-	"github.com/Molnes/Nyhetsjeger/internal/data/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
+	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/antonlindstrom/pgstore"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -18,6 +19,9 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
+// Simple server used in API tests to create sessions for different user roles.
+//
+// This code is used only in testing and is NEVER deployed to production.
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -44,11 +48,18 @@ func main() {
 	usersList := createUserList()
 
 	for i, user := range usersList {
-		userSessionDatas[i] = user.IntoSessionData()
-		_, err := users.CreateUser(db, &user)
+		createdUser, err := users.CreateUser(db, context.Background(), &user)
 		if err != nil {
-			log.Errorf("Test users: Error inserting user: ", err)
+			createdUser, err = users.GetUserByEmail(db, user.Email)
+			if err != nil {
+				log.Fatal("Test users: Error getting user: ", err)
+			}
 		}
+		err = setRole(db, createdUser.ID, user_roles.Role(i))
+		if err != nil {
+			log.Errorf("Test users: Error setting role: ", err)
+		}
+		userSessionDatas[i] = createdUser.IntoSessionData()
 	}
 
 	e := echo.New()
@@ -95,46 +106,37 @@ func (h *handler) createSession(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func createUserList() []users.User {
-	uuid1, _ := uuid.Parse("7511ce90-87f1-4cef-8980-6b9aef71529c")
-	uuid2, _ := uuid.Parse("6d0d8550-703e-41c8-aed9-959d80752a4b")
-	uuid3, _ := uuid.Parse("c0f84533-7613-4fe2-90a5-c452a1e57121")
-	return []users.User{
+func setRole(db *sql.DB, id uuid.UUID, role user_roles.Role) error {
+	_, err := db.Exec(`
+	UPDATE users
+	SET role = $1
+	WHERE id = $2
+	`, role.String(), id)
+	return err
+}
+
+func createUserList() []users.PartialUser {
+	return []users.PartialUser{
 		{
-			ID:                 uuid1,
-			Username:           "test_user",
-			SsoID:              "test_user_sso_id",
-			Email:              "test1@email.com",
-			Phone:              "00000001",
-			OptInRanking:       true,
-			Role:               user_roles.User,
-			AccessTokenCypher:  []byte("token1"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh1"),
+			SsoID:        "test_user_sso_id",
+			Email:        "test1@email.com",
+			AccessToken:  "token1",
+			TokenExpire:  time.Now().Add(time.Hour * 24),
+			RefreshToken: "refresh1",
 		},
 		{
-			ID:                 uuid2,
-			Username:           "test_admin",
-			SsoID:              "test_admin_sso_id",
-			Email:              "test2@email.com",
-			Phone:              "00000002",
-			OptInRanking:       false,
-			Role:               user_roles.QuizAdmin,
-			AccessTokenCypher:  []byte("token2"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh2"),
+			SsoID:        "test_admin_sso_id",
+			Email:        "test2@email.com",
+			AccessToken:  "token2",
+			TokenExpire:  time.Now().Add(time.Hour * 24),
+			RefreshToken: "refresh2",
 		},
 		{
-			ID:                 uuid3,
-			Username:           "test_organization_admin",
-			SsoID:              "test_organization_admin_sso_id",
-			Email:              "test3@email.com",
-			Phone:              "00000003",
-			OptInRanking:       false,
-			Role:               user_roles.OrganizationAdmin,
-			AccessTokenCypher:  []byte("token3"),
-			Token_expire:       time.Now().Add(time.Hour * 24),
-			RefreshtokenCypher: []byte("refresh3"),
+			SsoID:        "test_organization_admin_sso_id",
+			Email:        "test3@email.com",
+			AccessToken:  "token3",
+			TokenExpire:  time.Now().Add(time.Hour * 24),
+			RefreshToken: "refresh3",
 		},
 	}
 }

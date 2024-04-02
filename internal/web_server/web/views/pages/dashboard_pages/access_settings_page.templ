@@ -1,0 +1,24 @@
+package dashboard_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/access_settings_components"
+)
+
+templ AccessSettingsPage(admins *[]access_control.UserAdmin) {
+	@layout_components.DashBoardLayout("Tilgangs innstillinger") {
+		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
+			<section>
+				<h1
+					class="text-3xl font-bold text-gray-800"
+				>Administrer tilgang</h1>
+				<p>Her kan du administrere hvem som har tilgang til Quiz Admin Panel.</p>
+				<p>Disse brukerne kan lage, redigere, publisere og slette quizer, og har tilgang til brukernes informasjon.</p>
+				<p>Kun en organisasjons administrator har tilgang til den nåværende siden.</p>
+			</section>
+			@access_settings_components.AddEmailForm()
+			@access_settings_components.AdminsTable(admins)
+		</div>
+	}
+}

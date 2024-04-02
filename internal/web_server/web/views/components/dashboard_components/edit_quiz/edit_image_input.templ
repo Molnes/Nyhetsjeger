@@ -1,0 +1,51 @@
+package dashboard_components
+
+import (
+	"net/url"
+)
+
+// An input field for updating the image.
+// When the value is changed, send a POST request to the given URL for updating the image.
+// It will trigger the previous loading indicator to display.
+// If post is set to false, it will not send a request when the value is changed.
+templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool, errorText string) {
+	<div class="image-input-wrapper">
+		<input
+			id={ inputName }
+			name={ inputName }
+			class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
+			type="text"
+			value={ imageURL.String() }
+			placeholder="https://picsum.photos/id/1/300/200"
+			if post {
+				hx-post={ requestURL }
+				hx-trigger="change"
+				hx-swap="outerHTML"
+				hx-target="closest .image-input-wrapper"
+				hx-target-4*="next .error-image"
+				hx-sync="closest form:abort"
+				hx-indicator="previous .htmx-indicator"
+			}
+		/>
+		if imageURL.String() == "" {
+			<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
+		} else {
+			// This div wrapper is to prevent a layout shift while loading the image
+			<div style="height: 200px" class="mx-auto mb-3">
+				<img src={ imageURL.String() } height="200" style="height: 100%" class="block rounded-lg mx-auto object-cover"/>
+			</div>
+			<button
+				id="remove-image-button"
+				type="button"
+				class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+				if post {
+					hx-delete={ requestURL }
+					hx-swap="outerHTML"
+					hx-target="closest .image-input-wrapper"
+					hx-indicator="previous .htmx-indicator"
+				}
+			>Fjern bilde</button>
+		}
+		@ErrorText("error-image", errorText)
+	</div>
+}

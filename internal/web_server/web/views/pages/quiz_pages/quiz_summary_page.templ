@@ -1,0 +1,66 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"strconv"
+	"fmt"
+)
+
+templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
+	@layout_components.QuizLayout("Oppsummering") {
+		<div
+			id="quiz-summary"
+			class="flex flex-col justify-start items-center px-1 py-5 h-screen isolate"
+		>
+			<section class="flex flex-col items-center">
+				<h1 class="text-3xl">RESULTAT</h1>
+				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center gradient-outline-circle items-center mt-2 mb-5">
+					<p class="flex items-center font-bold text-1xl ">
+						<span class="w-2/5 text-right relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+						<span class="w-1/5 text-center text-2xl">/</span>
+						<span class="w-2/5 text-left relative top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+					</p>
+				</div>
+			</section>
+			<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
+				<h2 class="text-2xl">OPPSUMMERING</h2>
+				<ol class="list-decimal px-4 overflow-y-auto scrollbar-hide my-4">
+					for _, aq := range summary.AnsweredQuestions {
+						@chosenAnswer(aq)
+					}
+				</ol>
+			</section>
+			if summary.HasArticlesToShow {
+				<button
+					hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
+					hx-target="#quiz-summary"
+					hx-swap="outerHTML"
+					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				>NESTE</button>
+			} else {
+				<a
+					href="/quiz"
+					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				>FERDIG</a>
+			}
+		</div>
+	}
+}
+
+templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
+	<li
+		class="mb-4"
+	>
+		{ aq.QuestionText }
+		<div class="flex items-center gap-2">
+			if aq.IsCorrect {
+				@icons.Checkmark(100, "green", 20, 20)
+			} else {
+				@icons.Cross(3, "red", 20, 20)
+			}
+			<p class="text-gray-700">{ aq.ChosenAlternativeText }</p>
+		</div>
+	</li>
+}

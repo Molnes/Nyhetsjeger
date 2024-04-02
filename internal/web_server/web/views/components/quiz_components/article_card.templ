@@ -1,0 +1,16 @@
+package quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+)
+
+// ArticleCard is a component that displays an article in a card format.
+// It has image, title and a link to the article.
+templ ArticleCard(article *articles.Article) {
+	<a href={ templ.SafeURL(article.ArticleURL.String()) }>
+		<article class="flex flex-row items-center bg-white max-w-screen-md aspect-[4/1] overflow-hidden rounded-card">
+			<img src={ article.ImgURL.String() } height="160" width="160" class="object-cover h-full w-auto"/>
+			<p class="font-bold text-center m-auto p-4 text-lg leading-snug">{ article.Title }</p>
+		</article>
+	</a>
+}

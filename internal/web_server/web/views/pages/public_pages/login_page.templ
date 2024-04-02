@@ -1,0 +1,20 @@
+package public_pages
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+
+templ LoginPage() {
+	@layout_components.BaseLayout("Logg inn") {
+		<div class="flex flex-col items-center justify-center min-h-screen">
+			<a
+				href="/auth/google/login"
+				class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-button"
+			>
+				Logg inn med Google
+			</a>
+			<a
+				href="/"
+				class="text-blue-500 hover:underline mt-3"
+			>Fortsett som gjest</a>
+		</div>
+	}
+}

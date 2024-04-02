@@ -2,11 +2,20 @@ BEGIN;
 
 CREATE TYPE user_role AS ENUM ('user', 'quiz_admin', 'organization_admin');
 
+CREATE TABLE IF NOT EXISTS adjectives (
+    adjective TEXT PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS nouns (
+    noun TEXT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sso_user_id TEXT NOT NULL, -- The user id from the SSO provider
-    username TEXT,
-    email TEXT NOT NULL,
+    username_adjective TEXT NOT NULL REFERENCES adjectives(adjective),
+    username_noun TEXT NOT NULL REFERENCES nouns(noun),
+    email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
     role user_role NOT NULL DEFAULT 'user',
@@ -18,19 +27,20 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    url TEXT NOT NULL,
-    image_url TEXT NOT NULL
+    url TEXT NOT NULL UNIQUE,
+    image_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS quizzes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
-    image_url TEXT NOT NULL,
+    image_url TEXT,
     available_from TIMESTAMP NOT NULL,
     available_to TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     last_modified_at TIMESTAMP NOT NULL DEFAULT now(),
-    published BOOLEAN NOT NULL DEFAULT FALSE
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS quiz_articles (
@@ -43,9 +53,11 @@ CREATE TABLE IF NOT EXISTS quiz_articles (
 CREATE TABLE IF NOT EXISTS questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
+    image_url TEXT,
     arrangement INTEGER NOT NULL,
     article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    time_limit_seconds INTEGER NOT NULL DEFAULT 30 CHECK (time_limit_seconds > 0),
     points INTEGER NOT NULL,
     CONSTRAINT question_arrangement UNIQUE (arrangement, quiz_id)
 );
@@ -83,8 +95,13 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
 CREATE OR REPLACE FUNCTION insert_quiz_articles()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- If the article_id is not null, insert a new entry
-    IF NEW.article_id IS NOT NULL THEN
+    -- If the article_id is not null and the quiz_article combo does not already exist, insert a new entry
+    IF NEW.article_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1
+        FROM quiz_articles
+        WHERE quiz_id = NEW.quiz_id AND article_id = NEW.article_id
+    )
+    THEN
         INSERT INTO quiz_articles (quiz_id, article_id) VALUES (NEW.quiz_id, NEW.article_id);
     END IF;
 
@@ -149,4 +166,24 @@ CREATE TABLE IF NOT EXISTS http_sessions (
               expires_on TIMESTAMPTZ);
               CREATE INDEX IF NOT EXISTS http_sessions_expiry_idx ON http_sessions (expires_on);
               CREATE INDEX IF NOT EXISTS http_sessions_key_idx ON http_sessions (key);
+
+
+CREATE VIEW available_usernames AS
+    SELECT a.adjective, n.noun
+    FROM adjectives a
+    CROSS JOIN nouns n
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM users u
+        WHERE u.username_adjective = a.adjective AND u.username_noun = n.noun
+    );
+
+-- Emails of users who should be granted a role when they sign up
+CREATE TABLE IF NOT EXISTS preassigned_roles(
+    email TEXT NOT NULL PRIMARY KEY,
+    role user_role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+    CONSTRAINT not_user_role CHECK (role != 'user')
+);
+
 END;

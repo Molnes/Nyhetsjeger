@@ -1,0 +1,19 @@
+
+package quiz_pages
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+
+templ FinishedQuizzes(quizzes []quizzes.Quiz) {
+	@layout_components.QuizLayoutMenu("Fullførte quizzer") {
+			<div class="p-4">
+				<h2 class="text-4xl p-4">Fullførte quizzer</h2>
+				<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
+					for _, quiz := range quizzes {
+						@quiz_components.QuizCard(quiz)
+					}
+				</div>
+			</div>
+	}
+}

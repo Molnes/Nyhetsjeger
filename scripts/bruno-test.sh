@@ -4,7 +4,7 @@
 go run cmd/test_users/main.go &
 
 cd bruno
-npx bru run --env test
+npx @usebruno/cli run --env test
 
 
 curl -X POST http://localhost:8089/shutdown

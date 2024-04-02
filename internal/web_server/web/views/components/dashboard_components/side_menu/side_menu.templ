@@ -1,0 +1,73 @@
+package side_menu
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
+
+type SideMenuItem int
+
+const (
+	Home           = 0
+	Leaderboard    = 1
+	AccessSettings = 2
+
+	MENU_CONTEXT_KEY = "chosen-side-menu-item"
+)
+
+templ SideMenu() {
+	<header
+		class="text-center bg-clightindigo w-full flex flex-row
+	 		lg:fixed lg:h-full lg:w-52 flex-wrap lg:flex-col"
+	>
+		<h1 class="text-2xl bg-cindigo text-white py-4 px-3 lg:mb-4 w-full">Quiz Admin Panel</h1>
+		<nav class="p-4 lg:p-0">
+			<ul class="flex flex-row lg:flex-col gap-4 flex-wrap justify-center">
+				@menuItem("Hjem", "/dashboard", isSelected(ctx, Home)) {
+					@icons.Home(20, "currentColor", 20, 20)
+				}
+				@menuItem("Toppliste", "/dashboard/leaderboard", isSelected(ctx, Leaderboard)) {
+					@icons.Trophy(20, "currentColor", 20, 20)
+				}
+				if isUserOrganizationAdmin(ctx) {
+					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
+						@icons.Gear(20, "currentColor", 20, 20)
+					}
+				}
+			</ul>
+		</nav>
+		<button hx-post="/auth/logout" class="block mx-auto lg:mt-auto lg:w-full p-4 hover:text-cindigo focus:text-cindigo cursor-pointer font-bold">Logg ut</button>
+	</header>
+}
+
+// Checks the context for the chosen side menu item and compares it to the current item. If value not set, returns false.
+func isSelected(ctx context.Context, item SideMenuItem) bool {
+	chosen, ok := ctx.Value(MENU_CONTEXT_KEY).(SideMenuItem)
+	if !ok {
+		return false
+	}
+	return chosen == item
+}
+
+// Checks if the current user's role is user_roles.OrganizationAdmin
+func isUserOrganizationAdmin(ctx context.Context) bool {
+	user, ok := ctx.Value(user_roles.ROLE_CONTEXT_KEY).(user_roles.Role)
+	if !ok {
+		return false
+	}
+	return user == user_roles.OrganizationAdmin
+}
+
+templ menuItem(text string, href string, highlight bool) {
+	<li class="lg:ml-4">
+		<a
+			href={ templ.SafeURL(href) }
+			if highlight {
+				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-white "
+			} else {
+				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-purple-100 hover:bg-white"
+			}
+		>
+			{ children... }
+			{ text }
+		</a>
+	</li>
+}

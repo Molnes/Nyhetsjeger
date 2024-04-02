@@ -1,0 +1,38 @@
+package dashboard_components
+
+import (
+	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+)
+
+// A row with a label and an input field.
+// The input field is for adding a new article to the list of articles.
+templ AddArticleInput(quizID string, nameInput string, errorText string) {
+	<div class="flex flex-row items-center flex-wrap gap-3">
+		<label for={ nameInput }>Link</label>
+		<input
+			id={ nameInput }
+			name={ nameInput }
+			type="text"
+			class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-1/2"
+			placeholder="https://www.smp.no/i/abcdef"
+		/>
+		<button
+			id="article-add-button"
+			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
+			hx-swap="beforeend"
+			hx-select="[data-element-type=article-list-item]"
+			hx-select-oob=".error-article"
+			hx-target="#article-list"
+			hx-target-4*=".error-article"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+		>
+			Legg til
+			@icons.Plus(80, "#5B14F2", 20, 20)
+		</button>
+	</div>
+	@ErrorText("error-article", errorText)
+}

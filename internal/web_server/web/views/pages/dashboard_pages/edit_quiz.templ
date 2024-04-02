@@ -1,0 +1,251 @@
+package dashboard_pages
+
+import (
+	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+)
+
+// Constants for the input names (for HTTP requests)
+const QuizTitle = "quiz-title"
+const QuizImageURL = "quiz-image-url"
+const QuizPublished = "quiz-is-published"
+const QuizArticleURL = "quiz-article-url"
+const QuizActiveFrom = "quiz-active-from"
+const QuizActiveTo = "quiz-active-to"
+
+// The "Edit quiz" page. This page is used to edit a quiz.
+// Add title, image, articles, active time, questions and answers.
+templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
+	@layout_components.DashBoardLayout("Rediger Quiz") {
+		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
+			// Quiz Title
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<label for={ QuizTitle } class="block font-bold">Tittel</label>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
+			}
+			// Quiz Image
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID)) {
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<label for={ QuizImageURL } class="block font-bold">Forside bilde</label>
+					@components.LoadingIndicator()
+				</div>
+				// TODO: Also support uploading an image
+				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true, "")
+			}
+			// Quiz Articles
+			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quiz.ID)) {
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Artikler i quizzen</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.AddArticleInput(quiz.ID.String(), QuizArticleURL, "")
+				// List of all articles
+				<ul
+					id="article-list"
+					class="mt-3 border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden"
+				>
+					<li
+						id="no-articles-warning"
+						if len(*articles) == 0 {
+							class="text-center p-4"
+						} else {
+							class="text-center p-4 hidden"
+						}
+					>
+						<p>Ingen artikler lagt til enda.</p>
+					</li>
+					for _, article := range *articles {
+						if article.ID.Valid {
+							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.ID.UUID.String(), quiz.ID.String())
+						}
+					}
+				</ul>
+				@dashboard_components.ErrorText("error-article-list", "")
+				@articleList()
+			}
+			// Quiz Active Time
+			@dashboard_components.EditQuizForm("") {
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Aktiv</h2>
+					@components.LoadingIndicator()
+				</div>
+				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.AvailableFrom, QuizActiveFrom, quiz.AvailableTo, QuizActiveTo, "")
+			}
+			// Quiz Questions
+			@dashboard_components.EditQuizForm("") {
+				<div class="flex flex-row items-center gap-3 mb-1">
+					<h2 class="font-bold">Spørsmål</h2>
+					@components.LoadingIndicator()
+				</div>
+				// List of all questions
+				<ul
+					id="question-list"
+					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden mb-3"
+				>
+					<li
+						id="no-questions-warning"
+						if len(*questions) == 0 {
+							class="text-center p-4"
+						} else {
+							class="text-center p-4 hidden"
+						}
+					>
+						<p>Ingen spørsmål lagt til enda.</p>
+					</li>
+					for _, question := range *questions {
+						@dashboard_components.QuestionListItem(&question)
+					}
+				</ul>
+				@questionList()
+				<button
+					id="new-question-button"
+					type="button"
+					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+					hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) }
+					hx-swap="innerHTML"
+					hx-target="#question-modal"
+					hx-trigger="click"
+				>
+					Legg til nytt spørsmål
+					@icons.Plus(80, "#5B14F2", 20, 20)
+				</button>
+				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
+			}
+			@components.LoadingIndicator()
+			@dashboard_components.ErrorText("error-quiz", "")
+			// Quiz Buttons: Delete, Hide, OK
+			@dashboard_components.EditQuizForm("") {
+				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
+					<button
+						type="button"
+						class="bg-red-500 text-white font-bold px-4 py-2 rounded-button"
+						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
+						hx-target-4*=".error-quiz"
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
+					>Slett quiz</button>
+					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
+					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button">Ferdig</a>
+				</div>
+			}
+		</div>
+	}
+	<dialog
+		id="question-modal"
+		class="px-10 py-5 border border-black border-solid min-w-80 max-w-screen-md w-3/4 lg:w-1/2"
+	></dialog>
+	@modalWindowScript()
+}
+
+// Opens the modal window needed to add or edit a question.
+
+script modalWindowScript() {
+		const questionModal = document.getElementById("question-modal");
+
+		// Open the modal window
+		function openQuestionModal() {
+			if (!questionModal.open) {
+				questionModal.showModal();
+			}
+		}
+
+		// Add event listener to 'add' and 'edit' question buttons.
+		// When the button is clicked, open the modal window.
+		document.body.addEventListener('htmx:afterOnLoad', function (event) {
+			if (event.detail.elt.id === 'new-question-button' || event.detail.elt.dataset.elementType === 'edit-question-button') {
+				openQuestionModal();
+			}
+		});
+}
+
+// This script is used to observe changes in the article list.
+// If the warning is displayed and an article is added, hide the warning.
+// If the last article is removed, the warning should be shown.
+
+script articleList() {
+		const articleList = document.getElementById("article-list");
+		const noArticlesWarning = document.getElementById("no-articles-warning");
+		const articleListError = document.getElementById("error-article-list");
+
+		// Observe if the children of article list are mutated (added or removed)
+		const observer = new MutationObserver(handleChanges);
+		const config = { childList: true };
+		observer.observe(articleList, config);
+
+		// If the article list is changed, this function is called
+		function handleChanges(mutationsList, observer) {
+				mutationsList.forEach(mutation => {
+						if (mutation.type === 'childList') {
+								updateWarningVisibility();
+						}
+				});
+		}
+
+		// Update if the warning should be shown or not
+		const updateWarningVisibility = () => {
+			// If the warning is shown, but an article is appended, hide the warning
+			if (noArticlesWarning && articleList.children.length > 1) {
+				noArticlesWarning.classList.add("hidden");
+			} else if (noArticlesWarning) {
+				noArticlesWarning.classList.remove("hidden");
+			}
+		}
+
+		articleList.addEventListener('htmx:afterRequest', function (event) {
+			console.log(event);
+			if (event.detail.xhr.status === 400) {
+				// resposetext is a JSON string and contains "status" and "message"
+				json = JSON.parse(event.detail.xhr.responseText);
+				articleListError.innerText = json.message;
+			} else {
+				articleListError.innerText = "";
+			}
+		});
+}
+
+// This script is used to observe changes in the question list.
+// If the warning is displayed and a question is added, hide the warning.
+// If the last question is removed, the warning should be shown.
+
+script questionList() {
+		const questionList = document.getElementById("question-list");
+		const noQuestionsWarning = document.getElementById("no-questions-warning");
+
+		// Observe if the children of question list are mutated (added or removed)
+		const observer = new MutationObserver(handleChanges);
+		const config = { childList: true };
+		observer.observe(questionList, config);
+
+		// If the question list is changed, this function is called
+		function handleChanges(mutationsList, observer) {
+				mutationsList.forEach(mutation => {
+						if (mutation.type === 'childList') {
+								updateWarningVisibility();
+						}
+				});
+		}
+
+		// Update if the warning should be shown or not
+		const updateWarningVisibility = () => {
+			// If the warning is shown, but a question is appended, hide the warning
+			if (noQuestionsWarning && questionList.children.length > 1) {
+				noQuestionsWarning.classList.add("hidden");
+			} else if (noQuestionsWarning) {
+				noQuestionsWarning.classList.remove("hidden");
+			}
+		}
+}

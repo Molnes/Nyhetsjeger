@@ -1,0 +1,49 @@
+package play_quiz_components
+
+import (
+	"fmt"
+)
+
+// Template for a simple timer in a circle. Counts down from the given time.
+templ timer(timeLeft uint) {
+	<div class="isolate">
+		<div
+			id="timer"
+			class="flex-shrink-0 text-xl font-bold h-12 w-12 bg-gray-300 rounded-1/2 flex justify-center items-center gradient-outline-circle"
+		>
+			{ fmt.Sprintf("%v", timeLeft) }
+		</div>
+	</div>
+	@setupTimer(timeLeft)
+}
+
+// sets up a timer that counts down from the given time.
+// Adds an event listener to stop the timer on "quiz:stop-timer"
+
+script setupTimer(timeLeft uint) {
+	let countDownTime = timeLeft;
+	const timerElem = document.getElementById("timer");
+	const timerIntervalId = setInterval(function() {
+		if (countDownTime > 0) {
+			countDownTime--;
+			timerElem.innerHTML = countDownTime;
+		} else {
+			clearInterval(timerIntervalId);
+		}
+	}, 1000);
+
+	timerElem.addEventListener("quiz:stop-timer", function() {
+		clearInterval(timerIntervalId);
+	});
+	
+}
+
+// Stops the timer on the given event emitted by the element with the given id.
+
+script stopTimerOn(eventName string, emitterId string) {
+	const emitter = document.getElementById(emitterId);
+	emitter.addEventListener(eventName, function(evt) {
+		const timerELem = document.getElementById('timer');
+		timerELem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
+	});
+}

@@ -1,0 +1,30 @@
+package dashboard_components
+
+import (
+	"fmt"
+	"time"
+
+	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
+)
+
+// Displays the input for the active end time of a quiz.
+// The input has datetime in Norway's timezone.
+templ EditActiveEndInput(endTime time.Time, quizID string, inputName string) {
+	<div id="quiz-active-end" class="block mb-3">
+		<label for={ inputName } class="mr-5">Til</label>
+		<input
+			id={ inputName }
+			name={ inputName }
+			type="datetime-local"
+			class="bg-purple-100 px-4 py-2 border border-clightindigo rounded-input"
+			value={ data_handling.GetNorwayTime(endTime).Format("2006-01-02T15:04") }
+			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-end?quiz-id=%s", quizID) }
+			hx-trigger="blur"
+			hx-swap="outerHTML"
+			hx-target="#active-time-wrapper"
+			hx-target-4*=".error-active-time"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
+		/>
+	</div>
+}
