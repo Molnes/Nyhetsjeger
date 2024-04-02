@@ -26,7 +26,7 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 			</section>
 			<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
 				<h2 class="text-2xl">OPPSUMMERING</h2>
-				<ol class="list-decimal px-4 overflow-y-auto scrollbar-hide">
+				<ol class="list-decimal px-4 overflow-y-auto scrollbar-hide my-4">
 					for _, aq := range summary.AnsweredQuestions {
 						@chosenAnswer(aq)
 					}
@@ -51,7 +51,7 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 	<li
-		class="mb-2"
+		class="mb-4"
 	>
 		{ aq.QuestionText }
 		<div class="flex items-center gap-2">
