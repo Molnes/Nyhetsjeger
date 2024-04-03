@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"regexp"
 
@@ -45,14 +46,28 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	userRankingInfo := user_ranking.UserRanking{}
 
-	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {
-		return err
+		if err == sql.ErrNoRows {
+			user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+			if err != nil {
+				return err
+			}
+			userRankingInfo = user_ranking.UserRanking{
+				Username:  user.Username,
+				Points:    0,
+				Placement: 0,
+			}
+		} else {
+
+			return err
+		}
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		quizList,
-        userRankingInfo,
+		userRankingInfo,
 	))
 }
 
@@ -112,11 +127,11 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
-        quizList, err := quizzes.GetQuizzesByUserIDAndFinishedOrNot(qph.sharedData.DB, utils.GetUserIDFromCtx(c),true)
-        if err != nil {
-                return err
-        }
-        return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizList))
+	quizList, err := quizzes.GetQuizzesByUserIDAndFinishedOrNot(qph.sharedData.DB, utils.GetUserIDFromCtx(c), true)
+	if err != nil {
+		return err
+	}
+	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizList))
 }
 
 func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
@@ -159,5 +174,3 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
 }
-
-

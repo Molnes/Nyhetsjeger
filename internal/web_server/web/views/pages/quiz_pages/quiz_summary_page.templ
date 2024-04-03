@@ -3,6 +3,7 @@ package quiz_pages
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"strconv"
 	"fmt"
 )
@@ -14,8 +15,8 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 			class="flex flex-col justify-start items-center px-1 py-5 h-screen isolate"
 		>
 			<section class="flex flex-col items-center">
-				<h1 class="font-bold text-3xl">RESULTAT</h1>
-				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center items-center mt-2 mb-5">
+				<h1 class="text-3xl">RESULTAT</h1>
+				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center gradient-outline-circle items-center mt-2 mb-5">
 					<p class="flex items-center font-bold text-1xl ">
 						<span class="w-2/5 text-right relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
 						<span class="w-1/5 text-center text-2xl">/</span>
@@ -24,16 +25,10 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 				</div>
 			</section>
 			<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
-				<h2 class="font-bold text-2xl">OPPSUMMERING</h2>
-				<ol class="list-none overflow-y-auto scrollbar-hide">
+				<h2 class="text-2xl">OPPSUMMERING</h2>
+				<ol class="list-decimal px-4 overflow-y-auto scrollbar-hide my-4">
 					for _, aq := range summary.AnsweredQuestions {
-						<li class="mb-2">
-							{ aq.QuestionText }
-							<br/>
-							<span class={ getColor(aq.IsCorrect), "font-bold pl-3" }>
-								{ aq.ChosenAlternativeText }
-							</span>
-						</li>
+						@chosenAnswer(aq)
 					}
 				</ol>
 			</section>
@@ -54,10 +49,18 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	}
 }
 
-// determine color of the answer based on if it is correct or not
-func getColor(correct bool) string {
-	if correct {
-		return "text-cyan-900"
-	}
-	return "text-orange-900"
+templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
+	<li
+		class="mb-4"
+	>
+		{ aq.QuestionText }
+		<div class="flex items-center gap-2">
+			if aq.IsCorrect {
+				@icons.Checkmark(100, "green", 20, 20)
+			} else {
+				@icons.Cross(3, "red", 20, 20)
+			}
+			<p class="text-gray-700">{ aq.ChosenAlternativeText }</p>
+		</div>
+	</li>
 }

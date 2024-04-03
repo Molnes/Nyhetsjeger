@@ -79,13 +79,13 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 }
 
 // Returns a user from the database with the SSO ID provided
-func GetUserBySsoID(db *sql.DB, sso_id string) (*User, error) {
+func GetUserBySsoID(db *sql.DB, ssoID string) (*User, error) {
 	row := db.QueryRow(
 		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
 		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE sso_user_id = $1`,
-		sso_id)
+		ssoID)
 	return scanUserFromFullRow(row)
 }
 

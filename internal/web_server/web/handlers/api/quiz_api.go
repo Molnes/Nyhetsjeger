@@ -12,6 +12,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -103,7 +104,7 @@ func (qah *QuizApiHandler) patchRandomUsername(c echo.Context) error {
 		return err
 	}
 
-	return c.String(http.StatusOK, username)
+	return utils.Render(c, http.StatusOK, user_management.UsernameInput("usrn-in", username))
 }
 
 // Deletes the user from the database and logs the user out
