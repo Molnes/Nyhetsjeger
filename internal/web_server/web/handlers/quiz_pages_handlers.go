@@ -17,6 +17,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	errInvalidOrMissingQuizID    = "Manglende eller ugyldig quiz-id"
+	errNoSuchQuiz                = "Quizzen ble ikke funnet"
+	errQuizNotCompletedNoSummary = "Quizzen er ikke fullført, oppsummering er ikke tilgjengelig"
+)
+
 type QuizPagesHandler struct {
 	sharedData *config.SharedData
 }
@@ -77,13 +83,13 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz-id")
+		return echo.NewHTTPError(http.StatusBadRequest, errInvalidOrMissingQuizID)
 	}
 
 	startQuizData, err := user_quiz.NextQuestionInQuiz(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
 	if err != nil {
 		if err == user_quiz.ErrNoSuchQuiz {
-			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
+			return echo.NewHTTPError(http.StatusNotFound, errNoSuchQuiz)
 		} else if err == user_quiz.ErrNoMoreQuestions {
 			return c.Redirect(http.StatusTemporaryRedirect, "/quiz/summary?quiz-id="+quizID.String())
 		} else {
@@ -100,16 +106,16 @@ func (qph *QuizPagesHandler) getPlayQuizPage(c echo.Context) error {
 func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 	quizID, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz-id")
+		return echo.NewHTTPError(http.StatusBadRequest, errInvalidOrMissingQuizID)
 	}
 
 	quizSummary, err := user_quiz_summary.GetQuizSummary(qph.sharedData.DB, utils.GetUserIDFromCtx(c), quizID)
 	if err != nil {
 		if err == user_quiz_summary.ErrNoSuchQuiz {
-			return echo.NewHTTPError(http.StatusNotFound, "No such quiz")
+			return echo.NewHTTPError(http.StatusNotFound, errNoSuchQuiz)
 		}
 		if err == user_quiz_summary.ErrQuizNotCompleted {
-			return echo.NewHTTPError(http.StatusConflict, "Quiz not completed - no summary available")
+			return echo.NewHTTPError(http.StatusConflict, errQuizNotCompletedNoSummary)
 		}
 	}
 
