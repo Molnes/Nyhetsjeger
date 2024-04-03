@@ -123,7 +123,10 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings))
+
+	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+
+	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings, userRankingInfo))
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
