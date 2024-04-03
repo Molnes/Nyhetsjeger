@@ -8,7 +8,7 @@ import (
 templ QuizCard(quiz quizzes.Quiz) {
 	<div class="bg-gray-200 rounded-card max-w-60 gradient-shadow gradient-outline isolate">
 		<img
-			src="https://picsum.photos/300/200"
+			src={ quiz.ImageURL.String() }
 			alt={ quiz.Title }
 			class="h-32 w-full bg-gray-500 rounded-t-card object-cover"
 		/>
