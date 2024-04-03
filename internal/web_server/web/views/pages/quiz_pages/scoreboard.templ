@@ -6,25 +6,41 @@ import (
 	"fmt"
 )
 
-templ Scoreboard(rankings []user_ranking.UserRanking) {
+templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Scoreboard") {
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			<div class="mx-auto">
-				<table class="border-collapse border border-slate-500">
+				<table class="border-collapse">
+					<colgroup>
+						<col class="min-w-16"/>
+						<col class="min-w-48"/>
+						<col class="min-w-28"/>
+					</colgroup>
 					<thead>
-						<tr class="bg-pink-100">
-							<th class="font-bold p-2 text-gray-800 border border-slate-600">Plass</th>
-							<th class="font-bold p-2 text-gray-800 border border-slate-600">Navn</th>
-							<th class="font-bold p-2 text-gray-800 border border-slate-600">Poeng</th>
+						<tr class="bg-cblue text-white font-bold">
+							<th class="px-4 py-2 border border-slate-600">Plass</th>
+							<th class="px-4 py-2 border border-slate-600">Navn</th>
+							<th class="px-4 py-2 border border-slate-600">Poeng</th>
 						</tr>
 					</thead>
 					<tbody>
+						if len(rankings) == 0 {
+							<tr class="text-center">
+								<td class="px-4 py-2 border border-slate-700" colspan="3">Fant ingen brukere i topplisten!</td>
+							</tr>
+						}
 						for _, user := range rankings {
-							<tr class="border-b hover:bg-purple-100">
-								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", user.Placement) }</td>
-								<td class="text-center p-2 border border-slate-700">{ user.Username }</td>
-								<td class="text-center p-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
+							<tr
+								if user == userInfo {
+									class="bg-blue-100 hover:bg-blue-200 text-center"
+								} else {
+									class="hover:bg-blue-200 text-center"
+								}
+							>
+								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Placement) }</td>
+								<td class="px-4 py-2 border border-slate-700">{ user.Username }</td>
+								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
 							</tr>
 						}
 					</tbody>
