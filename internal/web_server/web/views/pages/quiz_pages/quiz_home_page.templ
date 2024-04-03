@@ -13,22 +13,20 @@ import (
 templ QuizHomePage(quizzes []quizzes.Quiz, userInfo user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Quizzer") {
 		<div class="overflow-auto flex flex-col">
-        <div class="p-4">
-                <h2 class="text-4xl p-4"> Hei, <bold class="font-bold">{ userInfo.Username }</bold></h2>
-			<div class="flex justify-between items-center p-4 mr-14">
-				<h2
-					class="text-5xl border-gray-500 rounded-lg p-4 border 
-                "
-				>
-					{ fmt.Sprint(userInfo.Points) } <span class="text-2xl gray-500">poeng</span>
-				</h2>
-				<h2 class="flex items-center text-5xl border-gray-500 rounded-lg p-2 border">
-					@icons.Trophy(40, "orange", 28, 28)
-				<span class="pl-4"
-                > { fmt.Sprint(userInfo.Placement) } </span>
-				</h2>
+			<div class="p-4">
+				<h2 class="text-4xl p-4">Hei, <bold class="font-bold">{ userInfo.Username }</bold></h2>
+				<div class="flex justify-between items-center p-4 mr-14">
+					<div
+						class="text-4xl border-gray-500 rounded-lg px-3 py-2 border"
+					>
+						{ fmt.Sprint(userInfo.Points) } <span class="text-2xl gray-500">poeng</span>
+					</div>
+					<div class="flex items-center text-4xl border-gray-500 rounded-lg px-3 py-2 border">
+						@icons.Trophy(40, "orange", 36, 36)
+						<span class="pl-4">{ fmt.Sprint(userInfo.Placement) } </span>
+					</div>
+				</div>
 			</div>
-            </div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizzer</h2>
 				<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
