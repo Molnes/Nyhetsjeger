@@ -11,7 +11,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 	@layout_components.DashBoardLayout("Dashboard") {
 		<div class="flex flex-col px-8 py-6 max-w-screen-lg mx-auto">
 			<div class="flex flex-row gap-3 justify-between items-center mb-6">
-				<h1 class="text-3xl">Upubliserte quizzer</h1>
+				<h1 class="text-3xl">Upubliserte quizer</h1>
 				<button
 					class="text-md text-white bg-cindigo font-bold py-2 px-5 focus:bg-clightindigo focus:text-black shadow-sm rounded-button"
 					hx-post="/api/v1/admin/quiz/create-new"
@@ -22,7 +22,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 			<div class="flex flex-row flex-wrap mb-14 gap-y-8 gap-x-10">
 				if len(unpublishedQuizzes) == 0 {
 					<p class="w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
-						Fant ingen upubliserte quizzer. Lag en ny quiz!
+						Fant ingen upubliserte quizer. Lag en ny quiz!
 					</p>
 				}
 				for _, quiz := range unpublishedQuizzes {
@@ -30,7 +30,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 				}
 			</div>
 			<div class="flex flex-row gap-3 justify-between items-center mb-6">
-				<h1 class="text-3xl">Publiserte quizzer</h1>
+				<h1 class="text-3xl">Publiserte quizer</h1>
 				/* <button
 					class="text-md text-white font-bold bg-cindigo py-2 px-5 focus:bg-clightindigo focus:text-black shadow-sm rounded-button"
 				>
@@ -40,7 +40,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 			<div class="flex flex-row flex-wrap gap-y-8 gap-x-10">
 				if len(publishedQuizzes) == 0 {
 					<p class="w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
-						Fant ingen publiserte quizzer. For å publisere en quiz, velg en upublisert quiz og <b>ikke</b> kryss av for å skjule quiz.
+						Fant ingen publiserte quizer. For å publisere en quiz, velg en upublisert quiz og <b>ikke</b> kryss av for å skjule quiz.
 					</p>
 				}
 				for _, quiz := range publishedQuizzes {
