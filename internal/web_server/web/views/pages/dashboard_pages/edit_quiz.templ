@@ -179,7 +179,6 @@ script modalWindowScript() {
 script articleList() {
 		const articleList = document.getElementById("article-list");
 		const noArticlesWarning = document.getElementById("no-articles-warning");
-		const articleListError = document.getElementById("error-article-list");
 
 		// Observe if the children of article list are mutated (added or removed)
 		const observer = new MutationObserver(handleChanges);
@@ -197,6 +196,7 @@ script articleList() {
 
 		// Update if the warning should be shown or not
 		const updateWarningVisibility = () => {
+			document.getElementsByClassName("error-article")[0].innerText = "";
 			// If the warning is shown, but an article is appended, hide the warning
 			if (noArticlesWarning && articleList.children.length > 1) {
 				noArticlesWarning.classList.add("hidden");
@@ -204,17 +204,6 @@ script articleList() {
 				noArticlesWarning.classList.remove("hidden");
 			}
 		}
-
-		articleList.addEventListener('htmx:afterRequest', function (event) {
-			console.log(event);
-			if (event.detail.xhr.status === 400) {
-				// resposetext is a JSON string and contains "status" and "message"
-				json = JSON.parse(event.detail.xhr.responseText);
-				articleListError.innerText = json.message;
-			} else {
-				articleListError.innerText = "";
-			}
-		});
 }
 
 // This script is used to observe changes in the question list.
