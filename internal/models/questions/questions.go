@@ -379,7 +379,7 @@ type QuestionForm struct {
 // If the data is invalid, return an error describing the problem.
 // Returns the points, article URL, image URL, time limit and error text.
 func ParseAndValidateQuestionData(questionText string, questionPoints string, articleURLString string, imageURL string, timeLimit string) (uint, *url.URL, *url.URL, uint, string) {
-	if questionText == "" {
+	if strings.TrimSpace(questionText) == "" {
 		return 0, nil, nil, 0, "Spørsmålsteksten kan ikke være tom"
 	}
 
