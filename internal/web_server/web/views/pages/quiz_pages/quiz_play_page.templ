@@ -10,4 +10,17 @@ templ QuizPlayPage(title string, data *user_quiz.QuizData) {
 	@layout_components.QuizLayout(title) {
 		@play_quiz_components.QuizPlayContent(data)
 	}
+	@showDialogOnErrors()
+}
+
+script showDialogOnErrors() {
+	// htmx:afterRequest
+	document.body.addEventListener('htmx:afterRequest', function(event) {
+		if (event.detail.xhr.status >= 400) {
+			let response = event.detail.xhr.responseText;
+			if (response) {
+				console.log(response);
+			}
+		}
+	});
 }

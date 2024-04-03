@@ -2,6 +2,7 @@ package dashboard_components
 
 import (
 	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
 // An input field for editing the title of a quiz.
@@ -23,6 +24,6 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string, errorTex
 			hx-indicator="previous .htmx-indicator"
 			placeholder="Quiz: Uke X"
 		/>
-		@ErrorText("error-title", errorText)
+		@components.ErrorText("error-title", errorText)
 	</div>
 }
