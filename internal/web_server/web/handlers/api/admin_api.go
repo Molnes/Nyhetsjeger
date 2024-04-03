@@ -309,6 +309,9 @@ const errorArticleElementID = "error-article"
 
 // Adds an article to a quiz in the database.
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
+	// Set HX-Reswap header to "outerHTML" for error response
+	c.Response().Header().Set("HX-Reswap", "outerHTML")
+
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
@@ -334,9 +337,11 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-		articleURL, article.ID.UUID.String(), quiz_id.String(), dashboard_pages.QuizArticleURL, ""),
-	)
+	// Set HX-Reswap header to "outerHTML" for error response
+	c.Response().Header().Set("HX-Reswap", "beforeend")
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(
+		article.ArticleURL.String(), article.ID.UUID.String(), quiz_id.String()))
 }
 
 // Deletes an article from a quiz in the database.
