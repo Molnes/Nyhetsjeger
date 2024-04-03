@@ -20,7 +20,7 @@ templ BaseLayout(pageTitle string) {
 			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 			<script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/response-targets.js"></script>
 		</head>
-		<body class="font-body">
+		<body class="font-body min-h-screen bg-gray-50">
 			{ children... }
 			if os.Getenv("COMPOSE_PROFILES") == "dev" {
 				<script src="/static/js/livereload.js"></script>

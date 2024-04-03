@@ -14,14 +14,16 @@ templ QuizHomePage(quizzes []quizzes.Quiz, userInfo user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Quizer") {
 		<div class="overflow-auto flex flex-col">
 			<div class="p-4">
-				<h2 class="text-4xl p-4">Hei, <b>{ userInfo.Username }</b></h2>
+				<h2 class="text-3xl p-4">Hei, <b>{ userInfo.Username }</b></h2>
 				<div class="flex justify-between lg:justify-start items-center p-4 gap-3">
 					<div
-						class="text-4xl border-gray-500 rounded-lg px-3 py-2 border"
+						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
 					>
-						{ fmt.Sprint(userInfo.Points) } <span class="text-2xl gray-500">poeng</span>
+						{ fmt.Sprint(userInfo.Points) } <span class="text-2xl text-gray-700">poeng</span>
 					</div>
-					<div class="flex items-center text-4xl border-gray-500 rounded-lg px-3 py-2 border">
+					<div
+						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
+					>
 						@icons.Trophy(40, "orange", 36, 36)
 						<span class="pl-4">{ fmt.Sprint(userInfo.Placement) } </span>
 					</div>
@@ -29,7 +31,7 @@ templ QuizHomePage(quizzes []quizzes.Quiz, userInfo user_ranking.UserRanking) {
 			</div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizer</h2>
-				<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
+				<div class="flex flex-row justify-center md:justify-start flex-wrap p-4 lg:gap-20 gap-10">
 					for _, quiz := range quizzes {
 						@quiz_components.QuizCard(quiz)
 					}
