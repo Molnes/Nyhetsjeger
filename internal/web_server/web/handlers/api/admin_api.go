@@ -453,6 +453,9 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		if err != nil {
 			return err
 		}
+
+		// Set HX-Reswap header to "beforeend" for success response
+		c.Response().Header().Set("HX-Reswap", "beforeend")
 	} else if tempQuestion.ID == questionID {
 		// If the question ID is found, update the question.
 		question.ID = questionID
@@ -464,9 +467,6 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	} else if err != nil {
 		return err
 	}
-
-	// Set HX-Reswap header to "beforeend" for success response
-	c.Response().Header().Set("HX-Reswap", "beforeend")
 
 	// Return the "question item" element.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
@@ -484,6 +484,11 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	// Delete the question from the database
 	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
+		if err == questions.ErrLastQuestion {
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(errorQuestionElementID,
+				fmt.Sprintf("Kunne ikke slette spørsmål: %s", "det er siste spørsmålet i en publisert quiz. Lag et nytt spørsmål eller upubliser quizen for å slette spørsmålet.")))
+		}
+
 		return err
 	}
 

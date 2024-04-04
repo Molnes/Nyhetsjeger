@@ -18,6 +18,7 @@ var ErrNoQuestionDeleted = errors.New("questions: no question deleted")
 var ErrNoQuestionUpdated = errors.New("questions: no question updated")
 var ErrNoImageRemoved = errors.New("questions: no image removed")
 var ErrNoImageUpdated = errors.New("questions: no image updated")
+var ErrLastQuestion = errors.New("questions: cannot delete the last question in a published quiz")
 
 type Question struct {
 	ID               uuid.UUID
@@ -92,7 +93,7 @@ func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
 // Returns all questions for a given quiz.
 // Includes the article for each question.
 // Includes the alternatives for each question.
-func GetQuestionsByQuizID(db *sql.DB, id uuid.UUID) (*[]Question, error) {
+func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	rows, err := db.Query(
 		`SELECT
 				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
@@ -563,6 +564,7 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 
 // Delete a question from the database.
 // Deletes the question alternatives from the database.
+// If the question is the last one in a published quiz, return an error.
 func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 	// Start a transaction
 	tx, err := db.BeginTx(ctx, nil)
@@ -583,6 +585,23 @@ func DeleteQuestionByID(db *sql.DB, ctx context.Context, id *uuid.UUID) error {
 	if err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	res := tx.QueryRow(
+		`SELECT COUNT(qe.id)
+		FROM questions qe
+		JOIN quizzes qu ON qu.id = qe.quiz_id
+		WHERE qu.id = $1
+		AND qu.published = true`,
+		quizID,
+	)
+
+	// Number of questions in published quiz
+	var questionsInPublishedQuiz int
+
+	if res.Scan(&questionsInPublishedQuiz); questionsInPublishedQuiz == 1 {
+		tx.Rollback()
+		return ErrLastQuestion
 	}
 
 	// Delete the question from the database
