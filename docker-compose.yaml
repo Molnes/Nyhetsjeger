@@ -39,6 +39,8 @@ services:
       PORT: ${PORT:-8080}
     depends_on:
       - db
+    volumes:
+      - ./data/articles:/app/data/articles
     profiles:
       - prod
 

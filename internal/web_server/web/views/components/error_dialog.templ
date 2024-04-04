@@ -1,0 +1,56 @@
+package components
+
+const (
+	errorDialogId  = "error-dialog"
+	errorMessageId = "error-message"
+)
+
+// Error dialog with given title and message.
+//
+// If placed in a page, it will catch any htmx response with status code >= 400 and display the error dialog with error details.
+templ ErrorDialog(title string, message string) {
+	<dialog
+		id={ errorDialogId }
+		class="px-10 py-8 border-2 border-red-500 rounded-card"
+	>
+		<div class="flex flex-col gap-5">
+			<h1 class="text-3xl">{ title }</h1>
+			<p>{ message }</p>
+			<p
+				class="text-sm"
+			>
+				Detaljer: 
+				<span
+					id={ errorMessageId }
+					class="text-red-700 font-bold"
+				></span>
+			</p>
+			<a
+				class="text-md text-white bg-cindigo font-bold py-2 px-5 shadow-sm rounded-button mx-auto"
+				href="/"
+			>
+				Tilbake til forsiden
+			</a>
+		</div>
+	</dialog>
+	@showDialogOnErrors(errorDialogId, errorMessageId)
+}
+
+// Triggers the error dialog when an htmx request returns with status code >= 400.
+//
+// Adds text content of the error response element to the error dialog details.
+
+script showDialogOnErrors(errorDialogId string, errorMessageId string) {
+	document.body.addEventListener('htmx:afterRequest', function(event) {
+		const dialog = document.getElementById(errorDialogId);
+		if (event.detail.xhr.status >= 400) {
+			const response = event.detail.xhr.response;
+			if (response) {
+				const tempElem = document.createElement('div');
+				tempElem.innerHTML = response;
+				document.getElementById(errorMessageId).innerHTML = tempElem.textContent;
+				dialog.showModal();
+			}
+		}
+	});
+}

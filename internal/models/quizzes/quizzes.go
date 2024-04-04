@@ -1,7 +1,9 @@
 package quizzes
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"net/url"
@@ -11,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+var ErrNoQuestions = errors.New("quizzes: no questions in quiz")
 
 type QuizWithCompletion struct {
 	UserID            uuid.UUID
@@ -219,6 +223,8 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
          FROM quizzes
          WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
 				 	AND published = true
+                    AND available_from <= NOW()
+                    AND available_to >= NOW()
          ORDER BY quizzes.available_from DESC;`
 
 	rows, err := db.Query(q, pq.Array(quizIDs))
@@ -259,6 +265,86 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
 	return quizzes, nil
 
 }
+
+
+// Get quizzes that a user has finished or not. Quiz has to be published and not deleted. Gets quizzez that are not active.
+func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
+
+	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	quizIDs := []uuid.UUID{}
+	for _, q := range quiz {
+		if q.CompletionStatus == isFinished {
+			quizIDs = append(quizIDs, q.QuizID)
+		}
+	}
+
+	if len(quizIDs) == 0 {
+		return []Quiz{}, nil
+	}
+
+	q := `SELECT 
+
+        quizzes.id,
+        quizzes.title,
+        quizzes.image_url,
+        quizzes.available_from,
+        quizzes.available_to,
+        quizzes.created_at,
+        quizzes.last_modified_at,
+        quizzes.published,
+        quizzes.is_deleted
+
+
+
+         FROM quizzes
+         WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
+				 	AND published = true
+                    AND (available_from > NOW() OR available_to < NOW())
+                    ORDER BY quizzes.available_from DESC;`
+
+	rows, err := db.Query(q, pq.Array(quizIDs))
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quizzes := []Quiz{}
+	for rows.Next() {
+		var quiz Quiz
+		var imageURL sql.NullString
+		err := rows.Scan(
+			&quiz.ID,
+			&quiz.Title,
+			&imageURL,
+			&quiz.AvailableFrom,
+			&quiz.AvailableTo,
+			&quiz.CreatedAt,
+			&quiz.LastModifiedAt,
+			&quiz.Published,
+			&quiz.IsDeleted,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Set image URL
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
+
+}
+
 
 // Get all the quizzes that are not published and not deleted.
 func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
@@ -381,13 +467,44 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 }
 
 // Update the published status of a quiz by its ID.
-func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) error {
-	_, err := db.Exec(
+func UpdatePublishedStatusByQuizID(db *sql.DB, ctx context.Context, id uuid.UUID, published bool) error {
+	// Start a transaction
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// If quiz is published, but the quiz has no questions, then return an error.
+	if published {
+		result := tx.QueryRow(
+			`SELECT COUNT(*)
+			FROM questions q
+			WHERE q.quiz_id = $1`,
+			id)
+
+		var questionsInQuiz int
+		result.Scan(&questionsInQuiz)
+		if questionsInQuiz == 0 {
+			tx.Rollback()
+			return ErrNoQuestions
+		}
+	}
+
+	_, err = tx.Exec(
 		`UPDATE quizzes
 		SET published = $1
 		WHERE id = $2`,
 		published,
 		id)
+
+	if err != nil {
+		tx.Rollback()
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
 	return err
 }
 

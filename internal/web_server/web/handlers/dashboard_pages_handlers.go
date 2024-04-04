@@ -81,7 +81,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, uuid_id)
 
 	// Get all the questions for the quiz by quiz ID.
-	questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, uuid_id)
+	questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, &uuid_id)
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions))
 }

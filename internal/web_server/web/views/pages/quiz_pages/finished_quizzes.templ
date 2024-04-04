@@ -7,13 +7,18 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/q
 
 templ FinishedQuizzes(quizzes []quizzes.Quiz) {
 	@layout_components.QuizLayoutMenu("Fullførte quizer") {
-			<div class="p-4">
-				<h2 class="text-4xl p-4">Fullførte quizer</h2>
-				<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
-					for _, quiz := range quizzes {
-						@quiz_components.QuizCard(quiz)
-					}
-				</div>
+		<div class="p-4">
+			<h2 class="text-4xl p-4">Fullførte quizer</h2>
+			<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
+				if len(quizzes) == 0 {
+					<p class="text-xl w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+                    Du har ikke fullført noen quizer enda.
+					</p>
+				}
+				for _, quiz := range quizzes {
+					@quiz_components.QuizCard(quiz)
+				}
 			</div>
+		</div>
 	}
 }

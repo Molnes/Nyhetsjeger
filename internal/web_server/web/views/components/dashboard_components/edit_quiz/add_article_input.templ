@@ -2,7 +2,7 @@ package dashboard_components
 
 import (
 	"fmt"
-
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
@@ -32,5 +32,5 @@ templ AddArticleInput(quizID string, nameInput string, errorText string) {
 			@icons.Plus(80, "#5B14F2", 20, 20)
 		</button>
 	</div>
-	@ErrorText("error-article", errorText)
+	@components.ErrorText("error-article", errorText)
 }

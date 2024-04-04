@@ -40,7 +40,7 @@ templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []qu
 			<div class="flex flex-row flex-wrap gap-y-8 gap-x-10">
 				if len(publishedQuizzes) == 0 {
 					<p class="w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
-						Fant ingen publiserte quizer. For å publisere en quiz, velg en upublisert quiz og <b>ikke</b> kryss av for å skjule quiz.
+						Fant ingen publiserte quizer. For å publisere en quiz, velg en upublisert quiz og kryss av for å publisere quiz.
 					</p>
 				}
 				for _, quiz := range publishedQuizzes {
