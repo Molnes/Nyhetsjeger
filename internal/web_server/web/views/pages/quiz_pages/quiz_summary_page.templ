@@ -12,11 +12,11 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	@layout_components.QuizLayout("Oppsummering") {
 		<div
 			id="quiz-summary"
-			class="flex flex-col gap-5 justify-start items-center p-5 h-dvh isolate"
+			class="flex flex-col gap-10 justify-start items-center p-5 h-dvh isolate"
 		>
-			<section class="flex flex-col items-center">
+			<section class="flex flex-col gap-3 items-center">
 				<h1 class="text-3xl">Resultat</h1>
-				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center gradient-outline-circle items-center mt-3 mb-5">
+				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center gradient-outline-circle items-center">
 					<p class="flex items-center font-bold text-1xl ">
 						<span class="w-2/5 text-right text-xl relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
 						<span class="w-1/5 text-center text-3xl mx-1">/</span>
