@@ -4,22 +4,22 @@ import (
 	"fmt"
 )
 
-// A toggle to publish or unpublish a quiz.
-// If the quiz is published, the checkbox is not checked.
-// If the quiz is not published, the checkbox is checked.
+// A toggle to publish or unpublish (hide) a quiz.
+// If the quiz is not published, the checkbox is not checked.
+// If the quiz is published, the checkbox is checked.
 // While the request is pending, the previous indicator is displayed.
 templ ToggleQuizPublished(isPublished bool, quizID string, inputName string) {
 	<label
 		id="quiz-is-hidden-label"
 		class="bg-clightindigo font-bold px-4 py-2 cursor-pointer text-center rounded-button flex flex-row items-center"
 	>
-		Skjul quiz
+		Publiser quiz
 		<input
 			id={ inputName }
 			name={ inputName }
 			class="ml-3 p-1 h-5 w-5 rounded-button accent-cindigo"
 			type="checkbox"
-			if !isPublished {
+			if isPublished {
 				checked
 			}
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-published-status?quiz-id=%s", quizID) }
