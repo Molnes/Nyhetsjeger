@@ -4,6 +4,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
 const (
@@ -14,33 +15,38 @@ const (
 )
 
 templ AddEmailForm() {
-	<form
-		id={ _ADD_ADMIN_FORM }
-		class="flex flex-row flex-wrap gap-5 mb-3"
-		hx-post="/api/v1/organization-admin/access-control/admin"
-		hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
-		hx-swap="beforeend"
-	>
-		<label for="email">
-			Epost
-			<input
-				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 ml-1"
-				type="email"
-				name="email"
-				id="email"
-				placeholder="epost@gmail.com"
-				required
-			/>
-		</label>
-		<button
-			type="submit"
-			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+	<div>
+		<form
+			id={ _ADD_ADMIN_FORM }
+			class="flex flex-row flex-wrap gap-5 mb-3"
+			hx-post="/api/v1/organization-admin/access-control/admin"
+			hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
+			hx-swap="beforeend"
+			hx-target-error="next .post-admin-error"
 		>
-			Legg til
-			@icons.Plus(80, "#5B14F2", 20, 20)
-		</button>
-	</form>
+			<label for="email">
+				Epost
+				<input
+					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 ml-1"
+					type="email"
+					name="email"
+					id="email"
+					placeholder="epost@gmail.com"
+					required
+				/>
+			</label>
+			<button
+				type="submit"
+				class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+			>
+				Legg til
+				@icons.Plus(80, "#5B14F2", 20, 20)
+			</button>
+		</form>
+		@components.ErrorText("post-admin-error", "")
+	</div>
 	@resetFormAfterEvent(_ADD_ADMIN_FORM, "htmx:afterSwap")
+	@resetErrorAfterRequest("post-admin-error")
 }
 
 script resetFormAfterEvent(formId string, event string) {
@@ -48,6 +54,17 @@ script resetFormAfterEvent(formId string, event string) {
     document.body.addEventListener(event, (e) => {
         formElem.reset();
     });
+}
+
+// resets the error text after non-error responses
+
+script resetErrorAfterRequest(errorCLass string) {
+	document.body.addEventListener("htmx:afterRequest", (e) => {
+		const errorElem = document.getElementsByClassName(errorCLass)[0];
+		if (e.detail.xhr.status < 400) {
+			errorElem.innerText = "";
+		}
+	});
 }
 
 templ AdminsTable(admins *[]access_control.UserAdmin) {
