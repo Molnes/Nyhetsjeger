@@ -157,7 +157,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	var maxPoints uint
 	var timeLimit uint
 	var quizID uuid.UUID
-	var quizOpenTime time.Time
+	var quizActiveTime time.Time
 	err := db.QueryRow(
 		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id, questions.quiz_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
@@ -178,7 +178,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	// Check if the quiz is open.
 	err = db.QueryRow(
 		`SELECT available_to FROM quizzes WHERE id = $1;`, quizID,
-	).Scan(&quizOpenTime)
+	).Scan(&quizActiveTime)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	nowTime := time.Now().UTC()
 	var pointsAwarded uint
 	if isCorrect {
-		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizOpenTime))
+		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizActiveTime))
 	}
 	_, err = db.Exec(
 		`UPDATE user_answers
