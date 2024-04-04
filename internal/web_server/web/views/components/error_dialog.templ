@@ -5,6 +5,9 @@ const (
 	errorMessageId = "error-message"
 )
 
+// Error dialog with given title and message.
+//
+// If placed in a page, it will catch any htmx response with status code >= 400 and display the error dialog with error details.
 templ ErrorDialog(title string, message string) {
 	<dialog
 		id={ errorDialogId }
@@ -32,6 +35,10 @@ templ ErrorDialog(title string, message string) {
 	</dialog>
 	@showDialogOnErrors(errorDialogId, errorMessageId)
 }
+
+// Triggers the error dialog when an htmx request returns with status code >= 400.
+//
+// Adds text content of the error response element to the error dialog details.
 
 script showDialogOnErrors(errorDialogId string, errorMessageId string) {
 	document.body.addEventListener('htmx:afterRequest', function(event) {
