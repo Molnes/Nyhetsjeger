@@ -36,6 +36,7 @@ type Alternative struct {
 	ID            uuid.UUID
 	Text          string
 	IsCorrect     bool
+	Arrangement   uint
 	QuestionID    uuid.UUID
 	chosenBy      uint
 	PercentChosen float64
@@ -99,8 +100,6 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
 			FROM
 				questions q
-			LEFT JOIN
-				answer_alternatives a ON q.id = a.question_id
 			WHERE
 				quiz_id = $1
 			GROUP BY
@@ -152,6 +151,7 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 }
 
 // Converts a row from the database to a list of questions
+// Adds articles and alternatives to the questions. (separate queries)
 func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) {
 	questions := []Question{}
 
@@ -254,7 +254,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 
 	answerRows, err := db.Query(
 		`SELECT
-			aa.id, aa.text, aa.correct, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
+			aa.id, aa.text, aa.correct, aa.arrangement, aa.question_id, COUNT(ua.chosen_answer_alternative_id)
 		FROM
 			answer_alternatives aa
 		LEFT JOIN
@@ -262,8 +262,8 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		WHERE
 			aa.question_id = $1
 		GROUP BY
-			aa.id;
-		`, id)
+			aa.id
+		ORDER BY aa.arrangement;`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	for answerRows.Next() {
 		var a Alternative
 		err := answerRows.Scan(
-			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID, &a.chosenBy,
+			&a.ID, &a.Text, &a.IsCorrect, &a.Arrangement, &a.QuestionID, &a.chosenBy,
 		)
 		if err != nil {
 			return nil, err
@@ -293,12 +293,12 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 func GetAlternativesByQuestionID(db *sql.DB, id uuid.UUID) (*[]Alternative, error) {
 	rows, err := db.Query(
 		`SELECT
-      id, text, correct, question_id
+      id, text, correct, arrangement, question_id
     FROM
       answer_alternatives
     WHERE
-      question_id = $1`,
-		id)
+      question_id = $1
+	ORDER BY arrangement `, id)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func scanAlternativesFromFullRows(rows *sql.Rows) (*[]Alternative, error) {
 	for rows.Next() {
 		var a Alternative
 		err := rows.Scan(
-			&a.ID, &a.Text, &a.IsCorrect, &a.QuestionID,
+			&a.ID, &a.Text, &a.IsCorrect, &a.Arrangement, &a.QuestionID,
 		)
 		if err != nil {
 			return nil, err
