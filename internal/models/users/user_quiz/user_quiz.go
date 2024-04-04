@@ -156,11 +156,13 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	var chosenAnswerIdNull uuid.UUID
 	var maxPoints uint
 	var timeLimit uint
+	var quizID uuid.UUID
+	var quizOpenTime time.Time
 	err := db.QueryRow(
-		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id
+		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id, questions.quiz_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
 		WHERE user_id = $1 AND question_id = $2;`, userId, questionId,
-	).Scan(&questionPresentedAt, &maxPoints, &timeLimit, &chosenAnswerIdNull)
+	).Scan(&questionPresentedAt, &maxPoints, &timeLimit, &chosenAnswerIdNull, &quizID)
 	if err != nil {
 		return nil, err
 	}
@@ -173,10 +175,18 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, err
 	}
 
+	// Check if the quiz is open.
+	err = db.QueryRow(
+		`SELECT available_to FROM quizzes WHERE id = $1;`, quizID,
+	).Scan(&quizOpenTime)
+	if err != nil {
+		return nil, err
+	}
+
 	nowTime := time.Now().UTC()
 	var pointsAwarded uint
 	if isCorrect {
-		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints)
+		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizOpenTime))
 	}
 	_, err = db.Exec(
 		`UPDATE user_answers
@@ -211,7 +221,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 // Calculates the points awarded for answering a question. The points are based on the time taken to answer the question.
 // As of now there are 3 possible outcomes: 100%, 50% or 25% of the max points.
 // These are based on the thresholds: 0-25%, 25-50% and 50+% of the time limit used.
-func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint) uint {
+func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint, pastQuizOpenTime bool) uint {
 
 	diff := answeredAt.Sub(questionPresentadAt)
 
@@ -229,6 +239,10 @@ func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLi
 		pointsAwarded = float64(maxPoints) / 2
 	} else {
 		pointsAwarded = float64(maxPoints) / 4
+	}
+	// If the quiz is not open, the points awarded are halved.
+	if pastQuizOpenTime {
+		pointsAwarded = pointsAwarded * 0.5
 	}
 
 	rounded := math.RoundToEven(pointsAwarded)
