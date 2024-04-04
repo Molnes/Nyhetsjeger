@@ -4,6 +4,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
 const (
@@ -14,40 +15,61 @@ const (
 )
 
 templ AddEmailForm() {
-	<form
-		id={ _ADD_ADMIN_FORM }
-		class="flex flex-row flex-wrap gap-5 mb-3"
-		hx-post="/api/v1/organization-admin/access-control/admin"
-		hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
-		hx-swap="beforeend"
-	>
-		<label for="email">
-			Epost
-			<input
-				class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2"
-				type="email"
-				name="email"
-				id="email"
-				placeholder="epost@gmail.com"
-				required
-			/>
-		</label>
-		<button
-			type="submit"
-			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+	<div>
+		<form
+			id={ _ADD_ADMIN_FORM }
+			class="flex flex-row flex-wrap gap-5 mb-3"
+			hx-post="/api/v1/organization-admin/access-control/admin"
+			hx-target={ fmt.Sprintf("#%s", _ADMINS_TABLE_BODY) }
+			hx-swap="beforeend"
+			hx-target-error="next .post-admin-error"
 		>
-			Legg til
-			@icons.Plus(80, "#5B14F2", 20, 20)
-		</button>
-	</form>
-	@resetFormAfterEvent(_ADD_ADMIN_FORM, "htmx:afterSwap")
+			<label for="email">
+				Epost
+				<input
+					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 ml-1"
+					type="email"
+					name="email"
+					id="email"
+					placeholder="epost@gmail.com"
+					required
+				/>
+			</label>
+			<button
+				type="submit"
+				class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+			>
+				Legg til
+				@icons.Plus(80, "#5B14F2", 20, 20)
+			</button>
+		</form>
+		@components.ErrorText("post-admin-error", "")
+	</div>
+	@resetFormAfterPositiveResponse(_ADD_ADMIN_FORM)
+	@resetErrorAfterRequest("post-admin-error", _ADD_ADMIN_FORM)
 }
 
-script resetFormAfterEvent(formId string, event string) {
+// resets the form after a successful request (status < 400)
+
+script resetFormAfterPositiveResponse(formId string) {
     formElem = document.getElementById(formId);
-    document.body.addEventListener(event, (e) => {
-        formElem.reset();
+    formElem.addEventListener("htmx:afterRequest", (e) => {
+		if (e.detail.xhr.status < 400) {
+        	formElem.reset();
+		}
     });
+}
+
+// resets the error text after non-error responses
+
+script resetErrorAfterRequest(errorCLass string, formId string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener("htmx:afterRequest", (e) => {
+		const errorElem = document.getElementsByClassName(errorCLass)[0];
+		if (e.detail.xhr.status < 400) {
+			errorElem.innerText = "";
+		}
+	});
 }
 
 templ AdminsTable(admins *[]access_control.UserAdmin) {
@@ -64,7 +86,15 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 				class="border-collapse border border-slate-500"
 			>
 				<th class="px-2 w-56">Epost</th>
-				<th class="px-2 w-20">Status</th>
+				<th class="px-2 w-28">
+					Status 
+					<button
+						class="ml-2 inline relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+					>
+						i
+						@components.Tooltip("Aktiv - eposten er registrert i systemt. Inaktiv blir gjort om til aktiv ved første innlogging.")
+					</button>
+				</th>
 				<th></th>
 			</tr>
 		</thead>

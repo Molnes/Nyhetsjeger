@@ -8,8 +8,15 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/access_settings_components"
 	"github.com/labstack/echo/v4"
+)
+
+const (
+	hxReswap            = "HX-Reswap"
+	hxOuterHTML         = "outerHTML"
+	classPostAdminError = "post-admin-error"
 )
 
 type OrganizationAdminApiHandler struct {
@@ -31,7 +38,8 @@ func (oah *OrganizationAdminApiHandler) RegisterOrganizationAdminHandlers(g *ech
 func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) error {
 	email := c.FormValue("email")
 	if email == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Missing email")
+		c.Response().Header().Set(hxReswap, hxOuterHTML)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Missing email"))
 	}
 
 	session, err := oah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
@@ -40,13 +48,15 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	}
 	caller := session.Values[sessions.USER_DATA_VALUE].(users.UserSessionData)
 	if caller.Email == email {
-		return echo.NewHTTPError(http.StatusBadRequest, "Cannot modify own admin status")
+		c.Response().Header().Set(hxReswap, hxOuterHTML)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Cannot modify own admin status"))
 	}
 
 	userAdmin, err := access_control.AddAdmin(oah.sharedData.DB, email)
 	if err != nil {
 		if err == access_control.ErrEmailAlreadyAdmin {
-			return echo.NewHTTPError(http.StatusConflict, "Given email already has admin role assigned")
+			c.Response().Header().Set(hxReswap, hxOuterHTML)
+			return utils.Render(c, http.StatusConflict, components.ErrorText(classPostAdminError, "Given email already has admin role assigned"))
 		}
 		return err
 	}
