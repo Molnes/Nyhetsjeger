@@ -2,6 +2,7 @@ package dashboard_components
 
 import (
 	"net/url"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
 // An input field for updating the image.
@@ -46,6 +47,6 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 				}
 			>Fjern bilde</button>
 		}
-		@ErrorText("error-image", errorText)
+		@components.ErrorText("error-image", errorText)
 	</div>
 }

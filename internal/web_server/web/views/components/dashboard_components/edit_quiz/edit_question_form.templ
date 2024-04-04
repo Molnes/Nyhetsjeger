@@ -142,7 +142,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
-		@ErrorText("error-question", "")
+		@components.ErrorText("error-question", "")
 		// Buttons
 		<div class="flex flex-row justify-between gap-5 mt-5">
 			<button

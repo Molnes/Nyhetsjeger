@@ -1,0 +1,8 @@
+package components
+
+import "fmt"
+
+// Shows an error message.
+templ ErrorText(className string, errorText string) {
+	<p class={ fmt.Sprintf("text-red-500 text-left mt-1 font-sans %s", className) }>{ errorText }</p>
+}
