@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/public_pages"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -52,19 +53,10 @@ func HTTPErrorHandler(err error, c echo.Context) {
 	}
 
 	if c.Get(_API_CONTEXT) != nil {
-		c.JSON(code,
-			errorResponse{
-				code,
-				errorMessage,
-			})
+		utils.Render(c, code, components.ErrorText("", errorMessage))
 	} else {
 		utils.Render(c, code, public_pages.ErrorPage(code, errorMessage))
 	}
-}
-
-type errorResponse struct {
-	StatusCode int    `json:"status_code"`
-	Message    string `json:"message"`
 }
 
 // Sets the contextk for API error display.
