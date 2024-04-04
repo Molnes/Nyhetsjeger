@@ -15,7 +15,7 @@ templ ErrorDialog(title string, message string) {
 	>
 		<div class="flex flex-col gap-5">
 			<h1 class="text-3xl">{ title }</h1>
-			<p class="">{ message }</p>
+			<p>{ message }</p>
 			<p
 				class="text-sm"
 			>
@@ -48,9 +48,7 @@ script showDialogOnErrors(errorDialogId string, errorMessageId string) {
 			if (response) {
 				const tempElem = document.createElement('div');
 				tempElem.innerHTML = response;
-				const message = tempElem.textContent;
-				let messageElement = document.getElementById(errorMessageId);
-				messageElement.innerHTML = message;
+				document.getElementById(errorMessageId).innerHTML = tempElem.textContent;
 				dialog.showModal();
 			}
 		}
