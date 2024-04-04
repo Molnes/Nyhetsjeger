@@ -173,12 +173,12 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 
 	// Update the quiz published status
 	published := c.FormValue(dashboard_pages.QuizPublished)
-	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, published != "on")
+	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, published == "on")
 	if err != nil {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published != "on", quiz_id.String(), dashboard_pages.QuizPublished))
+	return utils.Render(c, http.StatusOK, dashboard_components.ToggleQuizPublished(published == "on", quiz_id.String(), dashboard_pages.QuizPublished))
 }
 
 const errorActiveTimeElementID = "error-active-time"
