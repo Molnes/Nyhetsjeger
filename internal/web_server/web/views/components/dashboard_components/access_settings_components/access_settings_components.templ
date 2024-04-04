@@ -86,7 +86,15 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 				class="border-collapse border border-slate-500"
 			>
 				<th class="px-2 w-56">Epost</th>
-				<th class="px-2 w-20">Status</th>
+				<th class="px-2 w-28">
+					Status 
+					<button
+						class="ml-2 inline relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+					>
+						i
+						@components.Tooltip("Aktiv - eposten er registrert i systemt. Inaktiv blir gjort om til aktiv ved første innlogging.")
+					</button>
+				</th>
 				<th></th>
 			</tr>
 		</thead>
