@@ -39,7 +39,7 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 			<section class="flex flex-col gap-4 items-center scrollbar-hide w-full">
 				<h2 class="text-2xl">Oppsummering</h2>
 				<div class="gradient-outline w-fit h-fit">
-					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-22em)] overflow-y-auto scrollbar-hide bg-white rounded-card">
+					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-22em)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
 						for _, aq := range summary.AnsweredQuestions {
 							@chosenAnswer(aq)
 						}
