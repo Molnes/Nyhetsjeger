@@ -14,7 +14,7 @@ templ QuizHomePage(quizzes []quizzes.Quiz, userInfo user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Quizer") {
 		<div class="overflow-auto flex flex-col">
 			<div class="p-4">
-				<h2 class="text-3xl p-4">Hei, <b>{ userInfo.Username }</b></h2>
+				<p class="text-3xl p-4">Hei, <b>{ userInfo.Username }</b>!</p>
 				<div class="flex justify-between lg:justify-start items-center p-4 gap-3">
 					<div
 						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
@@ -32,6 +32,11 @@ templ QuizHomePage(quizzes []quizzes.Quiz, userInfo user_ranking.UserRanking) {
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizer</h2>
 				<div class="flex flex-row justify-center md:justify-start flex-wrap p-4 lg:gap-20 gap-10">
+					if len(quizzes) == 0 {
+						<p class="text-xl w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+							Beklager, ingen quizer tilgjengelig for øyeblikket. Kom tilbake senere!
+						</p>
+					}
 					for _, quiz := range quizzes {
 						@quiz_components.QuizCard(quiz)
 					}
