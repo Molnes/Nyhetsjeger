@@ -1,4 +1,4 @@
-FROM node:latest AS tailwind-builder
+FROM node:21 AS tailwind-builder
 WORKDIR /app
 
 COPY assets/css/styles.css ./assets/css/
@@ -8,7 +8,7 @@ COPY tailwind.config.js ./
 RUN npm install tailwindcss@latest
 RUN npx tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
 
-FROM golang:latest AS go-builder
+FROM golang:1.22 AS go-builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -22,7 +22,7 @@ COPY internal/ ./internal/
 RUN templ generate
 RUN go build -o ./bin/main ./cmd/server/main.go
 
-FROM golang:latest
+FROM golang:1.22
 WORKDIR /app
 
 COPY --from=go-builder /app/bin ./
