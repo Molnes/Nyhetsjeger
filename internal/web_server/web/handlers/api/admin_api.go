@@ -177,7 +177,7 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, c.Request().Context(), quiz_id, published == "on")
 	if err != nil {
 		if err == quizzes.ErrNoQuestions {
-			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-quiz",
 				"Kan ikke publisere en quiz uten spørsmål. Legg til minst ett spørsmål før du publiserer quizen."))
 		}
 
@@ -491,7 +491,7 @@ func (aah *AdminApiHandler) deleteQuestion(c echo.Context) error {
 	err = questions.DeleteQuestionByID(aah.sharedData.DB, c.Request().Context(), &questionID)
 	if err != nil {
 		if err == questions.ErrLastQuestion {
-			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText(errorQuestionElementID,
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID,
 				fmt.Sprintf("Kunne ikke slette spørsmål: %s", "det er siste spørsmålet i en publisert quiz. Lag et nytt spørsmål eller upubliser quizen for å slette spørsmålet.")))
 		}
 
