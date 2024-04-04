@@ -173,8 +173,13 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 
 	// Update the quiz published status
 	published := c.FormValue(dashboard_pages.QuizPublished)
-	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, quiz_id, published == "on")
+	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, c.Request().Context(), quiz_id, published == "on")
 	if err != nil {
+		if err == quizzes.ErrNoQuestions {
+			return utils.Render(c, http.StatusBadRequest, dashboard_components.ErrorText("error-quiz",
+				"Kan ikke publisere en quiz uten spørsmål. Legg til minst ett spørsmål før du publiserer quizen."))
+		}
+
 		return err
 	}
 

@@ -1,7 +1,9 @@
 package quizzes
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"net/url"
@@ -11,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+var ErrNoQuestions = errors.New("quizzes: no questions in quiz")
 
 type QuizWithCompletion struct {
 	UserID            uuid.UUID
@@ -381,13 +385,44 @@ func DeleteQuizByID(db *sql.DB, id uuid.UUID) error {
 }
 
 // Update the published status of a quiz by its ID.
-func UpdatePublishedStatusByQuizID(db *sql.DB, id uuid.UUID, published bool) error {
-	_, err := db.Exec(
+func UpdatePublishedStatusByQuizID(db *sql.DB, ctx context.Context, id uuid.UUID, published bool) error {
+	// Start a transaction
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// If quiz is published, but the quiz has no questions, then return an error.
+	if published {
+		result := tx.QueryRow(
+			`SELECT COUNT(*)
+			FROM questions q
+			WHERE q.quiz_id = $1`,
+			id)
+
+		var questionsInQuiz int
+		result.Scan(&questionsInQuiz)
+		if questionsInQuiz == 0 {
+			tx.Rollback()
+			return ErrNoQuestions
+		}
+	}
+
+	_, err = tx.Exec(
 		`UPDATE quizzes
 		SET published = $1
 		WHERE id = $2`,
 		published,
 		id)
+
+	if err != nil {
+		tx.Rollback()
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
 	return err
 }
 

@@ -62,6 +62,17 @@ script toggleQuizPublished(inputName string, isPublished bool) {
 			togglePublishedInput.checked = !togglePublishedInput.checked;
 		}
 	}
-
 	togglePublishedInput.addEventListener("htmx:confirm", confirmListener);
+
+	// If the request fails, reset the checkbox to its previous state.
+	const errorListener = (event) => {
+		if (event.detail.xhr.status >= 400) {
+			togglePublishedInput.checked = !togglePublishedInput.checked;
+			togglePublishedInput.addEventListener("htmx:confirm", confirmListener);
+		} else {
+			document.querySelector(".error-quiz").textContent = "";
+			togglePublishedInput.removeEventListener("htmx:afterRequest", errorListener);
+		}
+	}
+	togglePublishedInput.addEventListener("htmx:afterRequest", errorListener);
 }
