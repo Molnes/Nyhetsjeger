@@ -45,21 +45,26 @@ templ AddEmailForm() {
 		</form>
 		@components.ErrorText("post-admin-error", "")
 	</div>
-	@resetFormAfterEvent(_ADD_ADMIN_FORM, "htmx:afterSwap")
-	@resetErrorAfterRequest("post-admin-error")
+	@resetFormAfterPositiveResponse(_ADD_ADMIN_FORM)
+	@resetErrorAfterRequest("post-admin-error", _ADD_ADMIN_FORM)
 }
 
-script resetFormAfterEvent(formId string, event string) {
+// resets the form after a successful request (status < 400)
+
+script resetFormAfterPositiveResponse(formId string) {
     formElem = document.getElementById(formId);
-    document.body.addEventListener(event, (e) => {
-        formElem.reset();
+    formElem.addEventListener("htmx:afterRequest", (e) => {
+		if (e.detail.xhr.status < 400) {
+        	formElem.reset();
+		}
     });
 }
 
 // resets the error text after non-error responses
 
-script resetErrorAfterRequest(errorCLass string) {
-	document.body.addEventListener("htmx:afterRequest", (e) => {
+script resetErrorAfterRequest(errorCLass string, formId string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener("htmx:afterRequest", (e) => {
 		const errorElem = document.getElementsByClassName(errorCLass)[0];
 		if (e.detail.xhr.status < 400) {
 			errorElem.innerText = "";
