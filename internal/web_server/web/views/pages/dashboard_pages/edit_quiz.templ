@@ -27,6 +27,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
+			<p class="font-sans text-gray-500 text-center"><b>Alt lagres automatisk.</b> Merk at om du redigerer en publisert quiz, så vil <b>ikke</b> dette ha en tilbakevirkende effekt. Med andre ord, om du for eksempel endrer poengsum, så vil brukere som tar den nye versjonen av quizen få annen poengsum enn de som tok den før endringen.</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quiz.ID)) {
 				<div class="flex flex-row items-center gap-3 mb-1">
@@ -179,7 +180,6 @@ script modalWindowScript() {
 script articleList() {
 		const articleList = document.getElementById("article-list");
 		const noArticlesWarning = document.getElementById("no-articles-warning");
-		const articleListError = document.getElementById("error-article-list");
 
 		// Observe if the children of article list are mutated (added or removed)
 		const observer = new MutationObserver(handleChanges);
@@ -197,6 +197,7 @@ script articleList() {
 
 		// Update if the warning should be shown or not
 		const updateWarningVisibility = () => {
+			document.getElementsByClassName("error-article")[0].innerText = "";
 			// If the warning is shown, but an article is appended, hide the warning
 			if (noArticlesWarning && articleList.children.length > 1) {
 				noArticlesWarning.classList.add("hidden");
@@ -204,17 +205,6 @@ script articleList() {
 				noArticlesWarning.classList.remove("hidden");
 			}
 		}
-
-		articleList.addEventListener('htmx:afterRequest', function (event) {
-			console.log(event);
-			if (event.detail.xhr.status === 400) {
-				// resposetext is a JSON string and contains "status" and "message"
-				json = JSON.parse(event.detail.xhr.responseText);
-				articleListError.innerText = json.message;
-			} else {
-				articleListError.innerText = "";
-			}
-		});
 }
 
 // This script is used to observe changes in the question list.

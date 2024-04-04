@@ -309,6 +309,9 @@ const errorArticleElementID = "error-article"
 
 // Adds an article to a quiz in the database.
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
+	// Set HX-Reswap header to "outerHTML" for error response
+	c.Response().Header().Set("HX-Reswap", "outerHTML")
+
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
@@ -334,9 +337,11 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, composite_components.ArticleInputAndItem(
-		articleURL, article.ID.UUID.String(), quiz_id.String(), dashboard_pages.QuizArticleURL, ""),
-	)
+	// Set HX-Reswap header to "outerHTML" for error response
+	c.Response().Header().Set("HX-Reswap", "beforeend")
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(
+		article.ArticleURL.String(), article.ID.UUID.String(), quiz_id.String()))
 }
 
 // Deletes an article from a quiz in the database.
@@ -368,6 +373,9 @@ const errorQuestionElementID = "error-question"
 // If the question ID is not found, a new question will be created.
 // If the question ID is found, the question will be updated.
 func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
+	// Set HX-Reswap header to "outerHTML" for error response
+	c.Response().Header().Set("HX-Reswap", "outerHTML")
+
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
@@ -456,6 +464,9 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	} else if err != nil {
 		return err
 	}
+
+	// Set HX-Reswap header to "beforeend" for success response
+	c.Response().Header().Set("HX-Reswap", "beforeend")
 
 	// Return the "question item" element.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))

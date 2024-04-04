@@ -1,28 +1,30 @@
 package quiz_components
 
 templ BurgerMenu() {
-	<header class="bg-cindigo text-white py-4">
+	// If the size of this header changes, the top-[56px] class in the script below must be updated to match the new size
+	// There are also other classes that may need to be updated if the size of the header changes
+	<header class="bg-cindigo text-white">
 		<!-- with inspiration from https://www.geeksforgeeks.org/how-to-create-a-responsive-navigation-bar-in-tailwind-css/ -->
 		<nav
 			class="flex justify-between  
                     items-center w-[92%]  mx-auto"
 		>
-			<div class="w-16 font-bold">
+			<div class="font-bold p-4">
 				Nyhetsjeger
 			</div>
 			<div
 				id="navbar"
-				class="z-50 nav-links duration-500 md:static absolute md:min-h-fit min-h-[94vh] left-0 top-[-100%] md:w-auto w-full flex items-center px-5"
+				class="z-50 nav-links duration-500 md:static absolute md:min-h-fit min-h-[calc(100vh-56px)] w-full left-0 top-[-100%] md:w-auto flex md:items-center"
 			>
 				<ul
-					class="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-28"
+					class="flex md:flex-row flex-col md:items-center gap-4 w-full py-5 md:p-0"
 				>
-					<li><a href="/quiz" class="hover:text-gray-600 px-4 py-2">Home</a></li>
-					<li><a href="/quiz/toppliste" class="hover:text-gray-600 px-4 py-2">Toppliste</a></li>
-					<li><a href="/quiz/fullforte" class="hover:text-gray-600 px-4 py-2">Fullførte quizzer</a></li>
-					<li><a href="/quiz/profil" class="hover:text-gray-600 px-4 py-2">Profil</a></li>
-					<li class="">
-						<button hx-post="/auth/logout" class="hover:text-gray-600 focus:text-gray-600 focus:outline-none px-4 py-2">Logg ut</button>
+					<li><a class="block p-4 hover:bg-cblue" href="/quiz">Home</a></li>
+					<li><a class="block p-4 hover:bg-cblue" href="/quiz/toppliste">Toppliste</a></li>
+					<li><a class="block p-4 hover:bg-cblue" href="/quiz/fullforte">Fullførte quizer</a></li>
+					<li><a class="block p-4 hover:bg-cblue" href="/quiz/profil">Profil</a></li>
+					<li>
+						<button class="block p-4 hover:bg-cblue w-full md:w-auto" hx-post="/auth/logout">Logg ut</button>
 					</li>
 				</ul>
 			</div>
@@ -42,7 +44,7 @@ templ BurgerMenu() {
         const navLinks = document.querySelector('.nav-links') 
         function onToggleMenu(e) { 
                 e.name = e.name === 'menu' ? 'close' : 'menu' 
-                        navLinks.classList.toggle('top-[6%]')
+                        navLinks.classList.toggle('top-[56px]')
                         navLinks.classList.toggle('bg-cindigo')
         } 
         </script>
