@@ -175,7 +175,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, err
 	}
 
-	// Check if the quiz is open.
+	// Check if the quiz is active.
 	err = db.QueryRow(
 		`SELECT available_to FROM quizzes WHERE id = $1;`, quizID,
 	).Scan(&quizEndTime)
@@ -222,7 +222,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 // As of now there are 3 possible outcomes: 100%, 50% or 25% of the max points.
 // These are based on the thresholds: 0-25%, 25-50% and 50+% of the time limit used.
 // If the quiz is not active, the points awarded are halved.
-func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint, pastQuizOpenTime bool) uint {
+func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint, pastQuizActiveTime bool) uint {
 
 	diff := answeredAt.Sub(questionPresentadAt)
 
@@ -242,7 +242,7 @@ func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLi
 		pointsAwarded = float64(maxPoints) / 4
 	}
 	// If the quiz is not active, the points awarded are halved.
-	if pastQuizOpenTime {
+	if pastQuizActiveTime {
 		pointsAwarded = pointsAwarded * 0.5
 	}
 
