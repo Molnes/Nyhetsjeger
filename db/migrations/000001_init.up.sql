@@ -88,9 +88,35 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     text TEXT NOT NULL,
     correct BOOLEAN NOT NULL,
+    arrangement INTEGER NOT NULL,
     question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-    CONSTRAINT unique_alternative_question UNIQUE (id, question_id)
+    CONSTRAINT unique_alternative_question UNIQUE (id, question_id),
+    CONSTRAINT unique_arrangement_question UNIQUE (arrangement, question_id)
 );
+
+-- Trigger to set the arrangement of answer alternatives
+CREATE OR REPLACE FUNCTION set_answer_alternative_arrangement()
+RETURNS TRIGGER AS $$
+DECLARE
+    max_arrangement INTEGER;
+BEGIN
+    SELECT MAX(arrangement) INTO max_arrangement
+    FROM answer_alternatives
+    WHERE question_id = NEW.question_id;
+
+    IF max_arrangement IS NULL THEN
+        max_arrangement := 0;
+    END IF;
+    NEW.arrangement := max_arrangement + 1;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER set_answer_alternative_arrangement
+    BEFORE INSERT ON answer_alternatives
+    FOR EACH ROW
+    EXECUTE FUNCTION set_answer_alternative_arrangement();
+
 
 CREATE OR REPLACE FUNCTION insert_quiz_articles()
 RETURNS TRIGGER AS $$
