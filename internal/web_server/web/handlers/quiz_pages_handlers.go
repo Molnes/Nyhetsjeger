@@ -52,6 +52,13 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
+    oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
+        if err != nil {
+                return err
+        }
+
+
 	userRankingInfo := user_ranking.UserRanking{}
 
 	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -73,6 +80,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		quizList,
+        oldQuizzes,
 		userRankingInfo,
 	))
 }
