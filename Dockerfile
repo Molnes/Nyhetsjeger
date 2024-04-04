@@ -1,26 +1,34 @@
-FROM golang:latest AS builder
+FROM node:latest AS tailwind-builder
+WORKDIR /app
 
+COPY assets/css/styles.css ./assets/css/
+COPY internal/web_server/web/views ./internal/web_server/web/views/
+COPY tailwind.config.js ./
+
+RUN npm install tailwindcss@latest
+RUN npx tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
+
+FROM golang:latest AS go-builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-
 RUN go mod download
 
 RUN go install github.com/a-h/templ/cmd/templ@latest
 
-COPY . .
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
 
 RUN templ generate
 RUN go build -o ./bin/main ./cmd/server/main.go
 
-FROM node:latest
-
+FROM golang:latest
 WORKDIR /app
 
-COPY --from=builder /app .
-
-RUN npx --yes tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
+COPY --from=go-builder /app/bin ./
+COPY assets/ ./assets/
+COPY --from=tailwind-builder /app/assets/css/tailwind.css ./assets/css/tailwind.css
 
 EXPOSE 8080
 
-CMD ["./bin/main"]
+CMD ["./main"]
