@@ -16,7 +16,7 @@ templ ArticleList(articles *[]articles.Article) {
 				<li><p class="text-center">Ingen artikler å vise</p></li>
 			} else {
 				for _, article := range *articles {
-					<li class="relative isolate">
+					<li>
 						@ArticleCard(&article)
 					</li>
 				}
