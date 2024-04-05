@@ -19,8 +19,8 @@ import (
 
 const (
 	errInvalidOrMissingQuizID    = "Manglende eller ugyldig quiz-id"
-	errNoSuchQuiz                = "Quizzen ble ikke funnet"
-	errQuizNotCompletedNoSummary = "Quizzen er ikke fullført, oppsummering er ikke tilgjengelig"
+	errNoSuchQuiz                = "Quizen ble ikke funnet"
+	errQuizNotCompletedNoSummary = "Quizen er ikke fullført, oppsummering er ikke tilgjengelig"
 )
 
 type QuizPagesHandler struct {
@@ -53,11 +53,10 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		return err
 	}
 
-    oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
-        if err != nil {
-                return err
-        }
-
+	oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
+	if err != nil {
+		return err
+	}
 
 	userRankingInfo := user_ranking.UserRanking{}
 
@@ -80,7 +79,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		quizList,
-        oldQuizzes,
+		oldQuizzes,
 		userRankingInfo,
 	))
 }
