@@ -163,24 +163,13 @@ func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 }
 
 func (dph *DashboardPagesHandler) getUserAdministration(c echo.Context) error {
+	userRows, err := users.GetUsersTableRows(dph.sharedData.DB, 1)
+	if err != nil {
+		return err
+	}
+
 	return utils.Render(c, http.StatusOK, dashboard_pages.UserAdminPage(
-		[]users.UserTableRow{
-			{
-				Username:  "Oransje Appelsin",
-				Score:     50000,
-				Placement: 1,
-			},
-			{
-				Username:  "Raud Nøytronstjerne",
-				Score:     41893,
-				Placement: 2,
-			},
-			{
-				Username:  "Morsam Apekatt",
-				Score:     10000,
-				Placement: 3,
-			},
-		},
+		userRows,
 		1,
 	))
 }
