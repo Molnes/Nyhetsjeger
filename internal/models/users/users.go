@@ -243,6 +243,29 @@ func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 	return err
 }
 
+func GetUsersTableRows(db *sql.DB, page int) ([]UserTableRow, error) {
+	const pageSize = 50
+	var offset = pageSize * (page -1)
+	rows, err := db.Query(`
+	SELECT
+		CONCAT(username_adjective, ' ', username_noun) AS username, SUM(points_awarded) AS total_points
+		FROM users LEFT JOIN user_answers
+			ON users.id = user_answers.user_id
+		GROUP BY users.id
+		ORDER BY total_points
+		LIMIT $1 OFFSET $2;
+	`,
+	pageSize, offset)
+	
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+return nil, nil
+
+
+}
+
 // If there is no preassigned role for the given email.
 var errNoPreassignedRole = errors.New("no preassigned role found")
 
