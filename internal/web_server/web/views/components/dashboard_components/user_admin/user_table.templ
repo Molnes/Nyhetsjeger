@@ -1,0 +1,35 @@
+package user_admin
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/users"
+
+
+
+templ UserTable(rows []users.UserTableRow, page int) {
+	<table
+		class="table-fixed border-spacing-4 w-full 
+        [&_td]:border-x [&_td]:border-black [&_tr]:h-8"
+	>
+		<thead class="border-2 border-black rounded-tl-lg">
+			<tr class="[&>th]:border-x [&>th]:border-black">
+				<th>Username</th>
+				<th>Poeng</th>
+				<th>Plassering</th>
+				<th>Info</th>
+			</tr>
+		</thead>
+		<tbody
+			class="
+                [&_tr:nth-child(odd)]:bg-purple-100  
+                [&>tr:last-child]:border-b [&>tr:last-child]:border-black"
+		>
+			for _, row := range rows {
+				@UserRow(row.Username, row.Score, row.Placement)
+			}
+		</tbody>
+		<tfoot>
+			<tr>
+				<td class="text-right border-b border-black" colspan="4">&lt; 1 2 3 ... 20 &gt;</td>
+			</tr>
+		</tfoot>
+	</table>
+}
