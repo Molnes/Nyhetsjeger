@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
@@ -37,6 +38,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
 	g.GET("/user-details", dph.userDetails)
+	g.GET("/user-admin", dph.getUserAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
 	organizationAdminGroup := g.Group("", mw.EnforceRole)
@@ -159,3 +161,27 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 	utils.AddToContext(c, side_menu.MENU_CONTEXT_KEY, menuContext)
 }
+
+func (dph *DashboardPagesHandler) getUserAdministration(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserAdminPage(
+		[]users.UserTableRow{
+			{
+				Username:  "Oransje Appelsin",
+				Score:     50000,
+				Placement: 1,
+			},
+			{
+				Username:  "Raud Nøytronstjerne",
+				Score:     41893,
+				Placement: 2,
+			},
+			{
+				Username:  "Morsam Apekatt",
+				Score:     10000,
+				Placement: 3,
+			},
+		},
+		1,
+	))
+}
+
