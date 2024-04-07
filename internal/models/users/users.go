@@ -245,7 +245,12 @@ func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 
 func GetUsersTableRows(db *sql.DB, page int) ([]UserTableRow, error) {
 	const pageSize = 50
-	var offset = pageSize * (page -1)
+	var offset = pageSize * (page - 1)
+
+	if offset < 0 {
+		return nil, errors.New("page number must be greater than 0")
+	}
+
 	rows, err := db.Query(`
 	SELECT
 		CONCAT(username_adjective, ' ', username_noun) AS username, SUM(points_awarded) AS total_points
@@ -255,14 +260,25 @@ func GetUsersTableRows(db *sql.DB, page int) ([]UserTableRow, error) {
 		ORDER BY total_points
 		LIMIT $1 OFFSET $2;
 	`,
-	pageSize, offset)
-	
+		pageSize, offset)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-return nil, nil
 
+	var rank int = offset + 1
+	var userRows []UserTableRow
+	for rows.Next() {
+		var userRow UserTableRow
+		err = rows.Scan(&userRow.Username, &userRow.Score)
+		if err != nil {
+			return nil, err
+		}
+		userRow.Placement = rank
+		rank++
+
+		userRows = append(userRows, userRow)
+	}
+	return userRows, nil
 
 }
 
