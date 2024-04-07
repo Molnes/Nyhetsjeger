@@ -1,0 +1,15 @@
+package dashboard_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+)
+
+templ UserAdminPage(rows []users.UserTableRow, page int) {
+	@layout_components.DashBoardLayout("Toppliste") {
+		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+			@user_admin.UserTable(rows, page)
+		</div>
+	}
+}
