@@ -43,6 +43,12 @@ type UserSessionData struct {
 	Email string
 }
 
+type UserTableRow struct {
+	Username  string
+	Score     int
+	Placement int
+}
+
 func (u *User) IntoSessionData() UserSessionData {
 	return UserSessionData{
 		ID:    u.ID,
