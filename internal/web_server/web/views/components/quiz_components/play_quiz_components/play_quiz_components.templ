@@ -105,6 +105,16 @@ templ feedbackPercentage(percentage float64, correct bool) {
 			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-500 text-red-800"
 		}
 	>
-		{ fmt.Sprintf("%v%%", percentage * 100) }
+		{ displayPercentage(percentage) }
 	</div>
+}
+
+func displayPercentage(num float64) string {
+	var str string
+	if num == 1.0 || num == 0.0 {
+		str = fmt.Sprintf("%.0f%%", num*100)
+	} else {
+		str = fmt.Sprintf("%.1f%%", num*100)
+	}
+	return str
 }
