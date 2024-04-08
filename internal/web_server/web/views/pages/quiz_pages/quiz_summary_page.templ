@@ -14,7 +14,7 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	@layout_components.QuizLayout("Oppsummering") {
 		<div
 			id="quiz-summary"
-			class="flex flex-col gap-10 justify-start items-center p-5 h-dvh isolate"
+			class="flex flex-col gap-8 justify-start items-center p-5 isolate"
 		>
 			<section class="flex flex-col gap-3 items-center">
 				<h1 class="text-3xl">Resultat</h1>
@@ -36,10 +36,10 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 					</p>
 				</div>
 			</section>
-			<section class="flex flex-col gap-4 items-center scrollbar-hide w-full">
+			<section class="flex flex-col gap-4 items-center scrollbar-hide">
 				<h2 class="text-2xl">Oppsummering</h2>
 				<div class="gradient-outline w-fit h-fit">
-					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-22em)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
+					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
 						for _, aq := range summary.AnsweredQuestions {
 							@chosenAnswer(aq)
 						}
