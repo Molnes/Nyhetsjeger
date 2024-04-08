@@ -87,7 +87,7 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 }
 
 // Get the ID for ArticleSMP from the article URL.
-func getSmpIdFromString(url string) (string, error) {
+func GetSmpIdFromString(url string) (string, error) {
 	// Split the URL by "/"
 	parts := strings.Split(url, "/")
 
@@ -107,6 +107,15 @@ func getSmpIdFromString(url string) (string, error) {
 	return "", nil
 }
 
+// Generate a URL based on ArticleSMP ID.
+func GetSmpURLFromID(articleID string) *url.URL {
+	return &url.URL{
+		Scheme: "https",
+		Host:   "www.smp.no",
+		Path:   fmt.Sprintf("/i/%s", articleID),
+	}
+}
+
 // Get the main image of the article (the first image).
 func getMainImageOfArticle(article ArticleSMP) (*url.URL, error) {
 	for _, component := range article.Components {
@@ -123,7 +132,7 @@ func GetSmpArticleByURL(articleUrl string) (Article, error) {
 	// TODO: Update this to fetch the article from the web instead of reading it from JSON.
 
 	// Get article's SMP ID
-	articleID, err := getSmpIdFromString(articleUrl)
+	articleID, err := GetSmpIdFromString(articleUrl)
 	if err != nil {
 		return Article{}, ErrInvalidArticleID
 	}
