@@ -2,6 +2,8 @@ package api
 
 import (
 	"net/http"
+	"net/mail"
+	"strings"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
@@ -39,7 +41,15 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	email := c.FormValue("email")
 	if email == "" {
 		c.Response().Header().Set(hxReswap, hxOuterHTML)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Missing email"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Manglende epost"))
+	}
+	email = strings.ToLower(email)
+	parsedAddress, err := mail.ParseAddress(email)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Feil epost formatering"))
+	}
+	if strings.Split(parsedAddress.Address, "@")[1] != "gmail.com" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Kun Gmail addresser er støttet"))
 	}
 
 	session, err := oah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
@@ -47,16 +57,16 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 		return err
 	}
 	caller := session.Values[sessions.USER_DATA_VALUE].(users.UserSessionData)
-	if caller.Email == email {
+	if caller.Email == parsedAddress.Address {
 		c.Response().Header().Set(hxReswap, hxOuterHTML)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Cannot modify own admin status"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Kan ikke redigere egen rolle"))
 	}
 
-	userAdmin, err := access_control.AddAdmin(oah.sharedData.DB, email)
+	userAdmin, err := access_control.AddAdmin(oah.sharedData.DB, parsedAddress.Address)
 	if err != nil {
 		if err == access_control.ErrEmailAlreadyAdmin {
 			c.Response().Header().Set(hxReswap, hxOuterHTML)
-			return utils.Render(c, http.StatusConflict, components.ErrorText(classPostAdminError, "Given email already has admin role assigned"))
+			return utils.Render(c, http.StatusConflict, components.ErrorText(classPostAdminError, "Gitte eposten allerede har rollen"))
 		}
 		return err
 	}
