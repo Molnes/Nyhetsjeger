@@ -270,6 +270,10 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 // If article already is in the quiz, return an error.
 // If not in the DB, it will fetch the relevant article data and add it to the DB.
 func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, string) {
+	// Get the article ID from the URL
+	articleID, err := articles.GetSmpIdFromString(articleURL.String())
+	articleURL = articles.GetSmpURLFromID(articleID)
+
 	// Check if the article is already in the DB
 	article, err := articles.GetArticleByURL(db, articleURL)
 	if err != nil && err != sql.ErrNoRows {
@@ -347,7 +351,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	c.Response().Header().Set("HX-Reswap", "beforeend")
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(
-		article.ArticleURL.String(), article.ID.UUID.String(), quiz_id.String()))
+		article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz_id.String()))
 }
 
 // Deletes an article from a quiz in the database.

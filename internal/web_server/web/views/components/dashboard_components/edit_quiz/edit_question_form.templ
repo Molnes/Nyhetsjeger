@@ -30,7 +30,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 	<form id="edit-question-form">
 		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
 		// Article
-		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel (URL)</label>
+		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel</label>
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
@@ -47,7 +47,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					if question.Article.ArticleURL == article.ArticleURL {
 						selected
 					}
-				>{  article.ArticleURL.String() }</option>
+				>{  article.Title }</option>
 			}
 		</select>
 		// Question

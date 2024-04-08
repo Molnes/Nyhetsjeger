@@ -70,7 +70,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					</li>
 					for _, article := range *articles {
 						if article.ID.Valid {
-							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.ID.UUID.String(), quiz.ID.String())
+							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz.ID.String())
 						}
 					}
 				</ul>
