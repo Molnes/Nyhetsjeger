@@ -257,7 +257,7 @@ func GetUsersTableRows(db *sql.DB, page int) ([]UserTableRow, error) {
 		FROM users LEFT JOIN user_answers
 			ON users.id = user_answers.user_id
 		GROUP BY users.id
-		ORDER BY total_points
+		ORDER BY total_points DESC
 		LIMIT $1 OFFSET $2;
 	`,
 		pageSize, offset)
