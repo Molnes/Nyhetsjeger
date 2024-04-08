@@ -25,7 +25,7 @@ templ AddEmailForm() {
 			hx-target-error="next .post-admin-error"
 		>
 			<label for="email">
-				Epost
+				E-post
 				<input
 					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 ml-1"
 					type="email"
@@ -76,24 +76,18 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 	<table
 		id={ _ADMINS_TABLE }
 		if len(*admins) == 0 {
-			class="border-collapse border border-slate-500 mr-auto text-left hidden"
+			class="border border-slate-500 mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden hidden"
 		} else {
-			class="border-collapse border border-slate-500 mr-auto text-left"
+			class="border border-slate-500 mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 		}
 	>
 		<thead>
 			<tr
-				class="border-collapse border border-slate-500"
+				class="border-collapse border border-slate-500 bg-clightindigo text-black"
 			>
-				<th class="px-2 w-56">Epost</th>
-				<th class="px-2 w-28">
+				<th class="px-2 py-1 w-56">E-post</th>
+				<th class="px-2 py-1 w-28">
 					Status 
-					<button
-						class="ml-2 inline relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-					>
-						i
-						@components.Tooltip("Aktiv - eposten er registrert i systemt. Inaktiv blir gjort om til aktiv ved første innlogging.")
-					</button>
 				</th>
 				<th></th>
 			</tr>
@@ -150,10 +144,12 @@ script showTableIfAdminsExist(tableID string, noAdminsMessageId string, tableBod
 }
 
 templ AdminTableRow(admin *access_control.UserAdmin) {
-	<tr>
-		<td class="px-2">{ admin.Email }</td>
-		<td class="px-2">{ boolToActiveString(admin.IsActive) }</td>
-		<td class="px-2">
+	<tr
+		class="odd:bg-violet-50 even:bg-violet-100"
+	>
+		<td class="py-1 px-2">{ admin.Email }</td>
+		<td class="py-1 px-2">{ boolToActiveString(admin.IsActive) }</td>
+		<td class="py-1 px-2">
 			<button
 				class="flex"
 				title="Slett administrator"

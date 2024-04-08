@@ -11,11 +11,12 @@ templ AccessSettingsPage(admins *[]access_control.UserAdmin) {
 		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
 			<section>
 				<h1
-					class="text-3xl font-bold text-gray-800"
+					class="text-3xl font-bold text-gray-800 mb-2"
 				>Administrer tilgang</h1>
 				<p>Her kan du administrere hvem som har tilgang til Quiz Admin Panel.</p>
 				<p>Disse brukerne kan lage, redigere, publisere og slette quizer, og har tilgang til brukernes informasjon.</p>
 				<p>Kun en organisasjons administrator har tilgang til den nåværende siden.</p>
+				<p class="mt-1">Statusen <b>Aktiv</b>, betyr at e-posten er registrert i systemet. <b>Inaktiv</b> status blir gjort om til aktiv ved første innlogging.</p>
 			</section>
 			@access_settings_components.AddEmailForm()
 			@access_settings_components.AdminsTable(admins)
