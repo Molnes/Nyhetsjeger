@@ -1,57 +1,63 @@
 package play_quiz_components
 
 import (
+	"fmt"
+
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // Content of a quiz play page.
 templ QuizPlayContent(data *user_quiz.QuizData) {
-	<main
+	<section
 		id="quiz-play-content"
-		class="flex flex-col items-center py-2 gap-2"
+		class="flex flex-col items-center py-2 gap-6"
 	>
 		<div class="flex justify-between items-center w-full ">
 			<a href="/quiz">
 				@icons.Cross(3, "black", 40, 40)
 			</a>
-			<h1 class="text-3xl font-bold text-center">{ data.PartialQuiz.Title }</h1>
 			@timer(data.CurrentQuestion.TimeLimitSeconds)
+			<p>Poeng</p>
 		</div>
-		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
-				class="h-48 object-cover rounded-card shadow-lg my-4 mx-auto"
+				class="h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
 				alt=""
 			/>
 		}
 		<h2 class="text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
 		@AnswerButtons(&data.CurrentQuestion)
-	</main>
+		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
+	</section>
 }
 
 // Template for a simple progress bar built with divs.
 templ progressBar(current uint, total uint) {
-	<div class="flex justify-center items-center gap-2 isolate">
+	<div
+		class="flex justify-center items-center gap-2 isolate"
+		role="progressbar"
+		aria-valuemin="0"
+		aria-valuenow={ fmt.Sprint(current) }
+		aria-valuemax={ fmt.Sprint(total) }
+	>
 		for i := uint(0); i < total; i++ {
 			<div
 				if i < current {
-					class="w-8 h-8 bg-gray-500 rounded-1/2"
+					class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2"
 				} else {
-					class="w-8 h-8 bg-gray-300 rounded-1/2"
+					class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2"
 				}
 			>
 				if i < total-1 {
-					<div class="flex flex-col justify-center h-full">
-						<div
-							if i+1 < current {
-								class="w-4 h-3 bg-gray-500 relative -right-7 -z-10"
-							} else {
-								class="w-4 h-3 bg-gray-300 relative -right-7 -z-10"
-							}
-						></div>
-					</div>
+					<div
+						if i+1 < current {
+							class="w-4 h-2 bg-gray-600 relative -right-5 -z-10"
+						} else {
+							class="w-4 h-2 bg-gray-400 relative -right-5 -z-10"
+						}
+					></div>
 				}
 			</div>
 		}

@@ -28,8 +28,12 @@ templ QuizHomePage(quizzes []quizzes.Quiz, olderQuizzes []quizzes.Quiz, userInfo
 						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
 					>
 						@icons.Trophy(40, "orange", 36, 36)
-						<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
-						<span class="text-2xl text-gray-700">plass</span>
+						if userInfo.Placement != 0 {
+							<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
+							<span class="text-2xl text-gray-700">plass</span>
+						} else {
+							<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
+						}
 					</a>
 				</div>
 			</div>
