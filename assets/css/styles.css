@@ -122,6 +122,6 @@
     @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
 }
 
-.feedback-button {
+.answer-button {
     @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
 }

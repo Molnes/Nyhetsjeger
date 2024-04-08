@@ -22,7 +22,7 @@ templ AnswerButtons(question *questions.Question) {
 			<button
 				type="submit"
 				name="answer-id"
-				class="feedback-button gradient-shadow"
+				class="answer-button gradient-shadow"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -66,9 +66,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="feedback-button gradient-outline-thick gradient-shadow-always w-full"
+			class="answer-button gradient-outline-thick gradient-shadow-always w-full"
 		} else {
-			class="feedback-button w-full"
+			class="answer-button w-full"
 		}
 	>
 		{ alternative.Text }
