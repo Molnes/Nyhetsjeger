@@ -46,14 +46,17 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	email = strings.ToLower(email)
 	parsedAddress, err := mail.ParseAddress(email)
 	if err != nil {
+		c.Response().Header().Set(hxReswap, hxOuterHTML)
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Feil epost formatering"))
 	}
 	if strings.Split(parsedAddress.Address, "@")[1] != "gmail.com" {
+		c.Response().Header().Set(hxReswap, hxOuterHTML)
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Kun Gmail addresser er støttet"))
 	}
 
 	session, err := oah.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 	if err != nil {
+		c.Response().Header().Set(hxReswap, hxOuterHTML)
 		return err
 	}
 	caller := session.Values[sessions.USER_DATA_VALUE].(users.UserSessionData)
