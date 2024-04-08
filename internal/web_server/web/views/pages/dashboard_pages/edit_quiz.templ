@@ -27,7 +27,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans text-gray-500 text-center"><b>Alt lagres automatisk.</b> Merk at om du redigerer en publisert quiz, så vil <b>ikke</b> dette ha en tilbakevirkende effekt. Med andre ord, om du for eksempel endrer poengsum, så vil brukere som tar den nye versjonen av quizen få annen poengsum enn de som tok den før endringen.</p>
+			<p class="font-sans font-bold text-gray-500 text-center">Trykk utenfor et tekstfelt for å lagre automatisk.</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row items-center gap-3 mb-1">
@@ -39,7 +39,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			// Quiz Image
 			@dashboard_components.EditQuizForm("") {
 				<div class="flex flex-row items-center gap-3 mb-1">
-					<label for={ QuizImageURL } class="block font-bold">Forside bilde</label>
+					<label for={ QuizImageURL } class="block font-bold">Forsidebilde (URL)</label>
 					@components.LoadingIndicator()
 				</div>
 				// TODO: Also support uploading an image

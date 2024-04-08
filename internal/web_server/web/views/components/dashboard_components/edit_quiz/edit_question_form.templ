@@ -102,7 +102,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</fieldset>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
-			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde</label>
+			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde (URL)</label>
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew, "")
