@@ -41,13 +41,13 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	email := c.FormValue("email")
 	if email == "" {
 		c.Response().Header().Set(hxReswap, hxOuterHTML)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Manglende epost"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Manglende e-post"))
 	}
 	email = strings.ToLower(email)
 	parsedAddress, err := mail.ParseAddress(email)
 	if err != nil {
 		c.Response().Header().Set(hxReswap, hxOuterHTML)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Feil epost formatering"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(classPostAdminError, "Feil e-post format"))
 	}
 	if strings.Split(parsedAddress.Address, "@")[1] != "gmail.com" {
 		c.Response().Header().Set(hxReswap, hxOuterHTML)
@@ -69,7 +69,7 @@ func (oah *OrganizationAdminApiHandler) postAddAdminByEmail(c echo.Context) erro
 	if err != nil {
 		if err == access_control.ErrEmailAlreadyAdmin {
 			c.Response().Header().Set(hxReswap, hxOuterHTML)
-			return utils.Render(c, http.StatusConflict, components.ErrorText(classPostAdminError, "Gitte eposten allerede har rollen"))
+			return utils.Render(c, http.StatusConflict, components.ErrorText(classPostAdminError, "Den angitte e-posten har allerede rollen"))
 		}
 		return err
 	}
