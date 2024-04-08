@@ -171,6 +171,6 @@ func (dph *DashboardPagesHandler) getUserAdministration(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_pages.UserAdminPage(
 		userRows,
 		1,
+		20,
 	))
 }
-
