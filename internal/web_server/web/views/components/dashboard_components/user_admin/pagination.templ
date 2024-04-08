@@ -1,0 +1,46 @@
+package user_admin
+
+import "fmt"
+
+templ Pagination(maxPages int, page int) {
+    @prevButton(page)
+    @pageNumber(page, maxPages)
+    @nextButton(page, maxPages)
+}
+
+templ pageNumber(currentPage int, maxPages int) {
+    if maxPages == 1 {
+        <button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
+        { fmt.Sprintf("%v of %v", currentPage, maxPages) }
+        </button>
+    } else {
+        <button class="border-cindigo border-y-2 text-cindigo px-3 py-1">
+        { fmt.Sprintf("%v of %v", currentPage, maxPages) }
+        </button>
+    }
+
+}
+
+templ prevButton(page int) {
+    if page == 1 {
+        <button class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
+        &lt;
+        </button>
+    } else {
+        <button class="border-cindigo border-2 text-cindigo font-bold px-3 py-1">
+        &lt;
+        </button>
+    }
+}
+
+templ nextButton(page int, maxPages int) {
+    if page == maxPages {
+        <button class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
+        &gt;
+        </button>
+    } else {
+        <button class="border-cindigo border-2 text-cindigo font-bold px-3 py-1">
+        &gt;
+        </button>
+    }
+}
