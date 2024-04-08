@@ -123,5 +123,5 @@
 }
 
 .feedback-button {
-    @apply text-lg p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
+    @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
 }
