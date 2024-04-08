@@ -76,9 +76,9 @@ templ AdminsTable(admins *[]access_control.UserAdmin) {
 	<table
 		id={ _ADMINS_TABLE }
 		if len(*admins) == 0 {
-			class="border-collapse border border-slate-500 mr-auto text-left hidden"
+			class="border border-slate-500 mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden hidden"
 		} else {
-			class=" border border-slate-500 mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+			class="border border-slate-500 mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 		}
 	>
 		<thead>
