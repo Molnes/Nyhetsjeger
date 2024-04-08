@@ -6,10 +6,10 @@ import "fmt"
 
 templ UserRow(name string, score int, rank int) {
 	<tr class="hover:!bg-blue-200 hover:font-bold">
-		<td class="text-ellipsis text-nowrap overflow-hidden">{ name }</td>
-		<td>{ strconv.FormatInt(int64(score), 10) }</td>
-		<td>{ fmt.Sprintf("#%v", rank) }</td>
-		<td class="[&>*]:mx-auto">
+		<td class="text-ellipsis text-nowrap overflow-hidden border-r">{ name }</td>
+		<td class="border-x">{ strconv.FormatInt(int64(score), 10) }</td>
+		<td class="border-x">{ fmt.Sprintf("#%v", rank) }</td>
+		<td class="[&>*]:mx-auto border-l">
 			@icons.Gear(20, "currentColor", 20, 20)
 		</td>
 	</tr>
