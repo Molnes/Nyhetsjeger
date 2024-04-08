@@ -2,18 +2,16 @@ package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
 
-
-
 templ UserTable(rows []users.UserTableRow, page int) {
 	<table
-		class="table-fixed border-spacing-4 w-full 
+		class="table-fixed w-full border-separate border-spacing-0 rounded-lg border-2 border-black
         [&_td]:border-x [&_td]:border-black [&_tr]:h-8"
 	>
-		<thead class="border-2 border-black rounded-tl-lg">
+		<thead class="">
 			<tr class="[&>th]:border-x [&>th]:border-black">
 				<th>Username</th>
-				<th>Poeng</th>
-				<th>Plassering</th>
+				<th>Test data</th>
+				<th>Test data2</th>
 				<th>Info</th>
 			</tr>
 		</thead>
@@ -28,7 +26,7 @@ templ UserTable(rows []users.UserTableRow, page int) {
 		</tbody>
 		<tfoot>
 			<tr>
-				<td class="text-right border-b border-black" colspan="4">&lt; 1 2 3 ... 20 &gt;</td>
+				<td class="text-right border-t border-black" colspan="4">&lt; 1 2 3 ... 20 &gt;</td>
 			</tr>
 		</tfoot>
 	</table>
