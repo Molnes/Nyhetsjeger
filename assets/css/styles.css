@@ -125,3 +125,19 @@
 .answer-button {
     @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
 }
+
+.fade-opacity {
+    animation: fadeOpacity 3s linear forwards;
+}
+
+@keyframes fadeOpacity {
+
+    0%,
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

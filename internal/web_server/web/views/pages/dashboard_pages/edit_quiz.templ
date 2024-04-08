@@ -25,11 +25,20 @@ const QuizActiveTo = "quiz-active-to"
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
-		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+		<div class="relative flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+			<div
+				id="changes-saved-message"
+				class="fixed bottom-4 right-4 opacity-100 hidden flex-row gap-1 bg-white rounded-button border-4 border-cindigo px-4 py-2
+				lg:text-lg lg:px-6 lg:py-3 2xl:text-xl 2xl:px-10 2xl:py-5"
+			>
+				Lagret
+				@icons.Checkmark(80, "#22C55E", 25, 25)
+			</div>
+			@changesSaved()
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center">Trykk utenfor et tekstfelt for å lagre automatisk.</p>
+			<p class="font-sans font-bold text-gray-500 text-center">Trykk utenfor et tekstfelt for å lagre endringene automatisk.</p>
 			// Quiz Title
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<label for={ QuizTitle } class="block font-bold">Tittel</label>
 					@components.LoadingIndicator()
@@ -37,7 +46,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
 			// Quiz Image
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<label for={ QuizImageURL } class="block font-bold">Forsidebilde (URL)</label>
 					@components.LoadingIndicator()
@@ -47,7 +56,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true, "")
 			}
 			// Quiz Articles
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Artikler i quizen</h2>
 					@components.LoadingIndicator()
@@ -78,7 +87,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@articleList()
 			}
 			// Quiz Active Time
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Aktiv</h2>
 					@components.LoadingIndicator()
@@ -86,7 +95,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.AvailableFrom, QuizActiveFrom, quiz.AvailableTo, QuizActiveTo, "")
 			}
 			// Quiz Questions
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Spørsmål</h2>
 					@components.LoadingIndicator()
@@ -128,7 +137,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@components.LoadingIndicator()
 			@components.ErrorText("error-quiz", "")
 			// Quiz Buttons: Delete, Hide, OK
-			@dashboard_components.EditQuizForm("") {
+			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
 						type="button"
@@ -238,4 +247,24 @@ script questionList() {
 				noQuestionsWarning.classList.remove("hidden");
 			}
 		}
+}
+
+script changesSaved() {
+	// After an HTMX swap, if the reponse was successful, display "Lagret"
+	document.body.addEventListener("htmx:afterSwap", (event) => {
+		if (event.detail.xhr.status < 300) {
+			message = document.querySelector("#changes-saved-message")
+
+			message.classList.remove("hidden")
+			message.classList.add("flex")
+			message.classList.add("fade-opacity")
+
+			setTimeout(
+				function() {
+					message.classList.add("hidden")
+					message.classList.remove("flex")
+					message.classList.remove("fade-opacity")
+				}, 3000)
+		}
+	})
 }
