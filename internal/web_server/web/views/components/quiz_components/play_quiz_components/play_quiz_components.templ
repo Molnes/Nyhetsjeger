@@ -16,7 +16,7 @@ templ AnswerButtons(question *questions.Question) {
 		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
-		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full px-1 lg:px-6 my-4 isolate"
+		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4 isolate"
 	>
 		for _, alternative := range question.Alternatives {
 			<button
@@ -36,7 +36,7 @@ templ AnswerButtons(question *questions.Question) {
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full isolate">
-		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full px-1 lg:px-6 my-4">
+		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
