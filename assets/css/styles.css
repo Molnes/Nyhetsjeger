@@ -89,15 +89,13 @@
 
 .gradient-outline,
 .gradient-outline-thick,
-.gradient-outline-circle,
-.gradient-outline-circle-thick {
+.gradient-outline-circle {
     position: relative;
 }
 
 .gradient-outline::after,
 .gradient-outline-thick::after,
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     content: "";
     position: absolute;
     inset: var(--outline-inset);
@@ -107,13 +105,12 @@
     background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.gradient-outline-thick::after,
-.gradient-outline-circle-thick::after {
-    inset: -6px;
+.gradient-outline-thick::after {
+    inset: calc(var(--outline-inset) * 1.5);
+    border-radius: calc(var(--br-button) - calc(1.5 * var(--outline-inset)));
 }
 
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     border-radius: 50%;
 }
 
@@ -123,4 +120,8 @@
 
 .gradient-bg-button {
     @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
+}
+
+.feedback-button {
+    @apply text-lg p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
 }
