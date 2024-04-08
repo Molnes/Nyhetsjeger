@@ -104,7 +104,7 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 		ImageURL:     url.URL{},
 		Article:      articles.Article{},
 		QuizID:       quiz_id,
-		Points:       10,
+		Points:       100,
 		Alternatives: []questions.Alternative{},
 	}
 

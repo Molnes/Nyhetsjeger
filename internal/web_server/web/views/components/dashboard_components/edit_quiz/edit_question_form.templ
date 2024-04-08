@@ -30,7 +30,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 	<form id="edit-question-form">
 		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
 		// Article
-		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel (URL)</label>
+		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel</label>
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
@@ -47,7 +47,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					if question.Article.ArticleURL == article.ArticleURL {
 						selected
 					}
-				>{  article.ArticleURL.String() }</option>
+				>{  article.Title }</option>
 			}
 		</select>
 		// Question
@@ -102,7 +102,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</fieldset>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
-			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde</label>
+			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde (URL)</label>
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew, "")
@@ -110,15 +110,20 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
-				<input
-					id={ QuestionPoints }
-					name={ QuestionPoints }
-					type="number"
-					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-24"
-					min="0"
-					value={ fmt.Sprint(question.Points) }
-					placeholder="10"
-				/>
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
+						/* The points default 100 */
+						<option
+							value={ fmt.Sprint(points) }
+							if question.Points == points {
+								selected
+							}
+							if isNew && points == 100 {
+								selected
+							}
+						>{ fmt.Sprint(points) }</option>
+					}
+				</select>
 			</div>
 			// Time limit
 			<div>
