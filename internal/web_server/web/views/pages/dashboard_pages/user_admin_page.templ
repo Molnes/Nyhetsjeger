@@ -6,10 +6,21 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 )
 
-templ UserAdminPage(rows []users.UserTableRow, page int) {
+templ UserAdminPage(rows []users.UserTableRow, page int, userCount int) {
 	@layout_components.DashBoardLayout("Toppliste") {
+		<header
+			class="w-full bg-cindigo text-2xl flex [&>p]:py-4 [&>p]:px-5 [&>p]:text-white
+		[&>p]:border-l-2 [&>p]:border-indigo-700 [&>p:last-child]:border-r-2
+		[&>p:hover]:bg-indigo-800
+		"
+		>
+			<p>Bruker administrasjon</p>
+			<p>Brukernavn administrasjon</p>
+		</header>
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
-			@user_admin.UserTable(rows, page)
+			<h2 class="text-xl font-bold">Bruker administrasjon</h2>
+			<input class="border border-gray-600 rounded-input px-2" type="text" placeholder="søk her"/>
+			@user_admin.UserTable(rows, page, userCount)
 		</div>
 	}
 }
