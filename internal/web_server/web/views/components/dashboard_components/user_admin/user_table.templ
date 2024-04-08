@@ -1,18 +1,23 @@
 package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
+import "math"
 
-templ UserTable(rows []users.UserTableRow, page int) {
+func calculateMaxPages(userAmount int) int {
+	return int(math.Ceil(float64(userAmount) / 50))
+}
+
+templ UserTable(rows []users.UserTableRow, page int, userCount int) {
 	<table
-		class="table-fixed w-full border-separate border-spacing-0 rounded-lg border-2 border-black
-        [&_td]:border-x [&_td]:border-black [&_tr]:h-8"
+		class="table-fixed w-full border-separate border-spacing-0 rounded-card border border-gray-400 bg-white
+    	[&_td]:border-black [&_tr]:h-8"
 	>
 		<thead class="">
-			<tr class="[&>th]:border-x [&>th]:border-black">
-				<th>Username</th>
-				<th>Test data</th>
-				<th>Test data2</th>
-				<th>Info</th>
+			<tr class="[&>th]:border-black">
+				<th class="border-r">Username</th>
+				<th class="border-x">Test data</th>
+				<th class="border-x">Test data2</th>
+				<th class="border-l">Info</th>
 			</tr>
 		</thead>
 		<tbody
@@ -26,7 +31,9 @@ templ UserTable(rows []users.UserTableRow, page int) {
 		</tbody>
 		<tfoot>
 			<tr>
-				<td class="text-right border-t border-black" colspan="4">&lt; 1 2 3 ... 20 &gt;</td>
+				<td class="text-right border-t border-black" colspan="4">
+					@Pagination(calculateMaxPages(userCount), page)
+				</td>
 			</tr>
 		</tfoot>
 	</table>
