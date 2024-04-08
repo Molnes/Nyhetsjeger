@@ -60,7 +60,8 @@
     bottom: 0;
 }
 
-.gradient-shadow {
+.gradient-shadow,
+.gradient-shadow-always {
     position: relative;
 }
 
@@ -118,4 +119,8 @@
 
 .tooltip-parent:hover>.tooltip {
     display: inline-block;
+}
+
+.gradient-bg-button {
+    @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
 }

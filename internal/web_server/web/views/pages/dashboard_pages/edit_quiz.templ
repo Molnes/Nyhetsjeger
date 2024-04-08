@@ -49,7 +49,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			// Quiz Articles
 			@dashboard_components.EditQuizForm(fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quiz.ID)) {
 				<div class="flex flex-row items-center gap-3 mb-1">
-					<h2 class="font-bold">Artikler i quizzen</h2>
+					<h2 class="font-bold">Artikler i quizen</h2>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.AddArticleInput(quiz.ID.String(), QuizArticleURL, "")
@@ -137,7 +137,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						hx-target-4*=".error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
-						hx-confirm="Er du sikker på at du ønsker å slette denne quizzen?"
+						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
 					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button">Ferdig</a>
