@@ -243,6 +243,7 @@ func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 	return err
 }
 
+// Returns a list of all users in the database, with the data needed for the user administration table.
 func GetUsersTableRows(db *sql.DB, page int) ([]UserTableRow, error) {
 	const pageSize = 50
 	var offset = pageSize * (page - 1)
@@ -325,4 +326,10 @@ func applyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_r
 	}
 
 	return user_roles.RoleFromString(roleString), nil
+}
+
+func GetUserCount(db *sql.DB) (int, error) {
+	var count int
+	err := db.QueryRow(`SELECT COUNT(*) FROM users;`).Scan(&count)
+	return count, err
 }
