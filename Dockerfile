@@ -1,12 +1,11 @@
-FROM node:21 AS tailwind-builder
+FROM oven/bun:1 AS tailwind-builder
 WORKDIR /app
 
 COPY assets/css/styles.css ./assets/css/
 COPY internal/web_server/web/views ./internal/web_server/web/views/
 COPY tailwind.config.js ./
 
-RUN npm install tailwindcss@latest
-RUN npx tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
+RUN bunx tailwindcss build -i assets/css/styles.css -o assets/css/tailwind.css
 
 FROM golang:1.22 AS go-builder
 WORKDIR /app
