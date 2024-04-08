@@ -30,7 +30,7 @@ templ SideMenu() {
 				}
 				if isUserOrganizationAdmin(ctx) {
 					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
-						@icons.Gear(20, "currentColor", 20, 20)
+						@icons.Key(20, "currentColor", 20, 20)
 					}
 				}
 				@menuItem("Bruker administrasjon", "/dashboard/user-admin", isSelected(ctx, UserAdmin)) {
