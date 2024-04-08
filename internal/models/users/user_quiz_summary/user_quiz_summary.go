@@ -14,7 +14,7 @@ type UserQuizSummary struct {
 	MaxScore          uint
 	AchievedScore     uint
 	AnsweredQuestions []AnsweredQuestion
-	HasArticlesToShow	 bool
+	HasArticlesToShow bool
 }
 
 type AnsweredQuestion struct {
@@ -82,7 +82,8 @@ func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]Ans
 	JOIN quizzes ON questions.quiz_id = quizzes.id
 	JOIN users ON user_answers.user_id = users.id
 	WHERE user_answers.chosen_answer_alternative_id IS NOT NULL
-	AND quizzes.id = $1 AND users.id = $2;`, quizID, userID)
+	AND quizzes.id = $1 AND users.id = $2
+	ORDER BY questions.arrangement;`, quizID, userID)
 
 	if err != nil {
 		return nil, err

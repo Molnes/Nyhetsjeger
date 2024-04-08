@@ -7,10 +7,14 @@ import (
 // ArticleCard is a component that displays an article in a card format.
 // It has image, title and a link to the article.
 templ ArticleCard(article *articles.Article) {
-	<a href={ templ.SafeURL(article.ArticleURL.String()) }>
-		<article class="flex flex-row items-center bg-white max-w-screen-md aspect-[4/1] overflow-hidden rounded-card">
-			<img src={ article.ImgURL.String() } height="160" width="160" class="object-cover h-full w-auto"/>
-			<p class="font-bold text-center m-auto p-4 text-lg leading-snug">{ article.Title }</p>
+	<a
+		href={ templ.SafeURL(article.ArticleURL.String()) }
+		class="w-fit h-fit"
+		target="_blank"
+	>
+		<article class="flex flex-row items-center bg-white max-w-screen-md rounded-card overflow-hidden border-2 border-cindigo">
+			<img src={ article.ImgURL.String() } height="120" width="120" class="hidden md:block object-cover rounded-l-card w-1/5 aspect-square"/>
+			<p class="font-bold text-center px-6 py-4 mx-auto md:text-xl leading-snug">{ article.Title }</p>
 		</article>
 	</a>
 }

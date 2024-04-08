@@ -7,24 +7,29 @@ import (
 // This a component that takes a list of articles and renders them as ArticleCards.
 templ ArticleList(articles *[]articles.Article) {
 	<section
-		class="flex flex-col justify-start items-center gap-2 px-1 py-5 h-dvh isolate"
+		class="flex flex-col justify-start items-center gap-5 px-1 py-5 isolate"
 	>
 		<h1 class="font-bold text-3xl">Artikler</h1>
-		<p class="text-center">Sjekk ut artiklene som spørsmålene var basert på!</p>
-		<div class="flex flex-col gap-4 overflow-y-auto scrollbar-hide grow">
+		<p class="text-center text-lg text-balance">
+			Dette er sakene som spørsmålene var basert på. Klikk på en sak for å lese artikkelen!
+			<span class="block text-center text-gray-700 text-sm mt-3">(Dette vil åpne en ny fane)</span>
+		</p>
+		<ul class="flex flex-col p-6 gap-6 overflow-y-auto scrollbar-hide grow">
 			if len(*articles) == 0 {
-				<p class="text-center">Ingen artikler å vise</p>
+				<li><p class="text-center">Ingen artikler å vise</p></li>
 			} else {
 				for _, article := range *articles {
-					@ArticleCard(&article)
+					<li>
+						@ArticleCard(&article)
+					</li>
 				}
 			}
-		</div>
+		</ul>
 		<a
-			class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
+			class="gradient-bg-button py-3 px-8 text-xl"
 			href={ templ.SafeURL("/quiz") }
 		>
-			FERDIG
+			Ferdig
 		</a>
 	</section>
 }

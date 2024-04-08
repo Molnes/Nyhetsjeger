@@ -15,7 +15,7 @@ templ QuizCard(quiz quizzes.Quiz) {
 		<div class="bg-white mt-0 grid grid-cols-1 gap-4 rounded-b-card">
 			<h3 class="px-2 text-2xl mt-6 mx-auto text-center font-semibold text-gray-800 text-ellipsis overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
 			<a
-				class="text-white font-sans py-2 px-10 mx-auto mb-6 rounded-button bg-center text-center cgradient font-bold"
+				class="gradient-bg-button py-2 px-10 mx-auto mb-6"
 				href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
 			>
 				SPILL

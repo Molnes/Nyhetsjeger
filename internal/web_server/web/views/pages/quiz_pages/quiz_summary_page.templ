@@ -8,51 +8,63 @@ import (
 	"fmt"
 )
 
+// A quiz summary page. Displays the user's score and a list of all the questions they answered.
+// Each question is displayed with the question text, the chosen alternative and whether the alternative was correct or not.
 templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	@layout_components.QuizLayout("Oppsummering") {
 		<div
 			id="quiz-summary"
-			class="flex flex-col justify-start items-center px-1 py-5 h-dvh isolate"
+			class="flex flex-col gap-8 justify-start items-center p-5 isolate"
 		>
-			<section class="flex flex-col items-center">
-				<h1 class="text-3xl">RESULTAT</h1>
-				<div class="rounded-1/2 size-24 bg-gray-200 flex justify-center gradient-outline-circle items-center mt-2 mb-5">
+			<section class="flex flex-col gap-3 items-center">
+				<h1 class="text-3xl">Resultat</h1>
+				<div
+					if getDigitsFromSummary(summary) > 10 {
+						class="size-40 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+					}
+					else
+					if getDigitsFromSummary(summary) > 6 {
+						class="size-32 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+					} else {
+						class="size-24 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+					}
+				>
 					<p class="flex items-center font-bold text-1xl ">
-						<span class="w-2/5 text-right relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-						<span class="w-1/5 text-center text-2xl">/</span>
-						<span class="w-2/5 text-left relative top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+						<span class="w-2/5 text-right text-xl relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+						<span class="w-1/5 text-center text-3xl mx-1">/</span>
+						<span class="w-2/5 text-left text-xl relative top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
 					</p>
 				</div>
 			</section>
-			<section class="flex flex-col items-center overflow-y-auto scrollbar-hide grow">
-				<h2 class="text-2xl">OPPSUMMERING</h2>
-				<ol class="list-decimal px-4 overflow-y-auto scrollbar-hide my-4">
-					for _, aq := range summary.AnsweredQuestions {
-						@chosenAnswer(aq)
-					}
-				</ol>
+			<section class="flex flex-col gap-4 items-center scrollbar-hide">
+				<h2 class="text-2xl">Oppsummering</h2>
+				<div class="gradient-outline w-fit h-fit">
+					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
+						for _, aq := range summary.AnsweredQuestions {
+							@chosenAnswer(aq)
+						}
+					</ol>
+				</div>
 			</section>
 			if summary.HasArticlesToShow {
 				<button
 					hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
 					hx-target="#quiz-summary"
 					hx-swap="outerHTML"
-					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-				>NESTE</button>
+					class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				>Neste</button>
 			} else {
 				<a
 					href="/quiz"
 					class="text-xl mt-2 py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-				>FERDIG</a>
+				>Ferdig</a>
 			}
 		</div>
 	}
 }
 
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
-	<li
-		class="mb-4"
-	>
+	<li>
 		{ aq.QuestionText }
 		<div class="flex items-center gap-2">
 			if aq.IsCorrect {
@@ -63,4 +75,9 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 			<p class="text-gray-700">{ aq.ChosenAlternativeText }</p>
 		</div>
 	</li>
+}
+
+// Returns the sum of number of digits in the achieved score and the maximum score.
+func getDigitsFromSummary(summary *user_quiz_summary.UserQuizSummary) int {
+	return len(strconv.Itoa(int(summary.AchievedScore))) + len(strconv.Itoa(int(summary.MaxScore)))
 }

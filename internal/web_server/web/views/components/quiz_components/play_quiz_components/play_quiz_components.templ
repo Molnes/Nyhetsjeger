@@ -43,20 +43,20 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
 			>
-				NESTE
+				Neste
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow text-wrap"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
-				FERDIG
+				Ferdig
 			</a>
 		}
 	</div>
