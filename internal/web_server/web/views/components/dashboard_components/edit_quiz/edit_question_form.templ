@@ -110,15 +110,20 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
-				<input
-					id={ QuestionPoints }
-					name={ QuestionPoints }
-					type="number"
-					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-24"
-					min="0"
-					value={ fmt.Sprint(question.Points) }
-					placeholder="10"
-				/>
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
+						/* The points default 100 */
+						<option
+							value={ fmt.Sprint(points) }
+							if question.Points == points {
+								selected
+							}
+							if isNew && points == 100 {
+								selected
+							}
+						>{ fmt.Sprint(points) }</option>
+					}
+				</select>
 			</div>
 			// Time limit
 			<div>
