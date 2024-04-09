@@ -15,25 +15,25 @@ type UserRanking struct {
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB) ([]UserRanking, error) {
 	rows, err := db.Query(`
-SELECT 
-    CONCAT(username_adjective, ' ', username_noun) AS username,
-    COALESCE(total_points, 0) AS total_points,
-    COALESCE(placement, 0) AS placement
-FROM 
-    users
-LEFT JOIN (
-    SELECT
-        user_id,
-        COALESCE(SUM(points_awarded), 0) AS total_points,
-        RANK() OVER (ORDER BY COALESCE(SUM(points_awarded), 0) DESC) AS placement
-    FROM 
-        user_answers
-    GROUP BY 
-        user_id
-) AS ua ON ua.user_id = users.id
-WHERE 
-    opt_in_ranking = true;
-
+        SELECT 
+            CONCAT(username_adjective, ' ', username_noun) AS username,
+            COALESCE(total_points, 0) AS total_points,
+            COALESCE(placement, 0) AS placement
+        FROM 
+            users
+        LEFT JOIN (
+            SELECT
+                user_id,
+                COALESCE(SUM(points_awarded), 0) AS total_points,
+                RANK() OVER (ORDER BY COALESCE(SUM(points_awarded), 0) DESC) AS placement
+            FROM 
+                user_answers
+            GROUP BY 
+                user_id
+        ) AS ua ON ua.user_id = users.id
+        WHERE 
+            opt_in_ranking = true
+        ORDER BY CASE WHEN placement = 0 THEN 1 ELSE 0 END, placement <> 0, placement;
     `)
 
 	if err != nil {
