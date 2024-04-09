@@ -48,7 +48,7 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 		log.Println(err)
 	}
 
-	article := getSampleAericle()
+	article := getSampleAricle()
 
 	article.ArticleURL.Path = article.ArticleURL.Path + article.ID.UUID.String()
 
@@ -165,7 +165,7 @@ var sampleQuestion3 = question{
 	},
 }
 
-func getSampleAericle() *articles.Article {
+func getSampleAricle() *articles.Article {
 	id := uuid.New()
 	article := articles.Article{
 		ID: uuid.NullUUID{
