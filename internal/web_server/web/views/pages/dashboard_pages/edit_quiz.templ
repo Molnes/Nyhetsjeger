@@ -59,6 +59,13 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Artikler i quizen</h2>
+					<button
+						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+						type="button"
+					>
+						i
+						@components.Tooltip("Disse artiklene kan brukes for å linke et spørsmål direkte til en artikkel.")
+					</button>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.AddArticleInput(quiz.ID.String(), QuizArticleURL, "")
@@ -105,6 +112,13 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Spørsmål</h2>
+					<button
+						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+						type="button"
+					>
+						i
+						@components.Tooltip("Her kan du legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning.")
+					</button>
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
