@@ -274,7 +274,7 @@ FROM user_question_points uqp
 JOIN questions q ON uqp.question_id = q.id
 JOIN quizzes qz ON q.quiz_id = qz.id,
 LATERAL (
-    -- check if there are qeustions user has not answered in the quiz
+    -- check if there are questions user has not answered in the quiz
     SELECT COUNT(q.id) = 0 as is_completed
 		FROM questions q
 		WHERE quiz_id = uqp.quiz_id 
