@@ -33,7 +33,7 @@ func GetRanking(db *sql.DB) ([]UserRanking, error) {
         ) AS ua ON ua.user_id = users.id
         WHERE 
             opt_in_ranking = true
-        ORDER BY CASE WHEN placement = 0 THEN 1 ELSE 0 END, placement <> 0, placement;
+        ORDER BY placement != 0, placement;
     `)
 
 	if err != nil {
