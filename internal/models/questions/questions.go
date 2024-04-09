@@ -42,6 +42,20 @@ type Alternative struct {
 	PercentChosen float64
 }
 
+// Create a default question with an ID, quiz ID and 100 points.
+// All other fields are "empty".
+func GetDefaultQuestion(quizId uuid.UUID) Question {
+	return Question{
+		ID:           uuid.New(),
+		Text:         "",
+		ImageURL:     url.URL{},
+		Article:      articles.Article{},
+		QuizID:       quizId,
+		Points:       100,
+		Alternatives: []Alternative{},
+	}
+}
+
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
 	for _, a := range q.Alternatives {
