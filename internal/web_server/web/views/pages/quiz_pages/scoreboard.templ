@@ -1,9 +1,11 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 )
 
 templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
@@ -20,7 +22,7 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 						<col class="min-w-36"/>
 					</colgroup>
 					<thead>
-						<tr class="border-collapse bg-cindigo text-white">
+						<tr class="border-collapse bg-cindigo text-white text-center">
 							<th class="px-4 py-2 rounded-tl-card overflow-hidden">Plass</th>
 							<th class="px-4 py-2">Navn</th>
 							<th class="px-4 py-2 rounded-tr-card overflow-hidden">Poeng</th>
@@ -50,7 +52,8 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 									<td class="px-4 py-2">{ fmt.Sprintf("%d", user.Placement) }</td>
 								}
 								<td class="px-4 py-2">{ user.Username }</td>
-								<td class="px-4 py-2">{ fmt.Sprintf("%d", user.Points) }</td>
+								// <td class="px-4 py-2">{ fmt.Sprintf("%d", user.Points) }</td>
+								<td class="px-4 py-2">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
 							</tr>
 						}
 					</tbody>
