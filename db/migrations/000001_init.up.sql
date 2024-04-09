@@ -240,6 +240,7 @@ CREATE TABLE IF NOT EXISTS preassigned_roles(
     CONSTRAINT not_user_role CHECK (role != 'user')
 );
 
+-- View with all questions user has answered, points awarded and when the question was answered
 CREATE OR REPLACE VIEW user_question_points AS
 SELECT
 ua.user_id,
@@ -259,17 +260,21 @@ JOIN questions q ON ua.question_id = q.id
 JOIN answer_alternatives aa ON ua.chosen_answer_alternative_id = aa.id
 WHERE ua.answered_at IS NOT NULL;
 
+
+-- View to get all quizzes user has played, total points, last answer time, is_completed and answered_within_active_time
 CREATE OR REPLACE VIEW user_quizzes AS
 SELECT
 uqp.user_id,
 uqp.quiz_id,
 SUM(uqp.points_awarded) AS total_points_awarded,
 ic.is_completed,
-MAX(uqp.answered_at) AS last_answer_at -- change to true/fasle, answered within active time
-FROM
-user_question_points uqp
-JOIN questions q ON uqp.question_id = q.id, LATERAL (
-    -- check if there are qeustions user has not answered
+MAX(uqp.answered_at) AS finished_at,
+MAX(uqp.answered_at) < qz.active_to AS answered_within_active_time
+FROM user_question_points uqp
+JOIN questions q ON uqp.question_id = q.id
+JOIN quizzes qz ON q.quiz_id = qz.id,
+LATERAL (
+    -- check if there are qeustions user has not answered in the quiz
     SELECT COUNT(q.id) = 0 as is_completed
 		FROM questions q
 		WHERE quiz_id = uqp.quiz_id 
@@ -280,8 +285,7 @@ JOIN questions q ON uqp.question_id = q.id, LATERAL (
 			AND user_id = uqp.user_id
 		)
 ) ic
-
-GROUP BY uqp.user_id, uqp.quiz_id, ic.is_completed;
+GROUP BY uqp.user_id, uqp.quiz_id, ic.is_completed, qz.active_to;
 
 
 
