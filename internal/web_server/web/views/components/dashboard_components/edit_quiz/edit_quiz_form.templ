@@ -3,7 +3,7 @@ package dashboard_components
 // The form wrapper for the "edit quiz" page form elements.
 // Used for layout.
 templ EditQuizForm(children ...interface{}) {
-	<div class="w-full my-1">
+	<form class="w-full my-1" onsubmit="return false;">
 		{ children... }
-	</div>
+	</form>
 }

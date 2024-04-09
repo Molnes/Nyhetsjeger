@@ -9,9 +9,9 @@ import (
 // This is a composite component and is used to return multiple components from the server.
 // It contains the EditActiveStartInput, EditActiveEndInput and ErrorText components.
 templ EditActiveTimeInput(quizID string, startTime time.Time, inputNameStart string, endTime time.Time, inputNameEnd string, errorText string) {
-	<form id="active-time-wrapper">
+	<div id="active-time-wrapper">
 		@dashboard_components.EditActiveStartInput(startTime, quizID, inputNameStart)
 		@dashboard_components.EditActiveEndInput(endTime, quizID, inputNameEnd)
 		@components.ErrorText("error-active-time", errorText)
-	</form>
+	</div>
 }
