@@ -9,18 +9,13 @@ import (
 )
 
 // Constants for the input names (for HTTP requests)
-const QuestionArticleURL = "question-article-url"
-const QuestionText = "question-text"
-const QuestionAlternative1 = "question-alternative-1"
-const QuestionAlternative2 = "question-alternative-2"
-const QuestionAlternative3 = "question-alternative-3"
-const QuestionAlternative4 = "question-alternative-4"
-const QuestionCorrectAlternative = "correct-alternative"
-const QuestionImageURL = "question-image-url"
-const QuestionPoints = "question-points"
-const QuestionTimeLimit = "question-time-limit"
-
-var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, QuestionAlternative3, QuestionAlternative4}
+const (
+	QuestionArticleURL = "question-article-url"
+	QuestionText       = "question-text"
+	QuestionImageURL   = "question-image-url"
+	QuestionPoints     = "question-points"
+	QuestionTimeLimit  = "question-time-limit"
+)
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
@@ -75,7 +70,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 							<td class="py-1">
 								<input
 									id={ fmt.Sprintf("question-%d", index+1) }
-									name={ QuestionAltneratives[index] }
+									name={ fmt.Sprintf("question-alternative-%d", index+1) }
 									type="text"
 									class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
 									if index < len(question.Alternatives) {
@@ -86,9 +81,8 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 							</td>
 							<td>
 								<input
-									type="radio"
-									name={ QuestionCorrectAlternative }
-									value={ fmt.Sprint(index + 1) }
+									type="checkbox"
+									name={ fmt.Sprintf("question-alternative-%d-is-correct", index+1) }
 									class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
 									if index < len(question.Alternatives) && question.Alternatives[index].IsCorrect {
 										checked
