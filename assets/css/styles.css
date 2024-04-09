@@ -52,6 +52,20 @@
     background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
+.cgradient:is(:hover, :focus) {
+    animation: hueRotate 800ms infinite alternate;
+}
+
+@keyframes hueRotate {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        filter: hue-rotate(80deg);
+    }
+}
+
 /* Gradient Border */
 .cgradient-border {
     top: 0;
