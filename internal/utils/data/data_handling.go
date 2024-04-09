@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -52,4 +53,21 @@ func GetNorwayTime(norwayTime time.Time) time.Time {
 	}
 
 	return norwayTime.In(norwayLocation)
+}
+
+// Format a number with spaces.
+// Example: "1000000" becomes "1 000 000".
+func FormatNumberWithSpaces(num int) string {
+	// This function was written by ChatGPT
+	numStr := strconv.Itoa(num)
+	var formattedNum string
+
+	for i := len(numStr) - 1; i >= 0; i-- {
+		formattedNum = string(numStr[i]) + formattedNum
+		if (len(numStr)-i)%3 == 0 && i != 0 {
+			formattedNum = " " + formattedNum
+		}
+	}
+
+	return formattedNum
 }

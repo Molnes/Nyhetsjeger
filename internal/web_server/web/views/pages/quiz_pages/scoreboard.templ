@@ -1,9 +1,11 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 )
 
 templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
@@ -11,36 +13,47 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			<div class="mx-auto">
-				<table class="border-collapse">
+				<table
+					class=" mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+				>
 					<colgroup>
-						<col class="min-w-16"/>
+						<col class="min-w-18"/>
 						<col class="min-w-48"/>
-						<col class="min-w-28"/>
+						<col class="min-w-36"/>
 					</colgroup>
 					<thead>
-						<tr class="bg-cblue text-white font-bold">
-							<th class="px-4 py-2 border border-slate-600">Plass</th>
-							<th class="px-4 py-2 border border-slate-600">Navn</th>
-							<th class="px-4 py-2 border border-slate-600">Poeng</th>
+						<tr class="border-collapse bg-cindigo text-white text-center">
+							<th class="px-4 py-2 rounded-tl-card overflow-hidden">Plass</th>
+							<th class="px-4 py-2">Navn</th>
+							<th class="px-4 py-2 rounded-tr-card overflow-hidden">Poeng</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody
+						class="[&>*:nth-child(even)]:bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100
+					[&>tr:last-child>td:first-child]:rounded-bl-card [&>tr:last-child>td:first-child]:overflow-hidden
+					[&>tr:last-child>td:last-child]:rounded-br-card [&>tr:last-child>td:last-child]:overflow-hidden"
+					>
 						if len(rankings) == 0 {
 							<tr class="text-center">
-								<td class="px-4 py-2 border border-slate-700" colspan="3">Fant ingen brukere i topplisten!</td>
+								<td class="px-4 py-2 border" colspan="3">Fant ingen brukere i topplisten!</td>
 							</tr>
 						}
 						for _, user := range rankings {
 							<tr
 								if user == userInfo {
-									class="bg-blue-100 hover:bg-blue-200 text-center"
+									class="[&>td]:border-l [&>td]:border-b [&>td:last-child]:border-r [&>td]:border-cindigo text-center font-bold shadow-[inset_0_1px_5px] shadow-cindigo"
 								} else {
-									class="hover:bg-blue-200 text-center"
+									class="[&>td]:border-l [&>td]:border-b [&>td:last-child]:border-r [&>td]:border-cindigo text-center"
 								}
 							>
-								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Placement) }</td>
-								<td class="px-4 py-2 border border-slate-700">{ user.Username }</td>
-								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
+								if user.Placement == 0 {
+									<td class="px-4 py-2">-</td>
+								} else {
+									<td class="px-4 py-2">{ fmt.Sprintf("%d", user.Placement) }</td>
+								}
+								<td class="px-4 py-2">{ user.Username }</td>
+								// <td class="px-4 py-2">{ fmt.Sprintf("%d", user.Points) }</td>
+								<td class="px-4 py-2">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
 							</tr>
 						}
 					</tbody>
