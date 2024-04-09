@@ -17,9 +17,9 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 					class=" mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 				>
 					<colgroup>
-						<col class="min-w-18"/>
+						<col class="min-w-22"/>
 						<col class="min-w-48"/>
-						<col class="min-w-36"/>
+						<col class="min-w-32"/>
 					</colgroup>
 					<thead>
 						<tr class="border-collapse bg-cindigo text-white text-center">
@@ -48,6 +48,18 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 							>
 								if user.Placement == 0 {
 									<td class="px-4 py-2">-</td>
+								} else if user.Placement == 1 {
+									<td class="px-4 py-2">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
+								} else if user.Placement == 2 {
+									<td class="px-4 py-2">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
+								} else if user.Placement == 3 {
+									<td class="px-4 py-2">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
 								} else {
 									<td class="px-4 py-2">{ fmt.Sprintf("%d", user.Placement) }</td>
 								}
