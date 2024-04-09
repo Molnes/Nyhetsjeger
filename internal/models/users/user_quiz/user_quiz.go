@@ -177,7 +177,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 
 	// Check if the quiz is active.
 	err = db.QueryRow(
-		`SELECT available_to FROM quizzes WHERE id = $1;`, quizID,
+		`SELECT active_to FROM quizzes WHERE id = $1;`, quizID,
 	).Scan(&quizEndTime)
 	if err != nil {
 		return nil, err
