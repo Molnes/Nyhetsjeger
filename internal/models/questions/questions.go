@@ -42,6 +42,11 @@ type Alternative struct {
 	PercentChosen float64
 }
 
+type PartialAlternative struct {
+	Text      string
+	IsCorrect bool
+}
+
 // Create a default question with an ID, quiz ID and 100 points.
 // All other fields are "empty".
 func GetDefaultQuestion(quizId uuid.UUID) Question {
@@ -383,7 +388,7 @@ type QuestionForm struct {
 	QuizID           *uuid.UUID
 	Points           uint
 	TimeLimitSeconds uint
-	Alternatives     [4][2]string // 4 alternatives, with [text, isCorrectString ("on" or "")]
+	Alternatives     [4]PartialAlternative
 }
 
 // Parse and validate question data.
@@ -442,16 +447,14 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 	// Only add alternatives that are not empty
 	for _, alt := range form.Alternatives {
 		// Do not count empty white space as an alternative
-		if strings.TrimSpace(alt[0]) != "" {
-			isCorrect := alt[1] == "on"
-
+		if strings.TrimSpace(alt.Text) != "" {
 			question.Alternatives = append(question.Alternatives, Alternative{
 				ID:        uuid.New(),
-				Text:      alt[0],
-				IsCorrect: isCorrect,
+				Text:      alt.Text,
+				IsCorrect: alt.IsCorrect,
 			})
 
-			if isCorrect {
+			if alt.IsCorrect {
 				hasCorrectAlternative = true
 			}
 		}

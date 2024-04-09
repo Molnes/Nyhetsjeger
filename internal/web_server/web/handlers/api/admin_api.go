@@ -429,16 +429,12 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 
 	// Get the alternatives from the form.
 	// There are always 4 alternatives, but some may be empty.
-	// Each alternative has a text and a checkbox to indicate if it is correct.
-	var alternatives [4][2]string
+	var alternatives [4]questions.PartialAlternative
 	for index := range 4 {
 		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
-		alternatives[index] = [2]string{alternativeText, isCorrect}
-
-		// To get alternative1 text would be alternatives[0][0]
-		// To get alternative1 correct would be alternatives[0][1]
+		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
 	}
 
 	// Create a new question object
