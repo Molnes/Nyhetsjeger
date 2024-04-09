@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS user_answers (
         REFERENCES answer_alternatives(question_id, id)
 );
 
--- calculates points awarded for a question based on the time spent on the question, question max points and duration
+-- calculates points awarded for a question based on the time spent on the question, question's max points and duration/time limit
 CREATE OR REPLACE FUNCTION calculate_points_awarded(
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
