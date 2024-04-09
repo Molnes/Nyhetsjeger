@@ -271,9 +271,10 @@ script questionList() {
 }
 
 script changesSaved() {
-	// After an HTMX swap, if the reponse was successful, display "Lagret"
 	document.body.addEventListener("htmx:afterSwap", (event) => {
-		if (event.detail.xhr.status < 300) {
+		// If the swap is successful, and it was not used to open the question modal
+		// Display a 'saved' message for 3 seconds
+		if (event.detail.xhr.status < 300 && event.target.id != 'question-modal') {
 			message = document.querySelector("#changes-saved-message")
 
 			message.classList.remove("hidden")
