@@ -273,7 +273,6 @@ script questionList() {
 script changesSaved() {
 	// After an HTMX swap, if the reponse was successful, display "Lagret"
 	document.body.addEventListener("htmx:afterSwap", (event) => {
-		console.log(event);
 		if (event.detail.xhr.status < 300) {
 			message = document.querySelector("#changes-saved-message")
 
