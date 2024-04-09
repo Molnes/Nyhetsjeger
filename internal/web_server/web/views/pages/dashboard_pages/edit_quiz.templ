@@ -90,6 +90,13 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Aktiv</h2>
+					<button
+						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+						type="button"
+					>
+						i
+						@components.Tooltip("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
+					</button>
 					@components.LoadingIndicator()
 				</div>
 				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.AvailableFrom, QuizActiveFrom, quiz.AvailableTo, QuizActiveTo, "")
