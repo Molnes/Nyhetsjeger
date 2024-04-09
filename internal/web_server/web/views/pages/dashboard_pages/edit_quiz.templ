@@ -257,13 +257,13 @@ script changesSaved() {
 
 			message.classList.remove("hidden")
 			message.classList.add("flex")
-			message.classList.add("fade-opacity")
+			message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
 
 			setTimeout(
 				function() {
 					message.classList.add("hidden")
 					message.classList.remove("flex")
-					message.classList.remove("fade-opacity")
+					message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
 				}, 3000)
 		}
 	})
