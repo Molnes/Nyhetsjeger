@@ -240,4 +240,23 @@ CREATE TABLE IF NOT EXISTS preassigned_roles(
     CONSTRAINT not_user_role CHECK (role != 'user')
 );
 
+CREATE OR REPLACE VIEW user_quiz_scores AS
+SELECT
+ua.user_id,
+ua.question_id,
+q.quiz_id,
+ua.question_presented_at AS start_time,
+ua.chosen_answer_alternative_id, 
+CASE
+    WHEN aa.correct THEN
+        calculate_points_awarded(ua.question_presented_at, ua.answered_at, q.time_limit_seconds, q.points)
+    ELSE
+        0
+END AS points_awarded
+
+FROM user_answers ua
+JOIN questions q ON ua.question_id = q.id
+JOIN answer_alternatives aa ON ua.chosen_answer_alternative_id = aa.id
+WHERE ua.answered_at IS NOT NULL;
+
 END;
