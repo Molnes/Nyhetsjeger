@@ -1,10 +1,11 @@
 package play_quiz_components
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"fmt"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"math"
 	"github.com/google/uuid"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
@@ -111,7 +112,7 @@ templ feedbackPercentage(percentage float64, correct bool) {
 
 func displayPercentage(num float64) string {
 	var str string
-	if num == 1.0 || num == 0.0 {
+	if math.Mod(num*100, 1) == 0 {
 		str = fmt.Sprintf("%.0f%%", num*100)
 	} else {
 		str = fmt.Sprintf("%.1f%%", num*100)
