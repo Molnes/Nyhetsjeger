@@ -27,8 +27,8 @@ type Quiz struct {
 	ID             uuid.UUID
 	Title          string
 	ImageURL       url.URL
-	AvailableFrom  time.Time
-	AvailableTo    time.Time
+	ActiveFrom     time.Time
+	ActiveTo       time.Time
 	CreatedAt      time.Time
 	LastModifiedAt time.Time
 	Published      bool
@@ -39,8 +39,8 @@ type PartialQuiz struct {
 	ID             uuid.UUID
 	Title          string
 	ImageURL       url.URL
-	AvailableFrom  time.Time
-	AvailableTo    time.Time
+	ActiveFrom     time.Time
+	ActiveTo       time.Time
 	Published      bool
 	QuestionNumber uint
 	MaxScore       uint
@@ -60,8 +60,8 @@ func CreateDefaultQuiz() Quiz {
 			Host:   "upload.wikimedia.org",
 			Path:   "/wikipedia/commons/5/59/Question_mark_choice.jpg",
 		},
-		AvailableFrom:  time.Now(),
-		AvailableTo:    time.Now().Add(24 * 7 * time.Hour),
+		ActiveFrom:     time.Now(),
+		ActiveTo:       time.Now().Add(24 * 7 * time.Hour),
 		CreatedAt:      time.Now(),
 		LastModifiedAt: time.Now(),
 		Published:      false,
@@ -73,7 +73,7 @@ func CreateDefaultQuiz() Quiz {
 func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 	row := db.QueryRow(
 		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
+			id, title, image_url, active_from, active_to, created_at, last_modified_at, published, is_deleted
     FROM
 			quizzes
 		WHERE
@@ -125,13 +125,13 @@ func UpdateTitleByQuizID(db *sql.DB, id uuid.UUID, title string) error {
 func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
+			id, title, image_url, active_from, active_to, created_at, last_modified_at, published, is_deleted
     FROM
 			quizzes
 		WHERE
 			is_deleted = false
 		ORDER BY
-			available_from DESC`)
+			active_from DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -211,8 +211,8 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
         quizzes.id,
         quizzes.title,
         quizzes.image_url,
-        quizzes.available_from,
-        quizzes.available_to,
+        quizzes.active_from,
+        quizzes.active_to,
         quizzes.created_at,
         quizzes.last_modified_at,
         quizzes.published,
@@ -223,9 +223,9 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
          FROM quizzes
          WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
 				 	AND published = true
-                    AND available_from <= NOW()
-                    AND available_to >= NOW()
-         ORDER BY quizzes.available_from DESC;`
+                    AND active_from <= NOW()
+                    AND active_to >= NOW()
+         ORDER BY quizzes.active_from DESC;`
 
 	rows, err := db.Query(q, pq.Array(quizIDs))
 
@@ -242,8 +242,8 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
 			&quiz.ID,
 			&quiz.Title,
 			&imageURL,
-			&quiz.AvailableFrom,
-			&quiz.AvailableTo,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
 			&quiz.CreatedAt,
 			&quiz.LastModifiedAt,
 			&quiz.Published,
@@ -265,7 +265,6 @@ func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished
 	return quizzes, nil
 
 }
-
 
 // Get quizzes that a user has finished or not. Quiz has to be published and not deleted. Gets quizzez that are not active.
 func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
@@ -291,8 +290,8 @@ func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID
         quizzes.id,
         quizzes.title,
         quizzes.image_url,
-        quizzes.available_from,
-        quizzes.available_to,
+        quizzes.active_from,
+        quizzes.active_to,
         quizzes.created_at,
         quizzes.last_modified_at,
         quizzes.published,
@@ -303,8 +302,8 @@ func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID
          FROM quizzes
          WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
 				 	AND published = true
-                    AND (available_from > NOW() OR available_to < NOW())
-                    ORDER BY quizzes.available_from DESC;`
+                    AND (active_from > NOW() OR active_to < NOW())
+                    ORDER BY quizzes.active_from DESC;`
 
 	rows, err := db.Query(q, pq.Array(quizIDs))
 
@@ -321,8 +320,8 @@ func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID
 			&quiz.ID,
 			&quiz.Title,
 			&imageURL,
-			&quiz.AvailableFrom,
-			&quiz.AvailableTo,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
 			&quiz.CreatedAt,
 			&quiz.LastModifiedAt,
 			&quiz.Published,
@@ -345,19 +344,18 @@ func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID
 
 }
 
-
 // Get all the quizzes that are not published and not deleted.
 func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT
-			id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted
+			id, title, image_url, active_from, active_to, created_at, last_modified_at, published, is_deleted
 		FROM
 			quizzes
 		WHERE
 			published = $1 AND
 			is_deleted = false
 		ORDER BY
-			available_from DESC`,
+			active_from DESC`,
 		published)
 
 	if err != nil {
@@ -370,7 +368,7 @@ func GetQuizzesByPublishStatus(db *sql.DB, published bool) ([]Quiz, error) {
 }
 
 // Converts a row from the database to a Quiz.
-// It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
+// It expects the row to contain ID, Title, ImageURL, ActiveFrom, ActiveTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
 // It will return a Quiz with these values.
 func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 	var quiz Quiz
@@ -379,8 +377,8 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 		&quiz.ID,
 		&quiz.Title,
 		&imageURL,
-		&quiz.AvailableFrom,
-		&quiz.AvailableTo,
+		&quiz.ActiveFrom,
+		&quiz.ActiveTo,
 		&quiz.CreatedAt,
 		&quiz.LastModifiedAt,
 		&quiz.Published,
@@ -401,7 +399,7 @@ func scanQuizFromFullRow(row *sql.Row) (*Quiz, error) {
 }
 
 // Converts rows from the database to a list of Quizzes.
-// It expects the row to contain ID, Title, ImageURL, AvailableFrom, AvailableTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
+// It expects the row to contain ID, Title, ImageURL, ActiveFrom, ActiveTo, CreatedAt, LastModifiedAt, Published, IsDeleted.
 // It will return a Quiz with these values.
 func scanQuizzesFromFullRows(rows *sql.Rows) ([]Quiz, error) {
 	quizzes := []Quiz{}
@@ -412,8 +410,8 @@ func scanQuizzesFromFullRows(rows *sql.Rows) ([]Quiz, error) {
 			&quiz.ID,
 			&quiz.Title,
 			&imageURL,
-			&quiz.AvailableFrom,
-			&quiz.AvailableTo,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
 			&quiz.CreatedAt,
 			&quiz.LastModifiedAt,
 			&quiz.Published,
@@ -439,14 +437,14 @@ func scanQuizzesFromFullRows(rows *sql.Rows) ([]Quiz, error) {
 func CreateQuiz(db *sql.DB, quiz Quiz) (*uuid.UUID, error) {
 	_, err := db.Exec(
 		`INSERT INTO quizzes
-			(id, title, image_url, available_from, available_to, created_at, last_modified_at, published, is_deleted)
+			(id, title, image_url, active_from, active_to, created_at, last_modified_at, published, is_deleted)
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		quiz.ID,
 		quiz.Title,
 		quiz.ImageURL.String(),
-		quiz.AvailableFrom,
-		quiz.AvailableTo,
+		quiz.ActiveFrom,
+		quiz.ActiveTo,
 		quiz.CreatedAt,
 		quiz.LastModifiedAt,
 		quiz.Published,
@@ -511,7 +509,7 @@ func UpdatePublishedStatusByQuizID(db *sql.DB, ctx context.Context, id uuid.UUID
 // Retrieves a partial quiz from the database by a quiz ID.
 func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 	row := db.QueryRow(
-		`SELECT qz.id, qz.title, qz.image_url, qz.available_from, qz.available_to, qz.published, count(q.id), sum(q.points)
+		`SELECT qz.id, qz.title, qz.image_url, qz.active_from, qz.active_to, qz.published, count(q.id), sum(q.points)
 		FROM quizzes qz 
 		LEFT JOIN questions q ON q.quiz_id = qz.id
 		WHERE qz.id = $1 AND qz.is_deleted = false
@@ -523,8 +521,8 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 		&pq.ID,
 		&pq.Title,
 		&imageURLStr,
-		&pq.AvailableFrom,
-		&pq.AvailableTo,
+		&pq.ActiveFrom,
+		&pq.ActiveTo,
 		&pq.Published,
 		&pq.QuestionNumber,
 		&pq.MaxScore,
@@ -546,7 +544,7 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 func UpdateActiveStartByQuizID(db *sql.DB, id uuid.UUID, activeStart time.Time) error {
 	_, err := db.Exec(
 		`UPDATE quizzes
-		SET available_from = $1
+		SET active_from = $1
 		WHERE id = $2`,
 		activeStart,
 		id)
@@ -557,7 +555,7 @@ func UpdateActiveStartByQuizID(db *sql.DB, id uuid.UUID, activeStart time.Time) 
 func UpdateActiveEndByQuizID(db *sql.DB, id uuid.UUID, activeEnd time.Time) error {
 	_, err := db.Exec(
 		`UPDATE quizzes
-		SET available_to = $1
+		SET active_to = $1
 		WHERE id = $2`,
 		activeEnd,
 		id)

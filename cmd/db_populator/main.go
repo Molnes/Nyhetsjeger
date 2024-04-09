@@ -80,7 +80,7 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 func createSampleQuiz(db *sql.DB, title string) {
 	var quizID uuid.UUID
 	row := db.QueryRow(
-		`INSERT INTO quizzes (title, available_from, available_to, image_url, published)
+		`INSERT INTO quizzes (title, active_from, active_to, image_url, published)
 		values ($1, $2, $3, $4, true)
 		RETURNING id;`,
 		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://picsum.photos/id/1062/500/300")
