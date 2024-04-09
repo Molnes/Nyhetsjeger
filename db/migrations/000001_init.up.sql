@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS preassigned_roles(
     CONSTRAINT not_user_role CHECK (role != 'user')
 );
 
-CREATE OR REPLACE VIEW user_quiz_scores AS
+CREATE OR REPLACE VIEW user_question_scores AS
 SELECT
 ua.user_id,
 ua.question_id,
@@ -258,5 +258,31 @@ FROM user_answers ua
 JOIN questions q ON ua.question_id = q.id
 JOIN answer_alternatives aa ON ua.chosen_answer_alternative_id = aa.id
 WHERE ua.answered_at IS NOT NULL;
+
+CREATE OR REPLACE VIEW user_quizzes AS
+SELECT
+uqs.user_id,
+uqs.quiz_id,
+SUM(uqs.points_awarded) AS total_points_awarded,
+ic.is_completed,
+MAX(uqs.start_time) AS last_question_started_at -- change to true/fasle, answered within active time
+FROM
+user_question_scores uqs
+JOIN questions q ON uqs.question_id = q.id, LATERAL (
+    -- check if there are qeustions user has not answered
+    SELECT COUNT(q.id) = 0 as is_completed
+		FROM questions q
+		WHERE quiz_id = uqs.quiz_id 
+		AND id NOT IN (
+			SELECT question_id
+			FROM user_answers
+			WHERE chosen_answer_alternative_id IS NOT NULL
+			AND user_id = uqs.user_id
+		)
+) ic
+
+GROUP BY uqs.user_id, uqs.quiz_id, ic.is_completed;
+
+
 
 END;
