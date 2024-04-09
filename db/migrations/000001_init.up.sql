@@ -245,7 +245,7 @@ SELECT
 ua.user_id,
 ua.question_id,
 q.quiz_id,
-ua.question_presented_at AS start_time,
+ua.answered_at AS answered_at,
 ua.chosen_answer_alternative_id, 
 CASE
     WHEN aa.correct THEN
@@ -265,7 +265,7 @@ uqp.user_id,
 uqp.quiz_id,
 SUM(uqp.points_awarded) AS total_points_awarded,
 ic.is_completed,
-MAX(uqp.start_time) AS last_question_started_at -- change to true/fasle, answered within active time
+MAX(uqp.answered_at) AS last_answer_at -- change to true/fasle, answered within active time
 FROM
 user_question_points uqp
 JOIN questions q ON uqp.question_id = q.id, LATERAL (
