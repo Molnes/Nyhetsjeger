@@ -74,7 +74,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					id="article-list"
 					class="mt-3 border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden"
 				>
-					<li
+					<p
 						id="no-articles-warning"
 						if len(*articles) == 0 {
 							class="text-center p-4"
@@ -82,8 +82,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 							class="text-center p-4 hidden"
 						}
 					>
-						<p>Ingen artikler lagt til enda.</p>
-					</li>
+						Ingen artikler lagt til enda.
+					</p>
 					for _, article := range *articles {
 						if article.ID.Valid {
 							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz.ID.String())
@@ -126,7 +126,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					id="question-list"
 					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden mb-3"
 				>
-					<li
+					<p
 						id="no-questions-warning"
 						if len(*questions) == 0 {
 							class="text-center p-4"
@@ -134,8 +134,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 							class="text-center p-4 hidden"
 						}
 					>
-						<p>Ingen spørsmål lagt til enda.</p>
-					</li>
+						Ingen spørsmål lagt til enda.
+					</p>
 					for _, question := range *questions {
 						@dashboard_components.QuestionListItem(&question)
 					}
@@ -273,6 +273,7 @@ script questionList() {
 script changesSaved() {
 	// After an HTMX swap, if the reponse was successful, display "Lagret"
 	document.body.addEventListener("htmx:afterSwap", (event) => {
+		console.log(event);
 		if (event.detail.xhr.status < 300) {
 			message = document.querySelector("#changes-saved-message")
 

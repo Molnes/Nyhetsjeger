@@ -127,6 +127,7 @@
 }
 
 @keyframes fadeOpacity {
+
     0%,
     75% {
         opacity: 1;
@@ -135,4 +136,21 @@
     100% {
         opacity: 0;
     }
+}
+
+#question-list,
+#article-list {
+    counter-reset: css-counter 0;
+}
+
+#question-list li,
+#article-list li {
+    counter-increment: css-counter 1;
+}
+
+#question-list li::before,
+#article-list li::before {
+    content: counter(css-counter) ". ";
+    font-weight: bold;
+    margin-right: 0.5rem;
 }

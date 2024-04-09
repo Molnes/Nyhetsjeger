@@ -12,12 +12,13 @@ import (
 templ QuestionListItem(question *questions.Question) {
 	<li
 		id={ fmt.Sprintf("question-%s", question.ID) }
-		class="flex flex-row justify-between px-4 py-2"
+		class="flex flex-row px-4 py-2 cursor-pointer"
 		data-element-type="question-list-item"
 	>
 		{ question.Text }
 		<button
 			id={ fmt.Sprintf("edit-question-%s", question.ID) }
+			class="ml-auto"
 			data-element-type="edit-question-button"
 			type="button"
 			title="Rediger"
@@ -30,5 +31,18 @@ templ QuestionListItem(question *questions.Question) {
 			// The same color as the custom indigo color in the tailwindcss config.
 			@icons.Pencil("#5B14F2", 20, 20)
 		</button>
+		@listItemClicksButton(question.ID.String())
 	</li>
+}
+
+script listItemClicksButton(id string) {
+	// Add click event listener to all question list items.
+	const questionListItem = document.querySelector(`#question-${id}`);
+
+	questionListItem.addEventListener("click", () => {
+		// Get the edit question button for the question.
+		const editQuestionButton = document.getElementById(`edit-question-${id}`);
+		// Click the edit question button.
+		editQuestionButton.click();
+	});
 }
