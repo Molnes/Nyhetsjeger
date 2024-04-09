@@ -181,6 +181,34 @@ CREATE TABLE IF NOT EXISTS user_answers (
         REFERENCES answer_alternatives(question_id, id)
 );
 
+-- calculates points awarded for a question based on the time spent on the question, question max points and duration
+CREATE OR REPLACE FUNCTION calculate_points_awarded(
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
+    duration_seconds INTEGER,
+    max_points INTEGER
+    )
+RETURNS INTEGER AS $$
+DECLARE
+    awarded_points INTEGER;
+    time_spent float8;
+    min_points INTEGER;
+BEGIN
+    time_spent := EXTRACT(EPOCH FROM end_time - start_time);
+    min_points := max_points / 5;
+
+    -- y= -ax + b, where a = (max_points - min_points) / duration_seconds, b = max_points, x = time_spent
+    awarded_points := -1.0 * ( float8((max_points - min_points)) / duration_seconds) * time_spent + max_points;
+
+    IF awarded_points < min_points THEN
+        awarded_points := min_points;
+    END IF;
+
+    RETURN awarded_points;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- Table expected by package we use for sessions
 -- code taken directly from https://github.com/antonlindstrom/pgstore/blob/e3a6e3fed12a32697b352a4636d78204f9dbdc81/pgstore.go#L234
 CREATE TABLE IF NOT EXISTS http_sessions (
