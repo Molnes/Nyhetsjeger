@@ -1,0 +1,39 @@
+package user_admin
+
+import "math"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
+
+func calculateMaxPages(userAmount int) int {
+	return int(math.Ceil(float64(userAmount) / float64(usernames.UsernamesPerPage)))
+}
+
+templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string) {
+	<table id={ tableID }
+		class="table-fixed border-separate border-spacing-0 rounded-card border border-gray-400 bg-white
+    	[&_td]:border-black [&_tr]:h-8"
+	>
+		<thead>
+			<tr class="[&>th]:border-black">
+				<th>{ tableName } </th>
+			</tr>
+		</thead>
+		<tbody
+			class="
+                [&_tr:nth-child(odd)]:bg-purple-100  
+                [&>tr:last-child]:border-b [&>tr:last-child]:border-black"
+		>
+			for _, word := range words {
+				<tr>
+					<td>{ word }</td>
+				</tr>
+			}
+		</tbody>
+		<tfoot>
+			<tr>
+				<td class="text-right border-t border-black" colspan="4">
+					@Pagination(calculateMaxPages(wordCount), page, tableID, pagnationParam)
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+}
