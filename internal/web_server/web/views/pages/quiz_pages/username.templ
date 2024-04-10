@@ -13,7 +13,11 @@ templ UsernamePage(u *users.User) {
 			<div class="w-3/4">
 				<div>
 					<label for="tlf-in" class="inline-block font-bold mr-4 my-2">Mobilnummer</label>
-					<button class="inline relative rounded-1/2 border-gray-700 text-gray-700 border-2 w-6 h-6 font-bold mb-1 tooltip-parent" type="button">
+					<button
+						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+						type="button"
+						aria-label="tooltip"
+					>
 						i
 						@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
 					</button>

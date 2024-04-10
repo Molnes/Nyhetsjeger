@@ -52,8 +52,15 @@
     background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.cgradient:is(:hover, :focus) {
-    animation: hueRotate 800ms infinite alternate;
+.cgradient:is(:hover, :focus),
+.gradient-outline:has(.cgradient:is(:hover, :focus))::after,
+.answer-button:is(:hover, :focus):not(:disabled)::after {
+    animation: hueRotate 800ms linear infinite alternate;
+}
+
+.gradient-shadow:has(.cgradient:is(:hover, :focus))::before,
+.answer-button:is(:hover, :focus):not(:disabled)::before {
+    animation: hueRotateBlur 800ms linear infinite alternate;
 }
 
 @keyframes hueRotate {
@@ -63,6 +70,16 @@
 
     100% {
         filter: hue-rotate(80deg);
+    }
+}
+
+@keyframes hueRotateBlur {
+    0% {
+        filter: hue-rotate(0deg) blur(0.5rem);
+    }
+
+    100% {
+        filter: hue-rotate(80deg) blur(0.5rem);
     }
 }
 
@@ -128,7 +145,7 @@
     border-radius: 50%;
 }
 
-.tooltip-parent:hover>.tooltip {
+.tooltip-parent:is(:hover, :focus)>.tooltip {
     display: inline-block;
 }
 
@@ -157,13 +174,13 @@
     counter-reset: css-counter 0;
 }
 
-#question-list li,
-#article-list li {
+#question-list li[data-element-type="question-list-item"],
+#article-list li[data-element-type="article-list-item"] {
     counter-increment: css-counter 1;
 }
 
-#question-list li::before,
-#article-list li::before {
+#question-list li[data-element-type="question-list-item"]::before,
+#article-list li[data-element-type="article-list-item"]::before {
     content: counter(css-counter) ". ";
     font-weight: bold;
     margin-right: 0.5rem;

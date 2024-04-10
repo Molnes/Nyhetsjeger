@@ -654,14 +654,10 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 		alternatives = append(alternatives, questions.Alternative{Text: alternativeText, IsCorrect: isCorrect == "on"})
 	}
 
-	log.Println("---------------------")
-	log.Println(alternatives)
-
 	// Shuffle the alternatives
 	rand.Shuffle(len(alternatives), func(i, j int) {
 		alternatives[i], alternatives[j] = alternatives[j], alternatives[i]
 	})
-	log.Println(alternatives)
 
 	// Return the "alternatives" table.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))

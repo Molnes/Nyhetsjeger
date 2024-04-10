@@ -13,7 +13,6 @@ templ BaseLayout(pageTitle string) {
 			<meta name="description" content="Nyhetsquiz basert på aktuelle nyhetsartikler"/>
 			<title>{ pageTitle }</title>
 			<link rel="stylesheet" href="/static/css/tailwind.css"/>
-			<link rel="stylesheet" href="/static/css/styles.css?v=1.2"/>
 			<link rel="preconnect" href="https://fonts.googleapis.com"/>
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 			<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
@@ -22,7 +21,7 @@ templ BaseLayout(pageTitle string) {
 		</head>
 		<body class="font-body min-h-screen bg-gray-50">
 			<noscript>
-				<p class="px-6 py-4 font-bold font-sans text-center border border-red-500">Denne nettsiden bruker JavaScript og vil ikke fungere som forventet uten. Vennligst aktiver JavaScript for å fortsette.</p>
+				<p class="px-6 py-4 font-bold font-sans text-center border border-red-600">Denne nettsiden bruker JavaScript og vil ikke fungere som forventet uten. Vennligst aktiver JavaScript for å fortsette.</p>
 			</noscript>
 			{ children... }
 			if os.Getenv("COMPOSE_PROFILES") == "dev" {

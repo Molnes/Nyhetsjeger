@@ -33,7 +33,7 @@ templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, pos
 		} else if imageURL.String() != "" && post {
 			// This div wrapper is to prevent a layout shift while loading the image
 			<div style="height: 200px" class="mx-auto mb-3">
-				<img src={ imageURL.String() } height="200" style="height: 100%" class="block rounded-lg mx-auto object-cover"/>
+				<img src={ imageURL.String() } height="200" width="300" style="height: 100%" class="rounded-lg mx-auto object-cover"/>
 			</div>
 			<button
 				id="remove-image-button"
