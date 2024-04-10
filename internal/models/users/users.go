@@ -328,6 +328,7 @@ func applyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_r
 	return user_roles.RoleFromString(roleString), nil
 }
 
+// Returns the number of users in the database
 func GetUserCount(db *sql.DB) (int, error) {
 	var count int
 	err := db.QueryRow(`SELECT COUNT(*) FROM users;`).Scan(&count)
