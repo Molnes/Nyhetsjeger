@@ -32,6 +32,8 @@ type AnsweredQuestion struct {
 var ErrNoSuchQuiz = errors.New("quiz_summary: no such quiz")
 var ErrQuizNotCompleted = errors.New("quiz_summary: quiz not completed")
 
+// Returns UserQuizSummary of given quiz and given user.
+// If quiz does not exists, returns ErrNoSuchQuiz. If Quiz isn't completed ErrQuizNotCompleted.
 func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSummary, error) {
 	quizRow := db.QueryRow(
 		`SELECT qz.id, COALESCE(uq.total_points_awarded, 0), COALESCE(uq.is_completed, false),
@@ -70,6 +72,7 @@ func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSu
 	return &summary, nil
 }
 
+// Gets questions answered by the given user in a given quiz.
 func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]AnsweredQuestion, error) {
 	rows, err := db.Query(
 		`SELECT uqp.question_id, q.question, q.points, uqp.chosen_answer_alternative_id, a.text, a.correct, uqp.points_awarded
