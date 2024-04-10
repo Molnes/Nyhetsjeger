@@ -96,7 +96,7 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	nextQuestionAndSeconds, err := startNextQuestion(db, userID, quizID)
+	nextQuestion, secondsLeft, err := startNextQuestion(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,16 +108,11 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 
 	return &QuizData{
 		*partialQuiz,
-		*nextQuestionAndSeconds.question,
+		*nextQuestion,
 		pointsSoFar,
-		nextQuestionAndSeconds.secondsLeft,
+		secondsLeft,
 	}, nil
 
-}
-
-type QuestionAndSecondsLeft struct {
-	question    *questions.Question
-	secondsLeft uint
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -126,14 +121,14 @@ type QuestionAndSecondsLeft struct {
 //
 // ErrNoMoreQuestions if there are no more unanswered questions for the user in the quiz.
 // ErrNoSuchQuiz if the quiz does not exist.
-func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuestionAndSecondsLeft, error) {
+func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, uint, error) {
 	questionID, err := getNextUnansweredQuestionID(db, userID, quizID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	question, err := questions.GetQuestionByID(db, questionID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	timeLeft := question.TimeLimitSeconds
 
@@ -142,18 +137,15 @@ func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*Questio
 		if err == errQuestionAlreadyStarted {
 			timePresented, err := getQuestionPresentedAtTime(db, userID, question.ID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 			timeLeft = question.GetRemainingTimeSeconds(time.Since(timePresented))
 		} else {
-			return nil, err
+			return nil, 0, err
 		}
 	}
 
-	return &QuestionAndSecondsLeft{
-		question,
-		timeLeft,
-	}, nil
+	return question, timeLeft, nil
 }
 
 type UserAnsweredQuestion struct {
