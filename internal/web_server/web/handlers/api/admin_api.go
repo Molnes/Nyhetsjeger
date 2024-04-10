@@ -3,6 +3,8 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -58,6 +60,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/question/edit-image", aah.editQuestionImage)
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
+	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -557,4 +560,28 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
 		fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
+}
+
+// Randomizes the order of the alternatives for a question visually.
+func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
+	// Get the alternatives
+	var alternatives []questions.Alternative
+	for index := range 4 {
+		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
+		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
+		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
+		alternatives = append(alternatives, questions.Alternative{Text: alternativeText, IsCorrect: isCorrect == "on"})
+	}
+
+	log.Println("---------------------")
+	log.Println(alternatives)
+
+	// Shuffle the alternatives
+	rand.Shuffle(len(alternatives), func(i, j int) {
+		alternatives[i], alternatives[j] = alternatives[j], alternatives[i]
+	})
+	log.Println(alternatives)
+
+	// Return the "alternatives" table.
+	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
 }

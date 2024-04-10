@@ -61,7 +61,14 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
-		<button type="button" class="flex flex-row gap-1 items-center mt-3 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white">
+		<button
+			type="button"
+			class="flex flex-row gap-1 items-center mt-3 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
+			hx-post="/api/v1/admin/question/randomize-alternatives"
+			hx-swap="outerHTML"
+			hx-target="#alternatives-table"
+			hx-indicator="previous .htmx-indicator"
+		>
 			Tilfeldig alternativ rekkefølge
 			@icons.Dice(20, "currentColor", 28, 28)
 		</button>
