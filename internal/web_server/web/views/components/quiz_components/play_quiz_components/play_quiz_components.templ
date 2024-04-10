@@ -1,10 +1,11 @@
 package play_quiz_components
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"fmt"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"math"
 	"github.com/google/uuid"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
@@ -60,8 +61,12 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			</a>
 		}
 	</div>
+	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
 }
 
+// A disabled button displaying the alternative text along with feedback
+// (Percentage of answers/votes for this option, and different styling for correct/incorrect alternatives),
+// also highlights the button if this option was selected.
 templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
@@ -81,15 +86,16 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	</button>
 }
 
-templ feedbackCircle(correct bool) {
+// A circular badge/card displaying check-mark or cross based on positive/negative feedback (correct, incorrect)
+templ feedbackCircle(isCorrect bool) {
 	<div
-		if correct {
+		if isCorrect {
 			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-green-500"
 		} else {
 			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-600"
 		}
 	>
-		if correct {
+		if isCorrect {
 			@icons.Checkmark(60, "white", 30, 30)
 		} else {
 			@icons.Cross(3, "white", 30, 30)
@@ -97,14 +103,27 @@ templ feedbackCircle(correct bool) {
 	</div>
 }
 
-templ feedbackPercentage(percentage float64, correct bool) {
+// A badge/card displaying the percentage (given as a float), and outlined with color based on positive/negative feedback (correct, incorrect)
+templ feedbackPercentage(percentage float64, isCorrect bool) {
 	<div
-		if correct {
+		if isCorrect {
 			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
 		} else {
 			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
 		}
 	>
-		{ fmt.Sprintf("%v%%", percentage * 100) }
+		{ displayPercentage(percentage) }
 	</div>
+}
+
+// Converts float64 to a string representating the percentage, includes '%'. If the percentage is a whole number, no decimals kept. Othwerise 1 decimal is kept.
+// Example: 0.0 -> '0%', 0.5 -> '50%', 3.333 -> '33.3%', 6.666 -> '66.7%'
+func displayPercentage(num float64) string {
+	var str string
+	if math.Mod(num*100, 1) == 0 {
+		str = fmt.Sprintf("%.0f%%", num*100)
+	} else {
+		str = fmt.Sprintf("%.1f%%", num*100)
+	}
+	return str
 }

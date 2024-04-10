@@ -17,8 +17,8 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 			<a href="/quiz" aria-label="Lukk quiz">
 				@icons.Cross(3, "black", 40, 40)
 			</a>
-			@timer(data.CurrentQuestion.TimeLimitSeconds)
-			<p>Poeng</p>
+			@timer(data.SecondsLeft, data.CurrentQuestion.TimeLimitSeconds)
+			@PointsDisplay(data.PointsGathered)
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img

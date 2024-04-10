@@ -39,7 +39,7 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 			<section class="flex flex-col gap-4 items-center scrollbar-hide">
 				<h2 class="text-2xl">Oppsummering</h2>
 				<div class="gradient-outline w-fit h-fit">
-					<ol class="list-decimal pl-8 pr-4 py-4 space-y-4 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
+					<ol class="list-decimal pl-8 pr-4 py-4 space-y-5 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
 						for _, aq := range summary.AnsweredQuestions {
 							@chosenAnswer(aq)
 						}
@@ -65,14 +65,25 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 	<li>
-		{ aq.QuestionText }
-		<div class="flex items-center gap-2">
-			if aq.IsCorrect {
-				@icons.Checkmark(100, "green", 20, 20)
-			} else {
-				@icons.Cross(3, "red", 20, 20)
-			}
-			<p class="text-gray-700">{ aq.ChosenAlternativeText }</p>
+		<p
+			class="flex content-between"
+		>
+			<span>{ aq.QuestionText }</span>
+			<span
+				class="text-right grow text-gray-600 font-semibold ml-5"
+			>
+				{ fmt.Sprintf("%v/%v",aq.PointsAwarded,aq.MaxPoints) }
+			</span>
+		</p>
+		<div class="flex items-center gap-2 mt-1">
+			<div class="shrink-0">
+				if aq.IsCorrect {
+					@icons.Checkmark(100, "green", 20, 20)
+				} else {
+					@icons.Cross(3, "red", 20, 20)
+				}
+			</div>
+			<p class="text-gray-700 shrink">{ aq.ChosenAlternativeText }</p>
 		</div>
 	</li>
 }
