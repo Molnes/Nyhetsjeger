@@ -274,7 +274,7 @@ script changesSaved() {
 	document.body.addEventListener("htmx:afterSwap", (event) => {
 		// If the swap is successful, and it was not used to open the question modal
 		// Display a 'saved' message for 3 seconds
-		if (event.detail.xhr.status < 300 && event.target.id != 'question-modal') {
+		if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
 			message = document.querySelector("#changes-saved-message")
 
 			message.classList.remove("hidden")
