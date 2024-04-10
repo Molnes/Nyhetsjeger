@@ -95,7 +95,7 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	nextQuestion, err := StartNextQuestion(db, userID, quizID)
+	nextQuestion, err := startNextQuestion(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 //
 // ErrNoMoreQuestions if there are no more unanswered questions for the user in the quiz.
 // ErrNoSuchQuiz if the quiz does not exist.
-func StartNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, error) {
+func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, error) {
 	questionID, err := getNextUnansweredQuestionID(db, userID, quizID)
 	if err != nil {
 		return nil, err
