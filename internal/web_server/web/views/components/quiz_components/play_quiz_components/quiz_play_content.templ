@@ -14,7 +14,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		class="flex flex-col items-center py-2 gap-6"
 	>
 		<div class="flex justify-between items-center w-full ">
-			<a href="/quiz">
+			<a href="/quiz" aria-label="Lukk quiz">
 				@icons.Cross(3, "black", 40, 40)
 			</a>
 			@timer(data.CurrentQuestion.TimeLimitSeconds)
@@ -38,6 +38,7 @@ templ progressBar(current uint, total uint) {
 	<div
 		class="flex justify-center items-center gap-2 isolate"
 		role="progressbar"
+		aria-label="Spørsmål"
 		aria-valuemin="0"
 		aria-valuenow={ fmt.Sprint(current) }
 		aria-valuemax={ fmt.Sprint(total) }
