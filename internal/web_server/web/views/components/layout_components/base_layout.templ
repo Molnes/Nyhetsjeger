@@ -22,7 +22,7 @@ templ BaseLayout(pageTitle string) {
 		</head>
 		<body class="font-body min-h-screen bg-gray-50">
 			<noscript>
-				<p class="px-6 py-4 font-bold font-sans text-center border border-red-500">Denne nettsiden bruker JavaScript og vil ikke fungere som forventet uten. Vennligst aktiver JavaScript for å fortsette.</p>
+				<p class="px-6 py-4 font-bold font-sans text-center border border-red-600">Denne nettsiden bruker JavaScript og vil ikke fungere som forventet uten. Vennligst aktiver JavaScript for å fortsette.</p>
 			</noscript>
 			{ children... }
 			if os.Getenv("COMPOSE_PROFILES") == "dev" {
