@@ -9,7 +9,7 @@ import (
 templ ArticleListItem(articleUrl string, articleTitle string, articleID string, quizID string) {
 	<li
 		id={ fmt.Sprintf("article-%s", articleID) }
-		class="flex flex-row justify-between px-4 py-2"
+		class="flex flex-row px-4 py-2"
 		data-element-type="article-list-item"
 	>
 		<a target="blank_" href={ templ.SafeURL(articleUrl) } class="[&:hover]:underline">
@@ -17,6 +17,7 @@ templ ArticleListItem(articleUrl string, articleTitle string, articleID string, 
 		</a>
 		<button
 			id={ fmt.Sprintf("delete-article-%s", articleID) }
+			class="ml-auto"
 			title="Slett"
 			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
 			hx-swap="outerHTML"
