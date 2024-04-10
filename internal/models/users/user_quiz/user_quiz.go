@@ -3,7 +3,6 @@ package user_quiz
 import (
 	"database/sql"
 	"errors"
-	"math"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
@@ -157,7 +156,6 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	var maxPoints uint
 	var timeLimit uint
 	var quizID uuid.UUID
-	var quizEndTime time.Time // The time the quiz is no longer active.
 	err := db.QueryRow(
 		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id, questions.quiz_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
@@ -170,24 +168,7 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
-	// isCorrect, err := questions.IsCorrectAnswer(db, questionId, chosenAlternative)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// Check if the quiz is active.
-	err = db.QueryRow(
-		`SELECT active_to FROM quizzes WHERE id = $1;`, quizID,
-	).Scan(&quizEndTime)
-	if err != nil {
-		return nil, err
-	}
-
 	nowTime := time.Now().UTC()
-	// var pointsAwarded uint
-	// if isCorrect {
-	// 	pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizEndTime))
-	// }
 	_, err = db.Exec(
 		`UPDATE user_answers
 		SET chosen_answer_alternative_id = $1, answered_at = $2
@@ -224,36 +205,4 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		PointsAwarded:  pointsAwarded,
 		NextQuestionID: nextQuestionID,
 	}, nil
-}
-
-// Calculates the points awarded for answering a question. The points are based on the time taken to answer the question.
-// As of now there are 3 possible outcomes: 100%, 50% or 25% of the max points.
-// These are based on the thresholds: 0-25%, 25-50% and 50+% of the time limit used.
-// If the quiz is not active, the points awarded are halved.
-func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint, pastQuizActiveTime bool) uint {
-
-	diff := answeredAt.Sub(questionPresentadAt)
-
-	secondsTaken := diff.Seconds()
-
-	threshholdMax := 0.25
-	threshholdMid := 0.5
-
-	var pointsAwarded float64
-
-	timeLimitFloat := float64(timeLimit)
-	if secondsTaken < threshholdMax*timeLimitFloat {
-		pointsAwarded = float64(maxPoints)
-	} else if secondsTaken < threshholdMid*timeLimitFloat {
-		pointsAwarded = float64(maxPoints) / 2
-	} else {
-		pointsAwarded = float64(maxPoints) / 4
-	}
-	// If the quiz is not active, the points awarded are halved.
-	if pastQuizActiveTime {
-		pointsAwarded = pointsAwarded * 0.5
-	}
-
-	rounded := math.RoundToEven(pointsAwarded)
-	return uint(rounded)
 }
