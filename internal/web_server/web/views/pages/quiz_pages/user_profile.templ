@@ -44,8 +44,9 @@ templ UserProfile(u *users.User) {
 				<div class="mb-2">
 					<label for="tlf-in" class="inline-block font-bold mr-1">Mobilnummer</label>
 					<button
-						class="inline relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
 						type="button"
+						aria-label="tooltip"
 					>
 						i
 						@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
@@ -93,7 +94,7 @@ templ UserProfile(u *users.User) {
 				id="delete-button"
 				hx-delete="/api/v1/quiz/profil"
 				hx-confirm=""
-				class="text-red-500 mt-5"
+				class="text-red-600 mt-5"
 				type="button"
 			>Slett konto</button>
 		</form>

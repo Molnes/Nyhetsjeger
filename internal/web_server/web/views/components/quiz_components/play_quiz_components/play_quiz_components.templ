@@ -86,7 +86,7 @@ templ feedbackCircle(correct bool) {
 		if correct {
 			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-green-500"
 		} else {
-			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-500"
+			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-600"
 		}
 	>
 		if correct {
@@ -102,7 +102,7 @@ templ feedbackPercentage(percentage float64, correct bool) {
 		if correct {
 			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
 		} else {
-			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-500 text-red-800"
+			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
 		}
 	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }

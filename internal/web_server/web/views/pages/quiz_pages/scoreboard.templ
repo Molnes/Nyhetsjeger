@@ -14,58 +14,53 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			<div class="mx-auto">
 				<table
-					class=" mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+					class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 				>
 					<colgroup>
 						<col class="min-w-22"/>
 						<col class="min-w-48"/>
-						<col class="min-w-32"/>
+						<col class="min-w-30"/>
 					</colgroup>
 					<thead>
 						<tr class="border-collapse bg-cindigo text-white text-center">
-							<th class="px-4 py-2 rounded-tl-card overflow-hidden">Plass</th>
-							<th class="px-4 py-2">Navn</th>
-							<th class="px-4 py-2 rounded-tr-card overflow-hidden">Poeng</th>
+							<th class="px-4 py-3">Plass</th>
+							<th class="px-4 py-3">Navn</th>
+							<th class="px-4 py-3">Poeng</th>
 						</tr>
 					</thead>
-					<tbody
-						class="[&>*:nth-child(even)]:bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100
-					[&>tr:last-child>td:first-child]:rounded-bl-card [&>tr:last-child>td:first-child]:overflow-hidden
-					[&>tr:last-child>td:last-child]:rounded-br-card [&>tr:last-child>td:last-child]:overflow-hidden"
-					>
+					<tbody>
 						if len(rankings) == 0 {
 							<tr class="text-center">
-								<td class="px-4 py-2 border" colspan="3">Fant ingen brukere i topplisten!</td>
+								<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
 							</tr>
 						}
 						for _, user := range rankings {
 							<tr
 								if user == userInfo {
-									class="[&>td]:border-l [&>td]:border-b [&>td:last-child]:border-r [&>td]:border-cindigo text-center font-bold shadow-[inset_0_1px_5px] shadow-cindigo"
+									class="text-center font-bold bg-clightindigo"
 								} else {
-									class="[&>td]:border-l [&>td]:border-b [&>td:last-child]:border-r [&>td]:border-cindigo text-center"
+									class=" text-center"
 								}
 							>
 								if user.Placement == 0 {
-									<td class="px-4 py-2">-</td>
+									<td class="px-4 py-3">-</td>
 								} else if user.Placement == 1 {
-									<td class="px-4 py-2">
+									<td class="px-4 py-3">
 										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
 									</td>
 								} else if user.Placement == 2 {
-									<td class="px-4 py-2">
+									<td class="px-4 py-3">
 										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
 									</td>
 								} else if user.Placement == 3 {
-									<td class="px-4 py-2">
+									<td class="px-4 py-3">
 										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
 									</td>
 								} else {
-									<td class="px-4 py-2">{ fmt.Sprintf("%d", user.Placement) }</td>
+									<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
 								}
-								<td class="px-4 py-2">{ user.Username }</td>
-								// <td class="px-4 py-2">{ fmt.Sprintf("%d", user.Points) }</td>
-								<td class="px-4 py-2">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
+								<td class="px-4 py-3">{ user.Username }</td>
+								<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
 							</tr>
 						}
 					</tbody>
