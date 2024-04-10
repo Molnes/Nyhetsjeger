@@ -5,7 +5,7 @@ import (
 )
 
 // Template for a simple timer in a circle. Counts down from the given time.
-templ timer(timeLeft uint) {
+templ timer(timeLeft uint, timeLimit uint) {
 	<div role="timer" class="isolate">
 		<div
 			id="timer"
@@ -14,13 +14,13 @@ templ timer(timeLeft uint) {
 			{ fmt.Sprintf("%v", timeLeft) }
 		</div>
 	</div>
-	@setupTimer(timeLeft)
+	@setupTimer(timeLeft,timeLimit)
 }
 
 // sets up a timer that counts down from the given time.
 // Adds an event listener to stop the timer on "quiz:stop-timer"
 
-script setupTimer(timeLeft uint) {
+script setupTimer(timeLeft uint,timeLimit uint) {
 	let countDownTime = timeLeft;
 	const timerElem = document.getElementById("timer");
 	const timerIntervalId = setInterval(function() {

@@ -72,15 +72,14 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	return isCorrect
 }
 
-// Subtract the given duration from the time limit of this question.
-// If the duration is greater than the time limit, the time limit is set to 0.
-func (q *Question) SubtractFromTimeLimit(duration time.Duration) {
+// Returns the seconds left after substracting given duration from the question's time limit.
+func (q *Question) GetRemainingTimeSeconds(duration time.Duration) uint {
 	diffSeconds := duration.Seconds()
-	if diffSeconds > float64(q.TimeLimitSeconds) {
-		q.TimeLimitSeconds = 0
-	} else {
-		q.TimeLimitSeconds -= uint(diffSeconds)
+	var timeLeft uint
+	if diffSeconds < float64(q.TimeLimitSeconds) {
+		timeLeft = q.TimeLimitSeconds - uint(diffSeconds)
 	}
+	return timeLeft
 }
 
 // Initializes the percentage of times each alternative has been chosen.

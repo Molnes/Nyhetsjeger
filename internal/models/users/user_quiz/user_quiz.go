@@ -82,6 +82,7 @@ type QuizData struct {
 	PartialQuiz     quizzes.PartialQuiz
 	CurrentQuestion questions.Question
 	PointsGathered  uint
+	SecondsLeft     uint // Time left for this question for this user (in seconds), same as question time if not presented earlier
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -95,7 +96,7 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	nextQuestion, err := startNextQuestion(db, userID, quizID)
+	nextQuestionAndSeconds, err := startNextQuestion(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,10 +108,16 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 
 	return &QuizData{
 		*partialQuiz,
-		*nextQuestion,
+		*nextQuestionAndSeconds.question,
 		pointsSoFar,
+		nextQuestionAndSeconds.secondsLeft,
 	}, nil
 
+}
+
+type QuestionAndSecondsLeft struct {
+	question    *questions.Question
+	secondsLeft uint
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -119,7 +126,7 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 //
 // ErrNoMoreQuestions if there are no more unanswered questions for the user in the quiz.
 // ErrNoSuchQuiz if the quiz does not exist.
-func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, error) {
+func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuestionAndSecondsLeft, error) {
 	questionID, err := getNextUnansweredQuestionID(db, userID, quizID)
 	if err != nil {
 		return nil, err
@@ -128,6 +135,7 @@ func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questio
 	if err != nil {
 		return nil, err
 	}
+	timeLeft := question.TimeLimitSeconds
 
 	err = startQuestion(db, userID, question.ID)
 	if err != nil {
@@ -136,12 +144,16 @@ func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questio
 			if err != nil {
 				return nil, err
 			}
-			question.SubtractFromTimeLimit(time.Since(timePresented))
+			timeLeft = question.GetRemainingTimeSeconds(time.Since(timePresented))
 		} else {
 			return nil, err
 		}
 	}
-	return question, nil
+
+	return &QuestionAndSecondsLeft{
+		question,
+		timeLeft,
+	}, nil
 }
 
 type UserAnsweredQuestion struct {
