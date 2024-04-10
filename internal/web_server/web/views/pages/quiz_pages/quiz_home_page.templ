@@ -1,12 +1,14 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 )
 
 // Quiz home page
@@ -20,7 +22,7 @@ templ QuizHomePage(quizzes []quizzes.Quiz, olderQuizzes []quizzes.Quiz, userInfo
 						href="/quiz/toppliste"
 						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
 					>
-						{ fmt.Sprint(userInfo.Points) }
+						{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
 						<span class="text-2xl text-gray-700">poeng</span>
 					</a>
 					<a
