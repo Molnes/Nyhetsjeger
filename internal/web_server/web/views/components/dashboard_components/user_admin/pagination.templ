@@ -1,46 +1,83 @@
 package user_admin
 
 import "fmt"
+import "strconv"
 
-templ Pagination(maxPages int, page int) {
-    @prevButton(page)
-    @pageNumber(page, maxPages)
-    @nextButton(page, maxPages)
+templ Pagination(maxPages int, page int, parentTableID string, queryParam string) {
+	@prevButton(page, parentTableID)
+	@pageNumber(page, maxPages)
+	@nextButton(page, maxPages, parentTableID)
+	@insertHxGet(parentTableID, queryParam)
+}
+
+func handlePagination(page int, maxPages int) int {
+	if page < 1 {
+		page = 1
+	} else if page > maxPages {
+		page = maxPages
+	}
+	return page
+}
+
+script insertHxGet(parentTableID string, queryParam string) {
+	let params = new URL(document.location.toString()).searchParams;
+	let aPage = params.get("apage");
+	let nPage = params.get("npage");
+
+	let param = queryParam == "apage" ? aPage : nPage;
+
+	document.getElementById( `prev-button-${parentTableID}` ).setAttribute("hx-get", "/tables?" + queryParam + "=" + (parseInt(param) - 1));
+	document.getElementById( `next-button-${parentTableID}` ).setAttribute("hx-get", "/tables?" + queryParam + "=" + (parseInt(param) + 1));
 }
 
 templ pageNumber(currentPage int, maxPages int) {
-    if maxPages == 1 {
-        <button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
-        { fmt.Sprintf("%v of %v", currentPage, maxPages) }
-        </button>
-    } else {
-        <button class="border-cindigo border-y-2 text-cindigo px-3 py-1">
-        { fmt.Sprintf("%v of %v", currentPage, maxPages) }
-        </button>
-    }
-
+	if maxPages != 1 {
+		<button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
+			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
+		</button>
+	} else {
+		<button class="border-cindigo border-y-2 text-cindigo px-3 py-1">
+			<input class="w-12 border border-clightindigo rounded-input text-center" type="text" value={ strconv.Itoa(currentPage) }/> of { strconv.Itoa(maxPages) }
+		</button>
+	}
 }
 
-templ prevButton(page int) {
-    if page == 1 {
-        <button class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
-        &lt;
-        </button>
-    } else {
-        <button class="border-cindigo border-2 text-cindigo font-bold px-3 py-1">
-        &lt;
-        </button>
-    }
+templ prevButton(page int, parentTableID string) {
+	if page == 1 {
+		<button
+			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
+			class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1"
+			disabled
+		>
+			&lt;
+		</button>
+	} else {
+		<button
+			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
+			hx-trigger="click"
+			hx-target={ parentTableID }
+			hx-swap="outerHTML"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+		>
+			&lt;
+		</button>
+	}
 }
 
-templ nextButton(page int, maxPages int) {
-    if page == maxPages {
-        <button class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
-        &gt;
-        </button>
-    } else {
-        <button class="border-cindigo border-2 text-cindigo font-bold px-3 py-1">
-        &gt;
-        </button>
-    }
+templ nextButton(page int, maxPages int, parentTableID string) {
+	if page == maxPages {
+		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
+			&gt;
+		</button>
+	} else {
+		<button
+			id={ fmt.Sprintf("next-button-%v", parentTableID) }
+			hx-trigger="click"
+			hx-target={ parentTableID }
+			hx-swap="outerHTML"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+		>
+			&gt;
+		</button>
+	}
 }
