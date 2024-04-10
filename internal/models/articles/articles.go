@@ -36,14 +36,6 @@ func newArticle(ID uuid.NullUUID, title string, articleURL url.URL, imgURL url.U
 	}
 }
 
-func GetAllArticles() ([]Article, error) {
-	return SampleArticles, nil
-}
-
-func GetArticle(articleID uuid.UUID) (Article, error) {
-	return SampleArticles[0], nil
-}
-
 // Get the articles by Quiz ID.
 // These are all the articles attached to a quiz.
 // This does not guarantee they are used in the questions.
@@ -248,41 +240,4 @@ func DeleteArticleFromQuiz(db *sql.DB, quizID *uuid.UUID, articleID *uuid.UUID) 
 		articleID)
 
 	return err
-}
-
-var SampleArticles []Article = []Article{
-	{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title: "Test 1",
-		ArticleURL: url.URL{
-			Scheme: "https",
-			Host:   "www.smp.no",
-			Path:   "/nyheter/i/Q7QX6Q/konkursnettverket-dette-gjer-regjeringa",
-		},
-		ImgURL: url.URL{
-			Scheme: "https",
-			Host:   "www.picsum.photos",
-			Path:   "/id/1062/500/300",
-		},
-	},
-	{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title: "Test article: this is a very long title in order to check how titles look when they are long",
-		ArticleURL: url.URL{
-			Scheme: "https",
-			Host:   "www.smp.no",
-			Path:   "/nyheter/i/0QPq3A/tilraar-nye-ferjekailoeysingar",
-		},
-		ImgURL: url.URL{
-			Scheme: "https",
-			Host:   "www.picsum.photos",
-			Path:   "/id/1062/500/300",
-		},
-	},
 }

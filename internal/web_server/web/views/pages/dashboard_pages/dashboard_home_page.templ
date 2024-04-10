@@ -4,12 +4,20 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_home_page"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // Dashboard home page
 templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []quizzes.Quiz) {
 	@layout_components.DashBoardLayout("Dashboard") {
 		<div class="flex flex-col px-8 py-6 max-w-screen-lg mx-auto">
+			<a
+				href="/quiz"
+				class="text-md font-bold bg-cindigo text-white hover:bg-cblue focus:bg-cblue rounded-button w-52 text-center px-5 py-4 mb-6 mx-auto flex flex-row items-center justify-center gap-2"
+			>
+				Gå til Nyhetsjeger
+				@icons.Home(40, "currentColor", 25, 25)
+			</a>
 			<div class="flex flex-row gap-3 justify-between items-center mb-6">
 				<h1 class="text-3xl">Upubliserte quizer</h1>
 				<button

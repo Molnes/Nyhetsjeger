@@ -42,6 +42,25 @@ type Alternative struct {
 	PercentChosen float64
 }
 
+type PartialAlternative struct {
+	Text      string
+	IsCorrect bool
+}
+
+// Create a default question with an ID, quiz ID and 100 points.
+// All other fields are "empty".
+func GetDefaultQuestion(quizId uuid.UUID) Question {
+	return Question{
+		ID:           uuid.New(),
+		Text:         "",
+		ImageURL:     url.URL{},
+		Article:      articles.Article{},
+		QuizID:       quizId,
+		Points:       100,
+		Alternatives: []Alternative{},
+	}
+}
+
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
 	for _, a := range q.Alternatives {
@@ -362,18 +381,14 @@ func scanAlternativeFromFullRow(row *sql.Row) (*Alternative, error) {
 }
 
 type QuestionForm struct {
-	ID                  uuid.UUID
-	Text                string
-	ImageURL            *url.URL
-	Article             *articles.Article
-	QuizID              *uuid.UUID
-	Points              uint
-	TimeLimitSeconds    uint
-	Alternative1        string
-	Alternative2        string
-	Alternative3        string
-	Alternative4        string
-	CorrectAnswerNumber string
+	ID               uuid.UUID
+	Text             string
+	ImageURL         *url.URL
+	Article          *articles.Article
+	QuizID           *uuid.UUID
+	Points           uint
+	TimeLimitSeconds uint
+	Alternatives     [4]PartialAlternative
 }
 
 // Parse and validate question data.
@@ -430,16 +445,16 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 	hasCorrectAlternative := false
 
 	// Only add alternatives that are not empty
-	for index, alt := range []string{form.Alternative1, form.Alternative2, form.Alternative3, form.Alternative4} {
+	for _, alt := range form.Alternatives {
 		// Do not count empty white space as an alternative
-		if strings.TrimSpace(alt) != "" {
+		if strings.TrimSpace(alt.Text) != "" {
 			question.Alternatives = append(question.Alternatives, Alternative{
 				ID:        uuid.New(),
-				Text:      alt,
-				IsCorrect: form.CorrectAnswerNumber == strconv.Itoa(index+1),
+				Text:      alt.Text,
+				IsCorrect: alt.IsCorrect,
 			})
 
-			if form.CorrectAnswerNumber == strconv.Itoa(index+1) {
+			if alt.IsCorrect {
 				hasCorrectAlternative = true
 			}
 		}

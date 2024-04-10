@@ -99,9 +99,10 @@ func (ah *AuthHandler) oauthGoogleCallback(c echo.Context) error {
 	}
 
 	cookieRedirectTo, err := c.Cookie(middlewares.REDIRECT_COOKIE_NAME)
-	redirectTo := "/quiz"
+	redirectTo := "/"
 	if err == nil { // if redirect cookie is set, use it
 		redirectTo = cookieRedirectTo.Value
+
 		replacementCookie := http.Cookie{
 			Name:   middlewares.REDIRECT_COOKIE_NAME,
 			Path:   "/",

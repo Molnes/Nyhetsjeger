@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	"net/url"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -89,27 +88,17 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 // Renders the modal for creating a new question.
 func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) error {
 	// Get the quiz ID.
-	quiz_id, err := uuid.Parse(c.QueryParam("quiz-id"))
+	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
-	// Create a new question with no actual data.
-	// Set the default points to be 10.
-	newQuestion := questions.Question{
-		ID:           uuid.New(),
-		Text:         "",
-		ImageURL:     url.URL{},
-		Article:      articles.Article{},
-		QuizID:       quiz_id,
-		Points:       10,
-		Alternatives: []questions.Alternative{},
-	}
+	newQuestion := questions.GetDefaultQuestion(quizId)
 
 	// Get all the articles for the quiz by quiz ID.
-	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
+	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quizId)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quiz_id.String(), true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quizId.String(), true))
 }
 
 // Renders the modal for editing a question.

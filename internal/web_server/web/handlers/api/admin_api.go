@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -35,6 +36,7 @@ const queryParamQuizID = "quiz-id"
 const errorInvalidQuizID = "Ugyldig eller manglende quiz-id"
 const queryParamQuestionID = "question-id"
 const errorInvalidQuestionID = "Ugyldig eller manglende question-id"
+const errorQuestionElementID = "error-question"
 
 // URLs
 const editQuizURL = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
@@ -62,8 +64,8 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
 
-
     e.POST("/quiz/upload-image", aah.uploadQuizImage)
+	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -323,6 +325,10 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 // If article already is in the quiz, return an error.
 // If not in the DB, it will fetch the relevant article data and add it to the DB.
 func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, string) {
+	// Get the article ID from the URL
+	articleID, err := articles.GetSmpIdFromString(articleURL.String())
+	articleURL = articles.GetSmpURLFromID(articleID)
+
 	// Check if the article is already in the DB
 	article, err := articles.GetArticleByURL(db, articleURL)
 	if err != nil && err != sql.ErrNoRows {
@@ -400,7 +406,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	c.Response().Header().Set("HX-Reswap", "beforeend")
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(
-		article.ArticleURL.String(), article.ID.UUID.String(), quiz_id.String()))
+		article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz_id.String()))
 }
 
 // Deletes an article from a quiz in the database.
@@ -426,8 +432,6 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-const errorQuestionElementID = "error-question"
-
 // Edit a question with the given data.
 // If the question ID is not found, a new question will be created.
 // If the question ID is found, the question will be updated.
@@ -444,11 +448,6 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the data from the form
 	articleURLString := c.FormValue(dashboard_components.QuestionArticleURL)
 	questionText := c.FormValue(dashboard_components.QuestionText)
-	correctAnswerNumber := c.FormValue(dashboard_components.QuestionCorrectAlternative)
-	alternative1 := c.FormValue(dashboard_components.QuestionAlternative1)
-	alternative2 := c.FormValue(dashboard_components.QuestionAlternative2)
-	alternative3 := c.FormValue(dashboard_components.QuestionAlternative3)
-	alternative4 := c.FormValue(dashboard_components.QuestionAlternative4)
 	imageURL := c.FormValue(dashboard_components.QuestionImageURL)
 	questionPoints := c.FormValue(dashboard_components.QuestionPoints)
 	timeLimit := c.FormValue(dashboard_components.QuestionTimeLimit)
@@ -482,20 +481,26 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorInvalidQuestionID))
 	}
 
+	// Get the alternatives from the form.
+	// There are always 4 alternatives, but some may be empty.
+	var alternatives [4]questions.PartialAlternative
+	for index := range 4 {
+		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
+		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
+		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
+		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
+	}
+
 	// Create a new question object
 	questionForm := questions.QuestionForm{
-		ID:                  questionID,
-		Text:                questionText,
-		ImageURL:            image,
-		Article:             article,
-		QuizID:              &quizID,
-		Points:              points,
-		TimeLimitSeconds:    time,
-		CorrectAnswerNumber: correctAnswerNumber,
-		Alternative1:        alternative1,
-		Alternative2:        alternative2,
-		Alternative3:        alternative3,
-		Alternative4:        alternative4,
+		ID:               questionID,
+		Text:             questionText,
+		ImageURL:         image,
+		Article:          article,
+		QuizID:           &quizID,
+		Points:           points,
+		TimeLimitSeconds: time,
+		Alternatives:     alternatives,
 	}
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
@@ -609,8 +614,6 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 }
 
 
-
-
 func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHeader) (string, error) {
         file, err := image.Open()
         if err != nil {
@@ -638,4 +641,29 @@ func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHea
                 return "", err
         }
         return randomName, nil
+}
+
+// Randomizes the order of the alternatives for a question visually.
+func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
+	// Get the alternatives
+	var alternatives []questions.Alternative
+	for index := range 4 {
+		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
+		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
+		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
+		alternatives = append(alternatives, questions.Alternative{Text: alternativeText, IsCorrect: isCorrect == "on"})
+	}
+
+	log.Println("---------------------")
+	log.Println(alternatives)
+
+	// Shuffle the alternatives
+	rand.Shuffle(len(alternatives), func(i, j int) {
+		alternatives[i], alternatives[j] = alternatives[j], alternatives[i]
+	})
+	log.Println(alternatives)
+
+	// Return the "alternatives" table.
+	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
+
 }
