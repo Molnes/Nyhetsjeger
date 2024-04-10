@@ -157,13 +157,13 @@
     counter-reset: css-counter 0;
 }
 
-#question-list li,
-#article-list li {
+#question-list li[data-element-type="question-list-item"],
+#article-list li[data-element-type="article-list-item"] {
     counter-increment: css-counter 1;
 }
 
-#question-list li::before,
-#article-list li::before {
+#question-list li[data-element-type="question-list-item"]::before,
+#article-list li[data-element-type="article-list-item"]::before {
     content: counter(css-counter) ". ";
     font-weight: bold;
     margin-right: 0.5rem;
