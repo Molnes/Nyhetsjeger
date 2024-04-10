@@ -81,6 +81,7 @@ func getQuestionPresentedAtTime(db *sql.DB, userId uuid.UUID, questionId uuid.UU
 type QuizData struct {
 	PartialQuiz     quizzes.PartialQuiz
 	CurrentQuestion questions.Question
+	PointsGathered  uint
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -98,9 +99,16 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 	if err != nil {
 		return nil, err
 	}
+
+	pointsSoFar, err := getPointsGatheredInQuiz(db, quizID, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &QuizData{
 		*partialQuiz,
 		*nextQuestion,
+		pointsSoFar,
 	}, nil
 
 }
@@ -205,4 +213,23 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		PointsAwarded:  pointsAwarded,
 		NextQuestionID: nextQuestionID,
 	}, nil
+}
+
+// Returns the number of points gathered by the user in the given quiz.
+// Returns 0 poitns if quiz not started.
+func getPointsGatheredInQuiz(db *sql.DB, quizID uuid.UUID, userID uuid.UUID) (uint, error) {
+	row := db.QueryRow(
+		`SELECT total_points_awarded
+	FROM user_quizzes
+	WHERE quiz_id = $1
+	AND user_id = $2;
+	`, quizID, userID)
+
+	var points uint
+	err := row.Scan(&points)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
+
+	return points, err
 }
