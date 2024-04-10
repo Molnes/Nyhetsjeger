@@ -3,24 +3,17 @@ package dashboard_pages
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 )
 
-templ UserAdminPage(rows []users.UserTableRow, page int, userCount int) {
+
+
+templ UsernameAdminPage(data *usernames.UsernameAdminInfo) {
 	@layout_components.DashBoardLayout("Toppliste") {
-		<header
-			class="w-full bg-cindigo text-2xl flex [&>p]:py-4 [&>p]:px-5 [&>p]:text-white
-		[&>p]:border-l-2 [&>p]:border-indigo-700 [&>p:last-child]:border-r-2
-		[&>p:hover]:bg-indigo-800
-		"
-		>
-			<p>Bruker administrasjon</p>
-			<p>Brukernavn administrasjon</p>
-		</header>
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
-			<h2 class="text-xl font-bold">Bruker administrasjon</h2>
+			<h2 class="text-xl font-bold">Brukernavn administrasjon</h2>
 			<input class="border border-gray-600 rounded-input px-2" type="text" placeholder="søk her"/>
-			@user_admin.UserTable(rows, page, userCount)
+			@user_admin.UsernameTables(data)
 		</div>
 	}
 }
