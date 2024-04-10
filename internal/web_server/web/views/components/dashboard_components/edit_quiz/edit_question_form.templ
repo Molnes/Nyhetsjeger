@@ -6,6 +6,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // Constants for the input names (for HTTP requests)
@@ -55,45 +56,22 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			value={ question.Text }
 			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
-		<fieldset class="block mb-5">
-			// Alternatives
-			<table>
-				<thead>
-					<tr>
-						<th class="w-full text-left">Svar alternativer (Fyll inn mellom 2 til 4)</th>
-						<th class="text-right">Riktig svar</th>
-					</tr>
-				</thead>
-				<tbody>
-					for index := range 4 {
-						<tr>
-							<td class="py-1">
-								<input
-									id={ fmt.Sprintf("question-%d", index+1) }
-									name={ fmt.Sprintf("question-alternative-%d", index+1) }
-									type="text"
-									class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-									if index < len(question.Alternatives) {
-										value={ question.Alternatives[index].Text }
-									}
-									placeholder={ fmt.Sprintf("%d", 1813+index) }
-								/>
-							</td>
-							<td>
-								<input
-									type="checkbox"
-									name={ fmt.Sprintf("question-alternative-%d-is-correct", index+1) }
-									class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-									if index < len(question.Alternatives) && question.Alternatives[index].IsCorrect {
-										checked
-									}
-								/>
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</fieldset>
+		// Alternatives
+		@QuestionAlternativesInput(question.Alternatives)
+		<div class="block mx-auto w-fit">
+			@components.LoadingIndicator()
+		</div>
+		<button
+			type="button"
+			class="flex flex-row gap-1 items-center mt-3 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
+			hx-post="/api/v1/admin/question/randomize-alternatives"
+			hx-swap="outerHTML"
+			hx-target="#alternatives-table"
+			hx-indicator="previous .htmx-indicator"
+		>
+			Tilfeldig alternativ rekkefølge
+			@icons.Dice(20, "currentColor", 28, 28)
+		</button>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
 			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde (URL)</label>
