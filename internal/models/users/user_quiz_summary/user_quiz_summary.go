@@ -80,7 +80,8 @@ func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]Ans
 		LEFT JOIN questions q ON uqp.question_id = q.id
 		LEFT JOIN answer_alternatives a ON uqp.chosen_answer_alternative_id = a.id
 		WHERE uqp.quiz_id = $1
-		AND uqp.user_id = $2;`, quizID, userID)
+		AND uqp.user_id = $2
+		ORDER BY q.arrangement;`, quizID, userID)
 
 	if err != nil {
 		return nil, err
