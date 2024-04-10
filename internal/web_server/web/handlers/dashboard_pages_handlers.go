@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
@@ -38,7 +39,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
 	g.GET("/user-details", dph.userDetails)
-	g.GET("/user-admin", dph.getUserAdministration)
+	g.GET("/username-admin", dph.getUserNameAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
 	organizationAdminGroup := g.Group("", mw.EnforceRole)
@@ -162,15 +163,20 @@ func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 	utils.AddToContext(c, side_menu.MENU_CONTEXT_KEY, menuContext)
 }
 
-func (dph *DashboardPagesHandler) getUserAdministration(c echo.Context) error {
-	userRows, err := users.GetUsersTableRows(dph.sharedData.DB, 1)
+func (dph *DashboardPagesHandler) getUserNameAdministration(c echo.Context) error {
+	aPage, err := strconv.Atoi(c.QueryParam("apage"))
+	if err != nil {
+		aPage = 1
+	}
+	nPage, err := strconv.Atoi(c.QueryParam("npage"))
+	if err != nil {
+		nPage = 1
+	}
+
+	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, aPage, nPage)
 	if err != nil {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserAdminPage(
-		userRows,
-		1,
-		20,
-	))
+	return utils.Render(c, http.StatusOK, dashboard_pages.UsernameAdminPage(uai))
 }
