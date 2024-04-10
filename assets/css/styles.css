@@ -128,7 +128,7 @@
     border-radius: 50%;
 }
 
-.tooltip-parent:hover>.tooltip {
+.tooltip-parent:is(:hover, :focus)>.tooltip {
     display: inline-block;
 }
 
