@@ -170,10 +170,10 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
-	isCorrect, err := questions.IsCorrectAnswer(db, questionId, chosenAlternative)
-	if err != nil {
-		return nil, err
-	}
+	// isCorrect, err := questions.IsCorrectAnswer(db, questionId, chosenAlternative)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Check if the quiz is active.
 	err = db.QueryRow(
@@ -184,16 +184,24 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	}
 
 	nowTime := time.Now().UTC()
-	var pointsAwarded uint
-	if isCorrect {
-		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizEndTime))
-	}
+	// var pointsAwarded uint
+	// if isCorrect {
+	// 	pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizEndTime))
+	// }
 	_, err = db.Exec(
 		`UPDATE user_answers
-		SET chosen_answer_alternative_id = $1, answered_at = $2, points_awarded = $3
-		WHERE user_id = $4 AND question_id = $5;`,
-		chosenAlternative, nowTime, pointsAwarded, userId, questionId)
+		SET chosen_answer_alternative_id = $1, answered_at = $2
+		WHERE user_id = $3 AND question_id = $4;`,
+		chosenAlternative, nowTime, userId, questionId)
 
+	if err != nil {
+		return nil, err
+	}
+	var pointsAwarded uint
+	err = db.QueryRow(`SELECT points_awarded
+		FROM user_question_points
+		WHERE user_id = $1
+		AND question_id = $2;`, userId, questionId).Scan(&pointsAwarded)
 	if err != nil {
 		return nil, err
 	}
