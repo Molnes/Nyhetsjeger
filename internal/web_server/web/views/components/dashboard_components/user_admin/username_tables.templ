@@ -1,0 +1,12 @@
+package user_admin
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
+
+
+
+templ UsernameTables(uai *usernames.UsernameAdminInfo) {
+	<div class="flex gap-3">
+		@WordTable(uai.Adjectives, "Adjektiv", uai.APage, uai.AWordCount, "adjective-table", "apage")
+		/* @WordTable(uai.Nouns, "Substantiv", uai.NPage, uai.NWordCount, "noun-table", "npage") */
+	</div>
+}
