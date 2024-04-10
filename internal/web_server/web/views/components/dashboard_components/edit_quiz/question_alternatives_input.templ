@@ -1,0 +1,47 @@
+package dashboard_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/models/questions"
+
+import (
+	"fmt"
+)
+
+// A table of input fields for question alternatives.
+templ QuestionAlternativesInput(alternatives []questions.Alternative) {
+	<table>
+		<thead>
+			<tr>
+				<th class="w-full text-left">Svar alternativer (Fyll inn mellom 2 til 4)</th>
+				<th class="text-right">Riktig svar</th>
+			</tr>
+		</thead>
+		<tbody>
+			for index := range 4 {
+				<tr>
+					<td class="py-1">
+						<input
+							id={ fmt.Sprintf("question-%d", index+1) }
+							name={ fmt.Sprintf("question-alternative-%d", index+1) }
+							type="text"
+							class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
+							if index < len(alternatives) {
+								value={ alternatives[index].Text }
+							}
+							placeholder={ fmt.Sprintf("%d", 1813+index) }
+						/>
+					</td>
+					<td>
+						<input
+							type="checkbox"
+							name={ fmt.Sprintf("question-alternative-%d-is-correct", index+1) }
+							class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
+							if index < len(alternatives) && alternatives[index].IsCorrect {
+								checked
+							}
+						/>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
