@@ -61,6 +61,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			</a>
 		}
 	</div>
+	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
 }
 
 // A disabled button displaying the alternative text along with feedback

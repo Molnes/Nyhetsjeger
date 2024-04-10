@@ -18,7 +18,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 				@icons.Cross(3, "black", 40, 40)
 			</a>
 			@timer(data.CurrentQuestion.TimeLimitSeconds)
-			<p>Poeng</p>
+			@PointsDisplay(data.PointsGathered)
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
