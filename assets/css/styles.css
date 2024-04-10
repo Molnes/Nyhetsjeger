@@ -52,6 +52,37 @@
     background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
+.cgradient:is(:hover, :focus),
+.gradient-outline:has(.cgradient:is(:hover, :focus))::after,
+.answer-button:is(:hover, :focus):not(:disabled)::after {
+    animation: hueRotate 800ms linear infinite alternate;
+}
+
+.gradient-shadow:has(.cgradient:is(:hover, :focus))::before,
+.answer-button:is(:hover, :focus):not(:disabled)::before {
+    animation: hueRotateBlur 800ms linear infinite alternate;
+}
+
+@keyframes hueRotate {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        filter: hue-rotate(80deg);
+    }
+}
+
+@keyframes hueRotateBlur {
+    0% {
+        filter: hue-rotate(0deg) blur(0.5rem);
+    }
+
+    100% {
+        filter: hue-rotate(80deg) blur(0.5rem);
+    }
+}
+
 /* Gradient Border */
 .cgradient-border {
     top: 0;
@@ -89,15 +120,13 @@
 
 .gradient-outline,
 .gradient-outline-thick,
-.gradient-outline-circle,
-.gradient-outline-circle-thick {
+.gradient-outline-circle {
     position: relative;
 }
 
 .gradient-outline::after,
 .gradient-outline-thick::after,
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     content: "";
     position: absolute;
     inset: var(--outline-inset);
@@ -107,20 +136,52 @@
     background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.gradient-outline-thick::after,
-.gradient-outline-circle-thick::after {
-    inset: -6px;
+.gradient-outline-thick::after {
+    inset: calc(var(--outline-inset) * 1.5);
+    border-radius: calc(var(--br-button) - calc(1.5 * var(--outline-inset)));
 }
 
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     border-radius: 50%;
 }
 
-.tooltip-parent:hover>.tooltip {
+.tooltip-parent:is(:hover, :focus)>.tooltip {
     display: inline-block;
 }
 
 .gradient-bg-button {
     @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
+}
+
+.answer-button {
+    @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
+}
+
+@keyframes fadeOpacity {
+
+    0%,
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+#question-list,
+#article-list {
+    counter-reset: css-counter 0;
+}
+
+#question-list li[data-element-type="question-list-item"],
+#article-list li[data-element-type="article-list-item"] {
+    counter-increment: css-counter 1;
+}
+
+#question-list li[data-element-type="question-list-item"]::before,
+#article-list li[data-element-type="article-list-item"]::before {
+    content: counter(css-counter) ". ";
+    font-weight: bold;
+    margin-right: 0.5rem;
 }

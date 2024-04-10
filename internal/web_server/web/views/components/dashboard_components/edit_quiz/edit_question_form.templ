@@ -6,21 +6,17 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // Constants for the input names (for HTTP requests)
-const QuestionArticleURL = "question-article-url"
-const QuestionText = "question-text"
-const QuestionAlternative1 = "question-alternative-1"
-const QuestionAlternative2 = "question-alternative-2"
-const QuestionAlternative3 = "question-alternative-3"
-const QuestionAlternative4 = "question-alternative-4"
-const QuestionCorrectAlternative = "correct-alternative"
-const QuestionImageURL = "question-image-url"
-const QuestionPoints = "question-points"
-const QuestionTimeLimit = "question-time-limit"
-
-var QuestionAltneratives = []string{QuestionAlternative1, QuestionAlternative2, QuestionAlternative3, QuestionAlternative4}
+const (
+	QuestionArticleURL = "question-article-url"
+	QuestionText       = "question-text"
+	QuestionImageURL   = "question-image-url"
+	QuestionPoints     = "question-points"
+	QuestionTimeLimit  = "question-time-limit"
+)
 
 // The form includes a list of articles to base the question on, the question itself,
 // 4 answer alternatives (optional 2 to 4), and an image.
@@ -30,7 +26,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 	<form id="edit-question-form">
 		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
 		// Article
-		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel (URL)</label>
+		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel</label>
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
@@ -47,7 +43,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					if question.Article.ArticleURL == article.ArticleURL {
 						selected
 					}
-				>{  article.ArticleURL.String() }</option>
+				>{  article.Title }</option>
 			}
 		</select>
 		// Question
@@ -60,49 +56,33 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			value={ question.Text }
 			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
-		<fieldset class="block mb-5">
-			// Alternatives
-			<table>
-				<thead>
-					<tr>
-						<th class="w-full text-left">Svar alternativer (Fyll inn mellom 2 til 4)</th>
-						<th class="text-right">Riktig svar</th>
-					</tr>
-				</thead>
-				<tbody>
-					for index := range 4 {
-						<tr>
-							<td class="py-1">
-								<input
-									id={ fmt.Sprintf("question-%d", index+1) }
-									name={ QuestionAltneratives[index] }
-									type="text"
-									class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
-									if index < len(question.Alternatives) {
-										value={ question.Alternatives[index].Text }
-									}
-									placeholder={ fmt.Sprintf("%d", 1813+index) }
-								/>
-							</td>
-							<td>
-								<input
-									type="radio"
-									name={ QuestionCorrectAlternative }
-									value={ fmt.Sprint(index + 1) }
-									class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
-									if index < len(question.Alternatives) && question.Alternatives[index].IsCorrect {
-										checked
-									}
-								/>
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		</fieldset>
+		// Alternatives
+		@QuestionAlternativesInput(question.Alternatives)
+		<div class="block mx-auto w-fit">
+			@components.LoadingIndicator()
+		</div>
+		<button
+			type="button"
+			class="flex flex-row gap-1 items-center mt-3 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
+			hx-post="/api/v1/admin/question/randomize-alternatives"
+			hx-swap="outerHTML"
+			hx-target="#alternatives-table"
+			hx-indicator="previous .htmx-indicator"
+		>
+			Tilfeldig alternativ rekkefølge
+			@icons.Dice(20, "currentColor", 28, 28)
+		</button>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
-			<label for={ QuestionImageURL } class="block font-bold mb-1">Bilde</label>
+			<label for={ QuestionImageURL } class="font-bold">Bilde (URL)</label>
+			<button
+				class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
+				type="button"
+				aria-label="tooltip"
+			>
+				i
+				@components.Tooltip("Ikke lag spørsmål basert på innholdet i bildet. Spillere med synshemninger kan ha problemer med å svare på slike spørsmål.")
+			</button>
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew, "")
@@ -110,15 +90,20 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
-				<input
-					id={ QuestionPoints }
-					name={ QuestionPoints }
-					type="number"
-					class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2 w-24"
-					min="0"
-					value={ fmt.Sprint(question.Points) }
-					placeholder="10"
-				/>
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
+						/* The points default 100 */
+						<option
+							value={ fmt.Sprint(points) }
+							if question.Points == points {
+								selected
+							}
+							if isNew && points == 100 {
+								selected
+							}
+						>{ fmt.Sprint(points) }</option>
+					}
+				</select>
 			</div>
 			// Time limit
 			<div>
@@ -155,7 +140,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 				<button
 					id="delete-question-button"
 					type="button"
-					class="bg-red-500 text-white font-bold px-4 py-2 w-full rounded-button"
+					class="bg-red-600 text-white font-bold px-4 py-2 w-full rounded-button"
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }

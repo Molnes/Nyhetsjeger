@@ -1,9 +1,11 @@
 package quiz_pages
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
+
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 )
 
 templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
@@ -11,36 +13,54 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			<div class="mx-auto">
-				<table class="border-collapse">
+				<table
+					class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+				>
 					<colgroup>
-						<col class="min-w-16"/>
+						<col class="min-w-22"/>
 						<col class="min-w-48"/>
-						<col class="min-w-28"/>
+						<col class="min-w-30"/>
 					</colgroup>
 					<thead>
-						<tr class="bg-cblue text-white font-bold">
-							<th class="px-4 py-2 border border-slate-600">Plass</th>
-							<th class="px-4 py-2 border border-slate-600">Navn</th>
-							<th class="px-4 py-2 border border-slate-600">Poeng</th>
+						<tr class="border-collapse bg-cindigo text-white text-center">
+							<th class="px-4 py-3">Plass</th>
+							<th class="px-4 py-3">Navn</th>
+							<th class="px-4 py-3">Poeng</th>
 						</tr>
 					</thead>
 					<tbody>
 						if len(rankings) == 0 {
 							<tr class="text-center">
-								<td class="px-4 py-2 border border-slate-700" colspan="3">Fant ingen brukere i topplisten!</td>
+								<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
 							</tr>
 						}
 						for _, user := range rankings {
 							<tr
 								if user == userInfo {
-									class="bg-blue-100 hover:bg-blue-200 text-center"
+									class="text-center font-bold bg-clightindigo"
 								} else {
-									class="hover:bg-blue-200 text-center"
+									class=" text-center"
 								}
 							>
-								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Placement) }</td>
-								<td class="px-4 py-2 border border-slate-700">{ user.Username }</td>
-								<td class="px-4 py-2 border border-slate-700">{ fmt.Sprintf("%d", user.Points) }</td>
+								if user.Placement == 0 {
+									<td class="px-4 py-3">-</td>
+								} else if user.Placement == 1 {
+									<td class="px-4 py-3">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
+								} else if user.Placement == 2 {
+									<td class="px-4 py-3">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
+								} else if user.Placement == 3 {
+									<td class="px-4 py-3">
+										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+									</td>
+								} else {
+									<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
+								}
+								<td class="px-4 py-3">{ user.Username }</td>
+								<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
 							</tr>
 						}
 					</tbody>

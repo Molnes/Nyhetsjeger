@@ -15,12 +15,12 @@ templ QuizTile(quiz quizzes.Quiz) {
 			class="h-36 w-full bg-gray-500 object-cover"
 		/>
 		<div class="px-5 py-3">
-			<h3 class="text-xl font-semibold text-gray-800 mb-2">{ quiz.Title }</h3>
+			<h2 class="text-xl font-semibold text-gray-800 mb-2">{ quiz.Title }</h2>
 			<p class="mb-1">
-				Fra: { quiz.AvailableFrom.Format("02.01.2006, 15:04") }
+				Fra: { quiz.ActiveFrom.Format("02.01.2006, 15:04") }
 			</p>
 			<p>
-				Til: { quiz.AvailableTo.Format("02.01.2006, 15:04") }
+				Til: { quiz.ActiveTo.Format("02.01.2006, 15:04") }
 			</p>
 		</div>
 	</a>

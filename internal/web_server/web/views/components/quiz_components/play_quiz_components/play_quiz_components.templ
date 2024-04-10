@@ -16,13 +16,13 @@ templ AnswerButtons(question *questions.Question) {
 		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
-		class="grid grid-cols-2 gap-10 w-full isolate mt-8 px-4"
+		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4 isolate"
 	>
 		for _, alternative := range question.Alternatives {
 			<button
 				type="submit"
 				name="answer-id"
-				class="text-l p-2 h-28 rounded-button bg-white gradient-outline  gradient-shadow text-wrap w-full"
+				class="answer-button gradient-shadow"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -36,14 +36,14 @@ templ AnswerButtons(question *questions.Question) {
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full isolate">
-		<div class="grid grid-cols-2 gap-10 w-full  mt-8 px-4">
+		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				class="gradient-bg-button gradient-shadow px-8 py-3"
 				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
@@ -53,7 +53,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			</button>
 		} else {
 			<a
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				class="gradient-bg-button gradient-shadow px-8 py-3"
 				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 			>
 				Ferdig
@@ -66,47 +66,43 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-l p-2 h-28 rounded-button bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
+			class="answer-button gradient-outline-thick gradient-shadow-always w-full"
 		} else {
-			class="text-l p-2 h-28 rounded-button bg-white gradient-outline text-wrap w-full"
+			class="answer-button w-full"
 		}
 	>
 		{ alternative.Text }
-		<div class="absolute -top-4 -left-4 z-10">
-			if alternative.IsCorrect {
-				@feedbackCircle(true, isSelected)
-			} else {
-				@feedbackCircle(false, isSelected)
-			}
+		<div class="absolute -top-5 -left-5 z-10">
+			@feedbackCircle(alternative.IsCorrect)
 		</div>
-		<div class="absolute -bottom-4 -right-4 z-10">
-			@feedbackPercentage(alternative.PercentChosen, isSelected)
+		<div class="absolute -bottom-5 -right-6 z-10">
+			@feedbackPercentage(alternative.PercentChosen, alternative.IsCorrect)
 		</div>
 	</button>
 }
 
-templ feedbackCircle(correct bool, wasPicked bool) {
+templ feedbackCircle(correct bool) {
 	<div
-		if wasPicked {
-			class="flex items-center justify-center w-12 h-12 rounded-1/2 bg-white gradient-outline-circle-thick gradient-shadow-always"
+		if correct {
+			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-green-500"
 		} else {
-			class="flex items-center justify-center w-12 h-12 rounded-1/2 bg-white gradient-outline-circle"
+			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-600"
 		}
 	>
 		if correct {
-			@icons.Checkmark(100, "green", 30, 30)
+			@icons.Checkmark(60, "white", 30, 30)
 		} else {
-			@icons.Cross(3, "red", 30, 30)
+			@icons.Cross(3, "white", 30, 30)
 		}
 	</div>
 }
 
-templ feedbackPercentage(percentage float64, wasPicked bool) {
+templ feedbackPercentage(percentage float64, correct bool) {
 	<div
-		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline-thick text-sm gradient-shadow-always"
+		if correct {
+			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
 		} else {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline text-sm"
+			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
 		}
 	>
 		{ fmt.Sprintf("%v%%", percentage * 100) }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -47,36 +48,29 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 		log.Println(err)
 	}
 
-	article := articles.Article{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title: "Sample article",
-		ArticleURL: url.URL{
-			Scheme: "https",
-			Host:   "www.example.com",
-		},
-		ImgURL: url.URL{
-			Scheme: "https",
-			Host:   "www.picsum.photos",
-			Path:   "/id/1062/500/300",
-		},
-	}
+	article := getSampleAricle()
 
-	tx.Exec(
+	article.ArticleURL.Path = article.ArticleURL.Path + article.ID.UUID.String()
+
+	_, err = tx.Exec(
 		`INSERT INTO 
 			articles (id, title, url, image_url)
 		VALUES 
 			($1, $2, $3, $4);`,
 		article.ID, article.Title, article.ArticleURL.String(), article.ImgURL.String())
+	if err != nil {
+		log.Println(err)
+	}
 
-	tx.Exec(
+	_, err = tx.Exec(
 		`INSERT INTO 
 			quiz_articles (quiz_id, article_id)
 		VALUES 
 			($1, $2);`,
 		quizID, article.ID)
+	if err != nil {
+		log.Println(err)
+	}
 
 	if err := tx.Commit(); err != nil {
 		log.Println(err)
@@ -86,7 +80,7 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 func createSampleQuiz(db *sql.DB, title string) {
 	var quizID uuid.UUID
 	row := db.QueryRow(
-		`INSERT INTO quizzes (title, available_from, available_to, image_url, published)
+		`INSERT INTO quizzes (title, active_from, active_to, image_url, published)
 		values ($1, $2, $3, $4, true)
 		RETURNING id;`,
 		title, time.Now(), time.Now().Add(time.Hour*24*7), "https://picsum.photos/id/1062/500/300")
@@ -169,4 +163,27 @@ var sampleQuestion3 = question{
 		{"Oslo", false},
 		{"Copenhagen again to test 2 correct", true},
 	},
+}
+
+func getSampleAricle() *articles.Article {
+	id := uuid.New()
+	article := articles.Article{
+		ID: uuid.NullUUID{
+			UUID:  id,
+			Valid: true,
+		},
+		Title: "Sample article",
+		ArticleURL: url.URL{
+			Scheme: "https",
+			Host:   "www.example.com",
+			Path:   fmt.Sprint("/", id.String()),
+		},
+		ImgURL: url.URL{
+			Scheme: "https",
+			Host:   "www.picsum.photos",
+			Path:   "/id/1062/500/300",
+		},
+	}
+
+	return &article
 }
