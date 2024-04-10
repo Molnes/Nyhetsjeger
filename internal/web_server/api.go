@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Molnes/Nyhetsjeger/internal/bucket"
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
@@ -57,10 +58,22 @@ func Api() {
 		log.Fatal("Error getting google oauth config: ", err)
 	}
 
+    endpoint, ok := os.LookupEnv("BUCKET_URL")
+    accessKeyID, ok := os.LookupEnv("BUCKET_ACCESS_KEY")
+    secretAccessKey, ok := os.LookupEnv("BUCKET_SECRET_KEY")
+    useSSL, ok := os.LookupEnv("BUCKET_USE_SSL")
+
+
+    minioClient, err := bucket.NewBucketConnection(endpoint, accessKeyID, secretAccessKey, useSSL == "true")
+    if err != nil {
+        log.Fatal("Error connecting to bucket: ", err)
+        }
+
 	sharedData := &config.SharedData{
 		DB:           databaseConn,
 		SessionStore: sessionStore,
 		CryptoKey:    cryptoKey,
+        Bucket:  minioClient,
 	}
 
 	router.SetupRouter(e, sharedData, googleOauthConfig)
