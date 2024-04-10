@@ -115,10 +115,10 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 
 }
 
-// Returns the next question in the quiz for the user and saves the time it was presented.
+// Returns the next unanswered question by the given user and time user has left.
+// If question presented for the first time, it is marked as presented and time user has left=question time limit
 //
 // May return:
-//
 // ErrNoMoreQuestions if there are no more unanswered questions for the user in the quiz.
 // ErrNoSuchQuiz if the quiz does not exist.
 func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, uint, error) {
