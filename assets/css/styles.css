@@ -54,7 +54,8 @@
 
 .cgradient:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
-.answer-button:is(:hover, :focus):not(:disabled)::after {
+.answer-button:is(:hover, :focus):not(:disabled)::after,
+.timer-low.gradient-outline-circle::after {
     animation: hueRotate 800ms linear infinite alternate;
 }
 
