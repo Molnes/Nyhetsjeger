@@ -14,8 +14,11 @@ type UsernameAdminInfo struct {
 	NWordCount int
 }
 
+// UsernamesPerPage is the number of usernames to display per page
 var UsernamesPerPage = 25
 
+// GetUsernameAdminInfo returns a UsernameAdminInfo struct containing the adjectives and nouns and relevant information
+// for rendering the username administration page.
 func GetUsernameAdminInfo(db *sql.DB, aPage int, nPage int) (*UsernameAdminInfo, error) {
 	uai := UsernameAdminInfo{}
 
