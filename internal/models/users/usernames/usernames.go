@@ -50,7 +50,7 @@ func GetUsernameAdminInfo(db *sql.DB, aPage int, nPage int) (*UsernameAdminInfo,
 						FROM adjectives
 						ORDER BY adjective ASC
 							LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, 50*(aPage-1))
+		UsernamesPerPage, UsernamesPerPage*(aPage-1))
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func GetUsernameAdminInfo(db *sql.DB, aPage int, nPage int) (*UsernameAdminInfo,
 		FROM nouns
 		ORDER BY noun ASC
 			LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, 50*(aPage-1))
+		UsernamesPerPage, UsernamesPerPage*(nPage-1))
 	if err != nil {
 		return nil, err
 	}
