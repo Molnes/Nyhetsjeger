@@ -14,13 +14,13 @@ templ timer(timeLeft uint, timeLimit uint) {
 			{ fmt.Sprintf("%v", timeLeft) }
 		</div>
 	</div>
-	@setupTimer(timeLeft,timeLimit)
+	@setupTimer(timeLeft, timeLimit)
 }
 
 // sets up a timer that counts down from the given time.
 // Adds an event listener to stop the timer on "quiz:stop-timer"
 
-script setupTimer(timeLeft uint,timeLimit uint) {
+script setupTimer(timeLeft uint, timeLimit uint) {
 	let countDownTime = timeLeft;
 	const timerElem = document.getElementById("timer");
 	const timerIntervalId = setInterval(function() {
@@ -29,6 +29,10 @@ script setupTimer(timeLeft uint,timeLimit uint) {
 			timerElem.innerHTML = countDownTime;
 		} else {
 			clearInterval(timerIntervalId);
+		}
+
+		if (countDownTime / timeLimit < 0.3334) {
+			timerElem.classList.add("timer-low");
 		}
 	}, 1000);
 
