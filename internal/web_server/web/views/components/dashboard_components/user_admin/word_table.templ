@@ -3,21 +3,25 @@ package user_admin
 import "math"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 
+// Calculates the maximum amount of pages needed to display all users.
 func calculateMaxPages(userAmount int) int {
 	return int(math.Ceil(float64(userAmount) / float64(usernames.UsernamesPerPage)))
 }
 
+// Returns the content of a row in the table, if the index is out of bounds, return an empty string.
 func setRowContent(words []string, i int) string {
-    if i >= len(words){
-        return ""
-    } else {
-        return words[i]
-    
-    }
+	if i >= len(words) {
+		return ""
+	} else {
+		return words[i]
+
+	}
 }
 
+// A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string) {
-	<table id={ tableID }
+	<table
+		id={ tableID }
 		class="table-fixed border-separate border-spacing-0 rounded-card border border-gray-400 bg-white
     	[&_td]:border-black [&_tr]:h-8"
 	>

@@ -3,6 +3,7 @@ package user_admin
 import "fmt"
 import "strconv"
 
+// Pagination is the main component for the pagination
 templ Pagination(maxPages int, page int, parentTableID string, queryParam string) {
 	@prevButton(page, parentTableID)
 	@pageNumber(page, maxPages)
@@ -10,6 +11,7 @@ templ Pagination(maxPages int, page int, parentTableID string, queryParam string
 	@insertHxGet(parentTableID, queryParam)
 }
 
+// handlePagination ensures that the page number is within the range of the maximum pages
 func handlePagination(page int, maxPages int) int {
 	if page < 1 {
 		page = 1
@@ -19,6 +21,7 @@ func handlePagination(page int, maxPages int) int {
 	return page
 }
 
+// insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
 script insertHxGet(parentTableID string, queryParam string) {
 	let params = new URL(document.location.toString()).searchParams;
 	let aPage = params.get("apage");
@@ -45,6 +48,7 @@ script insertHxGet(parentTableID string, queryParam string) {
 	document.getElementById( `next-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) + 1) + "&" + oppositeQUery + "=" + oppositeParam);
 }
 
+// pageNumber is the component showing the current page number and the maximum pages
 templ pageNumber(currentPage int, maxPages int) {
 	if maxPages != 1 {
 		<button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
@@ -57,6 +61,7 @@ templ pageNumber(currentPage int, maxPages int) {
 	}
 }
 
+// prevButton is the component for the previous button
 templ prevButton(page int, parentTableID string) {
 	if page == 1 {
 		<button
@@ -76,6 +81,7 @@ templ prevButton(page int, parentTableID string) {
 	}
 }
 
+// nextButton is the component for the next button
 templ nextButton(page int, maxPages int, parentTableID string) {
 	if page == maxPages {
 		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
