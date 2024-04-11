@@ -24,10 +24,25 @@ script insertHxGet(parentTableID string, queryParam string) {
 	let aPage = params.get("apage");
 	let nPage = params.get("npage");
 
+	if (aPage == null) {
+		aPage = 1;
+	}
+	if (nPage == null) {
+		nPage = 1;
+	}
+
 	let param = queryParam == "apage" ? aPage : nPage;
 
-	document.getElementById( `prev-button-${parentTableID}` ).setAttribute("hx-get", "/tables?" + queryParam + "=" + (parseInt(param) - 1));
-	document.getElementById( `next-button-${parentTableID}` ).setAttribute("hx-get", "/tables?" + queryParam + "=" + (parseInt(param) + 1));
+	let oppositeQUery = queryParam == "apage" ? "npage" : "apage";
+	let oppositeParam = queryParam == "apage" ? nPage : aPage;
+	
+
+	const urlHold = "/api/v1/admin/username/table?"
+
+	var url = window.location.href.split('?')[0];
+
+	document.getElementById( `prev-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) - 1) + "&" + oppositeQUery + "=" + oppositeParam);
+	document.getElementById( `next-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) + 1) + "&" + oppositeQUery + "=" + oppositeParam);
 }
 
 templ pageNumber(currentPage int, maxPages int) {
@@ -52,15 +67,12 @@ templ prevButton(page int, parentTableID string) {
 			&lt;
 		</button>
 	} else {
-		<button
+		<a
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
-			hx-trigger="click"
-			hx-target={ parentTableID }
-			hx-swap="outerHTML"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
-		>
-			&lt;
-		</button>
+			href=""
+			hx-boost="true"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
+		>&lt;</a>
 	}
 }
 
@@ -70,14 +82,11 @@ templ nextButton(page int, maxPages int, parentTableID string) {
 			&gt;
 		</button>
 	} else {
-		<button
+		<a
 			id={ fmt.Sprintf("next-button-%v", parentTableID) }
-			hx-trigger="click"
-			hx-target={ parentTableID }
-			hx-swap="outerHTML"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
-		>
-			&gt;
-		</button>
+			href=""
+			hx-boost="true"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
+		>&gt;</a>
 	}
 }
