@@ -3,7 +3,9 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -25,6 +27,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/minio/minio-go/v7"
 )
 
 type AdminApiHandler struct {
@@ -63,6 +66,8 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/question/edit-image", aah.editQuestionImage)
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
+
+    e.POST("/quiz/upload-image", aah.uploadQuizImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 
 	e.GET("/username/table", aah.getUsernameTable)
@@ -124,6 +129,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig bilde URL"))
 	}
 
+
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
@@ -133,6 +139,51 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
 		fmt.Sprintf(editQuizURL, quiz_id), imageURL, dashboard_pages.QuizImageURL, true, ""))
 }
+
+
+func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
+        // Get the quiz ID
+        quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+        if err != nil {
+                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorInvalidQuizID))
+                 
+        }
+
+        // Get the image file
+        image, err := c.FormFile("image")
+        if err != nil {
+                log.Println(err)
+                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+        }
+
+        // Upload the image to the bucket
+        imageName, err := aah.uploadImage(c, image)
+        if err != nil {
+                log.Println(err)
+                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+        }
+
+        // Set the image URL for the quiz
+        imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
+
+        //parse the image URL
+        imageAsURL, err := url.Parse(imageURL)
+        
+        err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
+        if err != nil {
+                log.Println(err)
+                return err
+        }
+
+        return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+                fmt.Sprintf(editQuizURL, quiz_id), imageAsURL, dashboard_pages.QuizImageURL, true, ""))
+}
+
+
+
+
+
+
 
 // Removes the image for a quiz in the database.
 func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
@@ -567,6 +618,36 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 		fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
 }
 
+
+func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHeader) (string, error) {
+        file, err := image.Open()
+        if err != nil {
+                return "", err
+        }
+        defer file.Close()
+        
+        // get minio client
+        bucket := aah.sharedData.Bucket
+        // get file size
+        size := image.Size
+        // get file name
+        filename := image.Filename
+        // get file content type
+        contentType := image.Header.Get("Content-Type")
+        // get file extension
+        extension := strings.Split(filename, ".")[1]
+        // generate random file name
+        randomName := fmt.Sprintf("%s.%s", uuid.New().String(), extension)
+        // create a new reader
+        reader := io.LimitReader(file, size)
+        // upload file to minio
+        _, err = bucket.PutObject(c.Request().Context(), "images", randomName, reader, size, minio.PutObjectOptions{ContentType: contentType})
+        if err != nil {
+                return "", err
+        }
+        return randomName, nil
+}
+
 // Randomizes the order of the alternatives for a question visually.
 func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 	// Get the alternatives
@@ -578,17 +659,14 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 		alternatives = append(alternatives, questions.Alternative{Text: alternativeText, IsCorrect: isCorrect == "on"})
 	}
 
-	log.Println("---------------------")
-	log.Println(alternatives)
-
 	// Shuffle the alternatives
 	rand.Shuffle(len(alternatives), func(i, j int) {
 		alternatives[i], alternatives[j] = alternatives[j], alternatives[i]
 	})
-	log.Println(alternatives)
 
 	// Return the "alternatives" table.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
+
 }
 
 func (aah *AdminApiHandler) getUsernameTable(c echo.Context) error {

@@ -1,14 +1,12 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"slices"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
-	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
-	"github.com/Molnes/Nyhetsjeger/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )
@@ -40,19 +38,13 @@ func (am *AuthorizationMiddleware) isRoleAllowed(role user_roles.Role) bool {
 // If the user is allowed, the role is added to the context under the key user_roles.ROLE_CONTEXT_KEY
 func (am *AuthorizationMiddleware) EnforceRole(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		session, err := am.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
-		if err != nil {
-			return err
-		}
-		user := session.Values["user"].(users.UserSessionData)
-		role, err := users.GetUserRole(am.sharedData.DB, user.ID)
-		if err != nil {
-			return err
+		role, ok := c.Get(user_roles.ROLE_CONTEXT_KEY).(user_roles.Role)
+		if !ok {
+			return fmt.Errorf("EnforceRole: Role not in context. Authentication middleware must be used before EnforceRole")
 		}
 		if !am.isRoleAllowed(role) {
 			return echo.NewHTTPError(http.StatusForbidden, "You are not allowed to access this resource")
 		}
-		utils.AddToContext(c, user_roles.ROLE_CONTEXT_KEY, role)
 		return next(c)
 	}
 }

@@ -154,7 +154,8 @@ templ AdminTableRow(admin *access_control.UserAdmin) {
 				hx-delete={ "/api/v1/organization-admin/access-control/admin?email=" + admin.Email }
 				hx-confirm="Er du sikker på at du vil slette denne administratoren?"
 			>
-				@icons.Cross(3, "#ef4444", 25, 25)
+				// This is the same color as Tailwind's red-600
+				@icons.Cross(3, "#dc2626", 25, 25)
 			</button>
 		</td>
 	</tr>

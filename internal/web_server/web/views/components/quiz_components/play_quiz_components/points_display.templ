@@ -1,0 +1,29 @@
+package play_quiz_components
+
+import (
+	"fmt"
+)
+
+const (
+	PointsDisplayId = "points-display"
+)
+
+// Displays points passed in
+templ PointsDisplay(points uint) {
+	<p>
+		Poeng: 
+		<span
+			id={ PointsDisplayId }
+		>
+			{ fmt.Sprintf("%v", points) }
+		</span>
+	</p>
+}
+
+// Adds points to the display
+
+script AddPointsToDisplay(points uint, displayId string) {
+    const elem = document.getElementById(displayId);
+    const current = Number(elem.innerText);
+    elem.innerText = current+points;
+}
