@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,11 +15,13 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -61,6 +64,8 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
+
+	e.GET("/username/table", aah.getUsernameTable)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -584,4 +589,32 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 
 	// Return the "alternatives" table.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
+}
+
+func (aah *AdminApiHandler) getUsernameTable(c echo.Context) error {
+
+	aPage := c.QueryParam("apage")
+	nPage := c.QueryParam("npage")
+
+	if aPage == "" && nPage == "" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-username", "Ugyldig forespørsel"))
+	} else {
+		aPage, err := strconv.Atoi(aPage)
+		if err != nil {
+			aPage = 1
+		}
+		nPage, err := strconv.Atoi(nPage)
+		if err != nil {
+			nPage = 1
+		}
+
+		uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, aPage, nPage)
+		if err != nil {
+			return err
+		}
+
+		return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai))
+
+	}
+
 }
