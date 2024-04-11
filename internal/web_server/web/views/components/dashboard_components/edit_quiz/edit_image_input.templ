@@ -9,44 +9,87 @@ import (
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool, errorText string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, inputName string, post bool, errorText string) {
 	<div class="image-input-wrapper">
-		<input
-			id={ inputName }
-			name={ inputName }
-			class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
-			type="text"
-			value={ imageURL.String() }
-			placeholder="https://picsum.photos/id/1/900/600"
-			if post {
-				hx-post={ requestURL }
-				hx-trigger="change"
-				hx-swap="outerHTML"
-				hx-target="closest .image-input-wrapper"
-				hx-target-4*="next .error-image"
-				hx-sync="closest form:abort"
-				hx-indicator="previous .htmx-indicator"
-			}
-		/>
-		if imageURL.String() == "" && post {
-			<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
-		} else if imageURL.String() != "" && post {
-			// This div wrapper is to prevent a layout shift while loading the image
-			<div style="height: 200px" class="mx-auto mb-3">
-				<img src={ imageURL.String() } height="200" width="300" style="height: 100%" class="rounded-lg mx-auto object-cover"/>
-			</div>
+		<div class="bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden" data-element-type="tab">
 			<button
-				id="remove-image-button"
+				class="px-4 py-2 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
+				data-element-type="tablinks"
 				type="button"
-				class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
-				if post {
-					hx-delete={ requestURL }
-					hx-swap="outerHTML"
-					hx-target="closest .image-input-wrapper"
-					hx-indicator="previous .htmx-indicator"
-				}
-			>Fjern bilde</button>
-		}
-		@components.ErrorText("error-image", errorText)
+			>Last opp med URL</button>
+			<button
+				class="px-4 py-2 bg-violet-100 hover:bg-violet-200"
+				data-element-type="tablinks"
+				type="button"
+			>Last opp med fil</button>
+		</div>
+		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
+			<div id="image-url-input" class="flex flex-row gap-3 flex-wrap mb-3" data-element-type="tabcontent">
+				<input
+					id={ inputName }
+					name={ inputName }
+					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo flex-grow"
+					type="text"
+					value={ imageURL.String() }
+					placeholder="https://picsum.photos/id/1/900/600"
+				/>
+				<button
+					type="button"
+					class="bg-clightindigo px-4 py-2 rounded-button"
+					if post {
+						hx-post={ imageURLEndpoint }
+						hx-trigger="click"
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-target-4*="next .error-image"
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+					}
+				>Last opp</button>
+			</div>
+			<div id="image-file-input" class="hidden" data-element-type="tabcontent">
+				<input
+					id={ inputName }
+					name={ inputName }
+					class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
+					type="file"
+					value={ imageURL.String() }
+				/>
+				<button
+					type="button"
+					if post {
+						hx-post={ imageFileEndpoint }
+						hx-trigger="click"
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-target-4*="next .error-image"
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+					}
+				></button>
+			</div>
+			// If there is no image URL, display a message saying that no image is selected.
+			// If there is an image URL, display the image and a button to remove it.
+			if imageURL.String() == "" && post {
+				<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
+			} else if imageURL.String() != "" && post {
+				// This div wrapper is to prevent a layout shift while loading the image
+				<div style="height: 200px" class="mx-auto mb-3">
+					<img src={ imageURL.String() } height="200" width="300" style="height: 100%" class="rounded-lg mx-auto object-cover"/>
+				</div>
+				<button
+					id="remove-image-button"
+					type="button"
+					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+					if post {
+						hx-delete={ imageURLEndpoint }
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-indicator="previous .htmx-indicator"
+					}
+				>Fjern bilde</button>
+			}
+			@components.ErrorText("error-image", errorText)
+		</div>
 	</div>
 }

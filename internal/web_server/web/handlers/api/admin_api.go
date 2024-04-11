@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mime/multipart"
 	"math/rand"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
@@ -39,8 +39,10 @@ const errorInvalidQuestionID = "Ugyldig eller manglende question-id"
 const errorQuestionElementID = "error-question"
 
 // URLs
-const editQuizURL = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
-const editQuestionURL = "/api/v1/admin/question/edit-image?question-id=%s"
+const editQuizImageURL = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
+const editQuizImageFile = "/api/v1/admin/quiz/upload-image?quiz-id=%s"
+const editQuestionImageURL = "/api/v1/admin/question/edit-image?question-id=%s"
+const editQuestionImageFile = "/api/v1/admin/question/upload-image?question-id=%s"
 
 // Creates a new AdminApiHandler
 func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
@@ -64,7 +66,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
 
-    e.POST("/quiz/upload-image", aah.uploadQuizImage)
+	e.POST("/quiz/upload-image", aah.uploadQuizImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 }
 
@@ -124,7 +126,6 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig bilde URL"))
 	}
 
-
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
@@ -132,53 +133,46 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizURL, quiz_id), imageURL, dashboard_pages.QuizImageURL, true, ""))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageURL, dashboard_pages.QuizImageURL, true, ""))
 }
-
 
 func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
-        // Get the quiz ID
-        quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
-        if err != nil {
-                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorInvalidQuizID))
-                 
-        }
+	// Get the quiz ID
+	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorInvalidQuizID))
 
-        // Get the image file
-        image, err := c.FormFile("image")
-        if err != nil {
-                log.Println(err)
-                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
-        }
+	}
 
-        // Upload the image to the bucket
-        imageName, err := aah.uploadImage(c, image)
-        if err != nil {
-                log.Println(err)
-                return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
-        }
+	// Get the image file
+	image, err := c.FormFile("image")
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+	}
 
-        // Set the image URL for the quiz
-        imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
+	// Upload the image to the bucket
+	imageName, err := aah.uploadImage(c, image)
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+	}
 
-        //parse the image URL
-        imageAsURL, err := url.Parse(imageURL)
-        
-        err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
-        if err != nil {
-                log.Println(err)
-                return err
-        }
+	// Set the image URL for the quiz
+	imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
 
-        return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-                fmt.Sprintf(editQuizURL, quiz_id), imageAsURL, dashboard_pages.QuizImageURL, true, ""))
+	//parse the image URL
+	imageAsURL, err := url.Parse(imageURL)
+
+	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageAsURL, dashboard_pages.QuizImageURL, true, ""))
 }
-
-
-
-
-
-
 
 // Removes the image for a quiz in the database.
 func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
@@ -195,7 +189,7 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizURL, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, ""))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), &url.URL{}, dashboard_pages.QuizImageURL, true, ""))
 }
 
 // Deletes a quiz from the database.
@@ -586,7 +580,7 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionURL, questionID), imageURL, dashboard_components.QuestionImageURL, true, ""))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageURL, dashboard_components.QuestionImageURL, true, ""))
 }
 
 // Delete the image for a question in the database.
@@ -595,7 +589,7 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
 		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
+			fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, errorInvalidQuestionID))
 	}
 
 	// Remove the image URL from the question
@@ -603,44 +597,43 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	if err != nil {
 		if err == questions.ErrNoImageRemoved {
 			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-				fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere"))
+				fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere"))
 		}
 
 		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionURL, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
 }
 
-
 func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHeader) (string, error) {
-        file, err := image.Open()
-        if err != nil {
-                return "", err
-        }
-        defer file.Close()
-        
-        // get minio client
-        bucket := aah.sharedData.Bucket
-        // get file size
-        size := image.Size
-        // get file name
-        filename := image.Filename
-        // get file content type
-        contentType := image.Header.Get("Content-Type")
-        // get file extension
-        extension := strings.Split(filename, ".")[1]
-        // generate random file name
-        randomName := fmt.Sprintf("%s.%s", uuid.New().String(), extension)
-        // create a new reader
-        reader := io.LimitReader(file, size)
-        // upload file to minio
-        _, err = bucket.PutObject(c.Request().Context(), "images", randomName, reader, size, minio.PutObjectOptions{ContentType: contentType})
-        if err != nil {
-                return "", err
-        }
-        return randomName, nil
+	file, err := image.Open()
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	// get minio client
+	bucket := aah.sharedData.Bucket
+	// get file size
+	size := image.Size
+	// get file name
+	filename := image.Filename
+	// get file content type
+	contentType := image.Header.Get("Content-Type")
+	// get file extension
+	extension := strings.Split(filename, ".")[1]
+	// generate random file name
+	randomName := fmt.Sprintf("%s.%s", uuid.New().String(), extension)
+	// create a new reader
+	reader := io.LimitReader(file, size)
+	// upload file to minio
+	_, err = bucket.PutObject(c.Request().Context(), "images", randomName, reader, size, minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		return "", err
+	}
+	return randomName, nil
 }
 
 // Randomizes the order of the alternatives for a question visually.
