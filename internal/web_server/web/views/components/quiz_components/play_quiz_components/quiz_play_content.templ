@@ -14,11 +14,15 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		class="flex flex-col items-center py-2 gap-6"
 	>
 		<div class="flex justify-between items-center w-full ">
-			<a href="/quiz" aria-label="Lukk quiz">
-				@icons.Cross(3, "black", 40, 40)
-			</a>
+			<div class="w-24">
+				<a href="/quiz" aria-label="Lukk quiz">
+					@icons.Cross(3, "black", 40, 40)
+				</a>
+			</div>
 			@timer(data.SecondsLeft, data.CurrentQuestion.TimeLimitSeconds)
-			@PointsDisplay(data.PointsGathered)
+			<div class="w-24 text-right">
+				@PointsDisplay(data.PointsGathered)
+			</div>
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
