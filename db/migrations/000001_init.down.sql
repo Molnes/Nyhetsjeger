@@ -1,5 +1,7 @@
 BEGIN;
 
+DROP TABLE IF EXISTS phone_number_verification;
+
 DROP VIEW IF EXISTS user_quizzes;
 DROP VIEW IF EXISTS user_question_points;
 

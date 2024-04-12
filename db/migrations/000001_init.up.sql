@@ -287,6 +287,11 @@ LATERAL (
 ) ic
 GROUP BY uqp.user_id, uqp.quiz_id, ic.is_completed, qz.active_to;
 
-
+CREATE TABLE IF NOT EXISTS phone_number_verification(
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    new_phone_number text,
+    verification_secret TEXT,
+    expires_at TIMESTAMPTZ
+);
 
 END;
