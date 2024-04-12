@@ -28,7 +28,6 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 			<img
 				class="h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
-				alt=""
 			/>
 		}
 		<h2 class="text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
