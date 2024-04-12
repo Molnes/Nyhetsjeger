@@ -33,10 +33,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					value={ imageURL.String() }
 					placeholder="https://picsum.photos/id/1/900/600"
 				/>
-				<button
-					type="button"
-					class="bg-clightindigo px-4 py-2 rounded-button"
-					if post {
+				if post {
+					<button
+						type="button"
+						class="bg-clightindigo px-4 py-2 rounded-button"
 						hx-post={ imageURLEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
@@ -44,8 +44,8 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						hx-target-4*="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
-					}
-				>Last opp</button>
+					>Last opp</button>
+				}
 			</div>
 			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden" data-element-type="tab-content">
 				<input
@@ -55,10 +55,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
-				<button
-					type="button"
-					class="bg-clightindigo px-4 py-2 rounded-button"
-					if post {
+				if post {
+					<button
+						type="button"
+						class="bg-clightindigo px-4 py-2 rounded-button"
 						hx-post={ imageFileEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
@@ -66,8 +66,8 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						hx-target-4*="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
-					}
-				>Last opp</button>
+					>Last opp</button>
+				}
 			</div>
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
