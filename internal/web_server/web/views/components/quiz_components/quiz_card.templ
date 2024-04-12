@@ -10,6 +10,7 @@ templ QuizCard(quiz quizzes.Quiz) {
 		<img
 			src={ quiz.ImageURL.String() }
 			class="h-36 w-full bg-gray-300 rounded-t-card object-cover"
+			alt=""
 		/>
 		<div class="bg-white mt-0 grid grid-cols-1 gap-4 rounded-b-card">
 			<h3 class="px-2 text-2xl mt-6 mx-auto text-center font-semibold text-gray-800 text-ellipsis overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
