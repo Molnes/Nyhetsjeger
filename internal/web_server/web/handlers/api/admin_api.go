@@ -162,8 +162,12 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	// Set the image URL for the quiz
 	imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
 
-	//parse the image URL
+	// Parse the image URL
 	imageAsURL, err := url.Parse(imageURL)
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+	}
 
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
 	if err != nil {
@@ -486,6 +490,29 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
 	}
 
+	// Get the image file if it exists and upload it
+	imageFile, err := c.FormFile("image-file")
+	if c.FormValue("image-file") != "" && err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Kunne ikke hente bilde"))
+	} else {
+		imageName, err := aah.uploadImage(c, imageFile)
+		if err != nil {
+			log.Println(err)
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		}
+
+		// Set the image URL for the quiz
+		imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
+
+		// Parse the image URL
+		image, err = url.Parse(imageURL)
+		if err != nil {
+			log.Println(err)
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		}
+	}
+
 	// Create a new question object
 	questionForm := questions.QuestionForm{
 		ID:               questionID,
@@ -612,6 +639,10 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 
 	// Parse the image URL
 	imageAsURL, err := url.Parse(imageURL)
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+	}
 
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageAsURL)
 	if err != nil {
