@@ -75,14 +75,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
 			<label for={ QuestionImageURL } class="font-bold">Bilde (URL)</label>
-			<button
-				class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-				type="button"
-				aria-label="tooltip"
-			>
-				i
-				@components.Tooltip("Ikke lag spørsmål basert på innholdet i bildet. Spillere med synshemninger kan ha problemer med å svare på slike spørsmål.")
-			</button>
+			@components.TooltipButton("Ikke lag spørsmål basert på innholdet i bildet. Spillere med synshemninger kan ha problemer med å svare på slike spørsmål.")
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), &question.ImageURL, QuestionImageURL, !isNew, "")
