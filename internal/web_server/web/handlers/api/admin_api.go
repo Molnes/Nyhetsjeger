@@ -67,6 +67,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/question/delete", aah.deleteQuestion)
 
 	e.POST("/quiz/upload-image", aah.uploadQuizImage)
+	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 }
 
@@ -145,7 +146,7 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	}
 
 	// Get the image file
-	image, err := c.FormFile("image")
+	image, err := c.FormFile("image-file")
 	if err != nil {
 		log.Println(err)
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
@@ -581,6 +582,45 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
 		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageURL, dashboard_components.QuestionImageURL, true, ""))
+}
+
+// Upload a new image for a question.
+func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
+	// Get the quiz ID
+	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorInvalidQuestionID))
+
+	}
+
+	// Get the image file
+	image, err := c.FormFile("image-file")
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+	}
+
+	// Upload the image to the bucket
+	imageName, err := aah.uploadImage(c, image)
+	if err != nil {
+		log.Println(err)
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+	}
+
+	// Set the image URL for the question
+	imageURL := aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName
+
+	// Parse the image URL
+	imageAsURL, err := url.Parse(imageURL)
+
+	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageAsURL)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageAsURL, dashboard_components.QuestionImageURL, true, ""))
 }
 
 // Delete the image for a question in the database.
