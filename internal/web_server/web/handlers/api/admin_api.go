@@ -129,12 +129,12 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 
 	imageName, err := aah.uploadImageFromURL(c, *imageURL)
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	imageURL, err = url.Parse(aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName)
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	// Set the image URL for the quiz
@@ -159,7 +159,7 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	image, err := c.FormFile("image-file")
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bildet"))
 	}
 
 	// Upload the image to the bucket
@@ -504,12 +504,12 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	imageFile, err := c.FormFile("image-file")
 	if c.FormValue("image-file") != "" && err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Kunne ikke hente bildet"))
 	} else {
 		imageName, err := aah.uploadImage(c, imageFile)
 		if err != nil {
 			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 		}
 
 		// Set the image URL for the quiz
@@ -519,7 +519,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		image, err = url.Parse(imageURL)
 		if err != nil {
 			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 		}
 	}
 
@@ -634,14 +634,14 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	image, err := c.FormFile("image-file")
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bildet"))
 	}
 
 	// Upload the image to the bucket
 	imageName, err := aah.uploadImage(c, image)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	// Set the image URL for the question
@@ -651,7 +651,7 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	imageAsURL, err := url.Parse(imageURL)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageAsURL)
