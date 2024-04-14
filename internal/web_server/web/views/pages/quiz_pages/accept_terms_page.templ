@@ -1,0 +1,18 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+)
+
+templ AcceptTermsPage() {
+	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
+		<main class="w-full md:w-3/4 lg:w-1/2 mx-auto mt-8">
+			<h1 class="text-center text-2xl">Vilkår og betingelser</h1>
+			<p>For å fortsette må du akseptere vilkår og betingelser</p>
+			<form hx-post="/">
+				<input type="checkbox" name="accepted-terms" id="d"/>
+				<button type="submit">Ok</button>
+			</form>
+		</main>
+	}
+}
