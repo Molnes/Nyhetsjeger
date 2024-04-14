@@ -176,7 +176,7 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	imageAsURL, err := url.Parse(imageURL)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp fullføre bildeopplastingen"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke fullføre bildeopplastingen"))
 	}
 
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
