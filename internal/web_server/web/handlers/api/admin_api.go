@@ -678,10 +678,10 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
 }
 
-func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHeader) (string, error) {
+func (aah *AdminApiHandler) uploadImage(c echo.Context, image io.Reader) (string, error) {
 	file, err := image.Open()
 	if err != nil {
-		return "", err
+            return "", err
 	}
 	defer file.Close()
 
@@ -705,6 +705,23 @@ func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHea
 		return "", err
 	}
 	return randomName, nil
+}
+
+func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL) (string, error) {
+	// get image from provided URL
+	resp, err := http.Get(imageURL.String())
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	fileName, err := aah.uploadImage(c, resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return fileName, nil
 }
 
 // Randomizes the order of the alternatives for a question visually.
