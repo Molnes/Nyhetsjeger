@@ -154,16 +154,16 @@ func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 
 // Gets the usernames administration page and returns it.
 func (dph *DashboardPagesHandler) getUserNameAdministration(c echo.Context) error {
-	aPage, err := strconv.Atoi(c.QueryParam("apage"))
+	adjPage, err := strconv.Atoi(c.QueryParam("a"))
 	if err != nil { // If the page number is not a number, set it to 1.
-		aPage = 1
+		adjPage = 1
 	}
-	nPage, err := strconv.Atoi(c.QueryParam("npage"))
+	nounPage, err := strconv.Atoi(c.QueryParam("n"))
 	if err != nil { // If the page number is not a number, set it to 1.
-		nPage = 1
+		nounPage = 1
 	}
 
-	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, aPage, nPage)
+	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, adjPage, nounPage)
 	if err != nil {
 		return err
 	}

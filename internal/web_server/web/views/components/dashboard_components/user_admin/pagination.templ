@@ -24,28 +24,28 @@ func handlePagination(page int, maxPages int) int {
 // insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
 script insertHxGet(parentTableID string, queryParam string) {
 	let params = new URL(document.location.toString()).searchParams;
-	let aPage = params.get("apage");
-	let nPage = params.get("npage");
+	let a = params.get("a");
+	let n = params.get("n");
 
-	if (aPage == null) {
-		aPage = 1;
+	if (a == null) {
+		a = 1;
 	}
-	if (nPage == null) {
-		nPage = 1;
+	if (n == null) {
+		n = 1;
 	}
 
-	let param = queryParam == "apage" ? aPage : nPage;
+	let param = queryParam == "a" ? a : n;
 
-	let oppositeQUery = queryParam == "apage" ? "npage" : "apage";
-	let oppositeParam = queryParam == "apage" ? nPage : aPage;
+	let oppositeQuery = queryParam == "a" ? "n" : "a";
+	let oppositeParam = queryParam == "a" ? n : a;
 	
 
 	const urlHold = "/api/v1/admin/username/table?"
 
 	var url = window.location.href.split('?')[0];
 
-	document.getElementById( `prev-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) - 1) + "&" + oppositeQUery + "=" + oppositeParam);
-	document.getElementById( `next-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) + 1) + "&" + oppositeQUery + "=" + oppositeParam);
+	document.getElementById( `prev-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) - 1) + "&" + oppositeQuery + "=" + oppositeParam);
+	document.getElementById( `next-button-${parentTableID}` ).setAttribute("href", url + "?" + queryParam + "=" + (parseInt(param) + 1) + "&" + oppositeQuery + "=" + oppositeParam);
 }
 
 // pageNumber is the component showing the current page number and the maximum pages

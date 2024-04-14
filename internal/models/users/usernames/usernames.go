@@ -8,10 +8,10 @@ import (
 type UsernameAdminInfo struct {
 	Adjectives []string
 	Nouns      []string
-	APage      int
-	NPage      int
-	AWordCount int
-	NWordCount int
+	AdjPage      int
+	NounPage      int
+	AdjWordCount int
+	NounWordCount int
 }
 
 // UsernamesPerPage is the number of usernames to display per page
@@ -19,41 +19,41 @@ var UsernamesPerPage = 25
 
 // GetUsernameAdminInfo returns a UsernameAdminInfo struct containing the adjectives and nouns and relevant information
 // for rendering the username administration page.
-func GetUsernameAdminInfo(db *sql.DB, aPage int, nPage int) (*UsernameAdminInfo, error) {
+func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int) (*UsernameAdminInfo, error) {
 	uai := UsernameAdminInfo{}
 
 	//Get the total number of words in the adjectives and nouns tables
-	err := db.QueryRow(`SELECT COUNT(*) FROM adjectives;`).Scan(&uai.AWordCount)
+	err := db.QueryRow(`SELECT COUNT(*) FROM adjectives;`).Scan(&uai.AdjWordCount)
 	if err != nil {
 		return nil, err
 	}
-	err = db.QueryRow(`SELECT COUNT(*) FROM nouns;`).Scan(&uai.NWordCount)
+	err = db.QueryRow(`SELECT COUNT(*) FROM nouns;`).Scan(&uai.NounWordCount)
 	if err != nil {
 		return nil, err
 	}
 
 	//Insert adjective page and noun page into the struct and make sure they are within bounds
-	if aPage < 1 {
-		aPage = 1
+	if adjPage < 1 {
+		adjPage = 1
 	}
-	if nPage < 1 {
-		nPage = 1
+	if nounPage < 1 {
+		nounPage = 1
 	}
-	if aPage > (uai.AWordCount / UsernamesPerPage) {
-		aPage = int(math.Ceil((float64(uai.AWordCount) / float64(UsernamesPerPage))))
+	if adjPage > (uai.AdjWordCount / UsernamesPerPage) {
+		adjPage = int(math.Ceil((float64(uai.AdjWordCount) / float64(UsernamesPerPage))))
 	}
-	if nPage > (uai.NWordCount / UsernamesPerPage) {
-		nPage = int(math.Ceil((float64(uai.NWordCount) / float64(UsernamesPerPage))))
+	if nounPage > (uai.NounWordCount / UsernamesPerPage) {
+		nounPage = int(math.Ceil((float64(uai.NounWordCount) / float64(UsernamesPerPage))))
 	}
-	uai.APage = aPage
-	uai.NPage = nPage
+	uai.AdjPage = adjPage
+	uai.NounPage = nounPage
 
 	rows, err := db.Query(`
 					SELECT adjective 
 						FROM adjectives
 						ORDER BY adjective ASC
 							LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, UsernamesPerPage*(aPage-1))
+		UsernamesPerPage, UsernamesPerPage*(adjPage-1))
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func GetUsernameAdminInfo(db *sql.DB, aPage int, nPage int) (*UsernameAdminInfo,
 		FROM nouns
 		ORDER BY noun ASC
 			LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, UsernamesPerPage*(nPage-1))
+		UsernamesPerPage, UsernamesPerPage*(nounPage-1))
 	if err != nil {
 		return nil, err
 	}
