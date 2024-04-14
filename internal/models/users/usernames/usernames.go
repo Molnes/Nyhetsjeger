@@ -12,14 +12,12 @@ type UsernameAdminInfo struct {
 	NounPage      int
 	AdjWordCount int
 	NounWordCount int
+	UsernamesPerPage int
 }
-
-// UsernamesPerPage is the number of usernames to display per page
-var UsernamesPerPage = 25
 
 // GetUsernameAdminInfo returns a UsernameAdminInfo struct containing the adjectives and nouns and relevant information
 // for rendering the username administration page.
-func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int) (*UsernameAdminInfo, error) {
+func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPage int) (*UsernameAdminInfo, error) {
 	uai := UsernameAdminInfo{}
 
 	//Get the total number of words in the adjectives and nouns tables
@@ -39,21 +37,22 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int) (*UsernameAdmin
 	if nounPage < 1 {
 		nounPage = 1
 	}
-	if adjPage > (uai.AdjWordCount / UsernamesPerPage) {
-		adjPage = int(math.Ceil((float64(uai.AdjWordCount) / float64(UsernamesPerPage))))
+	if adjPage > (uai.AdjWordCount / usernamesPerPage) {
+		adjPage = int(math.Ceil((float64(uai.AdjWordCount) / float64(usernamesPerPage))))
 	}
-	if nounPage > (uai.NounWordCount / UsernamesPerPage) {
-		nounPage = int(math.Ceil((float64(uai.NounWordCount) / float64(UsernamesPerPage))))
+	if nounPage > (uai.NounWordCount / usernamesPerPage) {
+		nounPage = int(math.Ceil((float64(uai.NounWordCount) / float64(usernamesPerPage))))
 	}
 	uai.AdjPage = adjPage
 	uai.NounPage = nounPage
+	uai.UsernamesPerPage = usernamesPerPage
 
 	rows, err := db.Query(`
 					SELECT adjective 
 						FROM adjectives
 						ORDER BY adjective ASC
 							LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, UsernamesPerPage*(adjPage-1))
+		usernamesPerPage, usernamesPerPage*(adjPage-1))
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int) (*UsernameAdmin
 		FROM nouns
 		ORDER BY noun ASC
 			LIMIT $1 OFFSET $2;`,
-		UsernamesPerPage, UsernamesPerPage*(nounPage-1))
+		usernamesPerPage, usernamesPerPage*(nounPage-1))
 	if err != nil {
 		return nil, err
 	}
