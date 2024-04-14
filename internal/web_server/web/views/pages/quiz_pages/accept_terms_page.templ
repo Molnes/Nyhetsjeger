@@ -20,7 +20,7 @@ templ AcceptTermsPage() {
 					vilkår og betingelser
 				</a>.
 			</p>
-			<form hx-post="/" class="flex flex-col gap-5 mt-5">
+			<form hx-post="/api/v1/quiz/accept-terms" class="flex flex-col gap-5 mt-5">
 				<label for="terms-of-service-checkbox">
 					<input type="checkbox" name="accepted-terms" id="terms-of-service-checkbox" required/>
 					Jeg har lest og aksepterer vilkårene og betingelsene.

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
@@ -282,4 +283,24 @@ func applyPreassignedRole(db *sql.DB, ctx context.Context, email string) (user_r
 	}
 
 	return user_roles.RoleFromString(roleString), nil
+}
+
+// Sets the accepted_terms value in database for the user with given id.
+func UpdateAcceptedTermsByUserID(db *sql.DB, userid uuid.UUID, isAccepted bool) error {
+	result, err := db.Exec(`
+	UPDATE users
+	SET accepted_terms = $2
+	WHERE id = $1;`, userid, isAccepted)
+	if err != nil {
+		return err
+	}
+	rowsAffecter, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffecter != 1 {
+		return fmt.Errorf("users.UpdateAcceptedTermsByUserID: no rows affected, no user found")
+	}
+
+	return nil
 }
