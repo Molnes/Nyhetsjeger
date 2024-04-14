@@ -22,6 +22,7 @@ type User struct {
 	Email              string
 	Phone              string
 	OptInRanking       bool
+	AcceptedTerms      bool
 	Role               user_roles.Role
 	AccessTokenCypher  []byte
 	TokenExpire        time.Time
@@ -59,7 +60,7 @@ func init() {
 // Returns a user from the database with the uuid provided
 func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, accepted_terms, role, access_token, token_expires_at, refresh_token,
 		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE id = $1`,
@@ -70,7 +71,7 @@ func GetUserByID(db *sql.DB, id uuid.UUID) (*User, error) {
 // Returns a user from the database with the email provided
 func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, accepted_terms, role, access_token, token_expires_at, refresh_token,
 		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE email = $1`,
@@ -81,7 +82,7 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 // Returns a user from the database with the SSO ID provided
 func GetUserBySsoID(db *sql.DB, ssoID string) (*User, error) {
 	row := db.QueryRow(
-		`SELECT id, sso_user_id, email, phone, opt_in_ranking, role, access_token, token_expires_at, refresh_token,
+		`SELECT id, sso_user_id, email, phone, opt_in_ranking, accepted_terms, role, access_token, token_expires_at, refresh_token,
 		CONCAT(username_adjective, ' ', username_noun) AS username
 		FROM users
 		WHERE sso_user_id = $1`,
@@ -115,7 +116,7 @@ func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*Use
 			OFFSET floor(random() * (SELECT COUNT(*) FROM available_usernames)) 
 		LIMIT 1) AS random_username
 		RETURNING
-		id, sso_user_id, email, phone, opt_in_ranking, role, access_token,
+		id, sso_user_id, email, phone, opt_in_ranking, accepted_terms, role, access_token,
 		token_expires_at, refresh_token,CONCAT(username_adjective, ' ', username_noun) AS username;`,
 		user.ID, user.SsoID, user.Email, user.Phone, user.OptInRanking, user.Role.String(),
 		user.AccessTokenCypher, user.TokenExpire, user.RefreshTokenCypher)
@@ -170,6 +171,7 @@ func scanUserFromFullRow(row *sql.Row) (*User, error) {
 		&user.Email,
 		&user.Phone,
 		&user.OptInRanking,
+		&user.AcceptedTerms,
 		&roleString,
 		&user.AccessTokenCypher,
 		&user.TokenExpire,
