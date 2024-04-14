@@ -3,12 +3,16 @@ package user_admin
 import "fmt"
 import "strconv"
 
-// Pagination is the main component for the pagination
-templ Pagination(maxPages int, page int, parentTableID string, queryParam string) {
-	@prevButton(page, parentTableID)
+// Pagination is the main component for the pagination.
+// ID must be unique for each pagination component in the page.
+// queryParamKey is the key for the query parameter that will be used for the pagination.
+// maxPages is the maximum number of pages.
+// page is the current page.
+templ Pagination(id string, queryParamKey string, maxPages int, page int, ) {
+	@prevButton(page, id)
 	@pageNumber(page, maxPages)
-	@nextButton(page, maxPages, parentTableID)
-	@insertHxGet(parentTableID, queryParam)
+	@nextButton(page, maxPages, id)
+	@insertHxGet(id, queryParamKey)
 }
 
 // handlePagination ensures that the page number is within the range of the maximum pages
@@ -22,28 +26,37 @@ func handlePagination(page int, maxPages int) int {
 }
 
 // insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
+//
 
-script insertHxGet(ptID string, qp string) {
+script insertHxGet(id string, qp string) {
 	let ps = new URL(document.location.toString()).searchParams;
-	let a = ps.get("a");
-	let n = ps.get("n");
+	
+	let p = ps.get(qp);
 
-	if (a == null) {
-		a = 1;
+	var url = window.location.href.split('?')[0] + "?";
+
+	var prevUrl = url;
+	var nextUrl = url;
+
+	if (p == null) {
+		prevUrl += `${qp}=1`;
+		nextUrl += `${qp}=2`;
 	}
-	if (n == null) {
-		n = 1;
+
+	// Get the other query parameters and create the url query string
+	for( var pair of ps.entries() ) {
+		if (pair[0] != qp) {
+			prevUrl += `&${pair[0]}=${pair[1]}`;
+			nextUrl += `&${pair[0]}=${pair[1]}`;
+		}
+		else {
+			prevUrl += `&${qp}=${(parseInt(p) - 1)}`;
+			nextUrl += `&${qp}=${(parseInt(p) + 1)}`;
+		}
 	}
 
-	let p = qp == "a" ? a : n;
-
-	let oq = qp == "a" ? "n" : "a";
-	let op = qp == "a" ? n : a;
-
-	var url = window.location.href.split('?')[0];
-
-	document.getElementById( `prev-button-${ptID}` ).setAttribute("href",`${url}?${qp}=${(parseInt(p) - 1)}&${oq}=${op}`);
-	document.getElementById( `next-button-${ptID}` ).setAttribute("href",`${url}?${qp}=${(parseInt(p) + 1)}&${oq}=${op}`);
+	document.getElementById( `prev-button-${id}` ).setAttribute("href", prevUrl.replace("?&", "?"));
+	document.getElementById( `next-button-${id}` ).setAttribute("href", nextUrl.replace("?&", "?"));
 }
 
 // pageNumber is the component showing the current page number and the maximum pages

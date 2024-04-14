@@ -44,7 +44,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 		<tfoot>
 			<tr>
 				<td class="text-right border-t border-black" colspan="4">
-					@Pagination(calculateMaxPages(wordCount), page, tableID, pagnationParam)
+					@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount), page)
 				</td>
 			</tr>
 		</tfoot>
