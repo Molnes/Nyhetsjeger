@@ -43,14 +43,7 @@ templ UserProfile(u *users.User) {
 			<div>
 				<div class="mb-2">
 					<label for="tlf-in" class="inline-block font-bold mr-1">Mobilnummer</label>
-					<button
-						class="inline leading-[1.4rem] rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-						type="button"
-						aria-label="tooltip"
-					>
-						i
-						@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
-					</button>
+					@components.TooltipButton("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
 				</div>
 				<input
 					id="tlf-in"
