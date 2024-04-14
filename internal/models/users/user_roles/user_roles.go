@@ -41,3 +41,7 @@ func RoleFromString(role string) Role {
 	}
 	return r
 }
+
+func (r Role) IsAdministrator() bool {
+	return r == QuizAdmin || r == OrganizationAdmin
+}
