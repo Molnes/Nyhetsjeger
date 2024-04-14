@@ -12,7 +12,7 @@ templ UsernameAdminPage(data *usernames.UsernameAdminInfo) {
 	@layout_components.DashBoardLayout("Nyhetsjeger - Brukernavn administrasjon") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h2 class="text-xl font-bold">Brukernavn administrasjon</h2>
-			<input class="border border-gray-600 rounded-input px-2" type="text" placeholder="søk her"/>
+			<input class="border border-gray-600 rounded-input px-2" type="text" placeholder="W.I.P" disabled/>
 			@user_admin.UsernameTables(data)
 		</div>
 	}
