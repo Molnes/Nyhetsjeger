@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS nouns (
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sso_user_id TEXT NOT NULL, -- The user id from the SSO provider
-    username_adjective TEXT NOT NULL REFERENCES adjectives(adjective),
-    username_noun TEXT NOT NULL REFERENCES nouns(noun),
+    username_adjective TEXT NOT NULL REFERENCES adjectives(adjective) ON UPDATE CASCADE,
+    username_noun TEXT NOT NULL REFERENCES nouns(noun) ON UPDATE CASCADE,
     email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,

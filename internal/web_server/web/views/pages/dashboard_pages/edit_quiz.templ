@@ -36,7 +36,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			</div>
 			@changesSaved()
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center">Trykk utenfor et tekstfelt for å lagre endringene automatisk.</p>
+			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
@@ -46,27 +46,21 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
 			// Quiz Image
-			@dashboard_components.EditQuizForm() {
+			<form class="w-full my-1" hx-encoding="multipart/form-data">
 				<div class="flex flex-row items-center gap-3 mb-1">
-					<label for={ QuizImageURL } class="block font-bold">Forsidebilde (URL)</label>
+					<label for={ QuizImageURL } class="block font-bold">Forsidebilde</label>
 					@components.LoadingIndicator()
 				</div>
 				// TODO: Also support uploading an image
 				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), &quiz.ImageURL, QuizImageURL, true, "")
-			}
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					&quiz.ImageURL, QuizImageURL, true, "")
+			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Artikler i quizen</h2>
-					<button
-						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-						type="button"
-						aria-label="tooltip"
-					>
-						i
-						@components.Tooltip("Disse artiklene kan brukes for å linke et spørsmål direkte til en artikkel.")
-					</button>
+					@components.TooltipButton("Disse artiklene kan brukes for å linke et spørsmål direkte til en artikkel.")
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.AddArticleInput(quiz.ID.String(), QuizArticleURL, "")
@@ -98,14 +92,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Aktiv</h2>
-					<button
-						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-						type="button"
-						aria-label="tooltip"
-					>
-						i
-						@components.Tooltip("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
-					</button>
+					@components.TooltipButton("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
 					@components.LoadingIndicator()
 				</div>
 				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo, QuizActiveTo, "")
@@ -114,14 +101,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Spørsmål</h2>
-					<button
-						class="inline leading-[1.4rem] relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-						type="button"
-						aria-label="tooltip"
-					>
-						i
-						@components.Tooltip("Her kan du legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning.")
-					</button>
+					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning.")
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions

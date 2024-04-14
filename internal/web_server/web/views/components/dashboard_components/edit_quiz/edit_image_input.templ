@@ -9,44 +9,145 @@ import (
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(requestURL string, imageURL *url.URL, inputName string, post bool, errorText string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, inputName string, post bool, errorText string) {
 	<div class="image-input-wrapper">
-		<input
-			id={ inputName }
-			name={ inputName }
-			class="bg-purple-100 w-full px-4 py-2 mb-3 rounded-input border border-clightindigo"
-			type="text"
-			value={ imageURL.String() }
-			placeholder="https://picsum.photos/id/1/900/600"
-			if post {
-				hx-post={ requestURL }
-				hx-trigger="change"
-				hx-swap="outerHTML"
-				hx-target="closest .image-input-wrapper"
-				hx-target-4*="next .error-image"
-				hx-sync="closest form:abort"
-				hx-indicator="previous .htmx-indicator"
-			}
-		/>
-		if imageURL.String() == "" && post {
-			<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
-		} else if imageURL.String() != "" && post {
-			// This div wrapper is to prevent a layout shift while loading the image
-			<div style="height: 200px" class="mx-auto mb-3">
-				<img src={ imageURL.String() } height="200" width="300" style="height: 100%" class="rounded-lg mx-auto object-cover"/>
-			</div>
+		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
-				id="remove-image-button"
+				class="flex-grow px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
+				data-element-type="tab-link"
 				type="button"
-				class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+			>
+				Last opp med URL 🔗
+			</button>
+			<button
+				class="flex-grow px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card"
+				data-element-type="tab-link"
+				type="button"
+			>
+				Last opp med fil ⏫
+			</button>
+		</div>
+		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
+			<div id="image-url-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+				<input
+					id={ inputName }
+					name={ inputName }
+					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo flex-grow"
+					type="text"
+					value={ imageURL.String() }
+					placeholder="https://picsum.photos/id/1/900/600"
+				/>
 				if post {
-					hx-delete={ requestURL }
-					hx-swap="outerHTML"
-					hx-target="closest .image-input-wrapper"
-					hx-indicator="previous .htmx-indicator"
+					<button
+						type="button"
+						class="bg-clightindigo px-4 py-2 rounded-button"
+						hx-post={ imageURLEndpoint }
+						hx-trigger="click"
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-target-4*="next .error-image"
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+					>Last opp</button>
 				}
-			>Fjern bilde</button>
-		}
-		@components.ErrorText("error-image", errorText)
+			</div>
+			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden" data-element-type="tab-content">
+				<input
+					id={ inputName }
+					name="image-file"
+					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo flex-grow"
+					type="file"
+					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+				/>
+				if post {
+					<button
+						type="button"
+						class="bg-clightindigo px-4 py-2 rounded-button"
+						hx-post={ imageFileEndpoint }
+						hx-trigger="click"
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-target-4*="next .error-image"
+						hx-sync="closest form:abort"
+						hx-indicator="previous .htmx-indicator"
+					>Last opp</button>
+				}
+			</div>
+			// If there is no image URL, display a message saying that no image is selected.
+			// If there is an image URL, display the image and a button to remove it.
+			if imageURL.String() == "" && post {
+				<p class="text-sm text-gray-500">Ingen bilde valgt enda.</p>
+			} else if imageURL.String() != "" && post {
+				// This div wrapper is to prevent a layout shift while loading the image
+				<div style="height: 200px" class="mx-auto mb-3">
+					<img
+						src={ imageURL.String() }
+						height="200"
+						width="300"
+						style="height: 100%"
+						class="rounded-lg mx-auto object-cover"
+						alt=""
+					/>
+				</div>
+				<button
+					id="remove-image-button"
+					type="button"
+					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+					if post {
+						hx-delete={ imageURLEndpoint }
+						hx-swap="outerHTML"
+						hx-target="closest .image-input-wrapper"
+						hx-indicator="previous .htmx-indicator"
+					}
+				>Fjern bilde</button>
+			}
+			@components.ErrorText("error-image", errorText)
+		</div>
+		@switchTabs()
 	</div>
+}
+
+script switchTabs() {
+	// When the user clicks on the "URL" button, show the URL input and hide the file input.
+	// When the user clicks on the "Fil" button, show the file input and hide the URL input.const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
+	const tabcontents = document.querySelectorAll('[data-element-type="tab-content"]');
+	const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
+
+	const switchTabsListener = (event, tablink, index) => {
+		// Toggle tab selected
+		tablinks.forEach((tablink, i) => {
+			if (i === index) {
+				tablink.classList.add('bg-violet-200');
+				tablink.classList.remove('bg-violet-100');
+			} else {
+				tablink.classList.add('bg-violet-100');
+				tablink.classList.remove('bg-violet-200');
+			}
+		});
+
+		// Toggle content
+		tabcontents.forEach((tabcontent, i) => {
+			if (i === index) {
+				tabcontent.classList.remove('hidden');
+			} else {
+				tabcontent.classList.add('hidden');
+			}
+		});
+	}
+	
+	tablinks.forEach((tablink, index) => {
+		tablink.addEventListener('click', (event) => switchTabsListener(event, tablink, index));
+	});
+
+	// Remove the event listeners if the image input wrapper is swapped.
+	const imageWrapper = document.querySelector('.image-input-wrapper');
+	const switchListener = (event) => {
+		if (event.detail.xhr.status < 300) {
+			imageWrapper.removeEventListener("htmx:afterSwap", switchListener);
+			tablinks.forEach((tablink, index) => {
+				tablink.removeEventListener('click', (event) => switchTabsListener(event, tablink, index));
+			});
+		}
+	}
+	imageWrapper.addEventListener("htmx:afterSwap", switchListener);
 }
