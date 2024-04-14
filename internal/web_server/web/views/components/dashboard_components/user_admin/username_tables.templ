@@ -6,7 +6,7 @@ import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 // Tables of the two components an username is created from: Nouns and adjectives
 templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 	<div id="tables-wrapper" class="flex gap-3">
-		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "a")
-		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "n")
+		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "a", uai.UsernamesPerPage)
+		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "n", uai.UsernamesPerPage)
 	</div>
 }
