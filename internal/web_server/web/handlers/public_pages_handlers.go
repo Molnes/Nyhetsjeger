@@ -3,13 +3,16 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/public_pages"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,6 +30,7 @@ func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("", pph.homePage)
 	e.GET("/login", pph.loginPage)
 	e.GET("terms-of-service", pph.termsPage)
+	e.GET("/guest-quiz", pph.getGuestQuiz)
 }
 
 func (pph *PublicPagesHandler) homePage(c echo.Context) error {
@@ -63,4 +67,43 @@ func (pph *PublicPagesHandler) loginPage(c echo.Context) error {
 
 func (pph *PublicPagesHandler) termsPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.TermsOfServicePage())
+}
+
+const quizIdQueryParam = "quiz-id"
+const currentQuestionQueryParam = "current-question"
+
+func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
+	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	quizIdParam := c.QueryParam(quizIdQueryParam)
+	currentQuestionParam := c.QueryParam(currentQuestionQueryParam)
+
+	if quizIdParam == "" || currentQuestionParam == "" {
+		c.Redirect(http.StatusTemporaryRedirect,
+			fmt.Sprintf("/guest-quiz?%s=%s&%s=%s", quizIdQueryParam, openQuizId.String(), currentQuestionQueryParam, "1"),
+		)
+	}
+
+	quizId, err := uuid.Parse(quizIdParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig quiz-id")
+	}
+	if quizId != openQuizId {
+		return echo.NewHTTPError(http.StatusNotFound, "Ingen åpen quiz med den angitte ID-en")
+	}
+
+	currentQuestion, err := strconv.ParseUint(currentQuestionParam, 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig såørsmål nummer")
+	}
+
+	data, err := user_quiz.GetQuestionByNumberInQuiz(h.sharedData.DB, quizId, uint(currentQuestion))
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, public_pages.GuestQuizPlayPage(data.PartialQuiz.Title, data))
 }
