@@ -72,7 +72,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	apiGroup := e.Group("/api/v1")
 	apiGroup.Use(handlers.SetApiErrorDisplay)
 
-	guestGroup := e.Group("/guest")
+	guestGroup := apiGroup.Group("/guest")
 	guestApiHandler := api.NewPublicApiHandler(sharedData)
 	guestApiHandler.RegisterPublicApiHandlers(guestGroup)
 
