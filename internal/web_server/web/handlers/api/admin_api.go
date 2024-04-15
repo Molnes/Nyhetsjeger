@@ -127,6 +127,16 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig bilde URL"))
 	}
 
+	imageName, err := aah.uploadImageFromURL(c, *imageURL)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
+	}
+
+	imageURL, err = url.Parse(aah.sharedData.Bucket.EndpointURL().String() + "/images/" + imageName)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
+	}
+
 	// Set the image URL for the quiz
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageURL)
 	if err != nil {
@@ -149,14 +159,14 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	image, err := c.FormFile("image-file")
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bildet"))
 	}
 
 	// Upload the image to the bucket
 	imageName, err := aah.uploadImage(c, image)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	// Set the image URL for the quiz
@@ -166,7 +176,7 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	imageAsURL, err := url.Parse(imageURL)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke fullføre bildeopplastingen"))
 	}
 
 	err = quizzes.UpdateImageByQuizID(aah.sharedData.DB, quiz_id, *imageAsURL)
@@ -494,12 +504,12 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	imageFile, err := c.FormFile("image-file")
 	if c.FormValue("image-file") != "" && err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Kunne ikke hente bildet"))
 	} else {
 		imageName, err := aah.uploadImage(c, imageFile)
 		if err != nil {
 			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 		}
 
 		// Set the image URL for the quiz
@@ -509,7 +519,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		image, err = url.Parse(imageURL)
 		if err != nil {
 			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 		}
 	}
 
@@ -624,14 +634,14 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	image, err := c.FormFile("image-file")
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke hente bildet"))
 	}
 
 	// Upload the image to the bucket
 	imageName, err := aah.uploadImage(c, image)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	// Set the image URL for the question
@@ -641,7 +651,7 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	imageAsURL, err := url.Parse(imageURL)
 	if err != nil {
 		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bilde"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Kunne ikke laste opp bildet"))
 	}
 
 	err = questions.SetImageByQuestionID(aah.sharedData.DB, &questionID, imageAsURL)
@@ -678,6 +688,8 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, dashboard_components.QuestionImageURL, true, ""))
 }
 
+// Uploads an image to the bucket from a form and returns the name of the image.
+// If the image cannot be uploaded, an error is returned.
 func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHeader) (string, error) {
 	file, err := image.Open()
 	if err != nil {
@@ -685,8 +697,6 @@ func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHea
 	}
 	defer file.Close()
 
-	// get minio client
-	bucket := aah.sharedData.Bucket
 	// get file size
 	size := image.Size
 	// get file name
@@ -700,10 +710,47 @@ func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHea
 	// create a new reader
 	reader := io.LimitReader(file, size)
 	// upload file to minio
-	_, err = bucket.PutObject(c.Request().Context(), "images", randomName, reader, size, minio.PutObjectOptions{ContentType: contentType})
+	err = aah.uploadImageToBucket(c, reader, "images", randomName, size, contentType)
 	if err != nil {
 		return "", err
 	}
+	return randomName, nil
+}
+
+// Uploads an image to the bucket and returns an error if the image cannot be uploaded.
+func (aah *AdminApiHandler) uploadImageToBucket(c echo.Context, imageData io.Reader, bucketName string, fileName string, fileSize int64, contentType string) error {
+	// get minio client
+	bucket := aah.sharedData.Bucket
+	// create a new reader
+	reader := io.LimitReader(imageData, fileSize)
+	// upload file to minio
+	_, err := bucket.PutObject(c.Request().Context(), bucketName, fileName, reader, fileSize, minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+// Uploads an image from a URL to the bucket and returns the name of the image.
+// If the image cannot be uploaded, an error is returned.
+func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL) (string, error) {
+	// get image from provided URL
+	resp, err := http.Get(imageURL.String())
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	fileType := resp.Header.Get("Content-Type") 
+
+	randomName := fmt.Sprintf("%s.%s", uuid.New().String(), strings.Split(fileType, "/")[1])
+
+	err = aah.uploadImageToBucket(c, resp.Body, "images", randomName, resp.ContentLength, resp.Header.Get("Content-Type"))
+	if err != nil {
+		return "", err
+	}
+
 	return randomName, nil
 }
 
