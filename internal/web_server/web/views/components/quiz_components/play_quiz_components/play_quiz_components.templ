@@ -39,7 +39,7 @@ templ AnswerButtons(question *questions.Question, isAuthenticated bool) {
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
-templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
+templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion, isAuthenticated bool) {
 	<div class="flex flex-col gap-8 items-center w-full isolate">
 		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
@@ -49,7 +49,11 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		if answered.NextQuestionID != uuid.Nil {
 			<button
 				class="gradient-bg-button gradient-shadow px-8 py-3"
-				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				if isAuthenticated {
+					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				} else {
+					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				}
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
