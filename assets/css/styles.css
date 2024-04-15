@@ -52,7 +52,7 @@
     background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.cgradient:is(:hover, :focus),
+a.cgradient:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
 .answer-button:is(:hover, :focus):not(:disabled)::after,
 .timer-low.gradient-outline-circle::after {
