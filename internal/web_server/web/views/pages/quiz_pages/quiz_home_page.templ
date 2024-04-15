@@ -84,6 +84,5 @@ func isUserAdmin(ctx context.Context) bool {
 	if !ok {
 		return false
 	}
-	// inclusive logic, only allows admin roles
-	return role == user_roles.OrganizationAdmin || role == user_roles.QuizAdmin
+	return role.IsAdministrator()
 }

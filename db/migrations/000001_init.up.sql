@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
+    accepted_terms BOOL NOT NULL DEFAULT false,
     role user_role NOT NULL DEFAULT 'user',
     access_token TEXT NOT NULL,
     token_expires_at TIMESTAMP,

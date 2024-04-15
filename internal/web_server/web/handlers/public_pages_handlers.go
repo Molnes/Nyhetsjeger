@@ -26,6 +26,7 @@ func NewPublicPagesHandler(sharedData *config.SharedData) *PublicPagesHandler {
 func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("", pph.homePage)
 	e.GET("/login", pph.loginPage)
+	e.GET("terms-of-service", pph.termsPage)
 }
 
 func (pph *PublicPagesHandler) homePage(c echo.Context) error {
@@ -58,4 +59,8 @@ func (pph *PublicPagesHandler) loginPage(c echo.Context) error {
 		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
 	}
 	return utils.Render(c, http.StatusOK, public_pages.LoginPage())
+}
+
+func (pph *PublicPagesHandler) termsPage(c echo.Context) error {
+	return utils.Render(c, http.StatusOK, public_pages.TermsOfServicePage())
 }

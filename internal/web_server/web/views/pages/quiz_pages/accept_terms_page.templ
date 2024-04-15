@@ -1,0 +1,61 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+)
+
+const (
+	terms_dialog_id = "temrs-of-service-dialog"
+	terms_anchor_id = "terms-anchor"
+)
+
+templ AcceptTermsPage() {
+	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
+		<main class="w-full md:w-3/4 lg:w-1/2 mx-auto pt-10 text-center">
+			<h1 class="text-2xl mb-2">Vilkår og betingelser</h1>
+			<p>
+				For å fortsette må du akseptere våre
+				<a id={ terms_anchor_id } role="button" href="#" class="text-cblue font-semibold">
+					vilkår og betingelser
+				</a>.
+			</p>
+			<form hx-post="/api/v1/quiz/accept-terms" class="flex flex-col gap-5 mt-5">
+				<div class="flex items-center mx-auto">
+					<input type="checkbox" name="accepted-terms" class="mr-2 w-6 h-6 accent-cindigo cursor-pointer" id="terms-of-service-checkbox" required/>
+					<label for="terms-of-service-checkbox" class="cursor-pointer">
+						Jeg har lest og aksepterer vilkårene og betingelsene.
+					</label>
+				</div>
+				<button type="submit" class="gradient-bg-button px-4 py-2 mx-auto">
+					Fortsett
+				</button>
+			</form>
+		</main>
+		<dialog
+			id={ terms_dialog_id }
+			class="w-11/12 md:w-8/12 lg:w-6/12 py-3 px-8 "
+		>
+			@components.TermsOfService()
+			<button
+				onclick={ closeTermsOfService(terms_dialog_id) }
+				class="gradient-bg-button px-6 py-2 block mx-auto mt-2"
+			>
+				OK
+			</button>
+		</dialog>
+		@openTermsOfService(terms_anchor_id, terms_dialog_id)
+	}
+}
+
+script openTermsOfService(anchorId string, dialogId string) {
+	document.getElementById(anchorId).addEventListener('click', function() {
+		document.getElementById(dialogId).showModal();
+	});
+
+}
+
+script closeTermsOfService(dialogId string) {
+	const dialog = document.getElementById(dialogId);
+	dialog.close()
+}

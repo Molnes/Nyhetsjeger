@@ -1,0 +1,15 @@
+package public_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+)
+
+// Page containg the terms of service
+templ TermsOfServicePage() {
+	@layout_components.BaseLayout("Vilkår og betingelser") {
+		<main class="w-full md:w-3/4 lg:w-1/2 mx-auto p-5">
+			@components.TermsOfService()
+		</main>
+	}
+}

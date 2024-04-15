@@ -38,6 +38,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/play", qph.getPlayQuizPage)
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
+	e.GET("/accept-terms", qph.getAcceptTermsPage)
 
 	e.GET("/brukernavn", qph.usernamePage)
 	e.POST("/brukernavn", qph.postUsername)
@@ -189,4 +190,16 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
+}
+
+func (gph *QuizPagesHandler) getAcceptTermsPage(c echo.Context) error {
+	user, err := users.GetUserByID(gph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
+	}
+	if user.AcceptedTerms {
+		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.AcceptTermsPage())
 }
