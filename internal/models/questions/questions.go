@@ -133,13 +133,32 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
+// Gets nth question in a givnen quiz, indexing from 1.4
+func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (*Question, error) {
+	row := db.QueryRow(
+		`SELECT
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+			FROM
+				questions q
+			WHERE
+				quiz_id = $1
+			GROUP BY
+				q.id
+			ORDER BY
+				q.arrangement ASC
+			LIMIT 1
+			OFFSET $2;`, quizId, questionNumber-1)
+
+	return scanQuestionFromFullRow(db, row)
+}
+
 // Convert a row from the database to a Question.
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
 	var imageURL sql.NullString
 	err := row.Scan(
-		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
