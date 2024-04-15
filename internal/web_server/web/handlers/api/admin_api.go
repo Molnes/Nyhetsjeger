@@ -441,7 +441,7 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	}
 
 	// Remove the article from the quiz
-	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, &quiz_id, &article_id)
+	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, c.Request().Context(), &quiz_id, &article_id)
 	if err != nil {
 		return err
 	}
