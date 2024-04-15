@@ -38,7 +38,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
 	g.GET("/user-details", dph.userDetails)
-	g.GET("/username-admin", dph.getUserNameAdministration)
+	g.GET("/username-admin", dph.getUsernameAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
 	organizationAdminGroup := g.Group("", mw.EnforceRole)
@@ -153,7 +153,7 @@ func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 }
 
 // Gets the usernames administration page and returns it.
-func (dph *DashboardPagesHandler) getUserNameAdministration(c echo.Context) error {
+func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) error {
 	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
 	if err != nil { // If the page number is not a number, set it to 1.
 		adjPage = 1
