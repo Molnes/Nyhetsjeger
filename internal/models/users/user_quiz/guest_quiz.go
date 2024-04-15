@@ -30,7 +30,7 @@ func GetQuestionByNumberInQuiz(db *sql.DB, quizID uuid.UUID, questionNumber uint
 		*partialQuiz,
 		*question,
 		0,
-		0,
+		question.TimeLimitSeconds,
 	}, nil
 }
 
