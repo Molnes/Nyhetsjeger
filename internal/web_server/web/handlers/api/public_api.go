@@ -1,8 +1,6 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/labstack/echo/v4"
 )
@@ -22,5 +20,11 @@ func (h *publicApiHandler) RegisterPublicApiHandlers(g *echo.Group) {
 }
 
 func (h *publicApiHandler) postAnswer(c echo.Context) error {
-	return c.NoContent(http.StatusOK)
+	// questionId, err := uuid.Parse(c.QueryParam("question-id"))
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusBadRequest, "Manglende eller ugyldig question-id")
+	// }
+
+	// return utils.Render(play_quiz_components.FeedbackButtons())
+	return nil
 }

@@ -68,13 +68,20 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	dashboardPagesHandler := handlers.NewDashboardPagesHandler(sharedData)
 	dashboardPagesHandler.RegisterDashboardHandlers(dashboardGroup)
 
-	// api routes, requiring authentication
+	// api routes
 	apiGroup := e.Group("/api/v1")
 	apiGroup.Use(handlers.SetApiErrorDisplay)
+
+	guestGroup := e.Group("/guest")
+	guestApiHandler := api.NewPublicApiHandler(sharedData)
+	guestApiHandler.RegisterPublicApiHandlers(guestGroup)
+
 	authForce := middlewares.NewAuthenticationMiddleware(sharedData, false)
-	apiGroup.Use(authForce.EncofreAuthentication)
+	// apiGroup.Use(authForce.EncofreAuthentication)
 
 	quizApiGroup := apiGroup.Group("/quiz")
+	quizApiGroup.Use(authForce.EncofreAuthentication)
+
 	forceAcceptedTermsNoRedirect := middlewares.NewAcceptedTerms(sharedData, false)
 	quizGroup.Use(forceAcceptedTermsNoRedirect.EncofreAcceptedTerms)
 
@@ -83,6 +90,8 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 
 	// admin api routes, requiring admin
 	adminApiGroup := apiGroup.Group("/admin")
+	adminApiGroup.Use(authForce.EncofreAuthentication)
+
 	enforceAdminMiddleware :=
 		middlewares.NewAuthorizationMiddleware(
 			sharedData,
