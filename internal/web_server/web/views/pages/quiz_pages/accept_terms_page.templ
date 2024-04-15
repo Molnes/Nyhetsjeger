@@ -13,7 +13,7 @@ const (
 templ AcceptTermsPage() {
 	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
 		<main class="w-full md:w-3/4 lg:w-1/2 mx-auto pt-10 text-center">
-			<h1 class="text-2xl">Vilkår og betingelser</h1>
+			<h1 class="text-2xl mb-2">Vilkår og betingelser</h1>
 			<p>
 				For å fortsette må du akseptere våre
 				<a id={ terms_anchor_id } role="button" href="#" class="text-cblue font-semibold">
@@ -21,10 +21,12 @@ templ AcceptTermsPage() {
 				</a>.
 			</p>
 			<form hx-post="/api/v1/quiz/accept-terms" class="flex flex-col gap-5 mt-5">
-				<label for="terms-of-service-checkbox">
-					<input type="checkbox" name="accepted-terms" id="terms-of-service-checkbox" required/>
-					Jeg har lest og aksepterer vilkårene og betingelsene.
-				</label>
+				<div class="flex items-center mx-auto">
+					<input type="checkbox" name="accepted-terms" class="mr-2 w-6 h-6 accent-cindigo cursor-pointer" id="terms-of-service-checkbox" required/>
+					<label for="terms-of-service-checkbox" class="cursor-pointer">
+						Jeg har lest og aksepterer vilkårene og betingelsene.
+					</label>
+				</div>
 				<button type="submit" class="gradient-bg-button px-4 py-2 mx-auto">
 					Fortsett
 				</button>
@@ -32,7 +34,7 @@ templ AcceptTermsPage() {
 		</main>
 		<dialog
 			id={ terms_dialog_id }
-			class="w-96 py-2 px-5 "
+			class="w-11/12 md:w-8/12 lg:w-6/12 py-3 px-8 "
 		>
 			@components.TermsOfService()
 			<button
