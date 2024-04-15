@@ -67,7 +67,7 @@ func (qah *QuizApiHandler) getNextQuestion(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(quizData))
+	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(quizData,true))
 }
 
 // Handles post request for a user's answer to a question.

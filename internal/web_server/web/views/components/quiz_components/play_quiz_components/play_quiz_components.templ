@@ -11,10 +11,14 @@ import (
 )
 
 // Form with buttons for each alternative in a question
-templ AnswerButtons(question *questions.Question) {
+templ AnswerButtons(question *questions.Question, isAuthenticated bool) {
 	<form
 		id="question-answer-form"
-		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		if isAuthenticated {
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		} else {
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		}
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
 		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4 isolate"

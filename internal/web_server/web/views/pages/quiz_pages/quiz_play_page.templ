@@ -9,7 +9,7 @@ import (
 
 templ QuizPlayPage(title string, data *user_quiz.QuizData) {
 	@layout_components.QuizLayout(title) {
-		@play_quiz_components.QuizPlayContent(data)
+		@play_quiz_components.QuizPlayContent(data, true)
 		@components.ErrorDialog("Noe gikk galt!", "Det oppstod en feil under quiz-spillingen. Prøv igjen senere.")
 	}
 }
