@@ -5,6 +5,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"time"
 )
 
 // Content of a quiz play page.
@@ -34,6 +35,9 @@ templ QuizPlayContent(data *user_quiz.QuizData, isAuthenticated bool) {
 		<h2 class="text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
 		@AnswerButtons(&data.CurrentQuestion, isAuthenticated)
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
+		if !isAuthenticated {
+			@saveQuestiontimestamp(data.CurrentQuestion.ID, time.Now())
+		}
 	</section>
 }
 

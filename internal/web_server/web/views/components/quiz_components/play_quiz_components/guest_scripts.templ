@@ -1,0 +1,18 @@
+package play_quiz_components
+
+import (
+	"time"
+	"github.com/google/uuid"
+)
+
+script saveQuestiontimestamp(questionId uuid.UUID, presentedAt time.Time) {
+    window.localStorage.setItem(`presented_question:${questionId}`, presentedAt);
+}
+
+script addQuestiontimestampToRequest(questionId uuid.UUID, formId string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener('htmx:configRequest', function(evt) {
+		const timestamp = window.localStorage.getItem(`presented_question:${questionId}`);
+		evt.detail.parameters['timestamp'] = timestamp;
+	});
+}

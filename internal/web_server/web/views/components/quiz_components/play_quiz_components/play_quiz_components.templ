@@ -17,7 +17,7 @@ templ AnswerButtons(question *questions.Question, isAuthenticated bool) {
 		if isAuthenticated {
 			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
 		} else {
-			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+			hx-post={ fmt.Sprintf("/api/v1/guest/user-answer?question-id=%s", question.ID.String()) }
 		}
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
@@ -36,6 +36,9 @@ templ AnswerButtons(question *questions.Question, isAuthenticated bool) {
 	</form>
 	@components.LoadingIndicator()
 	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
+	if !isAuthenticated {
+		@addQuestiontimestampToRequest(question.ID, "question-answer-form")
+	}
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
