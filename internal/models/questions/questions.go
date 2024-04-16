@@ -152,6 +152,31 @@ func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (
 	return scanQuestionFromFullRow(db, row)
 }
 
+// Gets the next question in a quiz passed questionId belongs to. If no more questions, sql.ErrNoRows  will be returned
+func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(
+		`WITH questions_in_quiz AS (
+			SELECT q.id, q.arrangement,
+			ROW_NUMBER () OVER (ORDER BY q.arrangement) 
+			FROM questions q, 
+			  (SELECT quiz_id as id
+				FROM questions 
+				WHERE id = $1
+			  ) quiz 
+			WHERE q.quiz_id = quiz.id
+		  ) 
+		  SELECT questions_in_quiz.id 
+		  FROM questions_in_quiz, 
+			( SELECT row_number 
+			  FROM questions_in_quiz 
+			  WHERE id = $1
+			) current 
+		  WHERE questions_in_quiz.row_number = current.row_number + 1;`, questionId)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 // Convert a row from the database to a Question.
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
