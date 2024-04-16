@@ -33,3 +33,17 @@ script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	currentList[currentQuestion-1] = summaryRow;
 	window.localStorage.setItem('summary_rows', JSON.stringify(currentList));
 }
+
+script setGuestNextQuestionHxGet(buttonId string) {
+	const url = new URL(window.location);
+	const nextQuestionNumber = parseInt(url.searchParams.get('current-question')) + 1;
+	url.searchParams.set('current-question', nextQuestionNumber);
+
+	const button = document.getElementById(buttonId);
+	button.addEventListener('htmx:configRequest',function (evt) {
+		evt.detail.path = `/api/v1/guest/question${url.search}`;
+
+		// replace the url search params with new oens
+		window.history.replaceState(null, "", url.href);
+	});
+}

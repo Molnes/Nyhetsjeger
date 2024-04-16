@@ -53,11 +53,12 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
+				id="next-question-button"
 				class="gradient-bg-button gradient-shadow px-8 py-3"
 				if utils.IsUserAuthenticated(ctx) {
 					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				} else {
-					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+					hx-get="path set dynamically on htmx:configRequest event"
 				}
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
@@ -65,6 +66,9 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 			>
 				Neste
 			</button>
+			if !utils.IsUserAuthenticated(ctx) {
+				@setGuestNextQuestionHxGet("next-question-button")
+			}
 		} else {
 			<a
 				class="gradient-bg-button gradient-shadow px-8 py-3"
