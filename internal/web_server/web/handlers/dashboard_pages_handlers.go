@@ -163,7 +163,7 @@ func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) erro
 		nounPage = 1
 	}
 
-	pages, err := strconv.Atoi(c.QueryParam("page"))
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
 	if err != nil || pages < 5  || pages > 255{ // Sets to 25 if between a certain range.
 		pages = 25
 	}
