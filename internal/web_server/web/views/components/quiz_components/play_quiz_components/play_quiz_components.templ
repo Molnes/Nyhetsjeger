@@ -67,7 +67,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 				Neste
 			</button>
 			if !utils.IsUserAuthenticated(ctx) {
-				@setGuestNextQuestionHxGet("next-question-button")
+				@setGuestNextQuestionPath("next-question-button")
 			}
 		} else {
 			<a

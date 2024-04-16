@@ -34,13 +34,24 @@ script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	window.localStorage.setItem('summary_rows', JSON.stringify(currentList));
 }
 
-script setGuestNextQuestionHxGet(buttonId string) {
-	const url = new URL(window.location);
-	const nextQuestionNumber = parseInt(url.searchParams.get('current-question')) + 1;
-	url.searchParams.set('current-question', nextQuestionNumber);
-
+script setGuestNextQuestionPath(buttonId string) {
 	const button = document.getElementById(buttonId);
 	button.addEventListener('htmx:configRequest',function (evt) {
+	
+		// find next question number
+		const url = new URL(window.location);
+		const nextQuestionNumber = parseInt(url.searchParams.get('current-question')) + 1;
+		url.searchParams.set('current-question', nextQuestionNumber);
+
+		// find total points
+		let summaryList = JSON.parse(window.localStorage.getItem("summary_rows"));
+		let totalPoints = 0;
+		if (summaryList) {
+			totalPoints = summaryList.map((c)=>c?c.PointsAwarded :0).reduce((a,c) => a+c,0);
+		}
+		url.searchParams.set('total_points',totalPoints);
+		
+		
 		evt.detail.path = `/api/v1/guest/question${url.search}`;
 
 		// replace the url search params with new oens
