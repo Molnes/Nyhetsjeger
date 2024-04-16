@@ -9,6 +9,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 )
 
 // Form with buttons for each alternative in a question
@@ -74,6 +75,11 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		}
 	</div>
 	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
+}
+
+templ FeedbackButtonsWithClientState(answered *user_quiz.UserAnsweredQuestion, summaryRow *user_quiz_summary.AnsweredQuestion) {
+	@FeedbackButtons(answered)
+	@saveSummaryRow(summaryRow)
 }
 
 // A disabled button displaying the alternative text along with feedback

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components"
 	"github.com/google/uuid"
@@ -54,6 +55,16 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Cannot answer question in non-open quiz without being authenticated.")
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
+	summaryrow := user_quiz_summary.AnsweredQuestion{
+		QuestionID:            questionID,
+		QuestionText:          answered.Question.Text,
+		MaxPoints:             answered.Question.Points,
+		ChosenAlternativeID:   answered.ChosenAnswerID,
+		ChosenAlternativeText: answered.Question.GetAnswerTextById(answered.ChosenAnswerID),
+		IsCorrect:             answered.Question.IsAnswerCorrect(answered.ChosenAnswerID),
+		PointsAwarded:         answered.PointsAwarded,
+	}
+
+	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtonsWithClientState(answered, &summaryrow))
 
 }
