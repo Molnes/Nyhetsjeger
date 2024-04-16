@@ -150,6 +150,10 @@ a.cgradient:is(:hover, :focus),
     display: inline-block;
 }
 
+.tooltip-parent {
+    position: relative;
+}
+
 .gradient-bg-button {
     @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
 }

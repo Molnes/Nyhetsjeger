@@ -1,0 +1,109 @@
+package user_admin
+
+import "fmt"
+import "strconv"
+
+// Pagination is the main component for the pagination.
+// ID must be unique for each pagination component in the page.
+// queryParamKey is the key for the query parameter that will be used for the pagination.
+// maxPages is the maximum number of pages.
+// page is the current page.
+templ Pagination(id string, queryParamKey string, maxPages int, page int, ) {
+	@prevButton(page, id)
+	@pageNumber(page, maxPages)
+	@nextButton(page, maxPages, id)
+	@insertHxGet(id, queryParamKey)
+}
+
+// handlePagination ensures that the page number is within the range of the maximum pages
+func handlePagination(page int, maxPages int) int {
+	if page < 1 {
+		page = 1
+	} else if page > maxPages {
+		page = maxPages
+	}
+	return page
+}
+
+// insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
+//
+
+script insertHxGet(id string, qp string) {
+	let ps = new URL(document.location.toString()).searchParams;
+	
+	let p = ps.get(qp);
+
+	var url = window.location.href.split('?')[0] + "?";
+
+	var prevUrl = url;
+	var nextUrl = url;
+
+	if (p == null) {
+		prevUrl += `${qp}=1`;
+		nextUrl += `${qp}=2`;
+	}
+
+	// Get the other query parameters and create the url query string
+	for( var pair of ps.entries() ) {
+		if (pair[0] != qp) {
+			prevUrl += `&${pair[0]}=${pair[1]}`;
+			nextUrl += `&${pair[0]}=${pair[1]}`;
+		}
+		else {
+			prevUrl += `&${qp}=${(parseInt(p) - 1)}`;
+			nextUrl += `&${qp}=${(parseInt(p) + 1)}`;
+		}
+	}
+
+	document.getElementById( `prev-button-${id}` ).setAttribute("href", prevUrl.replace("?&", "?"));
+	document.getElementById( `next-button-${id}` ).setAttribute("href", nextUrl.replace("?&", "?"));
+}
+
+// pageNumber is the component showing the current page number and the maximum pages
+templ pageNumber(currentPage int, maxPages int) {
+	if maxPages != 1 {
+		<button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
+			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
+		</button>
+	} else {
+		<button class="border-cindigo border-y-2 text-cindigo px-3 py-1">
+			<input class="w-12 border border-clightindigo rounded-input text-center" type="text" value={ strconv.Itoa(currentPage) }/> of { strconv.Itoa(maxPages) }
+		</button>
+	}
+}
+
+// prevButton is the component for the previous button
+templ prevButton(page int, parentTableID string) {
+	if page <= 1 {
+		<button
+			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
+			class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1"
+			disabled
+		>
+			&lt;
+		</button>
+	} else {
+		<a
+			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
+			href=""
+			hx-boost="true"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
+		>&lt;</a>
+	}
+}
+
+// nextButton is the component for the next button
+templ nextButton(page int, maxPages int, parentTableID string) {
+	if page >= maxPages {
+		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
+			&gt;
+		</button>
+	} else {
+		<a
+			id={ fmt.Sprintf("next-button-%v", parentTableID) }
+			href=""
+			hx-boost="true"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
+		>&gt;</a>
+	}
+}

@@ -304,3 +304,12 @@ func UpdateAcceptedTermsByUserID(db *sql.DB, userid uuid.UUID, isAccepted bool) 
 
 	return nil
 }
+
+
+
+// Returns the number of users in the database
+func GetUserCount(db *sql.DB) (int, error) {
+	var count int
+	err := db.QueryRow(`SELECT COUNT(*) FROM users;`).Scan(&count)
+	return count, err
+}

@@ -9,6 +9,7 @@ const (
 	Home           = 0
 	Leaderboard    = 1
 	AccessSettings = 2
+	UserAdmin 	   = 3
 
 	MENU_CONTEXT_KEY = "chosen-side-menu-item"
 )
@@ -16,7 +17,7 @@ const (
 templ SideMenu() {
 	<header
 		class="text-center bg-clightindigo w-full flex flex-row
-	 		lg:fixed lg:h-full lg:w-52 flex-wrap lg:flex-col"
+	 		lg:fixed lg:h-full lg:w-56 flex-wrap lg:flex-col overflow-hidden"
 	>
 		<h1 class="text-2xl bg-cindigo text-white py-4 px-3 lg:mb-4 w-full">Quiz Admin Panel</h1>
 		<nav class="p-4 lg:p-0">
@@ -31,6 +32,9 @@ templ SideMenu() {
 					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
 						@icons.Key(20, "currentColor", 20, 20)
 					}
+				}
+				@menuItem("Brukernavn administrasjon", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
+					@icons.Person(20, "currentColor", 20, 20)
 				}
 			</ul>
 		</nav>
