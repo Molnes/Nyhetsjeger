@@ -2,8 +2,6 @@ package usernames
 
 import (
 	"database/sql"
-	"log"
-
 	"github.com/lib/pq"
 )
 
@@ -18,9 +16,6 @@ type UsernameAdminInfo struct {
 }
 
 func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
-
-	log.Println("----------------------------------->>>")
-	log.Println(uai.AdjPage)
 
 	err := db.QueryRow(`
 	WITH offsetvalue AS (
@@ -43,9 +38,6 @@ func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 		FROM adjectives a, offsetvalue
 		GROUP BY offsetvalue.value;`,
 	uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount,  &uai.AdjPage)
-
-	log.Println(uai.AdjPage)
-	log.Println("<<<-----------------------------------")
 
 	return err
 }
