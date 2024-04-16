@@ -15,13 +15,7 @@ import (
 
 var ErrNoQuestions = errors.New("quizzes: no questions in quiz")
 
-type QuizWithCompletion struct {
-	UserID            uuid.UUID
-	QuizID            uuid.UUID
-	AnsweredQuestions int
-	TotalQuestions    int
-	CompletionStatus  bool
-}
+// Quiz represents a quiz in the database.
 type Quiz struct {
 	ID             uuid.UUID
 	Title          string
@@ -34,6 +28,7 @@ type Quiz struct {
 	IsDeleted      bool
 }
 
+// PartialQuiz represents a quiz in the database with fewer fields.
 type PartialQuiz struct {
 	ID             uuid.UUID
 	Title          string
@@ -138,7 +133,7 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 
 	return scanQuizzesFromFullRows(rows)
 }
-
+// Get all quizzes in the database by the user ID that are not finished.
 func GetIsQuizzesByUserIDAndNotFinished(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
@@ -179,7 +174,7 @@ AND q.is_deleted = 'f'; `, userID)
 	}
 	return quizzes, nil
 }
-
+// Get all quizzes in the database by the user ID that are not finished and not active.
 func GetIsQuizzesByUserIDNotFinishedAndNotActive(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
@@ -222,6 +217,7 @@ AND q.is_deleted = 'f'; `, userID)
 	return quizzes, nil
 }
 
+// Get all quizzes in the database by the user ID that are finished.
 func GetIsQuizzesByUserIDAndFinished(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
 	rows, err := db.Query(
 		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
