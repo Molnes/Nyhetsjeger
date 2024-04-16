@@ -10,10 +10,11 @@ const (
 
 // Displays points passed in
 templ PointsDisplay(points uint) {
-	<p>
-		Poeng: 
+	<p class="inline-block text-white px-2 py-1 cgradient rounded-card">
+		<b>Poeng</b>
 		<span
 			id={ PointsDisplayId }
+			class="odometer ml-1"
 		>
 			{ fmt.Sprintf("%v", points) }
 		</span>
@@ -23,7 +24,15 @@ templ PointsDisplay(points uint) {
 // Adds points to the display
 
 script AddPointsToDisplay(points uint, displayId string) {
-    const elem = document.getElementById(displayId);
-    const current = Number(elem.innerText);
-    elem.innerText = current+points;
+	const elem = document.getElementById(displayId);
+  const current = Number(elem.innerText);
+
+	const odometer = new Odometer({
+		el: elem,
+		value: Number(elem.innerText),
+		theme: "default",
+		duration: 1000
+	});
+
+  elem.innerText = current+points;
 }
