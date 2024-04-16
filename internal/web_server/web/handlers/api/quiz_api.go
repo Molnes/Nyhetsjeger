@@ -67,7 +67,7 @@ func (qah *QuizApiHandler) getNextQuestion(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(quizData, true))
+	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(quizData))
 }
 
 // Handles post request for a user's answer to a question.
@@ -94,7 +94,7 @@ func (qah *QuizApiHandler) postUserAnswer(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered, true))
+	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
 }
 
 // Handles patch request for a random username.

@@ -45,6 +45,6 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered, true))
+	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtons(answered))
 
 }
