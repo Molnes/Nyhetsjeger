@@ -18,9 +18,10 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     phone TEXT,
     opt_in_ranking BOOLEAN NOT NULL,
+    accepted_terms BOOL NOT NULL DEFAULT false,
     role user_role NOT NULL DEFAULT 'user',
     access_token TEXT NOT NULL,
-    token_expires_at TIMESTAMP,
+    token_expires_at TIMESTAMPTZ,
     refresh_token TEXT NOT NULL
 );
 
@@ -35,10 +36,10 @@ CREATE TABLE IF NOT EXISTS quizzes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     image_url TEXT,
-    active_from TIMESTAMP NOT NULL,
-    active_to TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    last_modified_at TIMESTAMP NOT NULL DEFAULT now(),
+    active_from TIMESTAMPTZ NOT NULL,
+    active_to TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_modified_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     published BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -170,10 +171,10 @@ CREATE TRIGGER update_quiz_articles_trigger
 CREATE TABLE IF NOT EXISTS user_answers (
     user_id UUID NOT NULL  REFERENCES users(id) ON DELETE CASCADE,
     question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
-    question_presented_at TIMESTAMP NOT NULL DEFAULT now(),
+    question_presented_at TIMESTAMPTZ NOT NULL DEFAULT now(),
      -- following columns are nullable; if they are null, the user has not answered the question yet
     chosen_answer_alternative_id UUID REFERENCES answer_alternatives(id) ON DELETE CASCADE,
-    answered_at TIMESTAMP,
+    answered_at TIMESTAMPTZ,
     points_awarded INTEGER CHECK (points_awarded >= 0),
     PRIMARY KEY (user_id, question_id),
     CONSTRAINT ans_alt_belong_to_question
@@ -236,7 +237,7 @@ CREATE VIEW available_usernames AS
 CREATE TABLE IF NOT EXISTS preassigned_roles(
     email TEXT NOT NULL PRIMARY KEY,
     role user_role NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     CONSTRAINT not_user_role CHECK (role != 'user')
 );
 

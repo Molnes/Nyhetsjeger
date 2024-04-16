@@ -3,6 +3,7 @@ package dashboard_components
 import (
 	"net/url"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
 // An input field for updating the image.
@@ -13,18 +14,20 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 	<div class="image-input-wrapper">
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
-				class="flex-grow px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
 				data-element-type="tab-link"
 				type="button"
 			>
-				Last opp med URL 🔗
+				Last opp med URL
+				@icons.Link(2, "dimgray", 20, 20)
 			</button>
 			<button
-				class="flex-grow px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card"
 				data-element-type="tab-link"
 				type="button"
 			>
-				Last opp med fil ⏫
+				Last opp med fil
+				@icons.Upload(2, "dimgray", 20, 20)
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
