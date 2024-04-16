@@ -271,13 +271,13 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
 	if err != nil {
 		return err
 	}
 
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
 	if err != nil {
 		return err
 	}
@@ -309,13 +309,13 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
 	if err != nil {
 		return err
 	}
 
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
 	if err != nil {
 		return err
 	}
