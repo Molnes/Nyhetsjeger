@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -96,12 +97,15 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	}
 
 	currentQuestion, err := strconv.ParseUint(currentQuestionParam, 10, 64)
-	if err != nil {
+	if err != nil || currentQuestion < 1 {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig såørsmål nummer")
 	}
 
 	data, err := user_quiz.GetQuestionByNumberInQuiz(h.sharedData.DB, quizId, uint(currentQuestion))
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Ingen spørsmål med det angitte nummeret")
+		}
 		return err
 	}
 
