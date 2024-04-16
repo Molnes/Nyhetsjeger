@@ -73,6 +73,7 @@ func (pph *PublicPagesHandler) termsPage(c echo.Context) error {
 
 const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
+const totalPointsQueryParm = "total-points"
 
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
@@ -102,6 +103,11 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig såørsmål nummer")
 	}
 
+	totalPoints, err := strconv.ParseUint(c.FormValue(totalPointsQueryParm), 10, 64)
+	if err != nil {
+		totalPoints = 0
+	}
+
 	data, err := user_quiz.GetQuestionByNumberInQuiz(h.sharedData.DB, quizId, uint(currentQuestion))
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -109,6 +115,7 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 		}
 		return err
 	}
+	data.PointsGathered = uint(totalPoints)
 
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizPlayPage(data.PartialQuiz.Title, data))
 }

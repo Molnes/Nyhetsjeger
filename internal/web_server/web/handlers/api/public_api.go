@@ -91,6 +91,11 @@ func (h *publicApiHandler) getQuestion(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende såørsmål nummer")
 	}
 
+	totalPoints, err := strconv.ParseUint(c.FormValue("total-points"), 10, 64)
+	if err != nil {
+		totalPoints = 0
+	}
+
 	data, err := user_quiz.GetQuestionByNumberInQuiz(h.sharedData.DB, quizId, uint(currentQuestion))
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -98,6 +103,8 @@ func (h *publicApiHandler) getQuestion(c echo.Context) error {
 		}
 		return err
 	}
+
+	data.PointsGathered = uint(totalPoints)
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(data))
 
