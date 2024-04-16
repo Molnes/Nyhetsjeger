@@ -1,0 +1,50 @@
+package user_admin
+
+import "math"
+
+// Calculates the maximum amount of pages needed to display all users.
+func calculateMaxPages(userAmount int, usernamesPerPage int) int {
+	return int(math.Ceil(float64(userAmount) / float64(usernamesPerPage)))
+}
+
+// Returns the content of a row in the table, if the index is out of bounds, return an empty string.
+func setRowContent(words []string, i int) string {
+	if i >= len(words) {
+		return ""
+	} else {
+		return words[i]
+
+	}
+}
+
+// A table that displays a list of words, includes pagination component.
+templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
+	<div>
+		<table
+			id={ tableID }
+			class="table-fixed w-52 border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
+				[&_td]:border-black [&_tr]:h-8"
+		>
+			<thead>
+				<tr class="[&>th]:border-black">
+					<th class="px-4">{ tableName } </th>
+				</tr>
+			</thead>
+			<tbody
+				class="
+						[&_tr:nth-child(odd)]:bg-purple-100  
+						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
+			>
+				for i := range usernamesPerPage {
+					<tr>
+						<td class="px-4 h-8 w-full">{ setRowContent(words, i) }</td>
+					</tr>
+				}
+			</tbody>
+			
+		</table>
+		<div class="flex justify-center mt-3">
+		@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
+		</div>
+	</div>
+}

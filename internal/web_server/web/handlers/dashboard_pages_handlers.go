@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -10,6 +11,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
@@ -36,6 +38,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
 	g.GET("/user-details", dph.userDetails)
+	g.GET("/username-admin", dph.getUsernameAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
 	organizationAdminGroup := g.Group("", mw.EnforceRole)
@@ -147,4 +150,28 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 // Adds chosen menu item to the context, so it can be used in the template.
 func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 	utils.AddToContext(c, side_menu.MENU_CONTEXT_KEY, menuContext)
+}
+
+// Gets the usernames administration page and returns it.
+func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) error {
+	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		adjPage = 1
+	}
+	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		nounPage = 1
+	}
+
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
+	if err != nil || pages < 5  || pages > 255{ // Sets to 25 if between a certain range.
+		pages = 25
+	}
+
+	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, adjPage, nounPage, pages)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.UsernameAdminPage(uai))
 }

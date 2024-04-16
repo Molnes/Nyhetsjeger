@@ -2,14 +2,15 @@ package icons
 
 import "fmt"
 
-//Clock icon. Parameters are strokeWidth, stroke, and tailwind integer of height and width.
-//Example: Clock(32, "currentColor", 6, 6)
-templ Clock(strokeWidth float64, stroke string, height int, width int) {
-	<svg xmlns="http://www.w3.org/2000/svg" class={ fmt.Sprintf("h-%d w-%d", height, width) } viewBox="0 0 512 512"><path d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z" fill="none" stroke={ stroke } stroke-miterlimit="10" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }></path><path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M256 128v144h96"></path></svg>
-	
-		<!-- MIT License
+// Person icon. Parameters are all in pixels.
+//Example: Person(80, "currentColor", 20, 20)
+templ Person(strokeWidth float64, stroke string, height int, width int) {
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } height={ fmt.Sprint(height) } width={ fmt.Sprint(width) }>
+		<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+	</svg>
+	<!-- MIT License
 
-Copyright (c) 2015-present Ionic (http://ionic.io/)
+Copyright (c) 2020 Refactoring UI Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
 

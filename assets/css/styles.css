@@ -52,7 +52,7 @@
     background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.cgradient:is(:hover, :focus),
+a.cgradient:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
 .answer-button:is(:hover, :focus):not(:disabled)::after,
 .timer-low.gradient-outline-circle::after {
@@ -150,6 +150,10 @@
     display: inline-block;
 }
 
+.tooltip-parent {
+    position: relative;
+}
+
 .gradient-bg-button {
     @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
 }
@@ -185,4 +189,72 @@
     content: counter(css-counter) ". ";
     font-weight: bold;
     margin-right: 0.5rem;
+}
+
+.clip-circle {
+    clip-path: circle();
+}
+
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.bg-field {
+    position: relative;
+    transition-duration: 5s;
+    transition-property: top;
+    height: 140%;
+    width: 140%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    --clip-path: inset(0 0 0 0 round 35%);
+}
+
+.bg-field::before,
+.bg-field::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    mix-blend-mode: difference;
+
+    clip-path: var(--clip-path);
+    animation: spin 5s linear infinite;
+}
+
+.bg-field::before {
+    z-index: 1;
+}
+
+.bg-field::after {
+    z-index: -1;
+}
+
+.gradient-wave {
+    background: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+    filter: invert(1) hue-rotate(10deg);
+    height: 150%;
+    width: 150%;
+    clip-path: var(--clip-path);
+    animation: spin 5s linear infinite reverse;
+}
+
+.clip-path {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    clip-path: inset(0 0 0 0 round 35%);
+    animation: 5s spin linear infinite;
+    display: grid;
+    place-items: center;
 }
