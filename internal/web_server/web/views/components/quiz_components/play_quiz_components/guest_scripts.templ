@@ -1,12 +1,10 @@
 package play_quiz_components
 
-import (
-	"time"
-)
+import ()
 
 // saves the passed timestamp in the browser's local storage
 
-script saveQuestiontimestamp(presentedAt time.Time) {
+script saveQuestiontimestamp(presentedAt string) {
     window.localStorage.setItem('last_question_presented_at', presentedAt);
 }
 

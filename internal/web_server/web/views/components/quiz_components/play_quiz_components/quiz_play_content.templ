@@ -37,7 +37,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		@AnswerButtons(&data.CurrentQuestion)
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if !utils.IsUserAuthenticated(ctx) {
-			@saveQuestiontimestamp(time.Now())
+			@saveQuestiontimestamp(time.Now().Format(time.RFC3339))
 		}
 	</section>
 }
