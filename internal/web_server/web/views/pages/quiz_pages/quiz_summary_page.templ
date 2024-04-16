@@ -20,20 +20,30 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 				<h1 class="text-3xl">Resultat</h1>
 				<div
 					if getDigitsFromSummary(summary) > 10 {
-						class="size-40 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-40 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
 					}
 					else
 					if getDigitsFromSummary(summary) > 6 {
-						class="size-32 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-32 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
 					} else {
-						class="size-24 rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-24 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
 					}
 				>
-					<p class="flex items-center font-bold text-1xl ">
-						<span class="w-2/5 text-right text-xl relative bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-						<span class="w-1/5 text-center text-3xl mx-1">/</span>
-						<span class="w-2/5 text-left text-xl relative top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
-					</p>
+					<div class="relative w-full h-full bg-white overflow-hidden clip-circle flex flex-col items-center">
+						<div id="points-fill" class="bg-field top-full">
+							<div class="clip-path">
+								<div class="gradient-wave"></div>
+							</div>
+						</div>
+						<p
+							class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold"
+						>
+							<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+							<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
+							<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+						</p>
+					</div>
+					@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
 				</div>
 			</section>
 			<section class="flex flex-col gap-4 items-center scrollbar-hide">
@@ -63,6 +73,15 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	}
 }
 
+script animateFill(percent int) {
+	const circleFill = document.querySelector("#points-fill");
+
+	// After a delay, set the top position.
+	setTimeout(() => {
+		circleFill.style.top = `${100-percent}%`;
+	}, 1000);
+}
+
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 	<li>
 		<p
@@ -70,17 +89,23 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 		>
 			<span>{ aq.QuestionText }</span>
 			<span
-				class="text-right grow text-gray-600 font-semibold ml-5"
+				role="text"
+				aria-label={ fmt.Sprintf("%v av %v poeng", aq.PointsAwarded, aq.MaxPoints) }
+				class="text-right grow text-gray-600 font-semibold ml-5 text-nowrap"
 			>
-				{ fmt.Sprintf("%v/%v",aq.PointsAwarded,aq.MaxPoints) }
+				{ fmt.Sprintf("%v / %v",aq.PointsAwarded,aq.MaxPoints) }
 			</span>
 		</p>
 		<div class="flex items-center gap-2 mt-1">
 			<div class="shrink-0">
 				if aq.IsCorrect {
-					@icons.Checkmark(100, "green", 20, 20)
+					<span aria-label="korrekt">
+						@icons.Checkmark(100, "green", 20, 20)
+					</span>
 				} else {
-					@icons.Cross(3, "red", 20, 20)
+					<span aria-label="ukorrekt">
+						@icons.Cross(3, "red", 20, 20)
+					</span>
 				}
 			</div>
 			<p class="text-gray-700 shrink">{ aq.ChosenAlternativeText }</p>
