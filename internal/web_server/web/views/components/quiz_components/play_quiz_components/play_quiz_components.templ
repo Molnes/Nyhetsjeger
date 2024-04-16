@@ -38,7 +38,7 @@ templ AnswerButtons(question *questions.Question) {
 	@components.LoadingIndicator()
 	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
 	if !utils.IsUserAuthenticated(ctx) {
-		@addQuestiontimestampToRequest(question.ID, "question-answer-form")
+		@addQuestiontimestampToRequest("question-answer-form")
 	}
 }
 
