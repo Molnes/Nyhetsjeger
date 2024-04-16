@@ -24,14 +24,14 @@ script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	const queryParams = new URLSearchParams(window.location.search);
 	const currentQuestion = parseInt(queryParams.get("current-question"));
 
-	let currentList = JSON.parse(window.localStorage.getItem('summary_rows'));
+	let currentList = JSON.parse(window.localStorage.getItem('summary-rows'));
 
 	if (currentQuestion === 1 || !currentList) {
 		currentList = [];
 	}
 
 	currentList[currentQuestion-1] = summaryRow;
-	window.localStorage.setItem('summary_rows', JSON.stringify(currentList));
+	window.localStorage.setItem('summary-rows', JSON.stringify(currentList));
 }
 
 script setGuestNextQuestionPath(buttonId string) {
@@ -44,12 +44,12 @@ script setGuestNextQuestionPath(buttonId string) {
 		url.searchParams.set('current-question', nextQuestionNumber);
 
 		// find total points
-		let summaryList = JSON.parse(window.localStorage.getItem("summary_rows"));
+		let summaryList = JSON.parse(window.localStorage.getItem("summary-rows"));
 		let totalPoints = 0;
 		if (summaryList) {
 			totalPoints = summaryList.map((c)=>c?c.PointsAwarded :0).reduce((a,c) => a+c,0);
 		}
-		url.searchParams.set('total_points',totalPoints);
+		url.searchParams.set('total-points',totalPoints);
 		
 		
 		evt.detail.path = `/api/v1/guest/question${url.search}`;
