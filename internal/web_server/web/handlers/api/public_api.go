@@ -1,7 +1,9 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
@@ -25,6 +27,7 @@ func NewPublicApiHandler(sharedData *config.SharedData) *publicApiHandler {
 // Registers the public api handlers to the given echo group
 func (h *publicApiHandler) RegisterPublicApiHandlers(g *echo.Group) {
 	g.POST("/user-answer", h.postAnswer)
+	g.GET("/question", h.getQuestion)
 }
 
 func (h *publicApiHandler) postAnswer(c echo.Context) error {
@@ -66,5 +69,36 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtonsWithClientState(answered, &summaryrow))
+
+}
+
+func (h *publicApiHandler) getQuestion(c echo.Context) error {
+	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende quiz-id")
+	}
+	if quizId != openQuizId {
+		return echo.NewHTTPError(http.StatusNotFound, "Ingen åpen quiz med den angitte ID-en")
+	}
+
+	currentQuestion, err := strconv.ParseUint(c.QueryParam("current-question"), 10, 64)
+	if err != nil || currentQuestion < 1 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende såørsmål nummer")
+	}
+
+	data, err := user_quiz.GetQuestionByNumberInQuiz(h.sharedData.DB, quizId, uint(currentQuestion))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Ingen spørsmål med det angitte nummeret")
+		}
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(data))
 
 }
