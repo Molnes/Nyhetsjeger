@@ -72,6 +72,17 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	return isCorrect
 }
 
+func (q *Question) GetAnswerTextById(answerID uuid.UUID) string {
+	var text string
+	for _, a := range q.Alternatives {
+		if a.ID == answerID {
+			text = a.Text
+			break
+		}
+	}
+	return text
+}
+
 // Returns the seconds left after substracting given duration from the question's time limit.
 func (q *Question) GetRemainingTimeSeconds(duration time.Duration) uint {
 	diffSeconds := duration.Seconds()
