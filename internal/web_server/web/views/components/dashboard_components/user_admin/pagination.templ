@@ -74,7 +74,7 @@ templ pageNumber(currentPage int, maxPages int) {
 
 // prevButton is the component for the previous button
 templ prevButton(page int, parentTableID string) {
-	if page == 1 {
+	if page <= 1 {
 		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
 			class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1"
@@ -94,7 +94,7 @@ templ prevButton(page int, parentTableID string) {
 
 // nextButton is the component for the next button
 templ nextButton(page int, maxPages int, parentTableID string) {
-	if page == maxPages {
+	if page >= maxPages {
 		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
 			&gt;
 		</button>
