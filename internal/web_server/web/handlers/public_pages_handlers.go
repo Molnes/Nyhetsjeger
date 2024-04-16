@@ -13,6 +13,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/public_pages"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -109,5 +110,5 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, public_pages.GuestQuizPlayPage(data.PartialQuiz.Title, data))
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizPlayPage(data.PartialQuiz.Title, data))
 }
