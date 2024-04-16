@@ -11,7 +11,6 @@ import (
 
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 var ErrNoQuestions = errors.New("quizzes: no questions in quiz")
@@ -140,47 +139,124 @@ func GetQuizzes(db *sql.DB) ([]Quiz, error) {
 	return scanQuizzesFromFullRows(rows)
 }
 
-func GetIsQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID) ([]QuizWithCompletion, error) {
+func GetIsQuizzesByUserIDAndNotFinished(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
 	rows, err := db.Query(
-		`SELECT
-    u.id AS user_id,
-    q.id AS quiz_id,
-    COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) AS answered_questions,
-    COALESCE(COUNT(DISTINCT qz.id), 0) AS total_questions,
-    CASE
-        WHEN COUNT(DISTINCT CASE WHEN ua.chosen_answer_alternative_id IS NOT NULL THEN ua.question_id END) = COALESCE(COUNT(DISTINCT qz.id), 0) THEN true
-        ELSE false
-    END AS completion_status
-FROM
-    users u
-INNER JOIN
-    quizzes q ON 1=1
-LEFT JOIN
-    questions qz ON q.id = qz.quiz_id
-LEFT JOIN
-    user_answers ua ON u.id = ua.user_id AND qz.id = ua.question_id
-WHERE u.id = $1
-GROUP BY
-    u.id, q.id;`, userID)
+		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
+FROM quizzes q
+LEFT JOIN user_quizzes cq ON q.id = cq.quiz_id AND cq.user_id = $1 
+WHERE (cq.user_id IS NULL OR cq.is_completed = 'f')
+AND q.active_from <= NOW() 
+AND q.active_to >= NOW() 
+AND q.published = 't'
+AND q.is_deleted = 'f'; `, userID)
 
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	quizzes := []QuizWithCompletion{}
+	quizzes := []Quiz{}
+	var imageURL sql.NullString
 	for rows.Next() {
-		var quiz QuizWithCompletion
+		var quiz Quiz
 		err := rows.Scan(
-			&quiz.UserID,
-			&quiz.QuizID,
-			&quiz.AnsweredQuestions,
-			&quiz.TotalQuestions,
-			&quiz.CompletionStatus,
+			&quiz.ID,
+			&quiz.Title,
+			&imageURL,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
+}
+
+func GetIsQuizzesByUserIDNotFinishedAndNotActive(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
+	rows, err := db.Query(
+		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
+FROM quizzes q
+LEFT JOIN user_quizzes cq ON q.id = cq.quiz_id AND cq.user_id = $1
+WHERE cq.user_id IS NULL
+AND q.active_from > NOW()   
+OR q.active_to < NOW()
+AND q.published = 't'
+AND q.is_deleted = 'f'; `, userID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quizzes := []Quiz{}
+	var imageURL sql.NullString
+	for rows.Next() {
+		var quiz Quiz
+		err := rows.Scan(
+			&quiz.ID,
+            &quiz.Title,
+			&imageURL,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
+
+		quizzes = append(quizzes, quiz)
+	}
+	return quizzes, nil
+}
+
+func GetIsQuizzesByUserIDAndFinished(db *sql.DB, userID uuid.UUID) ([]Quiz, error) {
+	rows, err := db.Query(
+		`SELECT q.id, q.title, q.image_url, q.active_from, q.active_to
+FROM quizzes q
+LEFT JOIN user_quizzes cq ON q.id = cq.quiz_id AND cq.user_id = $1
+WHERE cq.user_id IS NOT NULL
+AND q.published = 't'
+AND cq.is_completed = 't'
+; `, userID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quizzes := []Quiz{}
+	var imageURL sql.NullString
+	for rows.Next() {
+		var quiz Quiz
+		err := rows.Scan(
+			&quiz.ID,
+			&quiz.Title,
+			&imageURL,
+			&quiz.ActiveFrom,
+			&quiz.ActiveTo,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		if err != nil {
+			return nil, err
+		}
+		quiz.ImageURL = *tempURL
 
 		quizzes = append(quizzes, quiz)
 	}
@@ -190,157 +266,37 @@ GROUP BY
 // Get quizzes that a user has finished or not. Quiz has to be published and not deleted.
 func GetQuizzesByUserIDAndFinishedOrNot(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
 
-	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	quizIDs := []uuid.UUID{}
-	for _, q := range quiz {
-		if q.CompletionStatus == isFinished {
-			quizIDs = append(quizIDs, q.QuizID)
-		}
-	}
-
-	if len(quizIDs) == 0 {
-		return []Quiz{}, nil
-	}
-
-	q := `SELECT 
-
-        quizzes.id,
-        quizzes.title,
-        quizzes.image_url,
-        quizzes.active_from,
-        quizzes.active_to,
-        quizzes.created_at,
-        quizzes.last_modified_at,
-        quizzes.published,
-        quizzes.is_deleted
-
-
-
-         FROM quizzes
-         WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
-				 	AND published = true
-                    AND active_from <= NOW()
-                    AND active_to >= NOW()
-         ORDER BY quizzes.active_from DESC;`
-
-	rows, err := db.Query(q, pq.Array(quizIDs))
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	quizzes := []Quiz{}
-	for rows.Next() {
-		var quiz Quiz
-		var imageURL sql.NullString
-		err := rows.Scan(
-			&quiz.ID,
-			&quiz.Title,
-			&imageURL,
-			&quiz.ActiveFrom,
-			&quiz.ActiveTo,
-			&quiz.CreatedAt,
-			&quiz.LastModifiedAt,
-			&quiz.Published,
-			&quiz.IsDeleted,
-		)
+	if isFinished {
+		quizzes, err := GetIsQuizzesByUserIDAndFinished(db, userID)
 		if err != nil {
 			return nil, err
 		}
-
-		// Set image URL
-		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		return quizzes, nil
+	} else {
+		quizzes, err := GetIsQuizzesByUserIDAndNotFinished(db, userID)
 		if err != nil {
 			return nil, err
 		}
-		quiz.ImageURL = *tempURL
-
-		quizzes = append(quizzes, quiz)
+		return quizzes, nil
 	}
-	return quizzes, nil
-
 }
 
 // Get quizzes that a user has finished or not. Quiz has to be published and not deleted. Gets quizzez that are not active.
 func GetQuizzesByUserIDAndFinishedOrNotAndNotActive(db *sql.DB, userID uuid.UUID, isFinished bool) ([]Quiz, error) {
 
-	quiz, err := GetIsQuizzesByUserIDAndFinishedOrNot(db, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	quizIDs := []uuid.UUID{}
-	for _, q := range quiz {
-		if q.CompletionStatus == isFinished {
-			quizIDs = append(quizIDs, q.QuizID)
-		}
-	}
-
-	if len(quizIDs) == 0 {
-		return []Quiz{}, nil
-	}
-
-	q := `SELECT 
-
-        quizzes.id,
-        quizzes.title,
-        quizzes.image_url,
-        quizzes.active_from,
-        quizzes.active_to,
-        quizzes.created_at,
-        quizzes.last_modified_at,
-        quizzes.published,
-        quizzes.is_deleted
-
-
-
-         FROM quizzes
-         WHERE quizzes.id = ANY($1) AND quizzes.is_deleted = false
-				 	AND published = true
-                    AND (active_from > NOW() OR active_to < NOW())
-                    ORDER BY quizzes.active_from DESC;`
-
-	rows, err := db.Query(q, pq.Array(quizIDs))
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	quizzes := []Quiz{}
-	for rows.Next() {
-		var quiz Quiz
-		var imageURL sql.NullString
-		err := rows.Scan(
-			&quiz.ID,
-			&quiz.Title,
-			&imageURL,
-			&quiz.ActiveFrom,
-			&quiz.ActiveTo,
-			&quiz.CreatedAt,
-			&quiz.LastModifiedAt,
-			&quiz.Published,
-			&quiz.IsDeleted,
-		)
+	if isFinished {
+		quizzes, err := GetIsQuizzesByUserIDAndFinished(db, userID)
 		if err != nil {
 			return nil, err
 		}
-
-		// Set image URL
-		tempURL, err := data_handling.ConvertNullStringToURL(&imageURL)
+		return quizzes, nil
+	} else {
+		quizzes, err := GetIsQuizzesByUserIDNotFinishedAndNotActive(db, userID)
 		if err != nil {
 			return nil, err
 		}
-		quiz.ImageURL = *tempURL
-
-		quizzes = append(quizzes, quiz)
+		return quizzes, nil
 	}
-	return quizzes, nil
 
 }
 
