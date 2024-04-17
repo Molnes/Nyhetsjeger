@@ -54,7 +54,7 @@ script setGuestNextQuestionPath(buttonId string) {
 		let totalPoints = 0;
 		if (summaryList) {
 			totalPoints = summaryList
-				.map((summaryRow) => summaryRow ? summaryRow.PointsAwarded : 0)
+				.map((summaryRow) => summaryRow ? summaryRow.pointsAwarded : 0)
 				.reduce((total, current) => total + current, 0);
 		}
 		url.searchParams.set('total-points',totalPoints);
