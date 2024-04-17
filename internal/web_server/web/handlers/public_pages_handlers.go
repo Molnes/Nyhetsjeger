@@ -3,10 +3,12 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/sessions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
@@ -32,6 +34,7 @@ func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("", pph.homePage)
 	e.GET("/login", pph.loginPage)
 	e.GET("terms-of-service", pph.termsPage)
+	e.GET("/guest-home", pph.getGuestHomePage)
 	e.GET("/guest-quiz", pph.getGuestQuiz)
 }
 
@@ -71,6 +74,25 @@ func (pph *PublicPagesHandler) termsPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.TermsOfServicePage())
 }
 
+func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
+	quizId, err := user_quiz.GetOpenQuizId(pph.sharedData.DB)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	log.Printf("found quizid: %v", quizId.String())
+	var quiz quizzes.Quiz
+	if quizId != uuid.Nil {
+		selectedQuiz, err := quizzes.GetQuizByID(pph.sharedData.DB, quizId)
+		log.Printf("found quiz: %v", selectedQuiz)
+		if err != nil {
+			return err
+		}
+		quiz = *selectedQuiz
+	}
+
+	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(&quiz))
+}
+
 const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
 const totalPointsQueryParm = "total-points"
@@ -78,6 +100,9 @@ const totalPointsQueryParm = "total-points"
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Ingen åpen quiz")
+		}
 		return err
 	}
 
