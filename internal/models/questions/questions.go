@@ -147,7 +147,7 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
-// Gets nth question in a givnen quiz, indexing from 1.
+// Gets n-th question in a given quiz, indexing from 1.
 func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (*Question, error) {
 	row := db.QueryRow(
 		`SELECT
@@ -166,7 +166,8 @@ func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (
 	return scanQuestionFromFullRow(db, row)
 }
 
-// Gets the next question in a quiz passed questionId belongs to. If no more questions, sql.ErrNoRows  will be returned
+// Gets the next question's id in a quiz, next meaning after the question with id provided.
+// If no more questions, sql.ErrNoRows  will be returned
 func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.UUID, error) {
 	row := db.QueryRow(
 		`WITH questions_in_quiz AS (
