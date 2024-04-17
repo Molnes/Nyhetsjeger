@@ -25,6 +25,7 @@ const QuizActiveTo = "quiz-active-to"
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
+		<script src="https://cdn.jsdelivr.net/npm/sortablejs@v1/Sortable.min.js"></script>
 		<div class="relative flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<div
 				id="changes-saved-message"
@@ -51,8 +52,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					<label for={ QuizImageURL } class="block font-bold">Forsidebilde</label>
 					@components.LoadingIndicator()
 				</div>
-				// TODO: Also support uploading an image
-				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
 				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
 					&quiz.ImageURL, QuizImageURL, true, "")
 			</form>
@@ -124,6 +123,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					}
 				</ul>
 				@questionList()
+				@sortableQuestions()
 				<button
 					id="new-question-button"
 					type="button"
@@ -272,4 +272,26 @@ script changesSaved() {
 				}, 3000)
 		}
 	})
+}
+
+script sortableQuestions() {
+	htmx.onLoad(function(content) {
+    Sortable.create(document.getElementById("question-list"), {
+			animation: 150,
+			handle: ".drag-handle",
+			onEnd: function(event) {
+				// TODO: Update the arrangement of the questions in the quiz
+				// const questionList = document.getElementById("question-list");
+				// const questions = questionList.children;
+				// const questionIDs = Array.from(questions).map(question => question.id);
+
+				// fetch(`/api/v1/admin/quiz/sort-questions?question-ids=${questionIDs.join(",")}`, {
+				// 	method: "POST",
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 	},
+				// });
+			}
+		});
+	});
 }
