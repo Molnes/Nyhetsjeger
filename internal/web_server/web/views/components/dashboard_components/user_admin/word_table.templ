@@ -78,8 +78,12 @@ script onUndo(id string) {
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
 	<div>
-		<form class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]">
-			<input class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow" type="text" placeholder="Legg til nytt ord"/>
+		<form
+			class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]"
+			action="/api/v1/admin/username"
+			method="PUT"
+		>
+			<input class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow" type="text" required="required" placeholder="Legg til nytt ord"/>
 			<button class="mx-3" type="submit">
 				@icons.Plus(80, "currentColor", 20, 20)
 			</button>
