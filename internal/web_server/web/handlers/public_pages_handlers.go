@@ -32,9 +32,9 @@ func NewPublicPagesHandler(sharedData *config.SharedData) *PublicPagesHandler {
 func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("", pph.homePage)
 	e.GET("/login", pph.loginPage)
-	e.GET("/terms-of-service", pph.termsPage)
-	e.GET("/guest-home", pph.getGuestHomePage)
-	e.GET("/guest-quiz", pph.getGuestQuiz)
+	e.GET("/betingelser", pph.termsPage)
+	e.GET("/gjest", pph.getGuestHomePage)
+	e.GET("/gjest-quiz", pph.getGuestQuiz)
 }
 
 // Handles get request to get home page. If user is authenticated, they get redirected to /quiz or /dashboard
@@ -114,7 +114,7 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 
 	if quizIdParam == "" || currentQuestionParam == "" {
 		c.Redirect(http.StatusTemporaryRedirect,
-			fmt.Sprintf("/guest-quiz?%s=%s&%s=%s", quizIdQueryParam, openQuizId.String(), currentQuestionQueryParam, "1"),
+			fmt.Sprintf("/gjest-quiz?%s=%s&%s=%s", quizIdQueryParam, openQuizId.String(), currentQuestionQueryParam, "1"),
 		)
 	}
 

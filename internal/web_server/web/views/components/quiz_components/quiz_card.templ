@@ -20,7 +20,7 @@ templ QuizCard(quiz quizzes.Quiz) {
 				if utils.IsUserAuthenticated(ctx) {
 					href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
 				} else {
-					href={ templ.SafeURL("/guest-quiz?current-question=1&quiz-id=" + quiz.ID.String()) }
+					href={ templ.SafeURL("/gjest-quiz?current-question=1&quiz-id=" + quiz.ID.String()) }
 				}
 			>
 				SPILL
