@@ -81,11 +81,11 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 				<a
 					role="button"
 					class="gradient-bg-button gradient-shadow px-8 py-3"
-					hx-post="/api/v1/guest/generate-summary"
+					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
 					hx-target="#quiz-play-content"
 					hx-swap="outerHTML"
 					hx-indicator=".htmx-indicator"
-					hx-vals="js:{summaryRows: JSON.parse(window.localStorage.getItem('summary-rows'))}"
+					hx-vals="js:{summaryRows: window.localStorage.getItem('summary-rows')}"
 				>
 					Ferdig
 				</a>

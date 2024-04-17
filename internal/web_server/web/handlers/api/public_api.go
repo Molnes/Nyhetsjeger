@@ -2,15 +2,18 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -28,6 +31,7 @@ func NewPublicApiHandler(sharedData *config.SharedData) *publicApiHandler {
 func (h *publicApiHandler) RegisterPublicApiHandlers(g *echo.Group) {
 	g.POST("/user-answer", h.postAnswer)
 	g.GET("/question", h.getQuestion)
+	g.POST("/generate-summary", h.postGenerateSummary)
 }
 
 func (h *publicApiHandler) postAnswer(c echo.Context) error {
@@ -108,4 +112,42 @@ func (h *publicApiHandler) getQuestion(c echo.Context) error {
 
 	return utils.Render(c, http.StatusOK, play_quiz_components.QuizPlayContent(data))
 
+}
+
+func (h *publicApiHandler) postGenerateSummary(c echo.Context) error {
+
+	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	quizIdParam, err := uuid.Parse(c.QueryParam("quiz-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende quiz-id")
+	}
+	if quizIdParam != openQuizId {
+		return echo.NewHTTPError(http.StatusNotFound, "Ingen åpen quiz med den angitte ID-en")
+	}
+	quiz, err := quizzes.GetPartialQuizByID(h.sharedData.DB, openQuizId)
+	if err != nil {
+		return err
+	}
+
+	stringifiedSummaryRows := c.FormValue("summaryRows")
+	var answeredQuestions []user_quiz_summary.AnsweredQuestion
+	err = json.Unmarshal([]byte(stringifiedSummaryRows), &answeredQuestions)
+	if err != nil {
+		return err
+	}
+
+	summary := user_quiz_summary.UserQuizSummary{
+		QuizID:            quiz.ID,
+		QuizTitle:         quiz.Title,
+		QuizActiveTo:      quiz.ActiveTo,
+		MaxScore:          quiz.MaxScore,
+		AchievedScore:     0,
+		AnsweredQuestions: answeredQuestions,
+	}
+	summary.CalculateAchievedScoreFromAnswered()
+
+	return utils.Render(c, http.StatusOK, quiz_pages.QuizSummaryContent(&summary))
 }
