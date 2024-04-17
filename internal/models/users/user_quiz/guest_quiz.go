@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Gets the nth question in the given quiz. Questions are numbered (indexed) from 1.
+// Gets the n-th question in the given quiz. Questions are numbered (indexed) from 1.
 func GetQuestionByNumberInQuiz(db *sql.DB, quizID uuid.UUID, questionNumber uint) (*QuizData, error) {
 	partialQuiz, err := quizzes.GetPartialQuizByID(db, quizID)
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
