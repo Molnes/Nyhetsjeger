@@ -284,11 +284,8 @@ script sortableQuestions(quizId string) {
 			animation: 150,
 			handle: ".drag-handle",
 			onEnd: function(event) {
-				// TODO: Update the arrangement of the questions in the quiz
-
 				// Get all the question IDs and their arrangement in the list (first one is 1, second is 2, etc.)
 				// Send a POST request to the server with this mapping.
-
 				const questionList = document.getElementById("question-list");
 				const questions = questionList.children;
 				const questionIDs = Array.from(questions).map(question => question.getAttribute("data-question-id"));
