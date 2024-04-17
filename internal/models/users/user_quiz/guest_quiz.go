@@ -9,23 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// Gets the nth question in the given quiz. Questions are numbered (indexed) from 1.
 func GetQuestionByNumberInQuiz(db *sql.DB, quizID uuid.UUID, questionNumber uint) (*QuizData, error) {
 	partialQuiz, err := quizzes.GetPartialQuizByID(db, quizID)
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	// nextQuestion, secondsLeft, err := startNextQuestion(db, userID, quizID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	question, err := questions.GetNthQuestionByQuizId(db, quizID, questionNumber)
 
 	if err != nil {
 		return nil, err
 	}
-
-	// pointsSoFar, err := getPointsGatheredInQuiz(db, quizID, userID)
 
 	return &QuizData{
 		*partialQuiz,
@@ -35,6 +30,8 @@ func GetQuestionByNumberInQuiz(db *sql.DB, quizID uuid.UUID, questionNumber uint
 	}, nil
 }
 
+// Returns the ID of the quiz that is currently available to guests.
+// May return sql.ErrNoRows if no quizzes match the requirements to be open.
 func GetOpenQuizId(db *sql.DB) (uuid.UUID, error) {
 	var id uuid.UUID
 	err := db.QueryRow(`
