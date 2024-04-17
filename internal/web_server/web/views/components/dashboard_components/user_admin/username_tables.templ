@@ -6,10 +6,14 @@ script onRefresh() {
 	for (const [key, value] of deleteMap.entries()) {
 	var row = document.getElementById(key);
 	if (row) {
-		row.classList.add("bg-red-500", "border-b", "border-red-700");
-		row.getElementsByClassName("del-button")[0].classList.add("hidden");
-		row.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+		let parent = row.parentElement;
+		parent.classList.add("bg-red-500", "border-b", "border-red-700");
+		parent.getElementsByClassName("del-button")[0].classList.add("hidden");
+		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 	}
+	}
+
+	for (const [key, value] of editMap.entries()) {
 	}
 }
 
