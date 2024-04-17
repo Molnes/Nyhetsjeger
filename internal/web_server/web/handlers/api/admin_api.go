@@ -455,7 +455,7 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", errorInvalidQuizID))
 	}
 
 	// Get the map of question IDs and their new arrangement number.
@@ -463,14 +463,14 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	questionsList := make(map[int]uuid.UUID)
 	err = c.Bind(&questionsList)
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
 	}
 
 	// Rearrange the questions
 	err = questions.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
 	if err != nil {
 		if err == questions.ErrNonSequentialQuestions {
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Spørsmålene må ha en sekvensiell rekkefølge"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Spørsmålene må ha en sekvensiell rekkefølge"))
 		}
 		return err
 	}

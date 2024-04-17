@@ -35,7 +35,30 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				Lagret
 				@icons.Checkmark(80, "#22C55E", 25, 25)
 			</div>
-			@changesSaved()
+			<script>
+				function changesSaved() {
+					message = document.querySelector("#changes-saved-message")
+
+						message.classList.remove("hidden")
+						message.classList.add("flex")
+						message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
+
+						setTimeout(
+							function() {
+								message.classList.add("hidden")
+								message.classList.remove("flex")
+								message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
+							}, 3000)
+				}
+
+				document.body.addEventListener("htmx:afterSwap", (event) => {
+					// If the swap is successful, and it was not used to open the question modal
+					// Display a 'saved' message for 3 seconds
+					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
+						changesSaved();
+					}
+				})
+			</script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
 			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
@@ -104,6 +127,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
+				@components.ErrorText("error-question-list", "")
 				<ul
 					id="question-list"
 					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden mb-3"
@@ -136,7 +160,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					Legg til nytt spørsmål
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
-				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			@components.LoadingIndicator()
 			@components.ErrorText("error-quiz", "")
@@ -253,26 +276,7 @@ script questionList() {
 		}
 }
 
-script changesSaved() {
-	document.body.addEventListener("htmx:afterSwap", (event) => {
-		// If the swap is successful, and it was not used to open the question modal
-		// Display a 'saved' message for 3 seconds
-		if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
-			message = document.querySelector("#changes-saved-message")
-
-			message.classList.remove("hidden")
-			message.classList.add("flex")
-			message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
-
-			setTimeout(
-				function() {
-					message.classList.add("hidden")
-					message.classList.remove("flex")
-					message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
-				}, 3000)
-		}
-	})
-}
+// Make the questions sortable, and save the new arrangement.
 
 script sortableQuestions(quizId string) {
 	htmx.onLoad(function(content) {
@@ -303,6 +307,22 @@ script sortableQuestions(quizId string) {
 						"HX-Target": "#question-list",
 					},
 					body: JSON.stringify(idMap),
+				}).then((response) => {
+					let errorText = document.querySelectorAll(".error-question-list")[0];
+
+					if (response.status >= 400) {
+						// Show error message if error
+						response.text().then((result) => {
+							let parser = new DOMParser();
+							let doc = parser.parseFromString(result, 'text/html');
+							let res = doc.body.firstChild;
+							errorText.replaceWith(res);
+						})
+					} else if (response.status == 200) {
+						// Clear error message and show "saved" message if success
+						errorText.innerHTML = "";
+						changesSaved();
+					}
 				});
 			}
 		});
