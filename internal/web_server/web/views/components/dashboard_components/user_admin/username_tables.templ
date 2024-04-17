@@ -63,8 +63,22 @@ script onSave() {
 			sessionStorage.removeItem("tablerowmap");
 		}
 	});
+}
 
-	location.reload();
+script reset() {
+	let decision = confirm("Er du sikker på at du ønsker å nullstille endringer? Dette kan ikke angres.")	
+
+	if (decision) {
+		deleteMap.clear();
+		editMap.clear();
+		tableRowMap.clear();
+
+		sessionStorage.removeItem("deletemap");
+		sessionStorage.removeItem("editmap");
+		sessionStorage.removeItem("tablerowmap");
+
+		location.reload();
+	}
 }
 
 // Tables of the two components an username is created from: Nouns and adjectives
@@ -97,9 +111,14 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage)
 	</div>
 	<div>
-		<button class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white"
-		onclick={ onSave() }>Lagre</button>
-		<button class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white ml-16">Avbryt</button>
+		<button
+			class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white"
+			onclick={ onSave() }
+		>Lagre</button>
+		<button
+			class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white ml-16"
+			onclick={ reset() }
+		>Nullstill</button>
 	</div>
 	@onRefresh()
 }
