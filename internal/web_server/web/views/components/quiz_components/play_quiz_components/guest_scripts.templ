@@ -20,6 +20,9 @@ script addQuestiontimestampToRequest(formId string) {
 	});
 }
 
+// adds the given AnsweredQuestion object to array stored in the local storage.
+// If there is no array or current question is the first one, new array is created.
+
 script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	const queryParams = new URLSearchParams(window.location.search);
 	const currentQuestion = parseInt(queryParams.get("current-question"));
@@ -34,6 +37,9 @@ script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	window.localStorage.setItem('summary-rows', JSON.stringify(currentList));
 }
 
+// Sets the request path to get next question from the guest (no-auth) api. Adds total points to the search parameters of rht request url.
+// Additionally updates current window url to match the requested question.
+
 script setGuestNextQuestionPath(buttonId string) {
 	const button = document.getElementById(buttonId);
 	button.addEventListener('htmx:configRequest',function (evt) {
@@ -47,7 +53,9 @@ script setGuestNextQuestionPath(buttonId string) {
 		let summaryList = JSON.parse(window.localStorage.getItem("summary-rows"));
 		let totalPoints = 0;
 		if (summaryList) {
-			totalPoints = summaryList.map((c)=>c?c.PointsAwarded :0).reduce((a,c) => a+c,0);
+			totalPoints = summaryList
+				.map((summaryRow) => summaryRow ? summaryRow.PointsAwarded : 0)
+				.reduce((total, current) => total + current, 0);
 		}
 		url.searchParams.set('total-points',totalPoints);
 		
