@@ -63,7 +63,7 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Cannot answer question in non-open quiz without being authenticated.")
 	}
 
-	summaryrow := user_quiz_summary.AnsweredQuestion{
+	summaryRow := user_quiz_summary.AnsweredQuestion{
 		QuestionID:            questionID,
 		QuestionText:          answered.Question.Text,
 		MaxPoints:             answered.Question.Points,
@@ -73,7 +73,7 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 		PointsAwarded:         answered.PointsAwarded,
 	}
 
-	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtonsWithClientState(answered, &summaryrow))
+	return utils.Render(c, http.StatusOK, play_quiz_components.FeedbackButtonsWithClientState(answered, &summaryRow))
 
 }
 
@@ -94,7 +94,7 @@ func (h *publicApiHandler) getQuestion(c echo.Context) error {
 
 	currentQuestion, err := strconv.ParseUint(c.QueryParam("current-question"), 10, 64)
 	if err != nil || currentQuestion < 1 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende såørsmål nummer")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende spørsmålsnummer")
 	}
 
 	totalPoints, err := strconv.ParseUint(c.FormValue("total-points"), 10, 64)

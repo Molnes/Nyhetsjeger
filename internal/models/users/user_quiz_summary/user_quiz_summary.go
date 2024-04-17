@@ -19,7 +19,7 @@ type UserQuizSummary struct {
 	HasArticlesToShow bool
 }
 
-// Sums indivudual achieved points for each question in AnsweredQuestions and sets the AchievedScore
+// Sums individual achieved points for each question in AnsweredQuestions and sets the AchievedScore
 func (uqs *UserQuizSummary) CalculateAchievedScoreFromAnswered() {
 	var total uint
 	for _, answeredQuestion := range uqs.AnsweredQuestions {

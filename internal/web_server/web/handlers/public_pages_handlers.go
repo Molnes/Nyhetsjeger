@@ -97,7 +97,7 @@ func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
 
 const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
-const totalPointsQueryParm = "total-points"
+const totalPointsQueryParam = "total-points"
 
 // Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there. 
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
@@ -128,10 +128,10 @@ func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 
 	currentQuestion, err := strconv.ParseUint(currentQuestionParam, 10, 64)
 	if err != nil || currentQuestion < 1 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig såørsmål nummer")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig spørsmålsnummer")
 	}
 
-	totalPoints, err := strconv.ParseUint(c.FormValue(totalPointsQueryParm), 10, 64)
+	totalPoints, err := strconv.ParseUint(c.FormValue(totalPointsQueryParam), 10, 64)
 	if err != nil {
 		totalPoints = 0
 	}
