@@ -10,6 +10,7 @@ const (
 	terms_anchor_id = "terms-anchor"
 )
 
+// Page with form to accept terms of service. Includes a dialog with the terms.
 templ AcceptTermsPage() {
 	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
 		<main
@@ -51,8 +52,9 @@ templ AcceptTermsPage() {
 	}
 }
 
-script openTermsOfService(anchorId string, dialogId string) {
-	document.getElementById(anchorId).addEventListener('click', function() {
+// Adds a click event listener element with given id, on click opens the dialog with given id.
+script openTermsOfService(elementId string, dialogId string) {
+	document.getElementById(elementId).addEventListener('click', function() {
 		const dialog = document.getElementById(dialogId);
 		dialog.showModal();
 		dialog.scrollTop = 0;
@@ -60,6 +62,7 @@ script openTermsOfService(anchorId string, dialogId string) {
 
 }
 
+// Closes the dialog with given id.
 script closeTermsOfService(dialogId string) {
 	const dialog = document.getElementById(dialogId);
 	dialog.close()
