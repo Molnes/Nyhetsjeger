@@ -24,6 +24,49 @@ script onRefresh() {
 	}
 }
 
+script onSave() {
+	fetch("/api/v1/admin/username/delete", {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(Array.from(deleteMap.keys()))
+	}).then(response => {
+		if (/* response.ok */ true) {
+			deleteMap.clear();
+			//Clear deletemap in sessionStorage.
+			sessionStorage.removeItem("deletemap");
+		}
+	});
+
+	let tableEditMap = new Map();
+	tableEditMap.set("adjective-table", []);
+	tableEditMap.set("noun-table", []);
+
+	for (const [key, value] of editMap.entries()) {
+		let table = tableRowMap.get(key);
+		tableEditMap.get(table).push(value);
+	}
+
+	fetch("/api/v1/admin/username/edit", {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(Array.from(tableEditMap.entries()))
+	}).then(response => {
+		if (/* response.ok */ true) {
+			editMap.clear();
+			tableRowMap.clear();
+
+			sessionStorage.removeItem("editmap");
+			sessionStorage.removeItem("tablerowmap");
+		}
+	});
+
+	location.reload();
+}
+
 // Tables of the two components an username is created from: Nouns and adjectives
 templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 	<script>
