@@ -77,7 +77,6 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	guestApiHandler.RegisterPublicApiHandlers(guestGroup)
 
 	authForce := middlewares.NewAuthenticationMiddleware(sharedData, false)
-	// apiGroup.Use(authForce.EncofreAuthentication)
 
 	quizApiGroup := apiGroup.Group("/quiz")
 	quizApiGroup.Use(authForce.EncofreAuthentication)
