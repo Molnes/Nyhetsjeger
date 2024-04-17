@@ -19,6 +19,7 @@ var ErrNoQuestionUpdated = errors.New("questions: no question updated")
 var ErrNoImageRemoved = errors.New("questions: no image removed")
 var ErrNoImageUpdated = errors.New("questions: no image updated")
 var ErrLastQuestion = errors.New("questions: cannot delete the last question in a published quiz")
+var ErrNonSequentialQuestions = errors.New("questions: question arrangement is not sequential")
 
 type Question struct {
 	ID               uuid.UUID
@@ -240,11 +241,11 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	row := db.QueryRow(
 		`
 		SELECT
-			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+			id, question, image_url AS quiz_image, arrangement, article_id, quiz_id, time_limit_seconds, points
 		FROM
-			questions q
+			questions
 		WHERE
-			q.id = $1;
+			id = $1;
 		`, id)
 	err := row.Scan(
 		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
@@ -701,4 +702,54 @@ func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
 	}
 
 	return err
+}
+
+// Rearrange the question arrangement in a quiz.
+func RearrangeQuestions(db *sql.DB, ctx context.Context, quizID uuid.UUID, questionArrangement map[int]uuid.UUID) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Get a list of the keys in the map.
+	arrangements := []int{}
+	for k := range questionArrangement {
+		arrangements = append(arrangements, k)
+	}
+
+	// Check that the arrangement of all questions in a quiz is perfectly sequential.
+	numberOfSequence := 0
+	for index := range arrangements {
+		if _, ok := questionArrangement[index+1]; ok {
+			numberOfSequence++
+		} else {
+			break
+		}
+	}
+
+	if numberOfSequence != len(questionArrangement) {
+		tx.Rollback()
+		return ErrNonSequentialQuestions
+	}
+
+	// Update the arrangement of the questions in the quiz.
+	for _, arrangement := range arrangements {
+		_, err = tx.Exec(
+			`UPDATE questions
+			SET arrangement = $1
+			WHERE id = $2 AND quiz_id = $3;`,
+			arrangement,
+			questionArrangement[arrangement],
+			quizID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

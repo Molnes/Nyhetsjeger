@@ -14,7 +14,6 @@ import (
 )
 
 var ErrNoQuestions = errors.New("quizzes: no questions in quiz")
-var ErrNonSequentialQuestions = errors.New("quizzes: question arrangement is not sequential")
 
 // Quiz represents a quiz in the database.
 type Quiz struct {
@@ -515,54 +514,4 @@ func UpdateActiveEndByQuizID(db *sql.DB, id uuid.UUID, activeEnd time.Time) erro
 		activeEnd,
 		id)
 	return err
-}
-
-// Rearrange the question arrangement in a quiz.
-func RearrangeQuestions(db *sql.DB, ctx context.Context, quizID uuid.UUID, questionArrangement map[int]uuid.UUID) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	arrangements := []int{}
-	// Get a list of the keys in the map.
-	for k := range questionArrangement {
-		arrangements = append(arrangements, k)
-	}
-
-	// Update the arrangement of the questions in the quiz.
-	for _, arrangement := range arrangements {
-		_, err = tx.Exec(
-			`UPDATE questions
-			SET arrangement = $1
-			WHERE id = $2 AND quiz_id = $3;`,
-			arrangement,
-			questionArrangement[arrangement],
-			quizID)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
-	// Check that the arrangement of all questions in a quiz is perfectly sequential.
-	numberOfSequence := 0
-	for key := range arrangements {
-		if _, ok := questionArrangement[key]; ok {
-			numberOfSequence++
-		} else {
-			break
-		}
-	}
-
-	if numberOfSequence != len(questionArrangement) {
-		tx.Rollback()
-		return ErrNonSequentialQuestions
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -450,6 +450,7 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// Rearrange the sequence of questions for a quiz.
 func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -461,15 +462,14 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	// This is a map in JSON body.
 	questionsList := make(map[int]uuid.UUID)
 	err = c.Bind(&questionsList)
-	log.Println(questionsList)
 	if err != nil {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
 	}
 
 	// Rearrange the questions
-	err = quizzes.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
+	err = questions.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
 	if err != nil {
-		if err == quizzes.ErrNonSequentialQuestions {
+		if err == questions.ErrNonSequentialQuestions {
 			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Spørsmålene må ha en sekvensiell rekkefølge"))
 		}
 		return err
