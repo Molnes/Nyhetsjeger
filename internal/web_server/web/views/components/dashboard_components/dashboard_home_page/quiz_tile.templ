@@ -1,6 +1,9 @@
 package dashboard_components
 
-import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
+)
 
 // QuizTile is a component that displays a quiz card.
 // Redirects to the edit quiz page when clicked.
@@ -17,10 +20,10 @@ templ QuizTile(quiz quizzes.Quiz) {
 		<div class="px-5 py-3">
 			<h2 class="text-xl font-semibold text-gray-800 mb-2">{ quiz.Title }</h2>
 			<p class="mb-1">
-				Fra: { quiz.ActiveFrom.Format("02.01.2006, 15:04") }
+				Fra: { data_handling.GetNorwayTime(quiz.ActiveFrom).Format("02/01/2006 15:04") }
 			</p>
 			<p>
-				Til: { quiz.ActiveTo.Format("02.01.2006, 15:04") }
+				Til: { data_handling.GetNorwayTime(quiz.ActiveTo).Format("02/01/2006 15:04") }
 			</p>
 		</div>
 	</a>
