@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -33,11 +32,12 @@ func NewPublicPagesHandler(sharedData *config.SharedData) *PublicPagesHandler {
 func (pph *PublicPagesHandler) RegisterPublicPages(e *echo.Echo) {
 	e.GET("", pph.homePage)
 	e.GET("/login", pph.loginPage)
-	e.GET("terms-of-service", pph.termsPage)
+	e.GET("/terms-of-service", pph.termsPage)
 	e.GET("/guest-home", pph.getGuestHomePage)
 	e.GET("/guest-quiz", pph.getGuestQuiz)
 }
 
+// Handles get request to get home page. If user is authenticated, they get redirected to /quiz or /dashboard
 func (pph *PublicPagesHandler) homePage(c echo.Context) error {
 	session, err := pph.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 	if err == nil {
@@ -62,6 +62,7 @@ func (pph *PublicPagesHandler) homePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.HomePage())
 }
 
+// Handles get request to the login page. If user is authenticated, they get redirected.
 func (pph *PublicPagesHandler) loginPage(c echo.Context) error {
 	session, err := pph.sharedData.SessionStore.Get(c.Request(), sessions.SESSION_NAME)
 	if err == nil && session.Values["user"] != nil {
@@ -70,20 +71,21 @@ func (pph *PublicPagesHandler) loginPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.LoginPage())
 }
 
+// Handles get request to the terms of service page.
 func (pph *PublicPagesHandler) termsPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, public_pages.TermsOfServicePage())
 }
 
+// Handles get request to the guest home page.
 func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
 	quizId, err := user_quiz.GetOpenQuizId(pph.sharedData.DB)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	log.Printf("found quizid: %v", quizId.String())
+
 	var quiz quizzes.Quiz
 	if quizId != uuid.Nil {
 		selectedQuiz, err := quizzes.GetQuizByID(pph.sharedData.DB, quizId)
-		log.Printf("found quiz: %v", selectedQuiz)
 		if err != nil {
 			return err
 		}
@@ -97,6 +99,7 @@ const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
 const totalPointsQueryParm = "total-points"
 
+// Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there. 
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {
