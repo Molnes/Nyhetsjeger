@@ -78,8 +78,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 					Ferdig
 				</a>
 			} else {
-				<a
-					role="button"
+				<button
 					class="gradient-bg-button gradient-shadow px-8 py-3"
 					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
 					hx-target="#quiz-play-content"
@@ -88,7 +87,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 					hx-vals="js:{summaryRows: window.localStorage.getItem('summary-rows')}"
 				>
 					Ferdig
-				</a>
+				</button>
 			}
 		}
 	</div>
