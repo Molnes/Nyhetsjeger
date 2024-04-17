@@ -14,6 +14,13 @@ script onRefresh() {
 	}
 
 	for (const [key, value] of editMap.entries()) {
+	var row = document.getElementById(key);
+	if (row) {
+		let values = editMap.get(key);
+		let parent = row.parentElement;
+		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+		row.value = values[1];
+	}
 	}
 }
 
@@ -34,7 +41,7 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 		editMap = new Map(JSON.parse(sessionStorage.editmap));
 	}
 	</script>
-	<div id="tables-wrapper" class="flex gap-6 flex-col sm:flex-row">
+	<div id="tables-wrapper" class="flex gap-6 md:gap-12 xl:gap-24 flex-col sm:flex-row">
 		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage)
 		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage)
 	</div>
