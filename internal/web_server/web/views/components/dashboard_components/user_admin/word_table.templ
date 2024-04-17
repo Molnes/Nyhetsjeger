@@ -22,11 +22,22 @@ func setRowContent(words []string, i int) string {
 script deleteRow(row string) {
 	var row = document.getElementById(row);
 	if (row != null) {
+		let parent = row.parentElement;
 		deleteMap.set(row.id, true);
-		row.classList.add("bg-red-500", "border-b", "border-red-700");
-		row.getElementsByClassName("del-button")[0].disabled = true;
-		row.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+		parent.classList.add("bg-red-500", "border-b", "border-red-700");
+		parent.getElementsByClassName("del-button")[0].disabled = true;
+		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 		sessionStorage.deletemap = JSON.stringify(Array.from(deleteMap.entries()));
+	}
+}
+
+script onEditRow(id string, originalValue string) {
+
+	var input = document.getElementById(id);
+	if (input != null) {
+		if (input.value != originalValue) {
+			editMap.set(input.id, [originalValue, input.value]);
+		}
 	}
 }
 
@@ -50,8 +61,8 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			>
 				for i := range usernamesPerPage {
 					<tr>
-						<td id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } class="px-4 h-8 w-full flex flex-row items-center">
-							{ setRowContent(words, i) }
+						<td class="px-4 h-8 w-full flex flex-row items-center">
+							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } value={ setRowContent(words, i) }/>
 							<div class="ml-auto my-auto">
 								<button class="hidden undo-button">
 									@icons.Undo(2, "gray", 24, 24)
