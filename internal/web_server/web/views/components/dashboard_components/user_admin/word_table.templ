@@ -37,21 +37,63 @@ script onEditRow(id string, originalValue string) {
 	if (input != null) {
 		if (input.value != originalValue) {
 			editMap.set(input.id, [originalValue, input.value]);
+			let parent = input.parentElement;
+			parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
 		}
 	}
+
+}
+
+script onUndo(id string) {
+	var row = document.getElementById(id);
+	if (row != null) {
+		if (deleteMap.has(id)) {
+			deleteMap.delete(id);
+			let parent = row.parentElement;
+			parent.classList.remove("bg-red-500", "border-b", "border-red-700");
+			parent.getElementsByClassName("del-button")[0].disabled = false;
+			parent.getElementsByClassName("del-button")[0].classList.remove("hidden");
+			
+			if (!editMap.has(row.id)) {
+				parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
+			}
+			sessionStorage.deletemap = JSON.stringify(Array.from(deleteMap.entries()));
+		} else if (editMap.has(id)) {
+			let values = editMap.get(id);
+			let parent = row.parentElement;
+			editMap.delete(row.id);
+			parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
+			row.value = values[0];
+			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
+		}
+	}
+
+}
+
+script onSave() {
+	
 }
 
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
 	<div>
+		<form class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]">
+			<input class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow" type="text" placeholder="Legg til nytt ord"/>
+			<button class="mx-3" type="submit">
+				@icons.Plus(80, "currentColor", 20, 20)
+			</button>
+		</form>
 		<table
 			id={ tableID }
-			class="table-fixed w-52 border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
+			class="table-fixed w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem] border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
 				[&_td]:border-black [&_tr]:h-8"
 		>
 			<thead>
-				<tr class="[&>th]:border-black">
-					<th class="px-4">{ tableName } </th>
+				<tr class="[&>th]:border-black block">
+					<th class="px-4 block whitespace-nowrap [&>*]:inline">
+						{ tableName }
+					</th>
 				</tr>
 			</thead>
 			<tbody
@@ -60,11 +102,13 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
 			>
 				for i := range usernamesPerPage {
-					<tr>
-						<td class="px-4 h-8 w-full flex flex-row items-center">
+					<tr class="[&:not(:hover)_.del-button]:hidden">
+						<td
+							class="px-4 h-8 w-full flex flex-row items-center"
+						>
 							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } value={ setRowContent(words, i) }/>
-							<div class="ml-auto my-auto">
-								<button class="hidden undo-button">
+							<div class="ml-auto my-auto flex">
+								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
 									@icons.Undo(2, "gray", 24, 24)
 								</button>
 								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) } class="del-button">
