@@ -37,7 +37,7 @@ script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
 	window.localStorage.setItem('summary-rows', JSON.stringify(currentList));
 }
 
-// Sets the request path to get next question from the guest (no-auth) api. Adds total points to the search parameters of rht request url.
+// Sets the request path to get next question from the guest (no-auth) api. Adds total points to the search parameters of the request url.
 // Additionally updates current window url to match the requested question.
 
 script setGuestNextQuestionPath(buttonId string) {

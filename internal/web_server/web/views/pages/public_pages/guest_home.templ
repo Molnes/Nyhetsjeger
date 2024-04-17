@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Homepage for guest users. SHows available quiz.
+// Homepage for guest users. Shows available quiz.
 templ GuestHomePage(quiz *quizzes.Quiz) {
 	@layout_components.BaseLayout("Gjest Hjem") {
 		<main
@@ -17,7 +17,7 @@ templ GuestHomePage(quiz *quizzes.Quiz) {
 			<div class="w-full md:w-3/4 lg:w-1/2 mx-auto py-4 px-6 flex flex-col justify-center items-center gap-6">
 				<h1 class="text-4xl text-center">Gjestemodus</h1>
 				<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
-					Du er nå i gjestemodus. Du har kun tilgang til en quiz og resultatene blir <b>ikke</b> lagret.
+					Du er nå i gjestemodus. Du har kun tilgang til én quiz og resultatene blir <b>ikke</b> lagret.
 				</p>
 				// <div class="flex flex-row justify-center flex-wrap p-4 lg:gap-20 gap-10">
 				if quiz.ID == uuid.Nil {
