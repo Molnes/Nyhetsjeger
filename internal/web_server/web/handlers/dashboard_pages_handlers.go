@@ -167,7 +167,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
-	user_rank, err := user_ranking.GetUserRanking(dph.sharedData.DB, uuid_id, time.Now().Month(), time.Now().Year(), time.Local)
+	user_rank, err := user_ranking.GetUserRanking(dph.sharedData.DB, uuid_id, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			user_rank = user_ranking.UserRanking{

@@ -62,7 +62,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 
 	userRankingInfo := user_ranking.UserRanking{}
 
-	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local)
+	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local,user_ranking.Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -139,7 +139,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 		return err
 	}
 
-	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local)
+	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 
 	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings, userRankingInfo))
 }

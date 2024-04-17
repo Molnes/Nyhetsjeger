@@ -2,7 +2,6 @@ package user_ranking
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,20 +25,7 @@ const (
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB, month time.Month, year int, timeZone *time.Location, dateRange DateRange) ([]UserRanking, error) {
 
-	var firstMoment time.Time
-	var lastMoment time.Time
-
-	switch dateRange {
-	case All:
-		firstMoment = time.Date(0, 1, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = time.Date(9999, 12, 31, 23, 59, 59, 0, timeZone)
-	case Month:
-		firstMoment = time.Date(year, month, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = firstMoment.AddDate(0, 1, 0).Add(-time.Nanosecond * 1)
-	case Year:
-		firstMoment = time.Date(year, 1, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = time.Date(year, 12, 31, 23, 59, 59, 0, timeZone)
-	}
+	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
 
 	rows, err := db.Query(`
         SELECT user_id, SUM(total_points_awarded) AS total_points, 
@@ -91,14 +77,29 @@ ORDER BY total_points DESC;
 	return rankings, nil
 }
 
+// Returns the first and last moment of the specified date range.
+func GetDateRange(dateRange DateRange, timeZone *time.Location, year int, month time.Month) (time.Time, time.Time) {
+	var firstMoment time.Time
+	var lastMoment time.Time
+
+	switch dateRange {
+	case All:
+		firstMoment = time.Date(0, 1, 1, 0, 0, 0, 0, timeZone)
+		lastMoment = time.Date(9999, 12, 31, 23, 59, 59, 0, timeZone)
+	case Month:
+		firstMoment = time.Date(year, month, 1, 0, 0, 0, 0, timeZone)
+		lastMoment = firstMoment.AddDate(0, 1, 0).Add(-time.Nanosecond * 1)
+	case Year:
+		firstMoment = time.Date(year, 1, 1, 0, 0, 0, 0, timeZone)
+		lastMoment = time.Date(year, 12, 31, 23, 59, 59, 0, timeZone)
+	}
+	return firstMoment, lastMoment
+}
+
 // Returns the ranking of the specified user.
-func GetUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, timeZone *time.Location) (UserRanking, error) {
+func GetUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, timeZone *time.Location, dateRange DateRange) (UserRanking, error) {
 
-	firstMomentOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, timeZone)
-	LastMomentOfMonth := firstMomentOfMonth.AddDate(0, 1, 0).Add(-time.Nanosecond * 1)
-
-	log.Println("firstMomentOfMonth", firstMomentOfMonth)
-	log.Println("LastMomentOfMonth", LastMomentOfMonth)
+	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
 
 	row := db.QueryRow(`
 SELECT user_id, SUM(total_points_awarded) AS total_points, 
@@ -127,7 +128,7 @@ AND u.opt_in_ranking = true AND u.id = $3
 GROUP BY user_id, username
 ORDER BY total_points DESC;
 
-    `, firstMomentOfMonth, LastMomentOfMonth, userID)
+    `, firstMoment, lastMoment, userID)
 
 	ranking := UserRanking{}
 	err := row.Scan(
