@@ -547,8 +547,8 @@ func RearrangeQuestions(db *sql.DB, ctx context.Context, quizID uuid.UUID, quest
 
 	// Check that the arrangement of all questions in a quiz is perfectly sequential.
 	numberOfSequence := 0
-	for index := range questionArrangement {
-		if _, ok := questionArrangement[index]; ok {
+	for key := range arrangements {
+		if _, ok := questionArrangement[key]; ok {
 			numberOfSequence++
 		} else {
 			break
