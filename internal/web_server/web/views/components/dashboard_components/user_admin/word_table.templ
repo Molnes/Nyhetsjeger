@@ -31,7 +31,7 @@ script deleteRow(row string) {
 	}
 }
 
-script onEditRow(id string, originalValue string) {
+script onEditRow(id string, originalValue string, tableId string) {
 
 	var input = document.getElementById(id);
 	if (input != null) {
@@ -40,6 +40,8 @@ script onEditRow(id string, originalValue string) {
 			let parent = input.parentElement;
 			parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
+			tableRowMap.set(id, tableId);
+			sessionStorage.tablerowmap = JSON.stringify(Array.from(tableRowMap.entries()));
 		}
 	}
 
@@ -66,13 +68,11 @@ script onUndo(id string) {
 			parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
 			row.value = values[0];
 			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
+			tableRowMap.delete(id);
+			sessionStorage.tablerowmap = JSON.stringify(Array.from(tableRowMap.entries()));
 		}
 	}
 
-}
-
-script onSave() {
-	
 }
 
 // A table that displays a list of words, includes pagination component.
@@ -106,7 +106,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						<td
 							class="px-4 h-8 w-full flex flex-row items-center"
 						>
-							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } value={ setRowContent(words, i) }/>
+							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
 							<div class="ml-auto my-auto flex">
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
 									@icons.Undo(2, "gray", 24, 24)
