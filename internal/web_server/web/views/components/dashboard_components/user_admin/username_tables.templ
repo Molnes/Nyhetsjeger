@@ -96,5 +96,10 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage)
 		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage)
 	</div>
+	<div>
+		<button class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white"
+		onclick={ onSave() }>Lagre</button>
+		<button class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white ml-16">Avbryt</button>
+	</div>
 	@onRefresh()
 }
