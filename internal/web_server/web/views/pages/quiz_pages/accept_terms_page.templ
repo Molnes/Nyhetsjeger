@@ -53,7 +53,9 @@ templ AcceptTermsPage() {
 
 script openTermsOfService(anchorId string, dialogId string) {
 	document.getElementById(anchorId).addEventListener('click', function() {
-		document.getElementById(dialogId).showModal();
+		const dialog = document.getElementById(dialogId);
+		dialog.showModal();
+		dialog.scrollTop = 0;
 	});
 
 }
