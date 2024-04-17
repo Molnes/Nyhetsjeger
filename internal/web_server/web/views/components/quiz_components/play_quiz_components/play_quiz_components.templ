@@ -70,12 +70,26 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 				@setGuestNextQuestionPath("next-question-button")
 			}
 		} else {
-			<a
-				class="gradient-bg-button gradient-shadow px-8 py-3"
-				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
-			>
-				Ferdig
-			</a>
+			if utils.IsUserAuthenticated(ctx) {
+				<a
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
+				>
+					Ferdig
+				</a>
+			} else {
+				<a
+					role="button"
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					hx-post="/api/v1/guest/generate-summary"
+					hx-target="#quiz-play-content"
+					hx-swap="outerHTML"
+					hx-indicator=".htmx-indicator"
+					hx-vals="js:{summaryRows: JSON.parse(window.localStorage.getItem('summary-rows'))}"
+				>
+					Ferdig
+				</a>
+			}
 		}
 	</div>
 	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
