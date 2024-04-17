@@ -2,6 +2,7 @@ package quiz_components
 
 import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/utils"
 )
 
 // QuizCard is a component that displays a preview of a quiz in the form of a card
@@ -16,7 +17,11 @@ templ QuizCard(quiz quizzes.Quiz) {
 			<h3 class="px-2 text-2xl mt-6 mx-auto text-center font-semibold text-gray-800 text-ellipsis overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
 			<a
 				class="gradient-bg-button py-2 px-10 mx-auto mb-6"
-				href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
+				if utils.IsUserAuthenticated(ctx) {
+					href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
+				} else {
+					href={ templ.SafeURL("/guest-quiz?current-question=1&quiz-id=" + quiz.ID.String()) }
+				}
 			>
 				SPILL
 			</a>
