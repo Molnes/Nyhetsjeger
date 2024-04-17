@@ -12,7 +12,7 @@ const (
 
 templ AcceptTermsPage() {
 	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
-		<main id="main" class="w-full md:w-3/4 lg:w-1/2 mx-auto pt-10 text-center">
+		<main id="main" class="w-full md:w-3/4 lg:w-1/2 mx-auto px-4 text-center">
 			<h1 class="text-2xl mb-2">Vilkår og betingelser</h1>
 			<p>
 				For å fortsette må du akseptere våre
@@ -21,9 +21,9 @@ templ AcceptTermsPage() {
 				</a>.
 			</p>
 			<form hx-post="/api/v1/quiz/accept-terms" class="flex flex-col gap-5 mt-5">
-				<div class="flex items-center mx-auto">
-					<input type="checkbox" name="accepted-terms" class="mr-2 w-6 h-6 accent-cindigo cursor-pointer" id="terms-of-service-checkbox" required/>
-					<label for="terms-of-service-checkbox" class="cursor-pointer">
+				<div class="flex items-center mx-auto gap-2">
+					<input type="checkbox" name="accepted-terms" class="w-6 h-6 accent-cindigo cursor-pointer" id="terms-of-service-checkbox" required/>
+					<label for="terms-of-service-checkbox" class="cursor-pointer text-left">
 						Jeg har lest og aksepterer vilkårene og betingelsene.
 					</label>
 				</div>
