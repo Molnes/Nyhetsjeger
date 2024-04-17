@@ -38,8 +38,13 @@ func GetQuestionByNumberInQuiz(db *sql.DB, quizID uuid.UUID, questionNumber uint
 func GetOpenQuizId(db *sql.DB) (uuid.UUID, error) {
 	var id uuid.UUID
 	err := db.QueryRow(`
-	SELECT id from quizzes limit 1;
-	`).Scan(&id)
+	SELECT id
+	FROM quizzes
+	WHERE published = true AND is_deleted = false
+	AND active_from < NOW()
+	AND active_to < NOW()
+	ORDER BY active_to DESC
+	limit 1;`).Scan(&id)
 
 	return id, err
 }
