@@ -61,6 +61,8 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 	}
 }
 
+
+// Checks if the provided answer id is correct for this question.
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
 	for _, a := range q.Alternatives {
@@ -72,6 +74,7 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	return isCorrect
 }
 
+// Gets the text of the alternative with given ID within this quesiton. If answerId is not found in this question, default empty string ("") is returned.
 func (q *Question) GetAnswerTextById(answerID uuid.UUID) string {
 	var text string
 	for _, a := range q.Alternatives {
