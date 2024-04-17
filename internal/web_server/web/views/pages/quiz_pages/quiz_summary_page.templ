@@ -20,23 +20,28 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 				<h1 class="text-3xl">Resultat</h1>
 				<div
 					if getDigitsFromSummary(summary) > 10 {
-						class="size-40 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-44 relative rounded-1/2 bg-white gradient-outline-circle"
 					}
 					else
 					if getDigitsFromSummary(summary) > 6 {
-						class="size-32 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-36 relative rounded-1/2 bg-white gradient-outline-circle"
 					} else {
-						class="size-24 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
+						class="size-24 relative rounded-1/2 bg-white gradient-outline-circle"
 					}
 				>
-					<div class="relative w-full h-full bg-white overflow-hidden clip-circle flex flex-col items-center">
-						<div id="points-fill" class="bg-field top-full">
-							<div class="clip-path">
-								<div class="gradient-wave"></div>
+					<div class="circle">
+						// The fill element is animated to fill the circle to the correct percentage.
+						<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
+							<div class="primary-wave-filter">
+								<div class="primary-wave"></div>
+							</div>
+							<div class="secondary-wave-filter">
+								<div class="secondary-wave"></div>
 							</div>
 						</div>
+						// The result text
 						<p
-							class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold"
+							class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
 						>
 							<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
 							<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>

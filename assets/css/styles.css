@@ -10,6 +10,8 @@
     --cindigo: #5B14F2;
     --cfuchsia: #CA1FFF;
 
+    --gradient: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+
     /* Border radius */
     --br-button: 0.5rem;
     --br-card: 0.5rem;
@@ -49,7 +51,7 @@
 
 /* Background Gradient */
 .cgradient {
-    background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+    background-image: var(--gradient);
 }
 
 a.cgradient:is(:hover, :focus),
@@ -187,10 +189,104 @@ a.cgradient:is(:hover, :focus),
     margin-right: 0.5rem;
 }
 
-.clip-circle {
-    clip-path: circle();
+#points-fill {
+    --animation: spin linear infinite;
+    --duration-1: 5s;
+    --duration-2: 8s;
+
+    --clip-path: inset(0 0 0 0 round 45%);
+    --clip-path-2: inset(0 0 0 0 round 44%);
+
+    --wave-size: 15rem;
+
+    /* How far up the gradient wave should go inside the circle */
+    --decimal: 0.6;
+
+    transition: top 5s linear;
 }
 
+.text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font: 700 56px Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    color: white;
+}
+
+.circle {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    clip-path: circle();
+    overflow: hidden;
+    background: var(--gradient);
+    box-shadow: inset 0 0 40px 20px rgba(0, 0, 0, 0.2);
+}
+
+.primary-wave-filter,
+.secondary-wave-filter {
+    position: absolute;
+    top: calc(-1 * var(--wave-size));
+    height: var(--wave-size);
+    width: var(--wave-size);
+}
+
+.primary-wave-filter::before,
+.primary-wave-filter::after,
+.secondary-wave-filter::before,
+.secondary-wave-filter::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    clip-path: var(--clip-path);
+    animation: var(--animation);
+    animation-duration: var(--duration-1);
+}
+
+.primary-wave-filter::before,
+.primary-wave-filter::after {
+    mix-blend-mode: difference;
+}
+
+.secondary-wave-filter::before,
+.secondary-wave-filter::after {
+    clip-path: var(--clip-path-2);
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(50px);
+    animation-duration: var(--duration-2);
+}
+
+.primary-wave-filter::before,
+.secondary-wave-filter::before {
+    z-index: -1;
+}
+
+.primary-wave-filter::after,
+.secondary-wave-filter::after {
+    z-index: 1;
+}
+
+.primary-wave,
+.secondary-wave {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: black;
+    clip-path: var(--clip-path);
+    animation: var(--animation);
+    animation-duration: var(--duration-1);
+}
+
+.secondary-wave {
+    position: absolute;
+    background: none;
+    animation: var(--animation);
+    animation-duration: var(--duration-2);
+}
 
 @keyframes spin {
     0% {
@@ -200,57 +296,4 @@ a.cgradient:is(:hover, :focus),
     100% {
         transform: rotate(360deg);
     }
-}
-
-.bg-field {
-    position: relative;
-    transition-duration: 5s;
-    transition-property: top;
-    height: 140%;
-    width: 140%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    --clip-path: inset(0 0 0 0 round 35%);
-}
-
-.bg-field::before,
-.bg-field::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: white;
-    mix-blend-mode: difference;
-
-    clip-path: var(--clip-path);
-    animation: spin 5s linear infinite;
-}
-
-.bg-field::before {
-    z-index: 1;
-}
-
-.bg-field::after {
-    z-index: -1;
-}
-
-.gradient-wave {
-    background: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
-    filter: invert(1) hue-rotate(10deg);
-    height: 150%;
-    width: 150%;
-    clip-path: var(--clip-path);
-    animation: spin 5s linear infinite reverse;
-}
-
-.clip-path {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    clip-path: inset(0 0 0 0 round 35%);
-    animation: 5s spin linear infinite;
-    display: grid;
-    place-items: center;
 }
