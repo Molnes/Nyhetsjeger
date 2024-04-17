@@ -95,6 +95,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
 }
 
+// Same as FeedbackButtons, but save the passed user_quiz_summary.AnsweredQuestion in local storage in users browser.
 templ FeedbackButtonsWithClientState(answered *user_quiz.UserAnsweredQuestion, summaryRow *user_quiz_summary.AnsweredQuestion) {
 	@FeedbackButtons(answered)
 	@saveSummaryRow(summaryRow)
