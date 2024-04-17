@@ -12,6 +12,7 @@ import (
 templ QuestionListItem(question *questions.Question) {
 	<li
 		id={ fmt.Sprintf("question-%s", question.ID) }
+		data-question-id={ question.ID.String() }
 		class="flex flex-row px-4 items-center sortable"
 		data-element-type="question-list-item"
 	>

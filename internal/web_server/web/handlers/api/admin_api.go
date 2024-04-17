@@ -62,6 +62,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/create-new", aah.createDefaultQuiz)
 	e.POST("/quiz/edit-title", aah.editQuizTitle)
 	e.POST("/quiz/edit-image", aah.editQuizImage)
+	e.POST("/quiz/upload-image", aah.uploadQuizImage)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
 	e.POST("/quiz/edit-start", aah.editQuizActiveStart)
 	e.POST("/quiz/edit-end", aah.editQuizActiveEnd)
@@ -69,13 +70,13 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
+	e.POST("/quiz/rearrange-questions", aah.rearrangeQuestions)
+
 	e.POST("/question/edit", aah.editQuestion)
 	e.POST("/question/edit-image", aah.editQuestionImage)
+	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
-
-	e.POST("/quiz/upload-image", aah.uploadQuizImage)
-	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 }
 
@@ -443,6 +444,34 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Remove the article from the quiz
 	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, c.Request().Context(), &quiz_id, &article_id)
 	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorInvalidQuizID))
+	}
+
+	// Get the map of question IDs and their new arrangement number.
+	// This is a map in JSON body.
+	questionsList := make(map[int]uuid.UUID)
+	err = c.Bind(&questionsList)
+	log.Println(questionsList)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
+	}
+
+	// Rearrange the questions
+	err = quizzes.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
+	if err != nil {
+		if err == quizzes.ErrNonSequentialQuestions {
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, "Spørsmålene må ha en sekvensiell rekkefølge"))
+		}
 		return err
 	}
 

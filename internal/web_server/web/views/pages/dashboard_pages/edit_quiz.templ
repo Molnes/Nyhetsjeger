@@ -100,7 +100,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Spørsmål</h2>
-					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning.")
+					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning. For å endre rekkefølgen på spørsmålene, trykk og drag dem til ønsket plassering.")
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
@@ -123,7 +123,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					}
 				</ul>
 				@questionList()
-				@sortableQuestions()
+				@sortableQuestions(quiz.ID.String())
 				<button
 					id="new-question-button"
 					type="button"
@@ -274,23 +274,36 @@ script changesSaved() {
 	})
 }
 
-script sortableQuestions() {
+script sortableQuestions(quizId string) {
 	htmx.onLoad(function(content) {
     Sortable.create(document.getElementById("question-list"), {
 			animation: 150,
 			handle: ".drag-handle",
 			onEnd: function(event) {
 				// TODO: Update the arrangement of the questions in the quiz
-				// const questionList = document.getElementById("question-list");
-				// const questions = questionList.children;
-				// const questionIDs = Array.from(questions).map(question => question.id);
 
-				// fetch(`/api/v1/admin/quiz/sort-questions?question-ids=${questionIDs.join(",")}`, {
-				// 	method: "POST",
-				// 	headers: {
-				// 		"Content-Type": "application/json",
-				// 	},
-				// });
+				// Get all the question IDs and their arrangement in the list (first one is 1, second is 2, etc.)
+				// Send a POST request to the server with this mapping.
+
+				const questionList = document.getElementById("question-list");
+				const questions = questionList.children;
+				const questionIDs = Array.from(questions).map(question => question.getAttribute("data-question-id"));
+				questionIDs.shift();
+
+				const idMap = questionIDs.reduce((map, id, index) => {
+					map[index + 1] = id;
+					return map;
+				}, {});
+
+				fetch(`/api/v1/admin/quiz/rearrange-questions?quiz-id=${quizId}`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"HX-Swap": "outerHTML",
+						"HX-Target": "#question-list",
+					},
+					body: JSON.stringify(idMap),
+				});
 			}
 		});
 	});
