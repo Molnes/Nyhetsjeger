@@ -9,7 +9,7 @@ import (
 )
 
 type UserRanking struct {
-	user_id   uuid.UUID
+	User_id   uuid.UUID
 	Username  string
 	Points    int
 	Placement int
@@ -79,7 +79,7 @@ ORDER BY total_points DESC;
 	for rows.Next() {
 		var ranking UserRanking
 		if err := rows.Scan(
-			&ranking.user_id,
+			&ranking.User_id,
 			&ranking.Points,
 			&ranking.Username,
 			&ranking.Placement); err != nil {
@@ -131,7 +131,7 @@ ORDER BY total_points DESC;
 
 	ranking := UserRanking{}
 	err := row.Scan(
-		&ranking.user_id,
+		&ranking.User_id,
 		&ranking.Points,
 		&ranking.Username,
 		&ranking.Placement)
