@@ -2,11 +2,30 @@ package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 
+script onRefresh() {
+	for (const [key, value] of deleteMap.entries()) {
+	var row = document.getElementById(key);
+	if (row) {
+		row.classList.add("bg-red-500", "border-b", "border-red-700");
+		row.getElementsByClassName("del-button")[0].classList.add("hidden");
+		row.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+	}
+	}
+}
 
 // Tables of the two components an username is created from: Nouns and adjectives
 templ UsernameTables(uai *usernames.UsernameAdminInfo) {
-	<div id="tables-wrapper" class="flex gap-6">
+	<script>
+	var deleteMap;
+	if(sessionStorage.deletemap === undefined) {
+		deleteMap = new Map();
+	} else {
+		deleteMap = new Map(JSON.parse(sessionStorage.deletemap));
+	}
+	</script>
+	<div id="tables-wrapper" class="flex gap-6 flex-col sm:flex-row">
 		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage)
 		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage)
 	</div>
+	@onRefresh()
 }
