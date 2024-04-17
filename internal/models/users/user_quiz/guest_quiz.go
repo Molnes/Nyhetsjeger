@@ -46,7 +46,7 @@ func GetOpenQuizId(db *sql.DB) (uuid.UUID, error) {
 	return id, err
 }
 
-// Gets UserAnsweredQuestion data for the answer without saving dany data in the database.
+// Gets UserAnsweredQuestion data for the answer without saving any data in the database.
 func AnswerQuestionGuest(db *sql.DB, questionId uuid.UUID, chosenAnswerId uuid.UUID, questionPresentedAt time.Time) (*UserAnsweredQuestion, error) {
 	answeredQuestion := UserAnsweredQuestion{
 		ChosenAnswerID: chosenAnswerId,
