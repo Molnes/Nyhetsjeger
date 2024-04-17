@@ -1,6 +1,8 @@
 package user_admin
 
 import "math"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "fmt"
 
 // Calculates the maximum amount of pages needed to display all users.
 func calculateMaxPages(userAmount int, usernamesPerPage int) int {
@@ -14,6 +16,17 @@ func setRowContent(words []string, i int) string {
 	} else {
 		return words[i]
 
+	}
+}
+
+script deleteRow(row string) {
+	var row = document.getElementById(row);
+	if (row != null) {
+		deleteMap.set(row.id, true);
+		row.classList.add("bg-red-500", "border-b", "border-red-700");
+		row.getElementsByClassName("del-button")[0].disabled = true;
+		row.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+		sessionStorage.deletemap = JSON.stringify(Array.from(deleteMap.entries()));
 	}
 }
 
@@ -37,14 +50,23 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			>
 				for i := range usernamesPerPage {
 					<tr>
-						<td class="px-4 h-8 w-full">{ setRowContent(words, i) }</td>
+						<td id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } class="px-4 h-8 w-full flex flex-row items-center">
+							{ setRowContent(words, i) }
+							<div class="ml-auto my-auto">
+								<button class="hidden undo-button">
+									@icons.Undo(2, "gray", 24, 24)
+								</button>
+								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) } class="del-button">
+									@icons.Trashcan(32, "gray", 24, 24)
+								</button>
+							</div>
+						</td>
 					</tr>
 				}
 			</tbody>
-			
 		</table>
 		<div class="flex justify-center mt-3">
-		@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
+			@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
 		</div>
 	</div>
 }
