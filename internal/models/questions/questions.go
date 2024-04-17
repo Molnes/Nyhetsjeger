@@ -144,7 +144,7 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
-// Gets nth question in a givnen quiz, indexing from 1.4
+// Gets nth question in a givnen quiz, indexing from 1.
 func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (*Question, error) {
 	row := db.QueryRow(
 		`SELECT
