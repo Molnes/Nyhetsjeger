@@ -199,9 +199,6 @@ a.cgradient:is(:hover, :focus),
 
     --wave-size: 15rem;
 
-    /* How far up the gradient wave should go inside the circle */
-    --decimal: 0.6;
-
     transition: top 5s linear;
 }
 
