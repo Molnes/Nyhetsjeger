@@ -34,6 +34,7 @@ func (h *publicApiHandler) RegisterPublicApiHandlers(g *echo.Group) {
 	g.POST("/generate-summary", h.postGenerateSummary)
 }
 
+// Handles a post request with question answer from a guest user.
 func (h *publicApiHandler) postAnswer(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam("question-id"))
 	if err != nil {
@@ -76,6 +77,7 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 
 }
 
+// Handles a get request for next question in a public (open) quiz.
 func (h *publicApiHandler) getQuestion(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {
@@ -114,8 +116,9 @@ func (h *publicApiHandler) getQuestion(c echo.Context) error {
 
 }
 
+// Handles a post request to generate a summary page out of data stored in the local storage.
+// Expects a formdata with name "summaryRows", with value as stringified JSON array of user_quiz_summary.AnsweredQuestion.
 func (h *publicApiHandler) postGenerateSummary(c echo.Context) error {
-
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {
 		return err
