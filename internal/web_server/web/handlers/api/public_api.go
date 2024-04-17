@@ -38,11 +38,11 @@ func (h *publicApiHandler) RegisterPublicApiHandlers(g *echo.Group) {
 func (h *publicApiHandler) postAnswer(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam("question-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing question-id")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende question-id")
 	}
 	pickedAnswerID, err := uuid.Parse(c.FormValue("answer-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing answer-id in formdata")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende answer-id i formdata")
 	}
 
 	questionPresentedAt, err := time.Parse(time.RFC3339, c.FormValue("last_question_presented_at"))
@@ -60,7 +60,7 @@ func (h *publicApiHandler) postAnswer(c echo.Context) error {
 		return err
 	}
 	if publicQuizId != answered.Question.QuizID {
-		return echo.NewHTTPError(http.StatusForbidden, "Cannot answer question in non-open quiz without being authenticated.")
+		return echo.NewHTTPError(http.StatusForbidden, "Kan ikke svare på spørsmål i uåpnede quizer uten å være innlogget.")
 	}
 
 	summaryRow := user_quiz_summary.AnsweredQuestion{
