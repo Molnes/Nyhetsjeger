@@ -17,10 +17,17 @@ script onRefresh() {
 templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 	<script>
 	var deleteMap;
+	var editMap;
 	if(sessionStorage.deletemap === undefined) {
 		deleteMap = new Map();
 	} else {
 		deleteMap = new Map(JSON.parse(sessionStorage.deletemap));
+	}
+
+	if(sessionStorage.editmap === undefined) {
+		editMap = new Map();
+	} else {
+		editMap = new Map(JSON.parse(sessionStorage.editmap));
 	}
 	</script>
 	<div id="tables-wrapper" class="flex gap-6 flex-col sm:flex-row">
