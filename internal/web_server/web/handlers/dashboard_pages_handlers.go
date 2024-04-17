@@ -150,8 +150,7 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 }
 
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
-	userId := c.QueryParam("user-id")
-	uuid_id, err := uuid.Parse(userId)
+	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing user id")
 	}
