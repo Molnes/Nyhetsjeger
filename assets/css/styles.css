@@ -148,7 +148,7 @@ a.cgradient:is(:hover, :focus),
     border-radius: 50%;
 }
 
-.tooltip-parent:is(:hover, :focus)>.tooltip {
+.tooltip-parent:is(:hover, :focus)>[role="tooltip"] {
     display: inline-block;
 }
 
