@@ -75,6 +75,20 @@ script onUndo(id string) {
 
 }
 
+func makeUsernameWordUrl(tableId string) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/api/v1/admin/username?tableId=%v", tableId))
+}
+
+script stopFormRefresh(tableId string) {
+	var form = document.getElementById( "form-" + tableId );
+	if (form != null) {
+		form.addEventListener("submit", function(event) {
+			event.preventDefault();
+		});
+	}
+
+}
+
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
 	<div>
