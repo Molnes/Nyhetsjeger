@@ -48,14 +48,14 @@ script onSave() {
 		tableEditMap.get(table).push(value);
 	}
 
-	fetch("/api/v1/admin/username", {
+	fetch("/api/v1/admin/username/edit", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(Array.from(tableEditMap.entries()))
 	}).then(response => {
-		if ( response.ok) {
+		if ( /* response.ok */ true) {
 			editMap.clear();
 			tableRowMap.clear();
 
@@ -63,6 +63,7 @@ script onSave() {
 			sessionStorage.removeItem("tablerowmap");
 		}
 	});
+	location.reload();
 }
 
 script reset() {
