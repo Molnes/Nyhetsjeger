@@ -39,21 +39,22 @@ script onSave() {
 		}
 	});
 
-	let tableEditMap = new Map();
-	tableEditMap.set("adjective-table", []);
-	tableEditMap.set("noun-table", []);
 
-	for (const [key, value] of editMap.entries()) {
-		let table = tableRowMap.get(key);
-		tableEditMap.get(table).push(value);
-	}
+	let tableNames = ["adjective-table", "noun-table"];
+	const wordMap = tableNames.reduce((map, tableName, index) => {
+		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
+			return value;
+		});
+		map[tableName] = wordList;
+		return map;
+	}, {});
 
 	fetch("/api/v1/admin/username/edit", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(Array.from(tableEditMap.entries()))
+		body: JSON.stringify(wordMap)
 	}).then(response => {
 		if ( /* response.ok */ true) {
 			editMap.clear();
