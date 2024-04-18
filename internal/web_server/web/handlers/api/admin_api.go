@@ -81,6 +81,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 
 	e.POST("/username", aah.addUsername)
 	e.DELETE("/username", aah.deleteUsername)
+	e.POST("/username/edit", aah.editUsername)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -840,11 +841,15 @@ func (aah *AdminApiHandler) deleteUsername(c echo.Context) error {
 	var words []string
 	err := c.Bind(&words)
 
+
 	if err != nil {
 		return err
 	}
 
-	usernames.DeleteWordsFromTable(aah.sharedData.DB, words)
+	usernames.DeleteWordsFromTable(aah.sharedData.DB, c.Request().Context(), words)
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (aah *AdminApiHandler) editUsername(c echo.Context) error {
 }
