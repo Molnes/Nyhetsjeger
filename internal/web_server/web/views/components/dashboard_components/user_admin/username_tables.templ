@@ -30,7 +30,7 @@ script onSave() {
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(Array.from(deleteMap.keys()))
+		body: JSON.stringify(Array.from(deleteMap.values()))
 	}).then(response => {
 		if (response.ok) {
 			deleteMap.clear();
