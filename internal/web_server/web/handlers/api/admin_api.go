@@ -881,4 +881,11 @@ func (aah *AdminApiHandler) deleteUsername(c echo.Context) error {
 }
 
 func (aah *AdminApiHandler) editUsername(c echo.Context) error {
+	wordList := make(map[string][][]string)
+	err := c.Bind(&wordList)
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
 }
