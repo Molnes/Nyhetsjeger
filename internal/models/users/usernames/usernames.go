@@ -91,3 +91,45 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPag
 
 	return &uai, nil
 }
+
+// AddWordToTable adds a word to the specified table.
+func AddWordToTable(db *sql.DB, word string, tableId string) error {
+	if tableId == "noun-table" {
+		_, err := db.Exec(`INSERT INTO nouns VALUES ($1);`, word)
+		return err
+	} else if tableId == "adjective-table" {
+		_, err := db.Exec(`INSERT INTO adjectives VALUES ($1);`, word)
+		return err
+	} else {
+		//Return error
+		return errors.New("table ID not recognized")
+	}
+}
+
+func DeleteWordsFromTable(db *sql.DB, words []string) error {
+
+	_, err := db.Exec(`
+
+					UPDATE users
+					SET
+						username_adjective = random_username.adjective,
+						username_noun = random_username.noun
+					FROM (
+						SELECT adjective, noun
+						FROM available_usernames 
+						OFFSET floor(random() * (
+						SELECT COUNT(*) FROM available_usernames)
+						) 
+					LIMIT 1) AS random_username
+						WHERE users.id = ( SELECT id
+						FROM users
+						WHERE username_adjective = 'brilleslange'
+						OR
+						username_noun = 'brilleslange' 
+					);
+
+					DELETE FROM adjectives WHERE adjectives = ANY($1);
+					DELETE FROM nouns WHERE nouns = ANY($1); 
+						`, pq.Array(words))
+	return err
+}
