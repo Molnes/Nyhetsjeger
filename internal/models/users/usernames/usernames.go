@@ -107,7 +107,7 @@ func AddWordToTable(db *sql.DB, word string, tableId string) error {
 	}
 }
 
-func DeleteWordsFromTable(db *sql.DB, words []string) error {
+func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error {
 
 	_, err := db.Exec(`
 
