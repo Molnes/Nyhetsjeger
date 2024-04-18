@@ -16,6 +16,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
@@ -77,6 +78,9 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/upload-image", aah.uploadQuizImage)
 	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
+
+	e.POST("/username", aah.addUsername)
+	e.DELETE("/username", aah.deleteUsername)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -813,4 +817,34 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 	// Return the "alternatives" table.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
 
+}
+
+func (aah *AdminApiHandler) addUsername(c echo.Context) error {
+	word := c.FormValue("usernameWord")
+	table := c.QueryParam("tableId")
+
+	if (word == "" || table == "") {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	err := usernames.AddWordToTable(aah.sharedData.DB, word, table)
+	if err != nil {
+		return err
+	}
+	c.Response().Header().Set("HX-Refresh", "true")
+	return c.NoContent(http.StatusOK)
+}
+
+func (aah *AdminApiHandler) deleteUsername(c echo.Context) error {
+	//Get array of words to delete from JSON body
+	var words []string
+	err := c.Bind(&words)
+
+	if err != nil {
+		return err
+	}
+
+	usernames.DeleteWordsFromTable(aah.sharedData.DB, words)
+
+	return c.NoContent(http.StatusOK)
 }

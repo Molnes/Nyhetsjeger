@@ -2,6 +2,7 @@ package usernames
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/lib/pq"
 )
 
@@ -37,7 +38,7 @@ func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 		) as foo, COUNT(a.*), offsetvalue.value
 		FROM adjectives a, offsetvalue
 		GROUP BY offsetvalue.value;`,
-	uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount,  &uai.AdjPage)
+		uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount, &uai.AdjPage)
 
 	return err
 }
@@ -63,7 +64,7 @@ func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB) error {
 			) as foo, COUNT(a.*), offsetvalue.value
 			FROM nouns a, offsetvalue
 			GROUP BY offsetvalue.value;`,
-		uai.UsernamesPerPage, uai.NounPage).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount,  &uai.NounPage)
+		uai.UsernamesPerPage, uai.NounPage).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount, &uai.NounPage)
 
 	return err
 }
