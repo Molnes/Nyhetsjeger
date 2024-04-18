@@ -98,12 +98,23 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 	</script>
 	<div>
 		<form
+			id={ fmt.Sprintf("form-%s", tableID) }
 			class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]"
-			action="/api/v1/admin/username"
-			method="PUT"
 		>
-			<input class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow" type="text" required="required" placeholder="Legg til nytt ord"/>
-			<button class="mx-3" type="submit">
+			<input
+				class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
+				type="text"
+				name="usernameWord"
+				required="required"
+				placeholder="Legg til nytt ord"
+			/>
+			<button
+				class="mx-3"
+				type="submit"
+				hx-post={ fmt.Sprintf("%s", makeUsernameWordUrl(tableID)) }
+				hx-swap="none"
+				hx-headers='{"HX-Refresh": refreshPage}'
+			>
 				@icons.Plus(80, "currentColor", 20, 20)
 			</button>
 		</form>
@@ -146,5 +157,6 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 		<div class="flex justify-center mt-3">
 			@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
 		</div>
+		@stopFormRefresh(tableID)
 	</div>
 }
