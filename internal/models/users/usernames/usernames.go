@@ -109,8 +109,14 @@ func AddWordToTable(db *sql.DB, word string, tableId string) error {
 
 func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error {
 
-	_, err := db.Exec(`
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
 
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, `
 					UPDATE users
 					SET
 						username_adjective = random_username.adjective,
