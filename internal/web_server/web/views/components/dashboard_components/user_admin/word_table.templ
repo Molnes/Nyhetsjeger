@@ -145,7 +145,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
 									@icons.Undo(2, "gray", 24, 24)
 								</button>
-								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) } class="del-button">
+								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } class="del-button">
 									@icons.Trashcan(32, "gray", 24, 24)
 								</button>
 							</div>
