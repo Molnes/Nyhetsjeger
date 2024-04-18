@@ -19,6 +19,7 @@ var ErrNoQuestionUpdated = errors.New("questions: no question updated")
 var ErrNoImageRemoved = errors.New("questions: no image removed")
 var ErrNoImageUpdated = errors.New("questions: no image updated")
 var ErrLastQuestion = errors.New("questions: cannot delete the last question in a published quiz")
+var ErrNonSequentialQuestions = errors.New("questions: question arrangement is not sequential")
 
 type Question struct {
 	ID               uuid.UUID
@@ -61,6 +62,8 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 	}
 }
 
+
+// Checks if the provided answer id is correct for this question.
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
 	for _, a := range q.Alternatives {
@@ -70,6 +73,18 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 		}
 	}
 	return isCorrect
+}
+
+// Gets the text of the alternative with given ID within this quesiton. If answerId is not found in this question, default empty string ("") is returned.
+func (q *Question) GetAnswerTextById(answerID uuid.UUID) string {
+	var text string
+	for _, a := range q.Alternatives {
+		if a.ID == answerID {
+			text = a.Text
+			break
+		}
+	}
+	return text
 }
 
 // Returns the seconds left after substracting given duration from the question's time limit.
@@ -133,13 +148,58 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
+// Gets n-th question in a given quiz, indexing from 1.
+func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (*Question, error) {
+	row := db.QueryRow(
+		`SELECT
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+			FROM
+				questions q
+			WHERE
+				quiz_id = $1
+			GROUP BY
+				q.id
+			ORDER BY
+				q.arrangement ASC
+			LIMIT 1
+			OFFSET $2;`, quizId, questionNumber-1)
+
+	return scanQuestionFromFullRow(db, row)
+}
+
+// Gets the next question's id in a quiz, next meaning after the question with id provided.
+// If no more questions, sql.ErrNoRows  will be returned
+func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(
+		`WITH questions_in_quiz AS (
+			SELECT q.id, q.arrangement,
+			ROW_NUMBER () OVER (ORDER BY q.arrangement) 
+			FROM questions q, 
+			  (SELECT quiz_id as id
+				FROM questions 
+				WHERE id = $1
+			  ) quiz 
+			WHERE q.quiz_id = quiz.id
+		  ) 
+		  SELECT questions_in_quiz.id 
+		  FROM questions_in_quiz, 
+			( SELECT row_number 
+			  FROM questions_in_quiz 
+			  WHERE id = $1
+			) current 
+		  WHERE questions_in_quiz.row_number = current.row_number + 1;`, questionId)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 // Convert a row from the database to a Question.
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
 	var imageURL sql.NullString
 	err := row.Scan(
-		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
@@ -240,11 +300,11 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	row := db.QueryRow(
 		`
 		SELECT
-			q.id, question, q.image_url AS quiz_image, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+			id, question, image_url AS quiz_image, arrangement, article_id, quiz_id, time_limit_seconds, points
 		FROM
-			questions q
+			questions
 		WHERE
-			q.id = $1;
+			id = $1;
 		`, id)
 	err := row.Scan(
 		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
@@ -701,4 +761,54 @@ func RemoveImageByQuestionID(db *sql.DB, id *uuid.UUID) error {
 	}
 
 	return err
+}
+
+// Rearrange the question arrangement in a quiz.
+func RearrangeQuestions(db *sql.DB, ctx context.Context, quizID uuid.UUID, questionArrangement map[int]uuid.UUID) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Get a list of the keys in the map.
+	arrangements := []int{}
+	for k := range questionArrangement {
+		arrangements = append(arrangements, k)
+	}
+
+	// Check that the arrangement of all questions in a quiz is perfectly sequential.
+	numberOfSequence := 0
+	for index := range arrangements {
+		if _, ok := questionArrangement[index+1]; ok {
+			numberOfSequence++
+		} else {
+			break
+		}
+	}
+
+	if numberOfSequence != len(questionArrangement) {
+		tx.Rollback()
+		return ErrNonSequentialQuestions
+	}
+
+	// Update the arrangement of the questions in the quiz.
+	for _, arrangement := range arrangements {
+		_, err = tx.Exec(
+			`UPDATE questions
+			SET arrangement = $1
+			WHERE id = $2 AND quiz_id = $3;`,
+			arrangement,
+			questionArrangement[arrangement],
+			quizID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

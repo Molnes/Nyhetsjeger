@@ -12,10 +12,11 @@ import (
 templ QuestionListItem(question *questions.Question) {
 	<li
 		id={ fmt.Sprintf("question-%s", question.ID) }
-		class="flex flex-row px-4 items-center"
+		data-question-id={ question.ID.String() }
+		class="flex flex-row px-4 items-center sortable"
 		data-element-type="question-list-item"
 	>
-		<p class="py-2 cursor-pointer flex-grow">{ question.Text }</p>
+		<p class="drag-handle py-2 cursor-pointer flex-grow">{ question.Text }</p>
 		<button
 			id={ fmt.Sprintf("edit-question-%s", question.ID) }
 			class="ml-auto"

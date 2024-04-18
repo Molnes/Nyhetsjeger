@@ -25,7 +25,7 @@ func NewAcceptedTerms(data *config.SharedData, redirectToLogin bool) *acceptedTe
 	return &acceptedTerms{data, redirectToLogin}
 }
 
-// Only allows users whoaccepted the terms of service, otherwise either redirects to accepting page or returns 409 conflict. Admins are ignroed.
+// Only allows users who accepted the terms of service, otherwise either redirects to accepting page or returns 409 conflict. Admins are ignroed.
 func (m *acceptedTerms) EncofreAcceptedTerms(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user, err := users.GetUserByID(m.sharedData.DB, utils.GetUserIDFromCtx(c))

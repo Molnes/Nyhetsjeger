@@ -12,65 +12,76 @@ import (
 // Each question is displayed with the question text, the chosen alternative and whether the alternative was correct or not.
 templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	@layout_components.QuizLayout("Oppsummering") {
-		<div
-			id="quiz-summary"
-			class="flex flex-col gap-8 justify-start items-center p-5 isolate"
-		>
-			<section class="flex flex-col gap-3 items-center">
-				<h1 class="text-3xl">Resultat</h1>
-				<div
-					if getDigitsFromSummary(summary) > 10 {
-						class="size-40 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
-					}
-					else
-					if getDigitsFromSummary(summary) > 6 {
-						class="size-32 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
-					} else {
-						class="size-24 relative rounded-1/2 bg-white flex justify-center gradient-outline-circle items-center"
-					}
-				>
-					<div class="relative w-full h-full bg-white overflow-hidden clip-circle flex flex-col items-center">
-						<div id="points-fill" class="bg-field top-full">
-							<div class="clip-path">
-								<div class="gradient-wave"></div>
-							</div>
-						</div>
-						<p
-							class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold"
-						>
-							<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-							<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
-							<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
-						</p>
-					</div>
-					@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
-				</div>
-			</section>
-			<section class="flex flex-col gap-4 items-center scrollbar-hide">
-				<h2 class="text-2xl">Oppsummering</h2>
-				<div class="gradient-outline w-fit h-fit">
-					<ol class="list-decimal pl-8 pr-4 py-4 space-y-5 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
-						for _, aq := range summary.AnsweredQuestions {
-							@chosenAnswer(aq)
-						}
-					</ol>
-				</div>
-			</section>
-			if summary.HasArticlesToShow {
-				<button
-					hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
-					hx-target="#quiz-summary"
-					hx-swap="outerHTML"
-					class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-				>Neste</button>
-			} else {
-				<a
-					href="/quiz"
-					class="gradient-bg-button gradient-shadow px-8 py-3"
-				>Ferdig</a>
-			}
-		</div>
+		@QuizSummaryContent(summary)
 	}
+}
+
+// Quiz summary page content. Displays the user's score and a list of all the questions they answered.
+// Each question is displayed with the question text, the chosen alternative and whether the alternative was correct or not.
+templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
+	<div
+		id="quiz-summary"
+		class="flex flex-col gap-8 justify-start items-center p-5 isolate"
+	>
+		<section class="flex flex-col gap-3 items-center">
+			<h1 class="text-3xl">Resultat</h1>
+			<div
+				if getDigitsFromSummary(summary) > 10 {
+					class="size-44 relative rounded-1/2 bg-white gradient-outline-circle"
+				}
+				else
+				if getDigitsFromSummary(summary) > 6 {
+					class="size-36 relative rounded-1/2 bg-white gradient-outline-circle"
+				} else {
+					class="size-28 relative rounded-1/2 bg-white gradient-outline-circle"
+				}
+			>
+				<div class="circle">
+					// The fill element is animated to fill the circle to the correct percentage.
+					<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
+						<div class="primary-wave-filter">
+							<div class="primary-wave"></div>
+						</div>
+						<div class="secondary-wave-filter">
+							<div class="secondary-wave"></div>
+						</div>
+					</div>
+					// The result text
+					<p
+						class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
+					>
+						<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+						<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
+						<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+					</p>
+				</div>
+				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
+			</div>
+		</section>
+		<section class="flex flex-col gap-4 items-center scrollbar-hide">
+			<h2 class="text-2xl">Oppsummering</h2>
+			<div class="gradient-outline w-fit h-fit">
+				<ol class="list-decimal pl-8 pr-4 py-4 space-y-5 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
+					for _, aq := range summary.AnsweredQuestions {
+						@chosenAnswer(aq)
+					}
+				</ol>
+			</div>
+		</section>
+		if summary.HasArticlesToShow {
+			<button
+				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
+				hx-target="#quiz-summary"
+				hx-swap="outerHTML"
+				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+			>Neste</button>
+		} else {
+			<a
+				href="/quiz"
+				class="gradient-bg-button gradient-shadow px-8 py-3"
+			>Ferdig</a>
+		}
+	</div>
 }
 
 // Sets the new height of the fill element in the circle.

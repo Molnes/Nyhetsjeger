@@ -63,6 +63,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/create-new", aah.createDefaultQuiz)
 	e.POST("/quiz/edit-title", aah.editQuizTitle)
 	e.POST("/quiz/edit-image", aah.editQuizImage)
+	e.POST("/quiz/upload-image", aah.uploadQuizImage)
 	e.DELETE("/quiz/edit-image", aah.deleteQuizImage)
 	e.POST("/quiz/edit-start", aah.editQuizActiveStart)
 	e.POST("/quiz/edit-end", aah.editQuizActiveEnd)
@@ -70,13 +71,13 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/quiz/delete-quiz", aah.deleteQuiz)
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
+	e.POST("/quiz/rearrange-questions", aah.rearrangeQuestions)
+
 	e.POST("/question/edit", aah.editQuestion)
 	e.POST("/question/edit-image", aah.editQuestionImage)
+	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
-
-	e.POST("/quiz/upload-image", aah.uploadQuizImage)
-	e.POST("/question/upload-image", aah.uploadQuestionImage)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
 
 	e.POST("/username", aah.addUsername)
@@ -276,13 +277,13 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
 	if err != nil {
 		return err
 	}
 
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
 	if err != nil {
 		return err
 	}
@@ -314,13 +315,13 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd, c)
+	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
 	if err != nil {
 		return err
 	}
 
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart, c)
+	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
 	if err != nil {
 		return err
 	}
@@ -448,6 +449,34 @@ func (aah *AdminApiHandler) deleteArticle(c echo.Context) error {
 	// Remove the article from the quiz
 	err = articles.DeleteArticleFromQuiz(aah.sharedData.DB, c.Request().Context(), &quiz_id, &article_id)
 	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+// Rearrange the sequence of questions for a quiz.
+func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", errorInvalidQuizID))
+	}
+
+	// Get the map of question IDs and their new arrangement number.
+	// This is a map in JSON body.
+	questionsList := make(map[int]uuid.UUID)
+	err = c.Bind(&questionsList)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
+	}
+
+	// Rearrange the questions
+	err = questions.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
+	if err != nil {
+		if err == questions.ErrNonSequentialQuestions {
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Spørsmålene må ha en sekvensiell rekkefølge"))
+		}
 		return err
 	}
 

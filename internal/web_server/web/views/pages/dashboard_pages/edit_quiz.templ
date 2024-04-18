@@ -25,6 +25,7 @@ const QuizActiveTo = "quiz-active-to"
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
+		<script src="https://cdn.jsdelivr.net/npm/sortablejs@v1/Sortable.min.js"></script>
 		<div class="relative flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<div
 				id="changes-saved-message"
@@ -34,7 +35,30 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				Lagret
 				@icons.Checkmark(80, "#22C55E", 25, 25)
 			</div>
-			@changesSaved()
+			<script>
+				function changesSaved() {
+					message = document.querySelector("#changes-saved-message")
+
+						message.classList.remove("hidden")
+						message.classList.add("flex")
+						message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
+
+						setTimeout(
+							function() {
+								message.classList.add("hidden")
+								message.classList.remove("flex")
+								message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
+							}, 3000)
+				}
+
+				document.body.addEventListener("htmx:afterSwap", (event) => {
+					// If the swap is successful, and it was not used to open the question modal
+					// Display a 'saved' message for 3 seconds
+					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
+						changesSaved();
+					}
+				})
+			</script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
 			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
@@ -51,8 +75,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					<label for={ QuizImageURL } class="block font-bold">Forsidebilde</label>
 					@components.LoadingIndicator()
 				</div>
-				// TODO: Also support uploading an image
-				// <input id="quiz-image" type="file" accept="image/png, image/jpg, image/jpeg, image/webp" class="bg-gray-100 p-3 w-full [&:hover]:cursor-pointer mb-2"/>
 				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
 					&quiz.ImageURL, QuizImageURL, true, "")
 			</form>
@@ -101,10 +123,11 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-3 mb-1">
 					<h2 class="font-bold">Spørsmål</h2>
-					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning.")
+					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning. For å endre rekkefølgen på spørsmålene, trykk og drag dem til ønsket plassering.")
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
+				@components.ErrorText("error-question-list", "")
 				<ul
 					id="question-list"
 					class="border border-clightindigo w-full bg-violet-50 [&>*:nth-child(odd)]:bg-violet-100 rounded-card overflow-hidden mb-3"
@@ -124,6 +147,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					}
 				</ul>
 				@questionList()
+				@sortableQuestions(quiz.ID.String())
 				<button
 					id="new-question-button"
 					type="button"
@@ -136,7 +160,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					Legg til nytt spørsmål
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
-				// <button type="button" id="new-question-button" class="mt-3 px-3 py-1 bg-gray-300 block mx-auto">Legg til nytt spørsmål ➕</button>
 			}
 			@components.LoadingIndicator()
 			@components.ErrorText("error-quiz", "")
@@ -253,23 +276,52 @@ script questionList() {
 		}
 }
 
-script changesSaved() {
-	document.body.addEventListener("htmx:afterSwap", (event) => {
-		// If the swap is successful, and it was not used to open the question modal
-		// Display a 'saved' message for 3 seconds
-		if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
-			message = document.querySelector("#changes-saved-message")
+// Make the questions sortable, and save the new arrangement.
 
-			message.classList.remove("hidden")
-			message.classList.add("flex")
-			message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
+script sortableQuestions(quizId string) {
+	htmx.onLoad(function(content) {
+    Sortable.create(document.getElementById("question-list"), {
+			animation: 150,
+			handle: ".drag-handle",
+			onEnd: function(event) {
+				// Get all the question IDs and their arrangement in the list (first one is 1, second is 2, etc.)
+				// Send a POST request to the server with this mapping.
+				const questionList = document.getElementById("question-list");
+				const questions = questionList.children;
+				const questionIDs = Array.from(questions).map(question => question.getAttribute("data-question-id"));
+				questionIDs.shift();
 
-			setTimeout(
-				function() {
-					message.classList.add("hidden")
-					message.classList.remove("flex")
-					message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
-				}, 3000)
-		}
-	})
+				const idMap = questionIDs.reduce((map, id, index) => {
+					map[index + 1] = id;
+					return map;
+				}, {});
+
+				fetch(`/api/v1/admin/quiz/rearrange-questions?quiz-id=${quizId}`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"HX-Swap": "outerHTML",
+						"HX-Target": "#question-list",
+					},
+					body: JSON.stringify(idMap),
+				}).then((response) => {
+					let errorText = document.querySelectorAll(".error-question-list")[0];
+
+					if (response.status >= 400) {
+						// Show error message if error
+						response.text().then((result) => {
+							let parser = new DOMParser();
+							let doc = parser.parseFromString(result, 'text/html');
+							let res = doc.body.firstChild;
+							errorText.replaceWith(res);
+						})
+					} else if (response.status == 200) {
+						// Clear error message and show "saved" message if success
+						errorText.innerHTML = "";
+						changesSaved();
+					}
+				});
+			}
+		});
+	});
 }
