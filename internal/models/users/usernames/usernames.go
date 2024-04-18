@@ -1,8 +1,11 @@
 package usernames
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"log"
+
 	"github.com/lib/pq"
 )
 
@@ -128,15 +131,30 @@ func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error
 						SELECT COUNT(*) FROM available_usernames)
 						) 
 					LIMIT 1) AS random_username
-						WHERE users.id = ( SELECT id
-						FROM users
-						WHERE username_adjective = 'brilleslange'
-						OR
-						username_noun = 'brilleslange' 
-					);
+						WHERE users.id = ( 
+							SELECT id
+							FROM users
+							WHERE username_adjective = ANY($1)
+							OR
+							username_noun = ANY($1)
+						);
+					`, pq.Array(words))
+	if err != nil {
+		return err
+	}
 
-					DELETE FROM adjectives WHERE adjectives = ANY($1);
-					DELETE FROM nouns WHERE nouns = ANY($1); 
-						`, pq.Array(words))
-	return err
+	_, err = tx.ExecContext(ctx, `DELETE FROM adjectives WHERE adjective = ANY($1);`, pq.Array(words))
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `DELETE FROM nouns WHERE noun = ANY($1);`, pq.Array(words))
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
