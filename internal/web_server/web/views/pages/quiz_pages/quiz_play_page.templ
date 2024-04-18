@@ -7,6 +7,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
+// Page used to play quizzes. Displays QuizPlayContent and has an error dialog that will catch errored htmx responses.
 templ QuizPlayPage(title string, data *user_quiz.QuizData) {
 	@layout_components.QuizLayout(title) {
 		<link rel="stylesheet" href="/static/css/odometer-theme-default.css"/>

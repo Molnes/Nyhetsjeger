@@ -8,13 +8,19 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 )
 
 // Form with buttons for each alternative in a question
 templ AnswerButtons(question *questions.Question) {
 	<form
 		id="question-answer-form"
-		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		if utils.IsUserAuthenticated(ctx) {
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		} else {
+			hx-post={ fmt.Sprintf("/api/v1/guest/user-answer?question-id=%s", question.ID.String()) }
+		}
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
 		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4 isolate"
@@ -32,6 +38,9 @@ templ AnswerButtons(question *questions.Question) {
 	</form>
 	@components.LoadingIndicator()
 	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
+	if !utils.IsUserAuthenticated(ctx) {
+		@addQuestiontimestampToRequest("question-answer-form")
+	}
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
@@ -44,24 +53,51 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
+				id="next-question-button"
 				class="gradient-bg-button gradient-shadow px-8 py-3"
-				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				if utils.IsUserAuthenticated(ctx) {
+					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				} else {
+					hx-get="path set dynamically on htmx:configRequest event"
+				}
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
 			>
 				Neste
 			</button>
+			if !utils.IsUserAuthenticated(ctx) {
+				@setGuestNextQuestionPath("next-question-button")
+			}
 		} else {
-			<a
-				class="gradient-bg-button gradient-shadow px-8 py-3"
-				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
-			>
-				Ferdig
-			</a>
+			if utils.IsUserAuthenticated(ctx) {
+				<a
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
+				>
+					Ferdig
+				</a>
+			} else {
+				<button
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
+					hx-target="#quiz-play-content"
+					hx-swap="outerHTML"
+					hx-indicator=".htmx-indicator"
+					hx-vals="js:{summaryRows: window.localStorage.getItem('summary-rows')}"
+				>
+					Ferdig
+				</button>
+			}
 		}
 	</div>
 	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
+}
+
+// Same as FeedbackButtons, but save the passed user_quiz_summary.AnsweredQuestion in local storage in users browser.
+templ FeedbackButtonsWithClientState(answered *user_quiz.UserAnsweredQuestion, summaryRow *user_quiz_summary.AnsweredQuestion) {
+	@FeedbackButtons(answered)
+	@saveSummaryRow(summaryRow)
 }
 
 // A disabled button displaying the alternative text along with feedback

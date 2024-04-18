@@ -62,6 +62,8 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 	}
 }
 
+
+// Checks if the provided answer id is correct for this question.
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
 	for _, a := range q.Alternatives {
@@ -71,6 +73,18 @@ func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 		}
 	}
 	return isCorrect
+}
+
+// Gets the text of the alternative with given ID within this quesiton. If answerId is not found in this question, default empty string ("") is returned.
+func (q *Question) GetAnswerTextById(answerID uuid.UUID) string {
+	var text string
+	for _, a := range q.Alternatives {
+		if a.ID == answerID {
+			text = a.Text
+			break
+		}
+	}
+	return text
 }
 
 // Returns the seconds left after substracting given duration from the question's time limit.
@@ -134,13 +148,58 @@ func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	return scanQuestionsFromFullRows(db, rows)
 }
 
+// Gets n-th question in a given quiz, indexing from 1.
+func GetNthQuestionByQuizId(db *sql.DB, quizId uuid.UUID, questionNumber uint) (*Question, error) {
+	row := db.QueryRow(
+		`SELECT
+				q.id, q.question, q.image_url, q.arrangement, q.article_id, q.quiz_id, q.time_limit_seconds, q.points
+			FROM
+				questions q
+			WHERE
+				quiz_id = $1
+			GROUP BY
+				q.id
+			ORDER BY
+				q.arrangement ASC
+			LIMIT 1
+			OFFSET $2;`, quizId, questionNumber-1)
+
+	return scanQuestionFromFullRow(db, row)
+}
+
+// Gets the next question's id in a quiz, next meaning after the question with id provided.
+// If no more questions, sql.ErrNoRows  will be returned
+func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(
+		`WITH questions_in_quiz AS (
+			SELECT q.id, q.arrangement,
+			ROW_NUMBER () OVER (ORDER BY q.arrangement) 
+			FROM questions q, 
+			  (SELECT quiz_id as id
+				FROM questions 
+				WHERE id = $1
+			  ) quiz 
+			WHERE q.quiz_id = quiz.id
+		  ) 
+		  SELECT questions_in_quiz.id 
+		  FROM questions_in_quiz, 
+			( SELECT row_number 
+			  FROM questions_in_quiz 
+			  WHERE id = $1
+			) current 
+		  WHERE questions_in_quiz.row_number = current.row_number + 1;`, questionId)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 // Convert a row from the database to a Question.
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var articleID uuid.UUID
 	var imageURL sql.NullString
 	err := row.Scan(
-		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.Points,
+		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err

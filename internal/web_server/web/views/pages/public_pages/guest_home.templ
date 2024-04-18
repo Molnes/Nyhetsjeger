@@ -1,0 +1,38 @@
+package public_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/google/uuid"
+)
+
+// Homepage for guest users. Shows available quiz.
+templ GuestHomePage(quiz *quizzes.Quiz) {
+	@layout_components.BaseLayout("Gjest Hjem") {
+		<main
+			id="main"
+			class="bg-gray-100 w-full min-h-screen"
+		>
+			<div class="w-full md:w-3/4 lg:w-1/2 shrink-0 min-h-screen mx-auto py-4 px-6 flex flex-col justify-center items-center gap-6">
+				<h1 class="text-4xl text-center">Gjestemodus</h1>
+				<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+					Du er nå i gjestemodus. Du har kun tilgang til én quiz og resultatene blir <b>ikke</b> lagret.
+				</p>
+				if quiz.ID == uuid.Nil {
+					<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+						Det er ingen quizer tilgjengelig for gjester akkurat nå.
+					</p>
+					<a
+						class="text-md text-white cgradient font-bold py-2 px-5 shadow-sm rounded-button mx-auto"
+						href="/"
+					>
+						Tilbake til forsiden
+					</a>
+				} else {
+					@quiz_components.QuizCard(*quiz)
+				}
+			</div>
+		</main>
+	}
+}
