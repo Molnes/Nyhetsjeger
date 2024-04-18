@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
-
 	"github.com/lib/pq"
 )
 
