@@ -9,7 +9,7 @@ const (
 	Home           = 0
 	Leaderboard    = 1
 	AccessSettings = 2
-	UserAdmin 	   = 3
+	UserAdmin      = 3
 
 	MENU_CONTEXT_KEY = "chosen-side-menu-item"
 )
@@ -33,8 +33,8 @@ templ SideMenu() {
 						@icons.Key(20, "currentColor", 20, 20)
 					}
 				}
-				@menuItem("Brukernavn administrasjon", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
-					@icons.Person(20, "currentColor", 20, 20)
+				@menuItem("Brukernavn", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
+					@icons.Person(1, "currentColor", 20, 20)
 				}
 			</ul>
 		</nav>
