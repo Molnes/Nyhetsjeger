@@ -3,6 +3,7 @@ package user_quiz_summary
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/google/uuid"
@@ -11,57 +12,65 @@ import (
 type UserQuizSummary struct {
 	QuizID            uuid.UUID
 	QuizTitle         string
+	QuizActiveTo      time.Time
 	MaxScore          uint
 	AchievedScore     uint
 	AnsweredQuestions []AnsweredQuestion
 	HasArticlesToShow bool
 }
 
+// Sums individual achieved points for each question in AnsweredQuestions and sets the AchievedScore
+func (uqs *UserQuizSummary) CalculateAchievedScoreFromAnswered() {
+	var total uint
+	for _, answeredQuestion := range uqs.AnsweredQuestions {
+		total += answeredQuestion.PointsAwarded
+	}
+	uqs.AchievedScore = total
+}
+
 type AnsweredQuestion struct {
-	QuestionID            uuid.UUID
-	QuestionText          string
-	ChosenAlternativeID   uuid.UUID
-	ChosenAlternativeText string
-	IsCorrect             bool
-	PointsAwarded         uint
+	QuestionID            uuid.UUID `json:"questionId"`
+	QuestionText          string    `json:"questionText"`
+	MaxPoints             uint      `json:"maxPoints"`
+	ChosenAlternativeID   uuid.UUID `json:"chosenAlternativeId"`
+	ChosenAlternativeText string    `json:"chosenAlternativeText"`
+	IsCorrect             bool      `json:"isCorrect"`
+	PointsAwarded         uint      `json:"pointsAwarded"`
 }
 
 var ErrNoSuchQuiz = errors.New("quiz_summary: no such quiz")
 var ErrQuizNotCompleted = errors.New("quiz_summary: quiz not completed")
 
+// Returns UserQuizSummary of given quiz and given user.
+// If quiz does not exists, returns ErrNoSuchQuiz. If Quiz isn't completed ErrQuizNotCompleted.
 func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSummary, error) {
-	var summary UserQuizSummary
-
-	var questionNumber uint
-
 	quizRow := db.QueryRow(
-		`SELECT quizzes.id, title, count(questions.id) as num_questions, sum(questions.points) as max_score
-		FROM quizzes, questions
-		WHERE quizzes.id = questions.quiz_id
-		AND quizzes.id = $1
-		GROUP BY quizzes.id, title;`, quizID)
+		`SELECT qz.id, COALESCE(uq.total_points_awarded, 0), COALESCE(uq.is_completed, false),
+		qz.title, qz.active_to, sum(q.points) as max_score
+		FROM quizzes qz
+		LEFT JOIN user_quizzes uq ON uq.quiz_id = qz.id AND uq.user_id = $1
+		LEFT JOIN questions q ON qz.id= q.quiz_id
+		WHERE qz.id= $2
+		GROUP BY qz.id, uq.total_points_awarded, uq.is_completed, qz.title, qz.active_to;
+		`, userID, quizID)
 
-	err := quizRow.Scan(&summary.QuizID, &summary.QuizTitle, &questionNumber, &summary.MaxScore)
+	var summary UserQuizSummary
+	var isQuizComplete bool
+	err := quizRow.Scan(&summary.QuizID, &summary.AchievedScore, &isQuizComplete, &summary.QuizTitle, &summary.QuizActiveTo, &summary.MaxScore)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNoSuchQuiz
 		}
+	}
+	if !isQuizComplete {
+		return nil, ErrQuizNotCompleted
 	}
 
 	answeredQuestions, err := getAnsweredQuestions(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
-
 	summary.AnsweredQuestions = answeredQuestions
-
-	if len(answeredQuestions) < int(questionNumber) {
-		return nil, ErrQuizNotCompleted
-	}
-
-	for _, aq := range answeredQuestions {
-		summary.AchievedScore += aq.PointsAwarded
-	}
 
 	articles, err := articles.GetUsedArticlesByQuizID(db, quizID)
 	if err != nil {
@@ -72,18 +81,16 @@ func GetQuizSummary(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*UserQuizSu
 	return &summary, nil
 }
 
+// Gets questions answered by the given user in a given quiz.
 func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]AnsweredQuestion, error) {
 	rows, err := db.Query(
-		`SELECT questions.id, questions.question, answer_alternatives.id, answer_alternatives.text,
-	answer_alternatives.correct, points_awarded
-	FROM user_answers
-	LEFT JOIN answer_alternatives ON user_answers.chosen_answer_alternative_id = answer_alternatives.id
-	JOIN questions ON user_answers.question_id = questions.id
-	JOIN quizzes ON questions.quiz_id = quizzes.id
-	JOIN users ON user_answers.user_id = users.id
-	WHERE user_answers.chosen_answer_alternative_id IS NOT NULL
-	AND quizzes.id = $1 AND users.id = $2
-	ORDER BY questions.arrangement;`, quizID, userID)
+		`SELECT uqp.question_id, q.question, q.points, uqp.chosen_answer_alternative_id, a.text, a.correct, uqp.points_awarded
+		FROM user_question_points uqp
+		LEFT JOIN questions q ON uqp.question_id = q.id
+		LEFT JOIN answer_alternatives a ON uqp.chosen_answer_alternative_id = a.id
+		WHERE uqp.quiz_id = $1
+		AND uqp.user_id = $2
+		ORDER BY q.arrangement;`, quizID, userID)
 
 	if err != nil {
 		return nil, err
@@ -96,6 +103,7 @@ func getAnsweredQuestions(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) ([]Ans
 		err := rows.Scan(
 			&aq.QuestionID,
 			&aq.QuestionText,
+			&aq.MaxPoints,
 			&aq.ChosenAlternativeID,
 			&aq.ChosenAlternativeText,
 			&aq.IsCorrect,

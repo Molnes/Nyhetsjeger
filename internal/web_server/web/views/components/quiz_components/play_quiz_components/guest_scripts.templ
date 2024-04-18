@@ -1,0 +1,68 @@
+package play_quiz_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
+)
+
+// saves the passed timestamp in the browser's local storage
+
+script saveQuestiontimestamp(presentedAt string) {
+    window.localStorage.setItem('last_question_presented_at', presentedAt);
+}
+
+// adds the last_question_presented_at timestamp to the formdata of the request sent by form with given formId
+
+script addQuestiontimestampToRequest(formId string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener('htmx:configRequest', function(evt) {
+		const timestamp = window.localStorage.getItem('last_question_presented_at');
+		evt.detail.parameters['last_question_presented_at'] = timestamp;
+	});
+}
+
+// adds the given AnsweredQuestion object to array stored in the local storage.
+// If there is no array or current question is the first one, new array is created.
+
+script saveSummaryRow(summaryRow *user_quiz_summary.AnsweredQuestion) {
+	const queryParams = new URLSearchParams(window.location.search);
+	const currentQuestion = parseInt(queryParams.get("current-question"));
+
+	let currentList = JSON.parse(window.localStorage.getItem('summary-rows'));
+
+	if (currentQuestion === 1 || !currentList) {
+		currentList = [];
+	}
+
+	currentList[currentQuestion-1] = summaryRow;
+	window.localStorage.setItem('summary-rows', JSON.stringify(currentList));
+}
+
+// Sets the request path to get next question from the guest (no-auth) api. Adds total points to the search parameters of the request url.
+// Additionally updates current window url to match the requested question.
+
+script setGuestNextQuestionPath(buttonId string) {
+	const button = document.getElementById(buttonId);
+	button.addEventListener('htmx:configRequest',function (evt) {
+	
+		// find next question number
+		const url = new URL(window.location);
+		const nextQuestionNumber = parseInt(url.searchParams.get('current-question')) + 1;
+		url.searchParams.set('current-question', nextQuestionNumber);
+
+		// find total points
+		let summaryList = JSON.parse(window.localStorage.getItem("summary-rows"));
+		let totalPoints = 0;
+		if (summaryList) {
+			totalPoints = summaryList
+				.map((summaryRow) => summaryRow ? summaryRow.pointsAwarded : 0)
+				.reduce((total, current) => total + current, 0);
+		}
+		url.searchParams.set('total-points',totalPoints);
+		
+		
+		evt.detail.path = `/api/v1/guest/question${url.search}`;
+
+		// replace the url search params with new oens
+		window.history.replaceState(null, "", url.href);
+	});
+}

@@ -2,13 +2,14 @@ package public_pages
 
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 
+// Root home page. Simple introduction and link to login page.
 templ HomePage() {
 	@layout_components.BaseLayout("Nyhetsjeger") {
-		<main class="flex flex-col items-center justify-center min-h-screen">
-			<h1>QUIZ</h1>
-			<p>Velkomen til nyhetsjeger</p>
+		<main id="main" class="flex flex-col gap-5 items-center justify-center min-h-screen">
+			<h1 class="text-2xl">QUIZ</h1>
+			<p>Velkomen til Nyhetsjeger</p>
 			<a
-				class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-button"
+				class="gradient-bg-button py-2 px-4"
 				href="/login"
 			>SPILL NÅ</a>
 		</main>

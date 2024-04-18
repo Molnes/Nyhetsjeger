@@ -3,14 +3,18 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/access_control"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
@@ -36,7 +40,8 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
-	g.GET("/user-details", dph.userDetails)
+	g.GET("/user", dph.userDetails)
+	g.GET("/username-admin", dph.getUsernameAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
 	organizationAdminGroup := g.Group("", mw.EnforceRole)
@@ -89,27 +94,17 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 // Renders the modal for creating a new question.
 func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) error {
 	// Get the quiz ID.
-	quiz_id, err := uuid.Parse(c.QueryParam("quiz-id"))
+	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing quiz id")
 	}
 
-	// Create a new question with no actual data.
-	// Set the default points to be 10.
-	newQuestion := questions.Question{
-		ID:           uuid.New(),
-		Text:         "",
-		ImageURL:     url.URL{},
-		Article:      articles.Article{},
-		QuizID:       quiz_id,
-		Points:       10,
-		Alternatives: []questions.Alternative{},
-	}
+	newQuestion := questions.GetDefaultQuestion(quizId)
 
 	// Get all the articles for the quiz by quiz ID.
-	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quiz_id)
+	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quizId)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quiz_id.String(), true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quizId.String(), true))
 }
 
 // Renders the modal for editing a question.
@@ -138,7 +133,11 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
-	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage())
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+	if err != nil {
+		return err
+	}
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings))
 }
 
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
@@ -151,11 +150,60 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 }
 
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
-	// userId := c.QueryParam("user-id")
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage())
+	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing user id")
+	}
+	user, err := users.GetUserByID(dph.sharedData.DB, uuid_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "No user with given id found.")
+		} else {
+			return err
+		}
+	}
+
+	user_rank, err := user_ranking.GetUserRanking(dph.sharedData.DB, uuid_id, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			user_rank = user_ranking.UserRanking{
+				Username:  user.Username,
+				Points:    0,
+				Placement: 0,
+			}
+		} else {
+			return err
+		}
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(*user, user_rank))
 }
 
 // Adds chosen menu item to the context, so it can be used in the template.
 func addMenuContext(c echo.Context, menuContext side_menu.SideMenuItem) {
 	utils.AddToContext(c, side_menu.MENU_CONTEXT_KEY, menuContext)
+}
+
+// Gets the usernames administration page and returns it.
+func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) error {
+	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		adjPage = 1
+	}
+	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		nounPage = 1
+	}
+
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
+	if err != nil || pages < 5 || pages > 255 { // Sets to 25 if between a certain range.
+		pages = 25
+	}
+
+	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, adjPage, nounPage, pages)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.UsernameAdminPage(uai))
 }

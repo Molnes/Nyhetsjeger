@@ -7,8 +7,11 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
+// Page used to play quizzes. Displays QuizPlayContent and has an error dialog that will catch errored htmx responses.
 templ QuizPlayPage(title string, data *user_quiz.QuizData) {
 	@layout_components.QuizLayout(title) {
+		<link rel="stylesheet" href="/static/css/odometer-theme-default.css"/>
+		<script src="/static/js/odometer.js"></script>
 		@play_quiz_components.QuizPlayContent(data)
 		@components.ErrorDialog("Noe gikk galt!", "Det oppstod en feil under quiz-spillingen. Prøv igjen senere.")
 	}

@@ -1,28 +1,35 @@
 package play_quiz_components
 
 import (
-	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"fmt"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
+	"math"
 	"github.com/google/uuid"
+	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz_summary"
 )
 
 // Form with buttons for each alternative in a question
 templ AnswerButtons(question *questions.Question) {
 	<form
 		id="question-answer-form"
-		hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		if utils.IsUserAuthenticated(ctx) {
+			hx-post={ fmt.Sprintf("/api/v1/quiz/user-answer?question-id=%s", question.ID.String()) }
+		} else {
+			hx-post={ fmt.Sprintf("/api/v1/guest/user-answer?question-id=%s", question.ID.String()) }
+		}
 		hx-swap="outerHTML"
 		hx-indicator=".htmx-indicator"
-		class="grid grid-cols-2 gap-10 w-full isolate mt-8 px-4"
+		class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4 isolate"
 	>
 		for _, alternative := range question.Alternatives {
 			<button
 				type="submit"
 				name="answer-id"
-				class="text-l p-2 h-28 rounded-button bg-white gradient-outline  gradient-shadow text-wrap w-full"
+				class="answer-button gradient-shadow"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -31,84 +38,128 @@ templ AnswerButtons(question *questions.Question) {
 	</form>
 	@components.LoadingIndicator()
 	@stopTimerOn("htmx:beforeRequest", "question-answer-form")
+	if !utils.IsUserAuthenticated(ctx) {
+		@addQuestiontimestampToRequest("question-answer-form")
+	}
 }
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 	<div class="flex flex-col gap-8 items-center w-full isolate">
-		<div class="grid grid-cols-2 gap-10 w-full  mt-8 px-4">
+		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
 		</div>
 		if answered.NextQuestionID != uuid.Nil {
 			<button
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-				hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				id="next-question-button"
+				class="gradient-bg-button gradient-shadow px-8 py-3"
+				if utils.IsUserAuthenticated(ctx) {
+					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
+				} else {
+					hx-get="path set dynamically on htmx:configRequest event"
+				}
 				hx-target="#quiz-play-content"
 				hx-swap="outerHTML"
 				hx-indicator=".htmx-indicator"
 			>
 				Neste
 			</button>
+			if !utils.IsUserAuthenticated(ctx) {
+				@setGuestNextQuestionPath("next-question-button")
+			}
 		} else {
-			<a
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
-				href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
-			>
-				Ferdig
-			</a>
+			if utils.IsUserAuthenticated(ctx) {
+				<a
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
+				>
+					Ferdig
+				</a>
+			} else {
+				<button
+					class="gradient-bg-button gradient-shadow px-8 py-3"
+					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
+					hx-target="#quiz-play-content"
+					hx-swap="outerHTML"
+					hx-indicator=".htmx-indicator"
+					hx-vals="js:{summaryRows: window.localStorage.getItem('summary-rows')}"
+				>
+					Ferdig
+				</button>
+			}
 		}
 	</div>
+	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
 }
 
+// Same as FeedbackButtons, but save the passed user_quiz_summary.AnsweredQuestion in local storage in users browser.
+templ FeedbackButtonsWithClientState(answered *user_quiz.UserAnsweredQuestion, summaryRow *user_quiz_summary.AnsweredQuestion) {
+	@FeedbackButtons(answered)
+	@saveSummaryRow(summaryRow)
+}
+
+// A disabled button displaying the alternative text along with feedback
+// (Percentage of answers/votes for this option, and different styling for correct/incorrect alternatives),
+// also highlights the button if this option was selected.
 templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="text-l p-2 h-28 rounded-button bg-white gradient-outline-thick text-wrap w-full gradient-shadow-always"
+			class="answer-button gradient-outline-thick gradient-shadow-always w-full"
 		} else {
-			class="text-l p-2 h-28 rounded-button bg-white gradient-outline text-wrap w-full"
+			class="answer-button w-full"
 		}
 	>
 		{ alternative.Text }
-		<div class="absolute -top-4 -left-4 z-10">
-			if alternative.IsCorrect {
-				@feedbackCircle(true, isSelected)
-			} else {
-				@feedbackCircle(false, isSelected)
-			}
+		<div class="absolute -top-5 -left-5 z-10">
+			@feedbackCircle(alternative.IsCorrect)
 		</div>
-		<div class="absolute -bottom-4 -right-4 z-10">
-			@feedbackPercentage(alternative.PercentChosen, isSelected)
+		<div class="absolute -bottom-5 -right-6 z-10">
+			@feedbackPercentage(alternative.PercentChosen, alternative.IsCorrect)
 		</div>
 	</button>
 }
 
-templ feedbackCircle(correct bool, wasPicked bool) {
+// A circular badge/card displaying check-mark or cross based on positive/negative feedback (correct, incorrect)
+templ feedbackCircle(isCorrect bool) {
 	<div
-		if wasPicked {
-			class="flex items-center justify-center w-12 h-12 rounded-1/2 bg-white gradient-outline-circle-thick gradient-shadow-always"
+		if isCorrect {
+			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-green-500"
 		} else {
-			class="flex items-center justify-center w-12 h-12 rounded-1/2 bg-white gradient-outline-circle"
+			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-600"
 		}
 	>
-		if correct {
-			@icons.Checkmark(100, "green", 30, 30)
+		if isCorrect {
+			@icons.Checkmark(60, "white", 30, 30)
 		} else {
-			@icons.Cross(3, "red", 30, 30)
+			@icons.Cross(3, "white", 30, 30)
 		}
 	</div>
 }
 
-templ feedbackPercentage(percentage float64, wasPicked bool) {
+// A badge/card displaying the percentage (given as a float), and outlined with color based on positive/negative feedback (correct, incorrect)
+templ feedbackPercentage(percentage float64, isCorrect bool) {
 	<div
-		if wasPicked {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline-thick text-sm gradient-shadow-always"
+		if isCorrect {
+			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
 		} else {
-			class="flex items-center justify-center w-14 h-11 rounded-button bg-white gradient-outline text-sm"
+			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
 		}
 	>
-		{ fmt.Sprintf("%v%%", percentage * 100) }
+		{ displayPercentage(percentage) }
 	</div>
+}
+
+// Converts float64 to a string representating the percentage, includes '%'. If the percentage is a whole number, no decimals kept. Othwerise 1 decimal is kept.
+// Example: 0.0 -> '0%', 0.5 -> '50%', 3.333 -> '33.3%', 6.666 -> '66.7%'
+func displayPercentage(num float64) string {
+	var str string
+	if math.Mod(num*100, 1) == 0 {
+		str = fmt.Sprintf("%.0f%%", num*100)
+	} else {
+		str = fmt.Sprintf("%.1f%%", num*100)
+	}
+	return str
 }

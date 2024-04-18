@@ -9,12 +9,18 @@ import (
 templ ArticleCard(article *articles.Article) {
 	<a
 		href={ templ.SafeURL(article.ArticleURL.String()) }
-		class="gradient-shadow-always w-fit h-fit"
+		class="w-fit h-fit"
 		target="_blank"
 	>
-		<article class="flex flex-row items-center bg-white max-w-screen-md aspect-[5/1] rounded-card overflow-hidden">
-			<img src={ article.ImgURL.String() } height="120" width="120" class="object-cover rounded-l-card h-full w-auto aspect-square"/>
-			<p class="font-bold text-center px-4 py-2 mx-auto text-xl leading-snug">{ article.Title }</p>
+		<article class="flex flex-row items-center bg-white max-w-screen-md rounded-card overflow-hidden border-2 border-cindigo">
+			<img
+				src={ article.ImgURL.String() }
+				height="120"
+				width="120"
+				class="hidden md:block object-cover rounded-l-card w-1/5 aspect-square"
+				alt=""
+			/>
+			<p class="font-bold text-center px-6 py-4 mx-auto md:text-xl leading-snug">{ article.Title }</p>
 		</article>
 	</a>
 }

@@ -1,0 +1,38 @@
+package play_quiz_components
+
+import (
+	"fmt"
+)
+
+const (
+	PointsDisplayId = "points-display"
+)
+
+// Displays points passed in
+templ PointsDisplay(points uint) {
+	<p class="inline-block text-white px-2 py-1 cgradient rounded-card">
+		<b>Poeng</b>
+		<span
+			id={ PointsDisplayId }
+			class="odometer ml-1"
+		>
+			{ fmt.Sprintf("%v", points) }
+		</span>
+	</p>
+}
+
+// Adds points to the display
+
+script AddPointsToDisplay(points uint, displayId string) {
+	const elem = document.getElementById(displayId);
+  const current = Number(elem.innerText);
+
+	const odometer = new Odometer({
+		el: elem,
+		value: Number(elem.innerText),
+		theme: "default",
+		duration: 1000
+	});
+
+  elem.innerText = current+points;
+}

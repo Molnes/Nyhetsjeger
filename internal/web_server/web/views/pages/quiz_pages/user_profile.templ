@@ -3,7 +3,6 @@ package quiz_pages
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
 
 //Javascript function to show the delete confirmation modal
@@ -32,79 +31,67 @@ script showDeleteConfirmationModal() {
 }
 
 templ UserProfile(u *users.User) {
-	@layout_components.CenteredLayout("Nyhetsjeger - Profil", true) {
+	@layout_components.QuizLayoutMenu("Nyhetsjeger - Profil") {
 		@showDeleteConfirmationModal()
-		<form
-			class="w-full sm:w-2/5 h-3/4 max-w-md min-w-60 bg-white flex flex-col items-center rounded-card p-6 gap-5"
-			action=""
-			method="post"
-		>
-			<h1 class="text-3xl font-bold">Oppdater profil</h1>
-			<div>
-				<div class="mb-2">
-					<label for="tlf-in" class="inline-block font-bold mr-1">Mobilnummer</label>
-					<button
-						class="inline relative rounded-1/2 border-gray-500 text-gray-500 border-2 w-6 h-6 font-bold tooltip-parent hover:border-cindigo focus:border-cindigo hover:text-cindigo focus:text-cindigo"
-						type="button"
-					>
-						i
-						@components.Tooltip("Mobilnummeret ditt vil bli brukt for å kontakte deg om du vinner en konkurranse.")
-					</button>
-				</div>
-				<input
-					id="tlf-in"
-					class="w-full bg-gray-100 rounded-input border border-gray-900 px-4 py-2"
-					type="tel"
-					placeholder="123 45 678"
-					value={ u.Phone }
-					pattern="^(\\d{2} \\d{2} \\d{2} \\d{2}|\\d{3} \\d{2} \\d{3}|\\d{8})$"
-					name="phonenumber"
-					required
-				/>
-				<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
-				@user_management.UsernameInput("usrn-in", u.Username)
-			</div>
-			<button
-				id="randomize"
-				class="flex items-center gap-3 rounded-button border-2 border-gray-200 px-4 py-1"
-				type="button"
-				hx-patch="/api/v1/quiz/brukernavn"
-				hx-trigger="click"
-				hx-swap="outerHTML"
-				hx-target="#usrn-in"
+		<div class="mt-10">
+			<form
+				class="grid gap-4 w-96"
+				action=""
+				method="post"
 			>
-				Generer nytt navn
-				@icons.Dice(16, "currentColor", 28, 28)
-			</button>
-			<div class="flex items-center">
-				<input
-					id="comp-check"
-					class="inline w-6 h-6 accent-cindigo cursor-pointer"
-					type="checkbox"
-					name="competition"
-					if u.OptInRanking {
-						checked
-					}
-				/>
-				<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
-			</div>
-			<button class="py-2 px-8 bg-cindigo text-white rounded-input font-bold" type="submit">Lagre</button>
-			<button
-				id="delete-button"
-				hx-delete="/api/v1/quiz/profil"
-				hx-confirm=""
-				class="text-red-500 mt-5"
-				type="button"
-			>Slett konto</button>
-		</form>
-		<div id="modal" class="bg-black bg-opacity-40 w-full h-full z-50 fixed hidden justify-center items-center">
-			<div class="w-1/3 bg-white rounded-card grid px-6 py-4 gap-3">
-				<p class="text-lg text-center">Er du sikker på at du ønsker å slette kontoen din? Det er permanent!</p>
-				<div class="flex justify-evenly gap-3">
-					<button id="accept-button" class="py-2 px-6 bg-white border-2 rounded-button font-bold">Ja</button>
-					<button id="refuse-button" class="py-2 px-6 bg-white border-2 rounded-button font-bold">Nei</button>
+				<h1 class="text-3xl font-bold">Profil instillinger</h1>
+				<div>
+					<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
+					<div class="flex items-center gap-3">
+						@user_management.UsernameInput("usrn-in", u.Username)
+						<button
+							id="randomize"
+							class="flex items-center gap-3 rounded-button border-2 border-gray-200 px-4 py-1"
+							type="button"
+							hx-patch="/api/v1/quiz/brukernavn"
+							hx-trigger="click"
+							hx-swap="outerHTML"
+							hx-target="#usrn-in"
+						>
+							@icons.Dice(16, "currentColor", 28, 28)
+						</button>
+					</div>
+				</div>
+				<div class="flex items-center">
+					<input
+						id="comp-check"
+						class="inline w-6 h-6 accent-cindigo cursor-pointer"
+						type="checkbox"
+						name="competition"
+						if u.OptInRanking {
+							checked
+						}
+					/>
+					<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
+				</div>
+				<button class="py-2 px-8 bg-cindigo text-white rounded-input font-bold w-full" type="submit">Lagre</button>
+				<button
+					id="delete-button"
+					hx-delete="/api/v1/quiz/profil"
+					hx-confirm=""
+					class="text-red-600 mt-5"
+					type="button"
+				>Slett konto</button>
+			</form>
+			<div id="modal" class="bg-black bg-opacity-40 w-full h-full z-50 fixed hidden justify-center items-center">
+				<div class="w-1/3 bg-white rounded-card grid px-6 py-4 gap-3">
+					<p class="text-lg text-center">Er du sikker på at du ønsker å slette kontoen din? Det er permanent!</p>
+					<div class="flex justify-evenly gap-3">
+						<button id="accept-button" class="py-2 px-6 bg-white border-2 rounded-button font-bold">Ja</button>
+						<button id="refuse-button" class="py-2 px-6 bg-white border-2 rounded-button font-bold">Nei</button>
+					</div>
 				</div>
 			</div>
+			<ul class="mt-10">
+				<li class="flex items-center gap-3">
+					<button class="block p-4 hover:bg-cblue w-full md:w-auto bg-cindigo text-white rounded-input font-bold" hx-post="/auth/logout">Logg ut</button>
+				</li>
+			</ul>
 		</div>
 	}
 }

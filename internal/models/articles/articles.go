@@ -1,6 +1,7 @@
 package articles
 
 import (
+	"context"
 	"database/sql"
 	"net/url"
 
@@ -34,14 +35,6 @@ func newArticle(ID uuid.NullUUID, title string, articleURL url.URL, imgURL url.U
 		ArticleURL: articleURL,
 		ImgURL:     imgURL,
 	}
-}
-
-func GetAllArticles() ([]Article, error) {
-	return SampleArticles, nil
-}
-
-func GetArticle(articleID uuid.UUID) (Article, error) {
-	return SampleArticles[0], nil
 }
 
 // Get the articles by Quiz ID.
@@ -237,8 +230,15 @@ func IsArticleInQuiz(db *sql.DB, articleID *uuid.UUID, quizID *uuid.UUID) (bool,
 	return true, err
 }
 
-func DeleteArticleFromQuiz(db *sql.DB, quizID *uuid.UUID, articleID *uuid.UUID) error {
-	_, err := db.Exec(
+func DeleteArticleFromQuiz(db *sql.DB, ctx context.Context, quizID *uuid.UUID, articleID *uuid.UUID) error {
+	// Open a transaction.
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Remove the article from the quiz.
+	_, err = tx.Exec(
 		`DELETE FROM
 			quiz_articles
 		WHERE
@@ -247,42 +247,36 @@ func DeleteArticleFromQuiz(db *sql.DB, quizID *uuid.UUID, articleID *uuid.UUID) 
 		quizID,
 		articleID)
 
-	return err
-}
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
-var SampleArticles []Article = []Article{
-	{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title: "Test 1",
-		ArticleURL: url.URL{
-			Scheme: "https",
-			Host:   "www.smp.no",
-			Path:   "/nyheter/i/Q7QX6Q/konkursnettverket-dette-gjer-regjeringa",
-		},
-		ImgURL: url.URL{
-			Scheme: "https",
-			Host:   "www.picsum.photos",
-			Path:   "/id/1062/500/300",
-		},
-	},
-	{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title: "Test article: this is a very long title in order to check how titles look when they are long",
-		ArticleURL: url.URL{
-			Scheme: "https",
-			Host:   "www.smp.no",
-			Path:   "/nyheter/i/0QPq3A/tilraar-nye-ferjekailoeysingar",
-		},
-		ImgURL: url.URL{
-			Scheme: "https",
-			Host:   "www.picsum.photos",
-			Path:   "/id/1062/500/300",
-		},
-	},
+	// If this is the last quiz that uses the article, delete the article.
+	_, err = tx.Exec(
+		`DELETE FROM
+			articles
+		WHERE
+			id = $1 AND
+			NOT EXISTS (
+				SELECT
+					article_id
+				FROM
+					quiz_articles
+				WHERE
+					article_id = $1
+			)`,
+		articleID)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit the transaction.
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return err
 }

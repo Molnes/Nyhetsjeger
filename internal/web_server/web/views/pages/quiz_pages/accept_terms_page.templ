@@ -1,0 +1,69 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+)
+
+const (
+	terms_dialog_id = "temrs-of-service-dialog"
+)
+
+// Page with form to accept terms of service. Includes a dialog with the terms.
+templ AcceptTermsPage() {
+	@layout_components.BaseLayout("Aksepter vilkår og betingelser") {
+		<main
+			id="main"
+			class="min-h-svh w-full md:w-3/4 lg:w-1/2 mx-auto px-4 text-center flex flex-col justify-center"
+		>
+			<h1 class="text-2xl mb-2">Vilkår og betingelser</h1>
+			<p>
+				For å fortsette må du akseptere våre
+				<button
+					onclick={ openTermsOfService(terms_dialog_id) }
+					class="text-cblue font-semibold"
+				>
+					vilkår og betingelser
+				</button>.
+			</p>
+			<form hx-post="/api/v1/quiz/accept-terms" class="flex flex-col gap-5 mt-5">
+				<div class="flex items-center mx-auto gap-2">
+					<input type="checkbox" name="accepted-terms" class="w-6 h-6 accent-cindigo cursor-pointer" id="terms-of-service-checkbox" required/>
+					<label for="terms-of-service-checkbox" class="cursor-pointer text-left">
+						Jeg har lest og aksepterer vilkårene og betingelsene.
+					</label>
+				</div>
+				<button type="submit" class="gradient-bg-button px-4 py-2 mx-auto">
+					Fortsett
+				</button>
+			</form>
+		</main>
+		<dialog
+			id={ terms_dialog_id }
+			class="w-11/12 md:w-8/12 lg:w-6/12 py-3 px-8 "
+		>
+			@components.TermsOfService()
+			<button
+				onclick={ closeTermsOfService(terms_dialog_id) }
+				class="gradient-bg-button px-6 py-2 block mx-auto mt-2"
+			>
+				OK
+			</button>
+		</dialog>
+	}
+}
+
+// Opens the dialog with given id. Makes sure dialog is scrolled all the way up.
+
+script openTermsOfService(dialogId string) {
+	const dialog = document.getElementById(dialogId);
+	dialog.showModal();
+	dialog.scrollTop = 0;
+}
+
+// Closes the dialog with given id.
+
+script closeTermsOfService(dialogId string) {
+	const dialog = document.getElementById(dialogId);
+	dialog.close()
+}

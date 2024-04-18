@@ -3,7 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	"regexp"
+	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
@@ -19,8 +19,8 @@ import (
 
 const (
 	errInvalidOrMissingQuizID    = "Manglende eller ugyldig quiz-id"
-	errNoSuchQuiz                = "Quizzen ble ikke funnet"
-	errQuizNotCompletedNoSummary = "Quizzen er ikke fullført, oppsummering er ikke tilgjengelig"
+	errNoSuchQuiz                = "Quizen ble ikke funnet"
+	errQuizNotCompletedNoSummary = "Quizen er ikke fullført, oppsummering er ikke tilgjengelig"
 )
 
 type QuizPagesHandler struct {
@@ -38,6 +38,7 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/play", qph.getPlayQuizPage)
 	e.GET("/toppliste", qph.getScoreboard)
 	e.GET("/fullforte", qph.getFinishedQuizzes)
+	e.GET("/accept-terms", qph.getAcceptTermsPage)
 
 	e.GET("/brukernavn", qph.usernamePage)
 	e.POST("/brukernavn", qph.postUsername)
@@ -53,15 +54,14 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		return err
 	}
 
-    oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
-        if err != nil {
-                return err
-        }
-
+	oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
+	if err != nil {
+		return err
+	}
 
 	userRankingInfo := user_ranking.UserRanking{}
 
-	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local,user_ranking.Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -80,7 +80,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		quizList,
-        oldQuizzes,
+		oldQuizzes,
 		userRankingInfo,
 	))
 }
@@ -133,12 +133,12 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 
 // Renders the scoreboard page.
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
-	rankings, err := user_ranking.GetRanking(qph.sharedData.DB)
+	rankings, err := user_ranking.GetRanking(qph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 	if err != nil {
 		return err
 	}
 
-	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 
 	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings, userRankingInfo))
 }
@@ -163,18 +163,9 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
 // Adds phone number and the leaderboards opt-in status to the user
 func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
-	phonenumber := c.FormValue("phonenumber")
-	match, _ := regexp.MatchString(`^(\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3}|\d{8})$`, phonenumber)
-	if !match {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid phone number")
-	}
-	enterCompetion := c.FormValue("competition") == "on"
+	enterCompetition := c.FormValue("competition") == "on"
 
-	err := users.AssignPhonenumberToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), phonenumber)
-	if err != nil {
-		return err
-	}
-	err = users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetion)
+	err := users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetition)
 	if err != nil {
 		return err
 	}
@@ -190,4 +181,16 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
+}
+
+func (gph *QuizPagesHandler) getAcceptTermsPage(c echo.Context) error {
+	user, err := users.GetUserByID(gph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
+	}
+	if user.AcceptedTerms {
+		return c.Redirect(http.StatusTemporaryRedirect, "/quiz")
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.AcceptTermsPage())
 }

@@ -6,15 +6,32 @@ templ BurgerMenu() {
 	<header class="bg-cindigo text-white">
 		<!-- with inspiration from https://www.geeksforgeeks.org/how-to-create-a-responsive-navigation-bar-in-tailwind-css/ -->
 		<nav
-			class="flex justify-between  
-                    items-center w-[92%]  mx-auto"
+			class="flex gap-1 justify-between items-center w-11/12 mx-auto md:w-4/5 lg:w-2/3"
 		>
 			<a href="/quiz" class="font-bold p-4 hover:bg-cblue">
 				Nyhetsjeger
 			</a>
+			<a
+				href="#main"
+				class="absolute -top-80 focus:top-auto z-50 ml-36 px-2 py-1 gradient-bg-button rounded-button"
+			>Hopp over navigering</a>
+			<div class="flex items-center gap-6">
+				<button
+					id="toggleSidebar"
+					onclick="onToggleMenu(this)"
+					name="menu"
+					role="button"
+					aria-pressed="false"
+					aria-label="Åpne/lukk meny"
+					class="text-3xl cursor-pointer md:hidden text-white"
+				>
+					@burgerIcon("white")
+					@crossIcon("white")
+				</button>
+			</div>
 			<div
 				id="navbar"
-				class="z-50 nav-links duration-500 md:static absolute md:min-h-fit min-h-[calc(100vh-56px)] w-full left-0 top-[-100%] md:w-auto flex md:items-center"
+				class="flex z-40 nav-links duration-500 md:static absolute md:min-h-fit min-h-[calc(100vh-56px)] w-full left-0 top-[-100%] md:w-auto md:items-center"
 			>
 				<ul
 					class="flex md:flex-row flex-col md:items-center gap-4 w-full py-5 md:p-0"
@@ -23,31 +40,58 @@ templ BurgerMenu() {
 					<li><a class="block p-4 hover:bg-cblue" href="/quiz/toppliste">Toppliste</a></li>
 					<li><a class="block p-4 hover:bg-cblue" href="/quiz/fullforte">Fullførte quizer</a></li>
 					<li><a class="block p-4 hover:bg-cblue" href="/quiz/profil">Profil</a></li>
-					<li>
-						<button class="block p-4 hover:bg-cblue w-full md:w-auto" hx-post="/auth/logout">Logg ut</button>
-					</li>
 				</ul>
-			</div>
-			<div class="flex items-center gap-6">
-				<button
-					id="toggleSidebar"
-					onclick="onToggleMenu(this)"
-					name="menu"
-					class="text-3xl cursor-pointer md:hidden text-white"
-				>
-					@burgerIcon("white")
-					@crossIcon("white")
-				</button>
 			</div>
 		</nav>
 		<script>
         const navLinks = document.querySelector('.nav-links') 
+				const	toggleButton = document.getElementById('toggleSidebar')
+				const burgerIcon = document.getElementById('burger')
+				const crossIcon = document.getElementById('cross')
+
         function onToggleMenu(e) { 
-                e.name = e.name === 'menu' ? 'close' : 'menu' 
-                        navLinks.classList.toggle('top-[56px]')
-                        navLinks.classList.toggle('bg-cindigo')
+          e.name = e.name === 'menu' ? 'close' : 'menu'
+					toggleButton.setAttribute('aria-pressed', e.name === 'close')
+          navLinks.classList.toggle('top-[56px]')
+          navLinks.classList.toggle('bg-cindigo')
+
+					// Toggle between burger and cross icons
+					if (e.name === 'menu') {
+						burgerIcon.classList.remove('hidden')
+						crossIcon.classList.add('hidden')
+					} else {
+						burgerIcon.classList.add('hidden')
+						crossIcon.classList.remove('hidden')
+					}
+					updateTabindex();
         } 
-        </script>
+
+				// Update the tabindex of the navbar items
+				// If the menu is closed, the items should not be tabbable
+				function updateTabindex() {
+					// Get all the navbar links
+					var links = document.querySelectorAll('#navbar li>*');
+
+					// Check if the viewport is less than 768px
+					// (768 px is the md breakpoint for Tailwind)
+					if (window.innerWidth < 768 && toggleButton.name === 'menu') {
+							// If it is, set tabindex to -1
+							for (var i = 0; i < links.length; i++) {
+									links[i].setAttribute('tabindex', '-1');
+							}
+					} else {
+							// If it's not, remove the tabindex attribute
+							for (var i = 0; i < links.length; i++) {
+									links[i].removeAttribute('tabindex');
+							}
+					}
+				}
+
+			// Update the tab index the first time the page loads
+			// and every time the window is resized.
+			updateTabindex();
+			window.addEventListener('resize', updateTabindex);
+    </script>
 	</header>
 }
 
@@ -61,6 +105,6 @@ templ burgerIcon(color string) {
 
 templ crossIcon(color string) {
 	<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="cross" class="hidden">
-		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke={ color } stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+		<path d="M19 5L4.99998 19M5.00001 5L19 19" stroke={ color } stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
 	</svg>
 }

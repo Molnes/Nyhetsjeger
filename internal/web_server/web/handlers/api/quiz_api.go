@@ -32,7 +32,7 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.POST("/user-answer", qah.postUserAnswer)
 	e.PATCH("/brukernavn", qah.patchRandomUsername)
 	e.DELETE("/profil", qah.deleteProfile)
-
+	e.POST("/accept-terms", qah.postAcceptTerms)
 }
 
 func (qah *QuizApiHandler) getArticles(c echo.Context) error {
@@ -123,6 +123,20 @@ func (qah *QuizApiHandler) deleteProfile(c echo.Context) error {
 	err = session.Save(c.Request(), c.Response())
 	if err != nil {
 		return fmt.Errorf("failed to save session: %s", err.Error())
+	}
+	c.Response().Header().Set("HX-Redirect", "/")
+	return c.NoContent(http.StatusNoContent)
+}
+
+// Handles a post request with expected accepted-terms=on form data. Sets te caller's accepted terms of service value.
+func (h *QuizApiHandler) postAcceptTerms(c echo.Context) error {
+	isAccepted := c.FormValue("accepted-terms") == "on"
+	if !isAccepted {
+		return echo.NewHTTPError(http.StatusBadRequest, "Terms of service must be accepted.")
+	}
+	err := users.UpdateAcceptedTermsByUserID(h.sharedData.DB, utils.GetUserIDFromCtx(c), true)
+	if err != nil {
+		return err
 	}
 	c.Response().Header().Set("HX-Redirect", "/")
 	return c.NoContent(http.StatusNoContent)

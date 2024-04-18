@@ -61,8 +61,7 @@ func HTTPErrorHandler(err error, c echo.Context) {
 
 // Sets the contextk for API error display.
 //
-// If this middleware is used, the error will be displayed in
-// JSON instead of a full HTML page.
+// If this middleware is used, value is added to the context and errors can be rendered differently from full page errors.
 func SetApiErrorDisplay(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		c.Set(_API_CONTEXT, true)

@@ -3,7 +3,6 @@ package user_quiz
 import (
 	"database/sql"
 	"errors"
-	"math"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
@@ -82,6 +81,8 @@ func getQuestionPresentedAtTime(db *sql.DB, userId uuid.UUID, questionId uuid.UU
 type QuizData struct {
 	PartialQuiz     quizzes.PartialQuiz
 	CurrentQuestion questions.Question
+	PointsGathered  uint
+	SecondsLeft     uint // Time left for this question for this user (in seconds), same as question time if not presented earlier
 }
 
 // Returns the next question in the quiz for the user and saves the time it was presented.
@@ -95,46 +96,56 @@ func NextQuestionInQuiz(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*QuizDa
 	if err != nil || !partialQuiz.Published || partialQuiz.QuestionNumber == 0 {
 		return nil, ErrNoSuchQuiz
 	}
-	nextQuestion, err := StartNextQuestion(db, userID, quizID)
+	nextQuestion, secondsLeft, err := startNextQuestion(db, userID, quizID)
 	if err != nil {
 		return nil, err
 	}
+
+	pointsSoFar, err := getPointsGatheredInQuiz(db, quizID, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &QuizData{
 		*partialQuiz,
 		*nextQuestion,
+		pointsSoFar,
+		secondsLeft,
 	}, nil
 
 }
 
-// Returns the next question in the quiz for the user and saves the time it was presented.
+// Returns the next unanswered question by the given user and time user has left.
+// If question presented for the first time, it is marked as presented and time user has left=question time limit
 //
 // May return:
-//
 // ErrNoMoreQuestions if there are no more unanswered questions for the user in the quiz.
 // ErrNoSuchQuiz if the quiz does not exist.
-func StartNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, error) {
+func startNextQuestion(db *sql.DB, userID uuid.UUID, quizID uuid.UUID) (*questions.Question, uint, error) {
 	questionID, err := getNextUnansweredQuestionID(db, userID, quizID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	question, err := questions.GetQuestionByID(db, questionID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+	timeLeft := question.TimeLimitSeconds
 
 	err = startQuestion(db, userID, question.ID)
 	if err != nil {
 		if err == errQuestionAlreadyStarted {
 			timePresented, err := getQuestionPresentedAtTime(db, userID, question.ID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
-			question.SubtractFromTimeLimit(time.Since(timePresented))
+			timeLeft = question.GetRemainingTimeSeconds(time.Since(timePresented))
 		} else {
-			return nil, err
+			return nil, 0, err
 		}
 	}
-	return question, nil
+
+	return question, timeLeft, nil
 }
 
 type UserAnsweredQuestion struct {
@@ -157,7 +168,6 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	var maxPoints uint
 	var timeLimit uint
 	var quizID uuid.UUID
-	var quizEndTime time.Time // The time the quiz is no longer active.
 	err := db.QueryRow(
 		`SELECT question_presented_at, questions.points, questions.time_limit_seconds, chosen_answer_alternative_id, questions.quiz_id
 		FROM user_answers JOIN questions ON user_answers.question_id = questions.id
@@ -170,30 +180,21 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 		return nil, ErrQuestionAlreadyAnswered
 	}
 
-	isCorrect, err := questions.IsCorrectAnswer(db, questionId, chosenAlternative)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if the quiz is active.
-	err = db.QueryRow(
-		`SELECT available_to FROM quizzes WHERE id = $1;`, quizID,
-	).Scan(&quizEndTime)
-	if err != nil {
-		return nil, err
-	}
-
 	nowTime := time.Now().UTC()
-	var pointsAwarded uint
-	if isCorrect {
-		pointsAwarded = calculatePoints(questionPresentedAt, nowTime, timeLimit, maxPoints, nowTime.After(quizEndTime))
-	}
 	_, err = db.Exec(
 		`UPDATE user_answers
-		SET chosen_answer_alternative_id = $1, answered_at = $2, points_awarded = $3
-		WHERE user_id = $4 AND question_id = $5;`,
-		chosenAlternative, nowTime, pointsAwarded, userId, questionId)
+		SET chosen_answer_alternative_id = $1, answered_at = $2
+		WHERE user_id = $3 AND question_id = $4;`,
+		chosenAlternative, nowTime, userId, questionId)
 
+	if err != nil {
+		return nil, err
+	}
+	var pointsAwarded uint
+	err = db.QueryRow(`SELECT points_awarded
+		FROM user_question_points
+		WHERE user_id = $1
+		AND question_id = $2;`, userId, questionId).Scan(&pointsAwarded)
 	if err != nil {
 		return nil, err
 	}
@@ -218,34 +219,21 @@ func AnswerQuestion(db *sql.DB, userId uuid.UUID, questionId uuid.UUID, chosenAl
 	}, nil
 }
 
-// Calculates the points awarded for answering a question. The points are based on the time taken to answer the question.
-// As of now there are 3 possible outcomes: 100%, 50% or 25% of the max points.
-// These are based on the thresholds: 0-25%, 25-50% and 50+% of the time limit used.
-// If the quiz is not active, the points awarded are halved.
-func calculatePoints(questionPresentadAt time.Time, answeredAt time.Time, timeLimit uint, maxPoints uint, pastQuizActiveTime bool) uint {
+// Returns the number of points gathered by the user in the given quiz.
+// Returns 0 poitns if quiz not started.
+func getPointsGatheredInQuiz(db *sql.DB, quizID uuid.UUID, userID uuid.UUID) (uint, error) {
+	row := db.QueryRow(
+		`SELECT total_points_awarded
+	FROM user_quizzes
+	WHERE quiz_id = $1
+	AND user_id = $2;
+	`, quizID, userID)
 
-	diff := answeredAt.Sub(questionPresentadAt)
-
-	secondsTaken := diff.Seconds()
-
-	threshholdMax := 0.25
-	threshholdMid := 0.5
-
-	var pointsAwarded float64
-
-	timeLimitFloat := float64(timeLimit)
-	if secondsTaken < threshholdMax*timeLimitFloat {
-		pointsAwarded = float64(maxPoints)
-	} else if secondsTaken < threshholdMid*timeLimitFloat {
-		pointsAwarded = float64(maxPoints) / 2
-	} else {
-		pointsAwarded = float64(maxPoints) / 4
-	}
-	// If the quiz is not active, the points awarded are halved.
-	if pastQuizActiveTime {
-		pointsAwarded = pointsAwarded * 0.5
+	var points uint
+	err := row.Scan(&points)
+	if err == sql.ErrNoRows {
+		err = nil
 	}
 
-	rounded := math.RoundToEven(pointsAwarded)
-	return uint(rounded)
+	return points, err
 }

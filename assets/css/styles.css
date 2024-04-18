@@ -10,6 +10,8 @@
     --cindigo: #5B14F2;
     --cfuchsia: #CA1FFF;
 
+    --gradient: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+
     /* Border radius */
     --br-button: 0.5rem;
     --br-card: 0.5rem;
@@ -49,7 +51,39 @@
 
 /* Background Gradient */
 .cgradient {
-    background-image: linear-gradient(to bottom right, var(--cblue), var(--cindigo), var(--cfuchsia));
+    background-image: var(--gradient);
+}
+
+a.cgradient:is(:hover, :focus),
+.gradient-outline:has(.cgradient:is(:hover, :focus))::after,
+.answer-button:is(:hover, :focus):not(:disabled)::after,
+.timer-low.gradient-outline-circle::after {
+    animation: hueRotate 800ms linear infinite alternate;
+}
+
+.gradient-shadow:has(.cgradient:is(:hover, :focus))::before,
+.answer-button:is(:hover, :focus):not(:disabled)::before {
+    animation: hueRotateBlur 800ms linear infinite alternate;
+}
+
+@keyframes hueRotate {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        filter: hue-rotate(80deg);
+    }
+}
+
+@keyframes hueRotateBlur {
+    0% {
+        filter: hue-rotate(0deg) blur(0.5rem);
+    }
+
+    100% {
+        filter: hue-rotate(80deg) blur(0.5rem);
+    }
 }
 
 /* Gradient Border */
@@ -60,7 +94,8 @@
     bottom: 0;
 }
 
-.gradient-shadow {
+.gradient-shadow,
+.gradient-shadow-always {
     position: relative;
 }
 
@@ -88,15 +123,13 @@
 
 .gradient-outline,
 .gradient-outline-thick,
-.gradient-outline-circle,
-.gradient-outline-circle-thick {
+.gradient-outline-circle {
     position: relative;
 }
 
 .gradient-outline::after,
 .gradient-outline-thick::after,
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     content: "";
     position: absolute;
     inset: var(--outline-inset);
@@ -106,16 +139,162 @@
     background: linear-gradient(125deg, var(--cblue), var(--cindigo), var(--cfuchsia));
 }
 
-.gradient-outline-thick::after,
-.gradient-outline-circle-thick::after {
-    inset: -6px;
+.gradient-outline-thick::after {
+    inset: calc(var(--outline-inset) * 1.5);
+    border-radius: calc(var(--br-button) - calc(1.5 * var(--outline-inset)));
 }
 
-.gradient-outline-circle::after,
-.gradient-outline-circle-thick::after {
+.gradient-outline-circle::after {
     border-radius: 50%;
 }
 
-.tooltip-parent:hover>.tooltip {
+.tooltip-parent:is(:hover, :focus)>[role="tooltip"] {
     display: inline-block;
+}
+
+.tooltip-parent {
+    position: relative;
+}
+
+.gradient-bg-button {
+    @apply text-white font-sans rounded-button bg-center text-center cgradient font-bold;
+}
+
+.answer-button {
+    @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
+}
+
+@keyframes fadeOpacity {
+
+    0%,
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+#question-list,
+#article-list {
+    counter-reset: css-counter 0;
+}
+
+#question-list li[data-element-type="question-list-item"],
+#article-list li[data-element-type="article-list-item"] {
+    counter-increment: css-counter 1;
+}
+
+#question-list li[data-element-type="question-list-item"]::before,
+#article-list li[data-element-type="article-list-item"]::before {
+    content: counter(css-counter) ". ";
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+#points-fill {
+    --animation: spin linear infinite;
+    --duration-1: 5s;
+    --duration-2: 8s;
+
+    --clip-path: inset(0 0 0 0 round 45%);
+    --clip-path-2: inset(0 0 0 0 round 44%);
+
+    --wave-size: 15rem;
+
+    transition: top 5s linear;
+}
+
+.text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font: 700 56px Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    color: white;
+}
+
+.circle {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    clip-path: circle();
+    overflow: hidden;
+    background: var(--gradient);
+    box-shadow: inset 0 0 40px 20px rgba(0, 0, 0, 0.2);
+}
+
+.primary-wave-filter,
+.secondary-wave-filter {
+    position: absolute;
+    top: calc(-1 * var(--wave-size));
+    height: var(--wave-size);
+    width: var(--wave-size);
+}
+
+.primary-wave-filter::before,
+.primary-wave-filter::after,
+.secondary-wave-filter::before,
+.secondary-wave-filter::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    clip-path: var(--clip-path);
+    animation: var(--animation);
+    animation-duration: var(--duration-1);
+}
+
+.primary-wave-filter::before,
+.primary-wave-filter::after {
+    mix-blend-mode: difference;
+}
+
+.secondary-wave-filter::before,
+.secondary-wave-filter::after {
+    clip-path: var(--clip-path-2);
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(50px);
+    animation-duration: var(--duration-2);
+}
+
+.primary-wave-filter::before,
+.secondary-wave-filter::before {
+    z-index: -1;
+}
+
+.primary-wave-filter::after,
+.secondary-wave-filter::after {
+    z-index: 1;
+}
+
+.primary-wave,
+.secondary-wave {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: black;
+    clip-path: var(--clip-path);
+    animation: var(--animation);
+    animation-duration: var(--duration-1);
+}
+
+.secondary-wave {
+    position: absolute;
+    background: none;
+    animation: var(--animation);
+    animation-duration: var(--duration-2);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
