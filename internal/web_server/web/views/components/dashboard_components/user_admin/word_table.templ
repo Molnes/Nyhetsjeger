@@ -19,11 +19,11 @@ func setRowContent(words []string, i int) string {
 	}
 }
 
-script deleteRow(row string) {
-	var row = document.getElementById(row);
+script deleteRow(rowId string, content string) {
+	var row = document.getElementById(rowId);
 	if (row != null) {
 		let parent = row.parentElement;
-		deleteMap.set(row.id, true);
+		deleteMap.set(row.id, content);
 		parent.classList.add("bg-red-500", "border-b", "border-red-700");
 		parent.getElementsByClassName("del-button")[0].disabled = true;
 		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
