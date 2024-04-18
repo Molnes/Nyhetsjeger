@@ -91,6 +91,11 @@ script stopFormRefresh(tableId string) {
 
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
+	<script>
+	function refreshPage() {
+		location.reload();
+	}
+	</script>
 	<div>
 		<form
 			class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]"
