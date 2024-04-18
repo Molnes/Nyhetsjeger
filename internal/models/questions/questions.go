@@ -62,7 +62,6 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 	}
 }
 
-
 // Checks if the provided answer id is correct for this question.
 func (q *Question) IsAnswerCorrect(answerID uuid.UUID) bool {
 	isCorrect := false
@@ -521,15 +520,15 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 
 	// Check that there is a correct alternative
 	if !hasCorrectAlternative {
-		return question, "Spørsmålet har ingen korrekt svar alternativ"
+		return question, "Spørsmålet har ingen korrekt svaralternativ"
 	}
 
 	// Check that there are two to four alternatives
 	if len(question.Alternatives) < 2 {
-		return question, "Spørsmålet må ha minst 2 svar alternativer. Tomme alternativer teller ikke"
+		return question, "Spørsmålet må ha minst 2 svaralternativer. Tomme alternativer teller ikke"
 	}
 	if len(question.Alternatives) > 4 {
-		return question, "Spørsmålet kan ha maks 4 svar alternativer"
+		return question, "Spørsmålet kan ha maks 4 svaralternativer"
 	}
 
 	return question, ""
