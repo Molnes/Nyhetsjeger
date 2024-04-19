@@ -224,7 +224,7 @@ a.cgradient:is(:hover, :focus),
     clip-path: circle();
     overflow: hidden;
     background: var(--gradient);
-    box-shadow: inset 0 0 40px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 2rem 1rem rgba(0, 0, 0, 0.2);
 }
 
 .primary-wave-filter,
