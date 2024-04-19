@@ -47,13 +47,16 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 						</div>
 					</div>
 					// The result text
-					<p
-						class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
-					>
-						<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-						<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
-						<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
-					</p>
+					<div class="flex flex-col gap-3 absolute top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+						<p
+							class="[&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
+						>
+							<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+							<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
+							<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+						</p>
+						<p class="font-sans text-xs text-gray-200 text-center">poeng</p>
+					</div>
 				</div>
 				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
 			</div>
@@ -73,7 +76,7 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
 				hx-target="#quiz-summary"
 				hx-swap="outerHTML"
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				class="text-xl py-2 px-8 w-min gradient-bg-button"
 			>Neste</button>
 		} else {
 			<a
@@ -92,7 +95,7 @@ script animateFill(percent int) {
 	// After a delay, set the top position.
 	setTimeout(() => {
 		circleFill.style.top = `${100-percent}%`;
-	}, 1000);
+	}, 100);
 }
 
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
