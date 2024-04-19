@@ -87,6 +87,29 @@ a.cgradient:is(:hover, :focus),
     }
 }
 
+@property --timer-value {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 360deg;
+}
+
+#timer {
+    --time: 0s;
+    background-image: conic-gradient(#5a14f232 var(--timer-value, 0deg),
+            #fff calc(var(--timer-value, 0deg) + 3deg) 360deg);
+    animation: timer var(--time) linear forwards;
+}
+
+@keyframes timer {
+    0% {
+        --timer-value: 360deg;
+    }
+
+    100% {
+        --timer-value: 00deg;
+    }
+}
+
 /* Gradient Border */
 .cgradient-border {
     top: 0;
