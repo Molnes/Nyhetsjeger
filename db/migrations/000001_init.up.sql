@@ -198,11 +198,14 @@ BEGIN
     time_spent := EXTRACT(EPOCH FROM end_time - start_time);
     min_points := max_points / 5;
 
-    -- y= -ax + b, where a = (max_points - min_points) / duration_seconds, b = max_points, x = time_spent
-    awarded_points := -1.0 * ( float8((max_points - min_points)) / duration_seconds) * time_spent + max_points;
-
+    -- f(x)=(-a*t + a*x + b*c - b*x)/c-t, where a=max_points, b=min_points, c=grace_seconds, t=time_limit
+    awarded_points := (-1*max_points*duration_seconds + max_points*time_spent + min_points*3 - min_points*time_spent)/(3-duration_seconds);
     IF awarded_points < min_points THEN
         awarded_points := min_points;
+    END IF;
+
+    IF awarded_points > max_points THEN
+        awarded_points := max_points;
     END IF;
 
     RETURN awarded_points;
