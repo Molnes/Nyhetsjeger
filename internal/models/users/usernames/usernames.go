@@ -18,9 +18,14 @@ type UsernameAdminInfo struct {
 	UsernamesPerPage int
 }
 
+type OldNew struct {
+	Old string
+	New string
+}
+
 const (
-	nounTable      = "noun-table"
-	adjectiveTable = "adjective-table"
+	NounTable      = "noun-table"
+	AdjectiveTable = "adjective-table"
 )
 
 // setUaiAdjInfo sets the adjectives and relevant information for the UsernameAdminInfo struct.
@@ -104,10 +109,10 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPag
 
 // AddWordToTable adds a word to the specified table.
 func AddWordToTable(db *sql.DB, word string, tableId string) error {
-	if tableId == nounTable {
+	if tableId == NounTable {
 		_, err := db.Exec(`INSERT INTO nouns VALUES ($1);`, word)
 		return err
-	} else if tableId == adjectiveTable {
+	} else if tableId == AdjectiveTable {
 		_, err := db.Exec(`INSERT INTO adjectives VALUES ($1);`, word)
 		return err
 	} else {
@@ -167,11 +172,7 @@ func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error
 }
 
 // UpdateAdjectives updates the adjectives in the adjectives table.
-// The oldNewAdjArr is an 2 dimensional array where each inner array contains two strings: the old adjective and the new adjective.
-//
-// For example:
-//  oldNewAdjArr := [][]string{{"oldAdj1", "newAdj1"}, {"oldAdj2", "newAdj2"}}
-func UpdateAdjectives(db *sql.DB, oldNewAdjArr [][]string) error {
+func UpdateAdjectives(db *sql.DB, oldNewAdj []OldNew) error {
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -180,10 +181,8 @@ func UpdateAdjectives(db *sql.DB, oldNewAdjArr [][]string) error {
 
 	defer tx.Rollback()
 
-	pq.Array(oldNewAdjArr)
-
-	for _, oldNewAdj := range oldNewAdjArr {
-		_, err = tx.Exec(`UPDATE adjectives SET adjective = $1 WHERE adjective = $2;`, oldNewAdj[1], oldNewAdj[0])
+	for _, oldNew := range oldNewAdj {
+		_, err = tx.Exec(`UPDATE adjectives SET adjective = $1 WHERE adjective = $2;`, oldNew.New, oldNew.Old)
 		if err != nil {
 			return err
 		}
@@ -198,11 +197,7 @@ func UpdateAdjectives(db *sql.DB, oldNewAdjArr [][]string) error {
 }
 
 // UpdateNouns updates the nouns in the nouns table.
-// The oldNewNounArr is an 2 dimensional array where each inner array contains two strings: the old noun and the new noun.
-//
-// For example:
-//  oldNewNounArr := [][]string{{"oldNoun1", "newNoun1"}, {"oldNoun2", "newNoun2"}}
-func UpdateNouns(db *sql.DB, oldNewNounArr [][]string) error {
+func UpdateNouns(db *sql.DB, oldNewNoun []OldNew) error {
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -211,8 +206,8 @@ func UpdateNouns(db *sql.DB, oldNewNounArr [][]string) error {
 
 	defer tx.Rollback()
 
-	for _, oldNewNoun := range oldNewNounArr {
-		_, err = tx.Exec(`UPDATE nouns SET noun = $1 WHERE noun = $2;`, oldNewNoun[1], oldNewNoun[0])
+	for _, oldNew := range oldNewNoun {
+		_, err = tx.Exec(`UPDATE nouns SET noun = $1 WHERE noun = $2;`, oldNew.New, oldNew.Old)
 		if err != nil {
 			return err
 		}
