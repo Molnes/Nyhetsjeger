@@ -55,6 +55,7 @@
 }
 
 a.cgradient:is(:hover, :focus),
+.gradient-bg-button:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
 .answer-button:is(:hover, :focus):not(:disabled)::after,
 .timer-low.gradient-outline-circle::after {
@@ -203,7 +204,7 @@ a.cgradient:is(:hover, :focus),
 
     --wave-size: 15rem;
 
-    transition: top 5s linear;
+    transition: top 3s linear;
 }
 
 .text {
@@ -224,7 +225,7 @@ a.cgradient:is(:hover, :focus),
     clip-path: circle();
     overflow: hidden;
     background: var(--gradient);
-    box-shadow: inset 0 0 40px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 2rem 1rem rgba(0, 0, 0, 0.2);
 }
 
 .primary-wave-filter,

@@ -64,12 +64,14 @@ func GetArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
 // These articles are guaranteed to be used in the questions of the quiz.
 func GetUsedArticlesByQuizID(db *sql.DB, quizID uuid.UUID) (*[]Article, error) {
 	rows, err := db.Query(
-		`SELECT a.id, a.title, a.url, a.image_url 
-		FROM articles a 
-		LEFT JOIN quiz_articles q ON q.article_id = a.id 
-		JOIN questions qu ON qu.article_id = a.id 
+		`SELECT
+			DISTINCT(a.id), a.title, a.url, a.image_url
+		FROM
+			questions q
+		JOIN
+			articles a ON q.article_id = a.id
 		WHERE
-		q.quiz_id = $1`,
+			q.quiz_id = $1`,
 		quizID)
 
 	if err != nil {

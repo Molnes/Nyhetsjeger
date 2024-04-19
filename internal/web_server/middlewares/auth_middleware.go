@@ -43,6 +43,7 @@ func (am *AuthenticationMiddleware) EncofreAuthentication(next echo.HandlerFunc)
 			userID := sessiondata.ID
 			c.Set(users.USER_ID_CONTEXT_KEY, userID)
 			err = am.addRoleToContext(c, userID)
+			utils.SetUserIsAuthenticated(c)
 			if err != nil {
 				return err
 			}

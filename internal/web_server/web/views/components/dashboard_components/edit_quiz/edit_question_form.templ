@@ -58,20 +58,20 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		/>
 		// Alternatives
 		@QuestionAlternativesInput(question.Alternatives)
-		<div class="block mx-auto w-fit">
-			@components.LoadingIndicator()
-		</div>
 		<button
 			type="button"
-			class="flex flex-row gap-1 items-center mt-3 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
+			class="flex flex-row gap-1 items-center my-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
 			hx-post="/api/v1/admin/question/randomize-alternatives"
 			hx-swap="outerHTML"
 			hx-target="#alternatives-table"
-			hx-indicator="previous .htmx-indicator"
+			hx-indicator="next .htmx-indicator"
 		>
 			Tilfeldig alternativ rekkefølge
 			@icons.Dice(20, "currentColor", 28, 28)
 		</button>
+		<div class="block mx-auto w-fit">
+			@components.LoadingIndicator()
+		</div>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
 			<label for={ QuestionImageURL } class="font-bold">Spørsmålsbilde</label>
@@ -80,7 +80,12 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), fmt.Sprintf("/api/v1/admin/question/upload-image?question-id=%s", question.ID),
 			&question.ImageURL, QuestionImageURL, !isNew, "")
-		<div class="flex flex-row items-center flex-wrap mt-5 mb-3 gap-5 justify-between">
+		<div
+			class="relative mt-10 mb-5 text-sm text-gray-500 text-center overflow-hidden
+						before:content-[''] before:absolute before:h-px before:w-1/2 before:bg-gray-400 before:-left-[8ch] before:top-1/2
+					  after:content-[''] after:absolute after:h-px after:w-1/2 after:bg-gray-400 after:-right-[8ch] after:top-1/2"
+		>Ekstra instillinger</div>
+		<div class="flex flex-row items-center flex-wrap mb-3 gap-5 justify-between">
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
@@ -103,8 +108,8 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<div>
 				<label for={ QuestionTimeLimit } class="font-bold mr-1">Tidsbegrensning</label>
 				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
-					for _, seconds := range []uint{10, 15, 30, 45, 60} {
-						/* The time limit is default 30 */
+					for _, seconds := range []uint{10, 15, 30, 45, 60, 120, 180} {
+						/* The time limit is default 30 seconds */
 						<option
 							value={ fmt.Sprint(seconds) }
 							if question.TimeLimitSeconds == seconds {
@@ -113,7 +118,13 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 							if isNew && seconds == 30 {
 								selected
 							}
-						>{ fmt.Sprintf("%d sekunder", seconds) }</option>
+						>
+							if seconds >= 60 {
+								{ fmt.Sprintf("%0.f minutt", float64(seconds/60)) }
+							} else {
+								{ fmt.Sprintf("%d sekund", seconds) }
+							}
+						</option>
 					}
 				</select>
 			</div>

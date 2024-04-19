@@ -19,14 +19,23 @@ type UserQuizSummary struct {
 	HasArticlesToShow bool
 }
 
+// Sums individual achieved points for each question in AnsweredQuestions and sets the AchievedScore
+func (uqs *UserQuizSummary) CalculateAchievedScoreFromAnswered() {
+	var total uint
+	for _, answeredQuestion := range uqs.AnsweredQuestions {
+		total += answeredQuestion.PointsAwarded
+	}
+	uqs.AchievedScore = total
+}
+
 type AnsweredQuestion struct {
-	QuestionID            uuid.UUID
-	QuestionText          string
-	MaxPoints             uint
-	ChosenAlternativeID   uuid.UUID
-	ChosenAlternativeText string
-	IsCorrect             bool
-	PointsAwarded         uint
+	QuestionID            uuid.UUID `json:"questionId"`
+	QuestionText          string    `json:"questionText"`
+	MaxPoints             uint      `json:"maxPoints"`
+	ChosenAlternativeID   uuid.UUID `json:"chosenAlternativeId"`
+	ChosenAlternativeText string    `json:"chosenAlternativeText"`
+	IsCorrect             bool      `json:"isCorrect"`
+	PointsAwarded         uint      `json:"pointsAwarded"`
 }
 
 var ErrNoSuchQuiz = errors.New("quiz_summary: no such quiz")

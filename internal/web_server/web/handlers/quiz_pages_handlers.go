@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
@@ -164,18 +163,9 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
 // Adds phone number and the leaderboards opt-in status to the user
 func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
-	phonenumber := c.FormValue("phonenumber")
-	match, _ := regexp.MatchString(`^(\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3}|\d{8})$`, phonenumber)
-	if !match {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid phone number")
-	}
-	enterCompetion := c.FormValue("competition") == "on"
+	enterCompetition := c.FormValue("competition") == "on"
 
-	err := users.AssignPhonenumberToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), phonenumber)
-	if err != nil {
-		return err
-	}
-	err = users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetion)
+	err := users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetition)
 	if err != nil {
 		return err
 	}

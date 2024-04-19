@@ -28,7 +28,7 @@ func ConvertNullStringToURL(newURL *sql.NullString) (*url.URL, error) {
 }
 
 // Converts a datetime string to Norway's timezone
-func DateStringToNorwayTime(dateTime string, c echo.Context) (time.Time, error) {
+func DateStringToNorwayTime(dateTime string) (time.Time, error) {
 	// Get the time in Norway's timezone
 	norwayLocation, err := time.LoadLocation("Europe/Oslo")
 	if err != nil {
