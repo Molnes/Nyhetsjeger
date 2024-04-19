@@ -2,6 +2,7 @@ package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 
+// onRefresh is a js script that runs when the page is refreshed. It will highlight the rows that have been edited or deleted.
 script onRefresh() {
 	for (const [key, value] of deleteMap.entries()) {
 	var row = document.getElementById(key);
@@ -24,6 +25,7 @@ script onRefresh() {
 	}
 }
 
+// onSave is a js script that runs when the save button is clicked. It will send the changes to the server and clear the maps and the session storage.
 script onSave() {
 	fetch("/api/v1/admin/username", {
 		method: "DELETE",
@@ -67,6 +69,7 @@ script onSave() {
 	location.reload();
 }
 
+// reset is a js script that runs when the reset button is clicked. It will clear the maps and the session storage.
 script reset() {
 	let decision = confirm("Er du sikker på at du ønsker å nullstille endringer? Dette kan ikke angres.");
 
