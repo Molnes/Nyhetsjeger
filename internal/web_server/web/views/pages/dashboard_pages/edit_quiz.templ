@@ -15,7 +15,6 @@ import (
 
 // Constants for the input names (for HTTP requests)
 const QuizTitle = "quiz-title"
-const QuizImageURL = "quiz-image-url"
 const QuizPublished = "quiz-is-published"
 const QuizArticleURL = "quiz-article-url"
 const QuizActiveFrom = "quiz-active-from"
@@ -72,11 +71,11 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			// Quiz Image
 			<form class="w-full my-1" hx-encoding="multipart/form-data">
 				<div class="flex flex-row items-center gap-3 mb-1">
-					<label for={ QuizImageURL } class="block font-bold">Forsidebilde</label>
+					<h2 class="block font-bold">Forsidebilde</h2>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, QuizImageURL, true, "")
+					&quiz.ImageURL, true, "")
 			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
