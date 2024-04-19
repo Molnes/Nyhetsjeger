@@ -851,8 +851,8 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 
 // Add the given word to the username tables.
 func (aah *AdminApiHandler) addUsername(c echo.Context) error {
-	word := c.FormValue("usernameWord")
-	table := c.QueryParam("tableId")
+	word := c.FormValue("username-word")
+	table := c.QueryParam("tablee-id")
 
 	if word == "" || table == "" {
 		return c.NoContent(http.StatusBadRequest)
@@ -884,18 +884,18 @@ func (aah *AdminApiHandler) deleteUsername(c echo.Context) error {
 // Edit the username tables with the given data.
 // Takes in a map of of tables, and the old and new words in the tables.
 func (aah *AdminApiHandler) editUsername(c echo.Context) error {
-	wordList := make(map[string][][]string)
+	wordList := make(map[string][]usernames.OldNew)
 	err := c.Bind(&wordList)
 	if err != nil {
 		return err
 	}
 
-	err = usernames.UpdateAdjectives(aah.sharedData.DB, wordList["adjective-table"])
+	err = usernames.UpdateAdjectives(aah.sharedData.DB, wordList[usernames.AdjectiveTable])
 	if err != nil {
 		return err
 	}
 
-	err = usernames.UpdateNouns(aah.sharedData.DB, wordList["noun-table"])
+	err = usernames.UpdateNouns(aah.sharedData.DB, wordList[usernames.NounTable])
 	if err != nil {
 		return err
 	}

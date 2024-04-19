@@ -82,7 +82,7 @@ script onUndo(id string) {
 
 // Makes a URL to the API endpoint for adding a new word to the list.
 func makeUsernameWordUrl(tableId string) templ.SafeURL {
-	return templ.URL(fmt.Sprintf("/api/v1/admin/username?tableId=%v", tableId))
+	return templ.URL(fmt.Sprintf("/api/v1/admin/username?table-id=%v", tableId))
 }
 
 // Stops the form from refreshing/redirecting the page when submitted.
@@ -111,7 +111,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			<input
 				class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
 				type="text"
-				name="usernameWord"
+				name="username-word"
 				required="required"
 				placeholder="Legg til nytt ord"
 			/>
