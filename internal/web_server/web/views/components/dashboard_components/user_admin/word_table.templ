@@ -29,7 +29,7 @@ script deleteRow(rowId string, content string) {
 		parent.classList.add("bg-red-500", "border-b", "border-red-700");
 		parent.getElementsByClassName("del-button")[0].disabled = true;
 		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
-		sessionStorage.deletemap = JSON.stringify(Array.from(deleteMap.entries()));
+		sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
 	}
 }
 
@@ -42,9 +42,9 @@ script onEditRow(id string, originalValue string, tableId string) {
 			editMap.set(input.id, [originalValue, input.value]);
 			let parent = input.parentElement;
 			parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
-			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
+			sessionStorage.editMap = JSON.stringify(Array.from(editMap.entries()));
 			tableRowMap.set(id, tableId);
-			sessionStorage.tablerowmap = JSON.stringify(Array.from(tableRowMap.entries()));
+			sessionStorage.tableRowMap = JSON.stringify(Array.from(tableRowMap.entries()));
 		}
 	}
 
@@ -65,16 +65,16 @@ script onUndo(id string) {
 			if (!editMap.has(row.id)) {
 				parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
 			}
-			sessionStorage.deletemap = JSON.stringify(Array.from(deleteMap.entries()));
+			sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
 		} else if (editMap.has(id)) {
 			let values = editMap.get(id);
 			let parent = row.parentElement;
 			editMap.delete(row.id);
 			parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
 			row.value = values[0];
-			sessionStorage.editmap = JSON.stringify(Array.from(editMap.entries()));
+			sessionStorage.editMap = JSON.stringify(Array.from(editMap.entries()));
 			tableRowMap.delete(id);
-			sessionStorage.tablerowmap = JSON.stringify(Array.from(tableRowMap.entries()));
+			sessionStorage.tableRowMap = JSON.stringify(Array.from(tableRowMap.entries()));
 		}
 	}
 

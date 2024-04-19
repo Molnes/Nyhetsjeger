@@ -39,7 +39,7 @@ script onSave() {
 		if (response.ok) {
 			deleteMap.clear();
 			//Clear deletemap in sessionStorage.
-			sessionStorage.removeItem("deletemap");
+			sessionStorage.removeItem("deleteMap");
 		}
 	});
 
@@ -64,8 +64,8 @@ script onSave() {
 			editMap.clear();
 			tableRowMap.clear();
 
-			sessionStorage.removeItem("editmap");
-			sessionStorage.removeItem("tablerowmap");
+			sessionStorage.removeItem("editMap");
+			sessionStorage.removeItem("tableRowMap");
 		}
 	});
 	location.reload();
@@ -81,9 +81,9 @@ script reset() {
 		editMap.clear();
 		tableRowMap.clear();
 
-		sessionStorage.removeItem("deletemap");
-		sessionStorage.removeItem("editmap");
-		sessionStorage.removeItem("tablerowmap");
+		sessionStorage.removeItem("deleteMap");
+		sessionStorage.removeItem("editMap");
+		sessionStorage.removeItem("tableRowMap");
 
 		location.reload();
 	}
@@ -96,22 +96,22 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 		var editMap;
 		var tableRowMap;
 
-		if(sessionStorage.deletemap === undefined) {
+		if(sessionStorage.deleteMap === undefined) {
 			deleteMap = new Map();
 		} else {
-			deleteMap = new Map(JSON.parse(sessionStorage.deletemap));
+			deleteMap = new Map(JSON.parse(sessionStorage.deleteMap));
 		}
 
-		if(sessionStorage.editmap === undefined) {
+		if(sessionStorage.editMap === undefined) {
 			editMap = new Map();
 		} else {
-			editMap = new Map(JSON.parse(sessionStorage.editmap));
+			editMap = new Map(JSON.parse(sessionStorage.editMap));
 		}
 
-		if (sessionStorage.tablerowmap === undefined) {
+		if (sessionStorage.tableRowMap === undefined) {
 			tableRowMap = new Map();
 		} else {
-			tableRowMap = new Map(JSON.parse(sessionStorage.tablerowmap));
+			tableRowMap = new Map(JSON.parse(sessionStorage.tableRowMap));
 		}
 	</script>
 	<div id="tables-wrapper" class="flex gap-6 md:gap-12 xl:gap-24 flex-col sm:flex-row">
