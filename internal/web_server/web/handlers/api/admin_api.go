@@ -852,7 +852,7 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 // Add the given word to the username tables.
 func (aah *AdminApiHandler) addUsername(c echo.Context) error {
 	word := c.FormValue("username-word")
-	table := c.QueryParam("tablee-id")
+	table := c.QueryParam("table-id")
 
 	if word == "" || table == "" {
 		return c.NoContent(http.StatusBadRequest)
