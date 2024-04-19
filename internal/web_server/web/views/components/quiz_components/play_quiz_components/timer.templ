@@ -6,7 +6,8 @@ import (
 
 // Template for a simple timer in a circle. Counts down from the given time.
 templ timer(timeLeft uint, timeLimit uint) {
-	<div role="timer" class="isolate">
+	<div role="timer" class="isolate flex flex-col gap-1">
+		<p class="text-gray-700 font-bold text-center uppercase">Tid</p>
 		<div
 			id="timer"
 			class="flex-shrink-0 text-xl font-bold h-12 w-12 bg-white rounded-1/2 flex justify-center items-center gradient-outline-circle"
@@ -22,6 +23,7 @@ templ timer(timeLeft uint, timeLimit uint) {
 
 script setupTimer(timeLeft uint, timeLimit uint) {
 	let countDownTime = timeLeft;
+	// Decrement the timer text every second
 	const timerElem = document.getElementById("timer");
 	const timerIntervalId = setInterval(function() {
 		if (countDownTime > 0) {
@@ -31,6 +33,7 @@ script setupTimer(timeLeft uint, timeLimit uint) {
 			clearInterval(timerIntervalId);
 		}
 
+		// Update the style of the timer when it reaches 1/3 of the time limit
 		if (countDownTime / timeLimit < 0.3334) {
 			timerElem.classList.add("timer-low");
 		}
@@ -39,7 +42,7 @@ script setupTimer(timeLeft uint, timeLimit uint) {
 	timerElem.addEventListener("quiz:stop-timer", function() {
 		clearInterval(timerIntervalId);
 	});
-	
+	timerElem.style.setProperty('--time', `${timeLeft}s`);
 }
 
 // Stops the timer on the given event emitted by the element with the given id.
