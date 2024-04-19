@@ -3,6 +3,7 @@ package user_admin
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 
 // onRefresh is a js script that runs when the page is refreshed. It will highlight the rows that have been edited or deleted.
+
 script onRefresh() {
 	for (const [key, value] of deleteMap.entries()) {
 	var row = document.getElementById(key);
@@ -26,6 +27,7 @@ script onRefresh() {
 }
 
 // onSave is a js script that runs when the save button is clicked. It will send the changes to the server and clear the maps and the session storage.
+
 script onSave() {
 	fetch("/api/v1/admin/username", {
 		method: "DELETE",
@@ -70,6 +72,7 @@ script onSave() {
 }
 
 // reset is a js script that runs when the reset button is clicked. It will clear the maps and the session storage.
+
 script reset() {
 	let decision = confirm("Er du sikker på at du ønsker å nullstille endringer? Dette kan ikke angres.");
 
@@ -89,27 +92,27 @@ script reset() {
 // Tables of the two components an username is created from: Nouns and adjectives
 templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 	<script>
-	var deleteMap;
-	var editMap;
-	var tableRowMap;
+		var deleteMap;
+		var editMap;
+		var tableRowMap;
 
-	if(sessionStorage.deletemap === undefined) {
-		deleteMap = new Map();
-	} else {
-		deleteMap = new Map(JSON.parse(sessionStorage.deletemap));
-	}
+		if(sessionStorage.deletemap === undefined) {
+			deleteMap = new Map();
+		} else {
+			deleteMap = new Map(JSON.parse(sessionStorage.deletemap));
+		}
 
-	if(sessionStorage.editmap === undefined) {
-		editMap = new Map();
-	} else {
-		editMap = new Map(JSON.parse(sessionStorage.editmap));
-	}
+		if(sessionStorage.editmap === undefined) {
+			editMap = new Map();
+		} else {
+			editMap = new Map(JSON.parse(sessionStorage.editmap));
+		}
 
-	if (sessionStorage.tablerowmap === undefined) {
-		tableRowMap = new Map();
-	} else {
-		tableRowMap = new Map(JSON.parse(sessionStorage.tablerowmap));
-	}
+		if (sessionStorage.tablerowmap === undefined) {
+			tableRowMap = new Map();
+		} else {
+			tableRowMap = new Map(JSON.parse(sessionStorage.tablerowmap));
+		}
 	</script>
 	<div id="tables-wrapper" class="flex gap-6 md:gap-12 xl:gap-24 flex-col sm:flex-row">
 		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage)
