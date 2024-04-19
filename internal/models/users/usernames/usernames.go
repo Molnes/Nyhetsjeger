@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	"github.com/lib/pq"
 )
 
@@ -155,4 +156,64 @@ func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error
 	}
 
 	return nil
+}
+
+// UpdateAdjectives updates the adjectives in the adjectives table.
+// The oldNewAdjArr is an 2 dimensional array where each inner array contains two strings: the old adjective and the new adjective.
+//
+// For example:
+//  oldNewAdjArr := [][]string{{"oldAdj1", "newAdj1"}, {"oldAdj2", "newAdj2"}}
+func UpdateAdjectives(db *sql.DB, oldNewAdjArr [][]string) error {
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	pq.Array(oldNewAdjArr)
+
+	for _, oldNewAdj := range oldNewAdjArr {
+		_, err = tx.Exec(`UPDATE adjectives SET adjective = $1 WHERE adjective = $2;`, oldNewAdj[1], oldNewAdj[0])
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+// UpdateNouns updates the nouns in the nouns table.
+// The oldNewNounArr is an 2 dimensional array where each inner array contains two strings: the old noun and the new noun.
+//
+// For example:
+//  oldNewNounArr := [][]string{{"oldNoun1", "newNoun1"}, {"oldNoun2", "newNoun2"}}
+func UpdateNouns(db *sql.DB, oldNewNounArr [][]string) error {
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, oldNewNoun := range oldNewNounArr {
+		_, err = tx.Exec(`UPDATE nouns SET noun = $1 WHERE noun = $2;`, oldNewNoun[1], oldNewNoun[0])
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+
 }
