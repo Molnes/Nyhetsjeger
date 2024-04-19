@@ -18,6 +18,7 @@ type UsernameAdminInfo struct {
 	UsernamesPerPage int
 }
 
+// setUaiAdjInfo sets the adjectives and relevant information for the UsernameAdminInfo struct.
 func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 
 	err := db.QueryRow(`
@@ -45,6 +46,7 @@ func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 	return err
 }
 
+// setUaiNounInfo sets the nouns and relevant information for the UsernameAdminInfo struct.
 func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB) error {
 	err := db.QueryRow(
 		`WITH offsetvalue AS (
@@ -109,6 +111,7 @@ func AddWordToTable(db *sql.DB, word string, tableId string) error {
 	}
 }
 
+// DeleteWordsFromTable deletes the words from the adjectives and nouns tables and updates the usernames in the users table.
 func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error {
 
 	tx, err := db.BeginTx(ctx, nil)
