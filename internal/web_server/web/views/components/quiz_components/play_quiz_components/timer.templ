@@ -50,7 +50,9 @@ script setupTimer(timeLeft uint, timeLimit uint) {
 script stopTimerOn(eventName string, emitterId string) {
 	const emitter = document.getElementById(emitterId);
 	emitter.addEventListener(eventName, function(evt) {
-		const timerELem = document.getElementById('timer');
-		timerELem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
+		const timerElem = document.getElementById('timer');
+		timerElem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
+		timerElem.style.animationPlayState = "paused";
+		console.log(timerElem.style.animationPlayState);
 	});
 }
