@@ -493,51 +493,6 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 	return &pq, nil
 }
 
-// Retrieves partial quizzes from the database.
-func GetPartialQuizzes(db *sql.DB, quizid uuid.UUID) (*[]PartialQuiz, error) {
-	rows, err := db.Query(
-		`SELECT qz.id, qz.title, qz.image_url, qz.active_from, qz.active_to, qz.published, count(q.id), sum(q.points)
-		FROM quizzes qz 
-		LEFT JOIN questions q ON q.quiz_id = qz.id
-		WHERE qz.is_deleted = false
-		GROUP BY qz.id;`, quizid)
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var partialQuizzes []PartialQuiz
-	var imageURLStr sql.NullString
-	for rows.Next() {
-		var pq PartialQuiz
-		err := rows.Scan(
-			&pq.ID,
-			&pq.Title,
-			&imageURLStr,
-			&pq.ActiveFrom,
-			&pq.ActiveTo,
-			&pq.Published,
-			&pq.QuestionNumber,
-			&pq.MaxScore,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		tempURL, err := data_handling.ConvertNullStringToURL(&imageURLStr)
-		if err != nil {
-			return nil, err
-		}
-		pq.ImageURL = *tempURL
-
-		partialQuizzes = append(partialQuizzes, pq)
-
-	}
-
-	return &partialQuizzes, nil
-}
-
 // Update the quiz's 'active' start time by its ID.
 func UpdateActiveStartByQuizID(db *sql.DB, id uuid.UUID, activeStart time.Time) error {
 	_, err := db.Exec(
