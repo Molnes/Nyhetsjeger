@@ -112,22 +112,29 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			id={ fmt.Sprintf("form-%s", tableID) }
 			class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]"
 		>
-			<input
-				class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
-				type="text"
-				name="username-word"
-				required="required"
-				placeholder="Legg til nytt ord"
-			/>
-			<button
-				class="mx-3"
-				type="submit"
-				hx-post={ fmt.Sprintf("%s", makeUsernameWordUrl(tableID)) }
-				hx-swap="none"
-				hx-headers='{"HX-Refresh": refreshPage}'
-			>
-				@icons.Plus(80, "currentColor", 20, 20)
-			</button>
+			<div class="w-1/2 flex-grow">
+				<label class="block" for={ fmt.Sprintf("word-input-%s", tableID) }>Legg til ord:</label>
+				<div class="flex">
+					<input
+						class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo"
+						type="text"
+						name="username-word"
+						required="required"
+						placeholder="Legg til nytt ord"
+						id={ fmt.Sprintf("word-input-%s", tableID) }
+					/>
+				
+					<button
+						class="mx-3"
+						type="submit"
+						hx-post={ fmt.Sprintf("%s", makeUsernameWordUrl(tableID)) }
+						hx-swap="none"
+						hx-headers='{"HX-Refresh": refreshPage}'
+					>
+						@icons.Plus(80, "currentColor", 20, 20)
+					</button>
+				</div>
+			</div>
 		</form>
 		<table
 			id={ tableID }
@@ -151,6 +158,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						<td
 							class="px-4 h-8 w-full flex flex-row items-center"
 						>
+							<label class="w-0 h-0 overflow-hidden" for={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) }> { fmt.Sprintf("Endre %v") } </label>
 							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
 							<div class="ml-auto my-auto flex">
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
