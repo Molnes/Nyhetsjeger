@@ -203,7 +203,7 @@ a.cgradient:is(:hover, :focus),
 
     --wave-size: 15rem;
 
-    transition: top 5s linear;
+    transition: top 3s linear;
 }
 
 .text {
