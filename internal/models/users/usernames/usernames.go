@@ -18,6 +18,11 @@ type UsernameAdminInfo struct {
 	UsernamesPerPage int
 }
 
+const (
+	nounTable      = "noun-table"
+	adjectiveTable = "adjective-table"
+)
+
 // setUaiAdjInfo sets the adjectives and relevant information for the UsernameAdminInfo struct.
 func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 
@@ -99,10 +104,10 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPag
 
 // AddWordToTable adds a word to the specified table.
 func AddWordToTable(db *sql.DB, word string, tableId string) error {
-	if tableId == "noun-table" {
+	if tableId == nounTable {
 		_, err := db.Exec(`INSERT INTO nouns VALUES ($1);`, word)
 		return err
-	} else if tableId == "adjective-table" {
+	} else if tableId == adjectiveTable {
 		_, err := db.Exec(`INSERT INTO adjectives VALUES ($1);`, word)
 		return err
 	} else {
