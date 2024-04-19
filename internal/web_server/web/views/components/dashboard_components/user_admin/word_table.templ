@@ -19,6 +19,8 @@ func setRowContent(words []string, i int) string {
 	}
 }
 
+// deleteRow deletes a row from the table and adds the row to the deleteMap.
+// Adds styling to the row to indicate that it is marked for deletion.
 script deleteRow(rowId string, content string) {
 	var row = document.getElementById(rowId);
 	if (row != null) {
@@ -31,6 +33,7 @@ script deleteRow(rowId string, content string) {
 	}
 }
 
+// onEditRow is called when a row is edited, it adds the original value and the new value to the editMap.
 script onEditRow(id string, originalValue string, tableId string) {
 
 	var input = document.getElementById(id);
@@ -47,6 +50,8 @@ script onEditRow(id string, originalValue string, tableId string) {
 
 }
 
+// onUndo is called when the undo button is clicked, it removes the row from the deleteMap or the editMap.
+// The priority of undo is delete -> edit.
 script onUndo(id string) {
 	var row = document.getElementById(id);
 	if (row != null) {
@@ -75,10 +80,12 @@ script onUndo(id string) {
 
 }
 
+// Makes a URL to the API endpoint for adding a new word to the list.
 func makeUsernameWordUrl(tableId string) templ.SafeURL {
 	return templ.URL(fmt.Sprintf("/api/v1/admin/username?tableId=%v", tableId))
 }
 
+// Stops the form from refreshing/redirecting the page when submitted.
 script stopFormRefresh(tableId string) {
 	var form = document.getElementById( "form-" + tableId );
 	if (form != null) {
