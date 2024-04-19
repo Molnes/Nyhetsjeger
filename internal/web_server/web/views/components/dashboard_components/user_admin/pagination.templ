@@ -26,8 +26,6 @@ func handlePagination(page int, maxPages int) int {
 }
 
 // insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
-//
-
 script insertHxGet(id string, qp string) {
 	let ps = new URL(document.location.toString()).searchParams;
 	
