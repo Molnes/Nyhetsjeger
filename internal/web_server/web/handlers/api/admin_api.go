@@ -495,7 +495,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the data from the form
 	articleURLString := c.FormValue(dashboard_components.QuestionArticleURL)
 	questionText := c.FormValue(dashboard_components.QuestionText)
-	imageURLString := c.FormValue(dashboard_components.QuestionImageURL)
+	imageURLString := c.FormValue(imageURLInput)
 	questionPoints := c.FormValue(dashboard_components.QuestionPoints)
 	timeLimit := c.FormValue(dashboard_components.QuestionTimeLimit)
 
@@ -562,7 +562,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 			log.Println(err)
 			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorUploadImage))
 		}
-	} else if c.FormValue(dashboard_components.QuestionImageURL) != "" {
+	} else if c.FormValue(imageURLInput) != "" {
 		// Upload image from URL
 		imageName, err := aah.uploadImageFromURL(c, *imageURL)
 		if err != nil {
@@ -658,7 +658,7 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	}
 
 	// Get the new image URL
-	image := c.FormValue(dashboard_components.QuestionImageURL)
+	image := c.FormValue(imageURLInput)
 	imageURL, err := url.Parse(image)
 	if err != nil {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig bilde URL"))

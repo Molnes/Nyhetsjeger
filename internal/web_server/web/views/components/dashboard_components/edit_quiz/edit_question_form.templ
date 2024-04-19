@@ -73,7 +73,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		</div>
 		// Image
 		<div class="flex flex-row items-center gap-3 mb-1">
-			<label for={ QuestionImageURL } class="font-bold">Spørsmålsbilde</label>
+			<h2 class="font-bold">Spørsmålsbilde</h2>
 			@components.TooltipButton("Ikke lag spørsmål basert på innholdet i bildet. Spillere med synshemninger kan ha problemer med å svare på slike spørsmål.")
 			@components.LoadingIndicator()
 		</div>
