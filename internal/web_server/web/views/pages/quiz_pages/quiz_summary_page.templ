@@ -76,7 +76,7 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
 				hx-target="#quiz-summary"
 				hx-swap="outerHTML"
-				class="text-xl py-2 px-8 w-min gradient-bg-button gradient-shadow"
+				class="text-xl py-2 px-8 w-min gradient-bg-button"
 			>Neste</button>
 		} else {
 			<a

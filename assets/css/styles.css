@@ -55,6 +55,7 @@
 }
 
 a.cgradient:is(:hover, :focus),
+.gradient-bg-button:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
 .answer-button:is(:hover, :focus):not(:disabled)::after,
 .timer-low.gradient-outline-circle::after {
