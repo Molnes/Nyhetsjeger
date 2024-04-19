@@ -158,7 +158,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						<td
 							class="px-4 h-8 w-full flex flex-row items-center"
 						>
-							<label class="w-0 h-0 overflow-hidden" for={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) }> { fmt.Sprintf("Endre %v") } </label>
+							<label class="w-0 h-0 overflow-hidden" for={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) }> { fmt.Sprintf("Endre %v", setRowContent(words, i)) } </label>
 							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
 							<div class="ml-auto my-auto flex">
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
