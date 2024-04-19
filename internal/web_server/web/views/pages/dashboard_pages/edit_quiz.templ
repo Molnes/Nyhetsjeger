@@ -109,6 +109,14 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</ul>
 				@components.ErrorText("error-article-list", "")
 				@articleList()
+				<script>
+					document.body.addEventListener("htmx:afterSwap", (event) => {
+						// If the swap is successful, and the target was the "article list", clear the input
+						if (event.detail.xhr.status < 300 && event.target.id == "article-list") {
+							document.querySelector("#quiz-article-url").value = ""
+						}
+					})
+				</script>
 			}
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm() {
