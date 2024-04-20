@@ -64,6 +64,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
+				@indicateDragAndDrop("image-file")
 				if post {
 					<button
 						type="button"
@@ -155,4 +156,14 @@ script switchTabs() {
 		}
 	}
 	imageWrapper.addEventListener("htmx:afterSwap", switchListener);
+}
+
+script indicateDragAndDrop(inputId string) {
+	const inputField = document.getElementById(inputId);
+	inputField.addEventListener("dragenter", (evt) => {
+		console.log("enter")
+	});
+	inputField.addEventListener("dragleave", (evt) => {
+		console.log("leave")
+	});
 }
