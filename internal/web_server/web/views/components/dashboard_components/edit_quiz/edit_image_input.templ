@@ -55,16 +55,24 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					>Last opp</button>
 				}
 			</div>
-			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden" data-element-type="tab-content">
-				<label for="image-file">Velg fil</label>
+			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden relative" data-element-type="tab-content">
+				<label for="image-file" class="flex-grow">Velg en fil</label>
 				<input
 					id="image-file"
 					name="image-file"
-					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
+					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo w-1/2  hidden"
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
-				@indicateDragAndDrop("image-file")
+				<button class="bg-clightindigo px-4 py-2 rounded-button" onclick="event.preventDefault(); document.getElementById('image-file').click();">Eller bla gjennom filene</button>
+				<p id="file-name-display">Ingen fil valgt</p>
+				<div
+					id="drop-zone"
+					class="absolute top-0 w-full h-80 border border-cindigo bg-purple-100 bg-opacity-75  flex items-center justify-center text-4xl text-cindigo font-sans hidden"
+				>
+					Slipp her
+				</div>
+				@indicateDragAndDrop("image-file", "drop-zone", "file-name-display")
 				if post {
 					<button
 						type="button"
@@ -158,12 +166,54 @@ script switchTabs() {
 	imageWrapper.addEventListener("htmx:afterSwap", switchListener);
 }
 
-script indicateDragAndDrop(inputId string) {
+script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string) {
+	const dropZone = document.getElementById(dropzoneId);
+
+	const imageFileTab = document.getElementById('image-file-input');
+	['dragenter','dragover'].forEach(eventName => {
+		document.body.addEventListener(eventName, (evt) => {
+			if (!imageFileTab.classList.contains('hidden')){
+				dropZone.classList.remove('hidden');
+			
+				evt.preventDefault();
+
+				if (evt.srcElement.id == dropzoneId) {
+					evt.dataTransfer.dropEffect = 'copy';
+				} else {
+					evt.dataTransfer.dropEffect = 'none';
+				}
+			}
+		});
+	});
+
+
 	const inputField = document.getElementById(inputId);
-	inputField.addEventListener("dragenter", (evt) => {
-		console.log("enter")
+	const fileNameDisplay = document.getElementById(fileNameId);
+	['dragleave','drop'].forEach(eventName => {
+		document.body.addEventListener(eventName, (evt) => {
+			if (!imageFileTab.classList.contains('hidden')){
+				dropZone.classList.add('hidden');
+
+				evt.preventDefault();
+
+				if (evt.name='drop' && evt.dataTransfer.files.length == 1){
+					inputField.files =  evt.dataTransfer.files;
+					inputField.dispatchEvent(new Event('change'));
+				}
+			}
+		});
 	});
-	inputField.addEventListener("dragleave", (evt) => {
-		console.log("leave")
+
+	// if file changes (either chosen with file chooser or drag-and-dropped)
+	inputField.addEventListener('change', (evt) => {
+		const files = evt.target.files;
+		if (files.length > 0) {
+			fileNameDisplay.innerText= files[0].name;
+		}
 	});
+
+	// set the file name display if there is a file selected already (may happen after refresh)
+	if (inputField.files.length > 0) {
+		fileNameDisplay.innerText= inputField.files[0].name;
+	}
 }
