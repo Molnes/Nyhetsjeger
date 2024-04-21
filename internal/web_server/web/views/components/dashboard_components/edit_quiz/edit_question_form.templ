@@ -78,7 +78,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), fmt.Sprintf("/api/v1/admin/question/upload-image?question-id=%s", question.ID),
-			&question.ImageURL, !isNew, "")
+			&question.ImageURL, !isNew, "",IdPrefixQuestion)
 		<div
 			class="relative mt-10 mb-5 text-sm text-gray-500 text-center overflow-hidden
 						before:content-[''] before:absolute before:h-px before:w-1/2 before:bg-gray-400 before:-left-[8ch] before:top-1/2

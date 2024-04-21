@@ -4,13 +4,22 @@ import (
 	"net/url"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"github.com/google/uuid"
+	"fmt"
 )
+
+const (
+	IdPrefixQuiz     = "quiz"
+	IdPrefixQuestion = "question"
+)
+
+var randomId uuid.UUID
 
 // An input field for updating the image.
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
 	<div class="image-input-wrapper">
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
@@ -31,10 +40,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
-			<div id="image-url-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
-				<label for="image-url">Velg URL</label>
+			<div id="image-url-input-tab" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+				<label for={ fmt.Sprintf("%s-image-url-input", idPrefix) }>Velg URL</label>
 				<input
-					id="image-url"
+					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
 					name="image-url"
 					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
 					type="text"
@@ -55,10 +64,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					>Last opp</button>
 				}
 			</div>
-			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden relative" data-element-type="tab-content">
-				<label for="image-file">Velg en fil</label>
+			<div id="image-file-input-tab" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden relative" data-element-type="tab-content">
+				<label for={ fmt.Sprintf("%s-image-file-input", idPrefix) }>Velg en fil</label>
 				<input
-					id="image-file"
+					id={ fmt.Sprintf("%s-image-file-input", idPrefix) }
 					name="image-file"
 					hidden
 					type="file"
@@ -67,16 +76,19 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				<div class="flex-grow flex flex-col justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo w-1/2">
 					<p>Dra og slipp</p>
 					<p class="text-gray-700 ">eller</p>
-					<button class="bg-clightindigo px-4 py-2 my-1 rounded-button" onclick="event.preventDefault(); document.getElementById('image-file').click();">Bla gjennom filene</button>
-					<p id="file-name-display" class="text-gray-700">Ingen fil valgt</p>
+					<button
+						class="bg-clightindigo px-4 py-2 my-1 rounded-button"
+						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
+					>Bla gjennom filene</button>
+					<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700">Ingen fil valgt</p>
 				</div>
 				<div
-					id="drop-zone"
+					id={ fmt.Sprintf("%s-file-drop-zone", idPrefix) }
 					class="absolute top-0 w-full h-full border border-cindigo bg-purple-100 bg-opacity-75  flex items-center justify-center text-4xl text-cindigo font-sans hidden"
 				>
 					Slipp her
 				</div>
-				@indicateDragAndDrop("image-file", "drop-zone", "file-name-display")
+				@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
 				if post {
 					<button
 						type="button"
@@ -173,7 +185,6 @@ script switchTabs() {
 script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string) {
 	const dropZone = document.getElementById(dropzoneId);
 
-	const imageFileTab = document.getElementById('image-file-input');
 	['dragenter','dragover'].forEach(eventName => {
 		document.body.addEventListener(eventName, (evt) => {
 			if (!evt.target.classList.contains('drag-handle') && evt.dataTransfer.types.includes('Files')){
@@ -199,7 +210,9 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 
 			evt.preventDefault();
 
-			if (evt.name='drop' && evt.dataTransfer.files.length == 1){
+			if (evt.name='drop'
+			&& evt.dataTransfer.files.length == 1
+			&& evt.srcElement.id == dropzoneId){
 				inputField.files =  evt.dataTransfer.files;
 				inputField.dispatchEvent(new Event('change'));
 			}
@@ -209,6 +222,7 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 	// if file changes (either chosen with file chooser or drag-and-dropped)
 	inputField.addEventListener('change', (evt) => {
 		const files = evt.target.files;
+		console.log('change detected');
 		if (files.length > 0) {
 			fileNameDisplay.innerText= files[0].name;
 		}
@@ -218,4 +232,9 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 	if (inputField.files.length > 0) {
 		fileNameDisplay.innerText= inputField.files[0].name;
 	}
+}
+
+script openFileChooser(fileInputId string) {
+	event.preventDefault();
+	document.getElementById(fileInputId).click();
 }
