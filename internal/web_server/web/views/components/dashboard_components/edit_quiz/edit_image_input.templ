@@ -56,19 +56,23 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				}
 			</div>
 			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden relative" data-element-type="tab-content">
-				<label for="image-file" class="flex-grow">Velg en fil</label>
+				<label for="image-file">Velg en fil</label>
 				<input
 					id="image-file"
 					name="image-file"
-					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo w-1/2  hidden"
+					hidden
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
-				<button class="bg-clightindigo px-4 py-2 rounded-button" onclick="event.preventDefault(); document.getElementById('image-file').click();">Eller bla gjennom filene</button>
-				<p id="file-name-display">Ingen fil valgt</p>
+				<div class="flex-grow flex flex-col justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo w-1/2">
+					<p>Dra og slipp</p>
+					<p class="text-gray-700 ">eller</p>
+					<button class="bg-clightindigo px-4 py-2 my-1 rounded-button" onclick="event.preventDefault(); document.getElementById('image-file').click();">Bla gjennom filene</button>
+					<p id="file-name-display" class="text-gray-700">Ingen fil valgt</p>
+				</div>
 				<div
 					id="drop-zone"
-					class="absolute top-0 w-full h-80 border border-cindigo bg-purple-100 bg-opacity-75  flex items-center justify-center text-4xl text-cindigo font-sans hidden"
+					class="absolute top-0 w-full h-full border border-cindigo bg-purple-100 bg-opacity-75  flex items-center justify-center text-4xl text-cindigo font-sans hidden"
 				>
 					Slipp her
 				</div>
@@ -172,7 +176,7 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 	const imageFileTab = document.getElementById('image-file-input');
 	['dragenter','dragover'].forEach(eventName => {
 		document.body.addEventListener(eventName, (evt) => {
-			if (!imageFileTab.classList.contains('hidden') && !evt.target.classList.contains('drag-handle')){
+			if (!evt.target.classList.contains('drag-handle') && evt.dataTransfer.types.includes('Files')){
 				dropZone.classList.remove('hidden');
 			
 				evt.preventDefault();
@@ -191,15 +195,13 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 	const fileNameDisplay = document.getElementById(fileNameId);
 	['dragleave','drop'].forEach(eventName => {
 		document.body.addEventListener(eventName, (evt) => {
-			if (!imageFileTab.classList.contains('hidden')){
-				dropZone.classList.add('hidden');
+			dropZone.classList.add('hidden');
 
-				evt.preventDefault();
+			evt.preventDefault();
 
-				if (evt.name='drop' && evt.dataTransfer.files.length == 1){
-					inputField.files =  evt.dataTransfer.files;
-					inputField.dispatchEvent(new Event('change'));
-				}
+			if (evt.name='drop' && evt.dataTransfer.files.length == 1){
+				inputField.files =  evt.dataTransfer.files;
+				inputField.dispatchEvent(new Event('change'));
 			}
 		});
 	});
