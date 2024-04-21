@@ -45,7 +45,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
-			<div id="image-url-input-tab" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+			<div id={ fmt.Sprintf("%s-image-url-input-tab", idPrefix) } class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
 				<label for={ fmt.Sprintf("%s-image-url-input", idPrefix) }>Velg URL</label>
 				<input
 					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
@@ -69,7 +69,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					>Last opp</button>
 				}
 			</div>
-			<div id="image-file-input-tab" class="min-h-12 flex flex-row items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
+			<div id={ fmt.Sprintf("%s-image-file-input-tab", idPrefix) } class="min-h-12 flex flex-row items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
 				<input
 					id={ fmt.Sprintf("%s-image-file-input", idPrefix) }
 					name="image-file"
@@ -127,7 +127,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					/>
 				</div>
 				<button
-					id="remove-image-button"
+					id={ fmt.Sprintf("%s-remove-image-button", idPrefix) }
 					type="button"
 					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
 					if post {
