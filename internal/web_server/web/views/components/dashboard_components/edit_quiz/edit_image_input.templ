@@ -185,53 +185,58 @@ script switchTabs() {
 script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string) {
 	const dropZone = document.getElementById(dropzoneId);
 
-	['dragenter','dragover'].forEach(eventName => {
+	["dragenter", "dragover"].forEach((eventName) => {
 		document.body.addEventListener(eventName, (evt) => {
-			if (!evt.target.classList.contains('drag-handle') && evt.dataTransfer.types.includes('Files')){
-				dropZone.classList.remove('hidden');
-			
+			if (
+				!evt.target.classList.contains("drag-handle") &&
+				evt.dataTransfer.types.includes("Files")
+			) {
+				dropZone.classList.remove("hidden");
+
 				evt.preventDefault();
 
 				if (evt.srcElement.id == dropzoneId) {
-					evt.dataTransfer.dropEffect = 'copy';
+					evt.dataTransfer.dropEffect = "copy";
 				} else {
-					evt.dataTransfer.dropEffect = 'none';
+					evt.dataTransfer.dropEffect = "none";
 				}
 			}
 		});
 	});
 
-
 	const inputField = document.getElementById(inputId);
 	const fileNameDisplay = document.getElementById(fileNameId);
-	['dragleave','drop'].forEach(eventName => {
+	["dragleave", "drop"].forEach((eventName) => {
 		document.body.addEventListener(eventName, (evt) => {
-			dropZone.classList.add('hidden');
+			dropZone.classList.add("hidden");
 
 			evt.preventDefault();
 
-			if (evt.name='drop'
-			&& evt.dataTransfer.files.length == 1
-			&& evt.srcElement.id == dropzoneId){
-				inputField.files =  evt.dataTransfer.files;
-				inputField.dispatchEvent(new Event('change'));
+			if (
+				(evt.name =
+					"drop" &&
+					evt.dataTransfer.files.length == 1 &&
+					evt.srcElement.id == dropzoneId)
+			) {
+				inputField.files = evt.dataTransfer.files;
+				inputField.dispatchEvent(new Event("change"));
 			}
 		});
 	});
 
 	// if file changes (either chosen with file chooser or drag-and-dropped)
-	inputField.addEventListener('change', (evt) => {
+	inputField.addEventListener("change", (evt) => {
 		const files = evt.target.files;
-		console.log('change detected');
 		if (files.length > 0) {
-			fileNameDisplay.innerText= files[0].name;
+			fileNameDisplay.innerText = files[0].name;
 		}
 	});
 
 	// set the file name display if there is a file selected already (may happen after refresh)
 	if (inputField.files.length > 0) {
-		fileNameDisplay.innerText= inputField.files[0].name;
+		fileNameDisplay.innerText = inputField.files[0].name;
 	}
+
 }
 
 script openFileChooser(fileInputId string) {
