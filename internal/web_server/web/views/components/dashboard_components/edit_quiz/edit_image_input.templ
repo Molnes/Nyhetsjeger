@@ -172,7 +172,7 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 	const imageFileTab = document.getElementById('image-file-input');
 	['dragenter','dragover'].forEach(eventName => {
 		document.body.addEventListener(eventName, (evt) => {
-			if (!imageFileTab.classList.contains('hidden')){
+			if (!imageFileTab.classList.contains('hidden') && !evt.target.classList.contains('drag-handle')){
 				dropZone.classList.remove('hidden');
 			
 				evt.preventDefault();
