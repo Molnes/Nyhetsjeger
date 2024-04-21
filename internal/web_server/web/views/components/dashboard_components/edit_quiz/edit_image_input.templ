@@ -19,6 +19,11 @@ var randomId uuid.UUID
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
+//
+// The idPrefix is added to elements with ids used within JS scripts.
+// They need to be consistant in the replacement html,
+// and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
+// (example: quzi image editing and question iamge editing should have different prefixes to not interfere)
 templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
 	<div class="image-input-wrapper">
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
@@ -184,15 +189,15 @@ script switchTabs() {
 	imageWrapper.addEventListener("htmx:afterSwap", switchListener);
 }
 
+// Adds drag-events listeners to the body, unhides the dropzone when a file is being dragged.
+// Updates the fileNameDisplay with the currently selected filename.
+
 script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string) {
 	const dropZone = document.getElementById(dropzoneId);
 
 	["dragenter", "dragover"].forEach((eventName) => {
 		document.body.addEventListener(eventName, (evt) => {
-			if (
-				!evt.target.classList.contains("drag-handle") &&
-				evt.dataTransfer.types.includes("Files")
-			) {
+			if (evt.dataTransfer.types.includes("Files")) {
 				dropZone.classList.remove("hidden");
 
 				evt.preventDefault();
