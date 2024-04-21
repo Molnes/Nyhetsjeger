@@ -79,14 +79,29 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				/>
 				<div class="flex flex-col flex-grow">
 					<label for={ fmt.Sprintf("%s-image-file-input", idPrefix) }>Velg en fil</label>
-					<div class="flex flex-col justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
-						@icons.Upload(2, "dimgray", 30, 30)
-						<p>Dra og slipp, eller</p>
-						<button
-							class="underline"
-							onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
-						>bla gjennom filene dine</button>
-						<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 mt-2">Ingen fil valgt</p>
+					<div class="flex flex-row justify-center items-center gap-3 mt-2 mb-3">
+						<div class="flex flex-col flex-grow justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
+							@icons.Upload(2, "dimgray", 30, 30)
+							<p>Dra og slipp, eller</p>
+							<button
+								class="underline"
+								onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
+							>bla gjennom filene dine</button>
+							<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 mt-2">Ingen fil valgt</p>
+						</div>
+						if post {
+							<button
+								type="button"
+								class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
+								hx-post={ imageFileEndpoint }
+								hx-trigger="click"
+								hx-swap="outerHTML"
+								hx-target="closest .image-input-wrapper"
+								hx-target-4*="next .error-image"
+								hx-sync="closest form:abort"
+								hx-indicator="previous .htmx-indicator"
+							>Last opp</button>
+						}
 					</div>
 				</div>
 				<div
@@ -95,21 +110,8 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				>
 					Slipp her
 				</div>
-				@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
-				if post {
-					<button
-						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
-						hx-post={ imageFileEndpoint }
-						hx-trigger="click"
-						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
-						hx-target-4*="next .error-image"
-						hx-sync="closest form:abort"
-						hx-indicator="previous .htmx-indicator"
-					>Last opp</button>
-				}
 			</div>
+			@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
 			if imageURL.String() == "" && post {
