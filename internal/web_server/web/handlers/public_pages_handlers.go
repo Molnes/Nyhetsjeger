@@ -13,6 +13,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	data_converting "github.com/Molnes/Nyhetsjeger/internal/utils/converting"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/public_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
 	"github.com/google/uuid"
@@ -92,14 +93,19 @@ func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
 		quiz = *selectedQuiz
 	}
 
-	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(&quiz))
+	partialQuiz, err := data_converting.ConvertQuizToPartial(quiz, pph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(partialQuiz))
 }
 
 const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
 const totalPointsQueryParam = "total-points"
 
-// Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there. 
+// Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there.
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {

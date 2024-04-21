@@ -5,7 +5,7 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/l
 import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 
-templ FinishedQuizzes(quizzes []quizzes.Quiz) {
+templ FinishedQuizzes(quizzes []quizzes.PartialQuiz) {
 	@layout_components.QuizLayoutMenu("Fullførte quizer") {
 		<div class="p-4">
 			<h2 class="text-4xl p-4">Fullførte quizer</h2>
