@@ -543,14 +543,19 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
 	}
 
+	var hasFile = true
 	// Get the image file if it exists and upload it
-	if c.FormValue(imageFileInput) != "" {
-		imageFile, err := c.FormFile(imageFileInput)
-		if err != nil {
+	imageFile, err := c.FormFile(imageFileInput)
+	if err != nil {
+		if err == http.ErrMissingFile {
+			hasFile = false
+		} else {
 			log.Println(err)
 			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorFetchingImage))
 		}
+	}
 
+	if hasFile {
 		// Upload image from File
 		imageName, err := aah.uploadImage(c, imageFile)
 		if err != nil {
