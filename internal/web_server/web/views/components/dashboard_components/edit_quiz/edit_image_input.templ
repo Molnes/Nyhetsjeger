@@ -14,7 +14,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 	<div class="image-input-wrapper">
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
-				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card outline outline-1 outline-[transparent]"
 				data-element-type="tab-link"
 				type="button"
 			>
@@ -22,7 +22,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				@icons.Link(2, "dimgray", 20, 20)
 			</button>
 			<button
-				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card outline outline-1 outline-[transparent]"
 				data-element-type="tab-link"
 				type="button"
 			>
@@ -45,7 +45,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				if post {
 					<button
 						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button"
+						class="bg-clightindigo px-4 py-2 rounded-button outline outline-1 outline-[transparent]"
 						hx-post={ imageURLEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
@@ -68,7 +68,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				if post {
 					<button
 						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button"
+						class="bg-clightindigo px-4 py-2 rounded-button outline outline-1 outline-[transparent]"
 						hx-post={ imageFileEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
@@ -98,7 +98,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				<button
 					id="remove-image-button"
 					type="button"
-					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button outline outline-1 outline-[transparent]"
 					if post {
 						hx-delete={ imageURLEndpoint }
 						hx-swap="outerHTML"
