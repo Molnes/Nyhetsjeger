@@ -26,9 +26,9 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		@icons.Cross(3, "currentColor", 30, 30)
 	</button>
 	<form id="edit-question-form" hx-encoding="multipart/form-data">
-		<h2 class="font-bold text-3xl mb-3">Rediger spørsmål</h2>
+		<h2 class="font-bold text-3xl mb-5">Rediger spørsmål</h2>
 		// Article
-		<label for="articles-list" class="block font-bold mb-1">Basert på artikkel</label>
+		<label for="articles-list" class="block font-bold mb-1">Velg artikkel <span class="font-normal text-sm text-gray-600">(valgfritt)</span></label>
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
@@ -49,7 +49,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			}
 		</select>
 		// Question
-		<label for="question" class="block font-bold mb-1">Spørsmål</label>
+		<label for="question" class="block font-bold mb-1">Velg spørsmål</label>
 		<input
 			id="question"
 			name={ QuestionText }
@@ -68,15 +68,15 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			hx-target="#alternatives-table"
 			hx-indicator="next .htmx-indicator"
 		>
-			Tilfeldig alternativ rekkefølge
+			Generer tilfeldig rekkefølge
 			@icons.Dice(20, "currentColor", 28, 28)
 		</button>
 		<div class="block mx-auto w-fit">
 			@components.LoadingIndicator()
 		</div>
 		// Image
-		<div class="flex flex-row items-center gap-3 mb-1">
-			<h2 class="font-bold">Spørsmålsbilde</h2>
+		<div class="flex flex-row items-center gap-2 mb-1">
+			<h2 class="font-bold">Velg bilde <span class="font-normal text-sm text-gray-600">(valgfritt)</span></h2>
 			@components.TooltipButton("Ikke lag spørsmål basert på innholdet i bildet. Spillere med synshemninger kan ha problemer med å svare på slike spørsmål.")
 			@components.LoadingIndicator()
 		</div>
@@ -90,7 +90,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<div class="flex flex-row items-center flex-wrap mb-3 gap-5 justify-between">
 			// Points
 			<div>
-				<label for={ QuestionPoints } class="font-bold mr-1">Poeng</label>
+				<label for={ QuestionPoints } class="font-bold mr-1">Velg poeng</label>
 				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
 					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
 						/* The points default 100 */
@@ -108,7 +108,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			</div>
 			// Time limit
 			<div>
-				<label for={ QuestionTimeLimit } class="font-bold mr-1">Tidsbegrensning</label>
+				<label for={ QuestionTimeLimit } class="font-bold mr-1">Velg tidsbegrensning</label>
 				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
 					for _, seconds := range []uint{10, 15, 30, 45, 60, 120, 180} {
 						/* The time limit is default 30 seconds */
