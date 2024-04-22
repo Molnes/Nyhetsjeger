@@ -21,7 +21,7 @@ const (
 // 4 answer alternatives (optional 2 to 4), and an image.
 // If the question isNew = true, it will be appended to the list of questions.
 // If the question isNew = false, it will replace the existing question in the list.
-templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
+templ EditQuestionForm(question *questions.Question, article *articles.Article, articles *[]articles.Article, quizID string, isNew bool) {
 	<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk">
 		@icons.Cross(3, "currentColor", 30, 30)
 	</button>
@@ -39,13 +39,13 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			} else {
 				<option value="">Ingen artikkel valgt</option>
 			}
-			for _, article := range *articles {
+			for _, art := range *articles {
 				<option
-					value={ article.ArticleURL.String() }
-					if question.Article.ArticleURL == article.ArticleURL {
+					value={ art.ArticleURL.String() }
+					if art.ArticleURL == article.ArticleURL {
 						selected
 					}
-				>{  article.Title }</option>
+				>{  art.Title }</option>
 			}
 		</select>
 		// Question
