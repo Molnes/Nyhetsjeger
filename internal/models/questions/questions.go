@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -26,7 +25,7 @@ type Question struct {
 	Text             string
 	ImageURL         url.URL
 	Arrangement      uint
-	Article          articles.Article // The article this question is based on.
+	ArticleID        uuid.NullUUID
 	QuizID           uuid.UUID
 	TimeLimitSeconds uint
 	Points           uint
@@ -55,7 +54,7 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 		ID:           uuid.New(),
 		Text:         "",
 		ImageURL:     url.URL{},
-		Article:      articles.Article{},
+		ArticleID:    uuid.NullUUID{},
 		QuizID:       quizId,
 		Points:       100,
 		Alternatives: []Alternative{},
@@ -195,10 +194,9 @@ func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.U
 // Convert a row from the database to a Question.
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
-	var articleID uuid.UUID
 	var imageURL sql.NullString
 	err := row.Scan(
-		&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
+		&q.ID, &q.Text, &imageURL, &q.Arrangement, &q.ArticleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
@@ -210,12 +208,6 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 		return nil, err
 	}
 	q.ImageURL = *tempURL
-
-	// Add the article to the question
-	article, _ := articles.GetArticleByID(db, articleID)
-	if article != nil {
-		q.Article = *article
-	}
 
 	// Add the alternatives to the question
 	altneratives, err := GetAlternativesByQuestionID(db, q.ID)
@@ -234,10 +226,9 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 
 	for rows.Next() {
 		var q Question
-		var articleID uuid.UUID
 		var imageURL sql.NullString
 		err := rows.Scan(
-			&q.ID, &q.Text, &imageURL, &q.Arrangement, &articleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
+			&q.ID, &q.Text, &imageURL, &q.Arrangement, &q.ArticleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 		)
 		if err != nil {
 			return nil, err
@@ -249,12 +240,6 @@ func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) 
 			return nil, err
 		}
 		q.ImageURL = *tempURL
-
-		// Add the article to the question
-		article, _ := articles.GetArticleByID(db, articleID)
-		if article != nil {
-			q.Article = *article
-		}
 
 		// Add the alternatives to the question
 		altneratives, err := GetAlternativesByQuestionID(db, q.ID)
@@ -306,7 +291,7 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 			id = $1;
 		`, id)
 	err := row.Scan(
-		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.Article.ID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
+		&q.ID, &q.Text, &imageUrlString, &q.Arrangement, &q.ArticleID, &q.QuizID, &q.TimeLimitSeconds, &q.Points,
 	)
 	if err != nil {
 		return nil, err
@@ -318,15 +303,6 @@ func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 		return nil, err
 	} else {
 		q.ImageURL = *imageUrl
-	}
-
-	// Get the article if it exists
-	if q.Article.ID.Valid {
-		article, err := articles.GetArticleByID(db, q.Article.ID.UUID)
-		if err != nil {
-			return nil, err
-		}
-		q.Article = *article
 	}
 
 	answerRows, err := db.Query(
@@ -442,7 +418,7 @@ type QuestionForm struct {
 	ID               uuid.UUID
 	Text             string
 	ImageURL         *url.URL
-	Article          *articles.Article
+	ArticleID        *uuid.NullUUID
 	QuizID           *uuid.UUID
 	Points           uint
 	TimeLimitSeconds uint
@@ -493,7 +469,7 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 		ID:               form.ID,
 		Text:             form.Text,
 		ImageURL:         *form.ImageURL,
-		Article:          *form.Article,
+		ArticleID:        *form.ArticleID,
 		QuizID:           *form.QuizID,
 		Points:           form.Points,
 		TimeLimitSeconds: form.TimeLimitSeconds,
@@ -548,7 +524,7 @@ func AddNewQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 	_, err = tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points, time_limit_seconds)
 		VALUES ($1, $2, $3, $4, $5, $6, $7);`,
-		question.ID, question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.TimeLimitSeconds,
+		question.ID, question.Text, question.ImageURL.String(), question.ArticleID, question.QuizID, question.Points, question.TimeLimitSeconds,
 	)
 
 	if err != nil {
@@ -589,7 +565,7 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 		`UPDATE questions
 		SET question = $1, image_url = $2, article_id = $3, quiz_id = $4, points = $5, time_limit_seconds = $6
 		WHERE id = $7;`,
-		question.Text, question.ImageURL.String(), question.Article.ID, question.QuizID, question.Points, question.TimeLimitSeconds, question.ID,
+		question.Text, question.ImageURL.String(), question.ArticleID, question.QuizID, question.Points, question.TimeLimitSeconds, question.ID,
 	)
 
 	if err != nil {
