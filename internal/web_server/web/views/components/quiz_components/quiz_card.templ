@@ -34,6 +34,7 @@ templ QuizCard(quiz quizzes.PartialQuiz) {
 				} else {
 					href={ templ.SafeURL("/gjest-quiz?current-question=1&quiz-id=" + quiz.ID.String()) }
 				}
+				onclick={ triggerTimedQuizInfo() }
 			>
 				SPILL
 			</a>

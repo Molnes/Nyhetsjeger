@@ -1,0 +1,35 @@
+package quiz_components
+
+script triggerTimedQuizInfo() {
+    event.preventDefault()
+	document.body.dispatchEvent(new CustomEvent('quiz-play-clicked', {detail: event}));
+}
+
+script ShowTimedQuizInfoOnEvent() {
+    document.body.addEventListener('quiz-play-clicked',(evt) => {
+        evt.preventDefault();
+        console.log('cliekcd');
+        console.dir(evt);
+        const dialog = document.getElementById('time-quiz-info-dialog');
+        dialog.showModal();
+    });
+}
+
+templ TimeQuizInfoDialog() {
+	<dialog
+		id="time-quiz-info-dialog"
+		class="px-10 py-3 flex flex-col gap-2 bg-white rounded-card border border-violet-100"
+	>
+		<h1 class="text-2xl mb-1">Advarsel</h1>
+		<p>Quizene går på <b>tid</b>!</p>
+		<p>Svarer du fort, får du flere poeng!</p>
+		<label for="dont-show-again">
+			<input type="checkbox" name="dont-show-again" id="dont-show-again"/>
+			ikke vis igjen
+		</label>
+		<button
+			class="gradient-bg-button py-2 px-10 mx-auto mt-4 border border-1 border-[transparent]"
+		>Ok</button>
+	</dialog>
+	@ShowTimedQuizInfoOnEvent()
+}
