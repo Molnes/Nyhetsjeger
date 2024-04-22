@@ -18,9 +18,9 @@ const (
 // If post is set to false, it will not send a request when the value is changed.
 //
 // The idPrefix is added to elements with ids used within JS scripts.
-// They need to be consistant in the replacement html,
+// They need to be consistent in the replacement html,
 // and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
-// (example: quiz image editing and question iamge editing should have different prefixes to not interfere)
+// (example: quiz image editing and question image editing should have different prefixes to not interfere)
 templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
 	<div class={ fmt.Sprintf("%s-image-input-wrapper", idPrefix) }>
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
