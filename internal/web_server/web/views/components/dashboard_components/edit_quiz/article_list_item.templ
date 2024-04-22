@@ -18,7 +18,8 @@ templ ArticleListItem(articleUrl string, articleTitle string, articleID string, 
 		<button
 			id={ fmt.Sprintf("delete-article-%s", articleID) }
 			class="ml-auto"
-			title="Slett"
+			title="Slett artikkel"
+			aria-label="Slett artikkel"
 			hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-article?quiz-id=%s&article-id=%s", quizID, articleID) }
 			hx-swap="outerHTML"
 			hx-target={ fmt.Sprintf("#article-%s", articleID) }

@@ -22,7 +22,7 @@ const (
 // If the question isNew = true, it will be appended to the list of questions.
 // If the question isNew = false, it will replace the existing question in the list.
 templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
-	<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk">
+	<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk spørsmål" aria-label="Lukk spørsmål">
 		@icons.Cross(3, "currentColor", 30, 30)
 	</button>
 	<form id="edit-question-form" hx-encoding="multipart/form-data">

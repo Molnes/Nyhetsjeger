@@ -22,7 +22,8 @@ templ QuestionListItem(question *questions.Question) {
 			class="ml-auto"
 			data-element-type="edit-question-button"
 			type="button"
-			title="Rediger"
+			title="Rediger spørsmål"
+			aria-label="Rediger spørsmål"
 			hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) }
 			hx-swap="innerHTML"
 			hx-target="#question-modal"
