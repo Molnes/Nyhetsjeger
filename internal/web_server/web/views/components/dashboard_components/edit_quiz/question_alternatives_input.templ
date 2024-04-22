@@ -11,8 +11,8 @@ templ QuestionAlternativesInput(alternatives []questions.Alternative) {
 	<table id="alternatives-table">
 		<thead>
 			<tr>
-				<th class="w-full text-left">Svaralternativer (Fyll inn mellom 2 til 4)</th>
-				<th class="text-right">Riktig svar</th>
+				<th class="w-full text-left">Fyll inn svaralternativer <span class="font-normal text-sm text-gray-600">(mellom 2 til 4)</span></th>
+				<th class="text-center min-w-20">Velg riktig svar</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -34,7 +34,7 @@ templ QuestionAlternativesInput(alternatives []questions.Alternative) {
 						<input
 							type="checkbox"
 							name={ fmt.Sprintf("question-alternative-%d-is-correct", index+1) }
-							class="block ml-auto mr-0 h-6 w-6 accent-cindigo"
+							class="block mx-auto h-6 w-6 accent-cindigo"
 							if index < len(alternatives) && alternatives[index].IsCorrect {
 								checked
 							}
