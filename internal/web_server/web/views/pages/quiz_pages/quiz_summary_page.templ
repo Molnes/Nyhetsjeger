@@ -55,7 +55,7 @@ func (r Response) String() string {
 templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 	<div
 		id="quiz-summary"
-		class="flex flex-col gap-8 justify-start items-center p-5 isolate"
+		class="flex flex-col gap-4 justify-start items-center px-1 isolate"
 	>
 		<section class="flex flex-col gap-3 items-center">
 			<h1 class="text-3xl">Resultat</h1>
@@ -95,12 +95,11 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
 			</div>
 		</section>
-		<section class="flex flex-col gap-4 items-center scrollbar-hide">
-			<h2 class="text-2xl">Oppsummering</h2>
+		<section class="flex flex-col gap-4 items-center scrollbar-hide w-full">
 			<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
 				{ GetResponse(summary.AchievedScore, summary.MaxScore).String() }
 			</p>
-			<div class="gradient-outline w-fit h-fit">
+			<div class="gradient-outline h-fit w-full">
 				<ol class={ "list-decimal pl-8 pr-4 py-4 space-y-5 min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card",calculateHeightDifference(getDigitsFromSummary(summary)) }>
 					for _, aq := range summary.AnsweredQuestions {
 						@chosenAnswer(aq)
@@ -174,11 +173,11 @@ func getDigitsFromSummary(summary *user_quiz_summary.UserQuizSummary) int {
 func calculateHeightDifference(digitsNumber int) string {
 	var str string
 	if digitsNumber > 10 {
-		str = "max-h-[calc(100dvh-29rem)]"
-	} else if digitsNumber > 6 {
 		str = "max-h-[calc(100dvh-27rem)]"
-	} else {
+	} else if digitsNumber > 6 {
 		str = "max-h-[calc(100dvh-25rem)]"
+	} else {
+		str = "max-h-[calc(100dvh-23rem)]"
 	}
 	return str
 }
