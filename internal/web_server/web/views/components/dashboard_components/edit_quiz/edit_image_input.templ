@@ -191,8 +191,8 @@ script switchTabs(idPrefix string) {
 // Adds drag-events listeners to the body, unhides the dropzone when a file is being dragged.
 // Updates the fileNameDisplay with the currently selected filename.
 
-script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string) {
-	const dropZone = document.getElementById(dropzoneId);
+script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string) {
+	const dropZone = document.getElementById(dropZoneId);
 
 	["dragenter", "dragover"].forEach((eventName) => {
 		document.body.addEventListener(eventName, (evt) => {
@@ -201,7 +201,7 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 
 				evt.preventDefault();
 
-				if (evt.srcElement.id == dropzoneId) {
+				if (evt.srcElement.id == dropZoneId) {
 					evt.dataTransfer.dropEffect = "copy";
 				} else {
 					evt.dataTransfer.dropEffect = "none";
@@ -222,7 +222,7 @@ script indicateDragAndDrop(inputId string, dropzoneId string, fileNameId string)
 				(evt.name =
 					"drop" &&
 					evt.dataTransfer.files.length == 1 &&
-					evt.srcElement.id == dropzoneId)
+					evt.srcElement.id == dropZoneId)
 			) {
 				inputField.files = evt.dataTransfer.files;
 				inputField.dispatchEvent(new Event("change"));
