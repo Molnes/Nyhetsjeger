@@ -194,41 +194,47 @@ script switchTabs(idPrefix string) {
 script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string) {
 	const dropZone = document.getElementById(dropZoneId);
 
-	["dragenter", "dragover"].forEach((eventName) => {
-		document.body.addEventListener(eventName, (evt) => {
-			if (evt.dataTransfer.types.includes("Files")) {
-				dropZone.classList.remove("hidden");
+	document.addEventListener('dragover', (evt) => {
+		if (evt.dataTransfer.types.includes("Files")) {
+			dropZone.classList.remove("hidden");
+			evt.preventDefault();
 
-				evt.preventDefault();
-
-				if (evt.srcElement.id == dropZoneId) {
-					evt.dataTransfer.dropEffect = "copy";
-				} else {
-					evt.dataTransfer.dropEffect = "none";
-				}
+			if (evt.srcElement.id == dropZoneId) {
+				evt.dataTransfer.dropEffect = "copy";
+			} else {
+				evt.dataTransfer.dropEffect = "none";
 			}
-		});
+		}
+	});
+
+	let enterTarget = null;
+	document.addEventListener('dragenter', (evt) => {
+		enterTarget = evt.target;
 	});
 
 	const inputField = document.getElementById(inputId);
-	const fileNameDisplay = document.getElementById(fileNameId);
-	["dragleave", "drop"].forEach((eventName) => {
-		document.body.addEventListener(eventName, (evt) => {
-			dropZone.classList.add("hidden");
+	document.addEventListener('drop', (evt) => {
+		dropZone.classList.add("hidden");
+		evt.preventDefault();
 
-			evt.preventDefault();
-
-			if (
-				(evt.name =
-					"drop" &&
-					evt.dataTransfer.files.length == 1 &&
-					evt.srcElement.id == dropZoneId)
-			) {
-				inputField.files = evt.dataTransfer.files;
-				inputField.dispatchEvent(new Event("change"));
-			}
-		});
+		if (
+			(	evt.dataTransfer.files.length == 1 &&
+				evt.srcElement.id == dropZoneId)
+		) {
+			inputField.files = evt.dataTransfer.files;
+			inputField.dispatchEvent(new Event("change"));
+		}
 	});
+	
+
+	document.addEventListener('dragleave', (evt) => {
+		evt.preventDefault();
+		if (evt.target === enterTarget)  {
+			dropZone.classList.add("hidden");
+		}
+	});
+
+	const fileNameDisplay = document.getElementById(fileNameId);
 
 	// if file changes (either chosen with file chooser or drag-and-dropped)
 	inputField.addEventListener("change", (evt) => {
@@ -242,7 +248,6 @@ script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string)
 	if (inputField.files.length > 0) {
 		fileNameDisplay.innerText = inputField.files[0].name;
 	}
-
 }
 
 script openFileChooser(fileInputId string) {
