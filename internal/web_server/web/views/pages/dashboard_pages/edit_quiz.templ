@@ -75,7 +75,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, true, "")
+					&quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
 			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {

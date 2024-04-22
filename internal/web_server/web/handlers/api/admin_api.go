@@ -159,7 +159,7 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageURL, true, ""))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageURL, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
@@ -201,7 +201,7 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageAsURL, true, ""))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageAsURL, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 // Removes the image for a quiz in the database.
@@ -219,7 +219,7 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), &url.URL{}, true, ""))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), &url.URL{}, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 // Deletes a quiz from the database.
@@ -543,14 +543,19 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
 	}
 
+	var hasFile = true
 	// Get the image file if it exists and upload it
-	if c.FormValue(imageFileInput) != "" {
-		imageFile, err := c.FormFile(imageFileInput)
-		if err != nil {
+	imageFile, err := c.FormFile(imageFileInput)
+	if err != nil {
+		if err == http.ErrMissingFile {
+			hasFile = false
+		} else {
 			log.Println(err)
 			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorFetchingImage))
 		}
+	}
 
+	if hasFile {
 		// Upload image from File
 		imageName, err := aah.uploadImage(c, imageFile)
 		if err != nil {
@@ -692,7 +697,7 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageURL, true, ""))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageURL, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Upload a new image for a question.
@@ -735,7 +740,7 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageAsURL, true, ""))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageAsURL, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Delete the image for a question in the database.
@@ -744,7 +749,7 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
 		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, errorInvalidQuestionID))
+			fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, errorInvalidQuestionID, dashboard_components.IdPrefixQuestion))
 	}
 
 	// Remove the image URL from the question
@@ -752,14 +757,14 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	if err != nil {
 		if err == questions.ErrNoImageRemoved {
 			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-				fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere"))
+				fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere", dashboard_components.IdPrefixQuestion))
 		}
 
 		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, ""))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Uploads an image to the bucket from a form and returns the name of the image.
