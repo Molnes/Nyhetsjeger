@@ -45,7 +45,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
-			<div id={ fmt.Sprintf("%s-image-url-input-tab", idPrefix) } class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+			<div id={ fmt.Sprintf("%s-image-url-input-tab", idPrefix) } class="flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
 				<label for={ fmt.Sprintf("%s-image-url-input", idPrefix) }>Velg URL</label>
 				<input
 					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
@@ -69,7 +69,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					>Last opp</button>
 				}
 			</div>
-			<div id={ fmt.Sprintf("%s-image-file-input-tab", idPrefix) } class="min-h-12 flex flex-row items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
+			<div id={ fmt.Sprintf("%s-image-file-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
 				<input
 					id={ fmt.Sprintf("%s-image-file-input", idPrefix) }
 					name="image-file"
@@ -77,32 +77,30 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
-				<div class="flex flex-col flex-grow">
+				<div class="flex flex-row w-full justify-between items-center">
 					<label for={ fmt.Sprintf("%s-image-file-input", idPrefix) }>Velg en fil</label>
-					<div class="flex flex-row justify-center items-center gap-3 mt-2 mb-3">
-						<div class="flex flex-col flex-grow justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
-							@icons.Upload(2, "dimgray", 30, 30)
-							<p>Dra og slipp, eller</p>
-							<button
-								class="underline"
-								onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
-							>bla gjennom filene dine</button>
-							<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 mt-2">Ingen fil valgt</p>
-						</div>
-						if post {
-							<button
-								type="button"
-								class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
-								hx-post={ imageFileEndpoint }
-								hx-trigger="click"
-								hx-swap="outerHTML"
-								hx-target="closest .image-input-wrapper"
-								hx-target-4*="next .error-image"
-								hx-sync="closest form:abort"
-								hx-indicator="previous .htmx-indicator"
-							>Last opp</button>
-						}
-					</div>
+					if post {
+						<button
+							type="button"
+							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
+							hx-post={ imageFileEndpoint }
+							hx-trigger="click"
+							hx-swap="outerHTML"
+							hx-target="closest .image-input-wrapper"
+							hx-target-4*="next .error-image"
+							hx-sync="closest form:abort"
+							hx-indicator="previous .htmx-indicator"
+						>Last opp</button>
+					}
+				</div>
+				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
+					@icons.Upload(2, "dimgray", 30, 30)
+					<p>Dra og slipp, eller</p>
+					<button
+						class="underline"
+						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
+					>bla gjennom filene dine</button>
+					<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 mt-2">Ingen fil valgt</p>
 				</div>
 				<div
 					id={ fmt.Sprintf("%s-file-drop-zone", idPrefix) }
