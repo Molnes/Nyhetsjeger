@@ -28,7 +28,7 @@ templ QuizCard(quiz quizzes.PartialQuiz) {
 				<p class="text-gray-600 text-sm">{ date_utils.DateToNorwegianString(quiz.ActiveTo) }</p>
 			</div>
 			<a
-				class="gradient-bg-button py-2 px-10 mx-auto mb-4"
+				class="gradient-bg-button py-2 px-10 mx-auto mb-4 border border-1 border-[transparent]"
 				if utils.IsUserAuthenticated(ctx) {
 					href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
 				} else {
