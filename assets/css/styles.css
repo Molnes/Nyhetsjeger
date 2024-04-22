@@ -215,6 +215,7 @@ a.cgradient:is(:hover, :focus),
     content: counter(css-counter) ". ";
     font-weight: bold;
     margin-right: 0.5rem;
+    color: linkText;
 }
 
 #points-fill {

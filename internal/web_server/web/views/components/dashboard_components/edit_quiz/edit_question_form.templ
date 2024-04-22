@@ -140,14 +140,14 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<button
 				id="close-modal-button"
 				type="button"
-				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
+				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button outline outline-1 outline-[transparent]"
 				onclick="closeModal()"
 			>Avbryt</button>
 			if !isNew {
 				<button
 					id="delete-question-button"
 					type="button"
-					class="bg-red-600 text-white font-bold px-4 py-2 w-full rounded-button"
+					class="bg-red-600 text-white font-bold px-4 py-2 w-full rounded-button outline outline-1 outline-[transparent]"
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
@@ -159,7 +159,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<button
 				id="submit-question-button"
 				type="submit"
-				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
+				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button outline outline-1 outline-[transparent]"
 				hx-post={ fmt.Sprintf("/api/v1/admin/question/edit?quiz-id=%s&question-id=%s", quizID, question.ID) }
 				if isNew {
 					hx-swap="beforeend"

@@ -14,11 +14,13 @@ import (
 )
 
 // Constants for the input names (for HTTP requests)
-const QuizTitle = "quiz-title"
-const QuizPublished = "quiz-is-published"
-const QuizArticleURL = "quiz-article-url"
-const QuizActiveFrom = "quiz-active-from"
-const QuizActiveTo = "quiz-active-to"
+const (
+	QuizTitle      = "quiz-title"
+	QuizPublished  = "quiz-is-published"
+	QuizArticleURL = "quiz-article-url"
+	QuizActiveFrom = "quiz-active-from"
+	QuizActiveTo   = "quiz-active-to"
+)
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -59,7 +61,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				})
 			</script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
+			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringen automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
