@@ -1,7 +1,10 @@
 package usernames
 
 import (
+	"context"
 	"database/sql"
+	"errors"
+
 	"github.com/lib/pq"
 )
 
@@ -15,6 +18,17 @@ type UsernameAdminInfo struct {
 	UsernamesPerPage int
 }
 
+type OldNew struct {
+	Old string
+	New string
+}
+
+const (
+	NounTable      = "noun-table"
+	AdjectiveTable = "adjective-table"
+)
+
+// setUaiAdjInfo sets the adjectives and relevant information for the UsernameAdminInfo struct.
 func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 
 	err := db.QueryRow(`
@@ -37,11 +51,12 @@ func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
 		) as foo, COUNT(a.*), offsetvalue.value
 		FROM adjectives a, offsetvalue
 		GROUP BY offsetvalue.value;`,
-	uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount,  &uai.AdjPage)
+		uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount, &uai.AdjPage)
 
 	return err
 }
 
+// setUaiNounInfo sets the nouns and relevant information for the UsernameAdminInfo struct.
 func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB) error {
 	err := db.QueryRow(
 		`WITH offsetvalue AS (
@@ -63,7 +78,7 @@ func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB) error {
 			) as foo, COUNT(a.*), offsetvalue.value
 			FROM nouns a, offsetvalue
 			GROUP BY offsetvalue.value;`,
-		uai.UsernamesPerPage, uai.NounPage).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount,  &uai.NounPage)
+		uai.UsernamesPerPage, uai.NounPage).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount, &uai.NounPage)
 
 	return err
 }
@@ -90,4 +105,118 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPag
 	}
 
 	return &uai, nil
+}
+
+// AddWordToTable adds a word to the specified table.
+func AddWordToTable(db *sql.DB, word string, tableId string) error {
+	if tableId == NounTable {
+		_, err := db.Exec(`INSERT INTO nouns VALUES ($1);`, word)
+		return err
+	} else if tableId == AdjectiveTable {
+		_, err := db.Exec(`INSERT INTO adjectives VALUES ($1);`, word)
+		return err
+	} else {
+		//Return error
+		return errors.New("table ID not recognized")
+	}
+}
+
+// DeleteWordsFromTable deletes the words from the adjectives and nouns tables and updates the usernames in the users table.
+func DeleteWordsFromTable(db *sql.DB, ctx context.Context, words []string) error {
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, `
+					UPDATE users
+					SET
+						username_adjective = random_username.adjective,
+						username_noun = random_username.noun
+					FROM (
+						SELECT adjective, noun
+						FROM available_usernames 
+						OFFSET floor(random() * (
+						SELECT COUNT(*) FROM available_usernames)
+						) 
+					LIMIT 1) AS random_username
+						WHERE users.id = ( 
+							SELECT id
+							FROM users
+							WHERE username_adjective = ANY($1)
+							OR
+							username_noun = ANY($1)
+						);
+					`, pq.Array(words))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, `DELETE FROM adjectives WHERE adjective = ANY($1);`, pq.Array(words))
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `DELETE FROM nouns WHERE noun = ANY($1);`, pq.Array(words))
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateAdjectives updates the adjectives in the adjectives table.
+func UpdateAdjectives(db *sql.DB, oldNewAdj []OldNew) error {
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, oldNew := range oldNewAdj {
+		_, err = tx.Exec(`UPDATE adjectives SET adjective = $1 WHERE adjective = $2;`, oldNew.New, oldNew.Old)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+// UpdateNouns updates the nouns in the nouns table.
+func UpdateNouns(db *sql.DB, oldNewNoun []OldNew) error {
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, oldNew := range oldNewNoun {
+		_, err = tx.Exec(`UPDATE nouns SET noun = $1 WHERE noun = $2;`, oldNew.New, oldNew.Old)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+
 }

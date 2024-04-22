@@ -10,7 +10,7 @@ import (
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, inputName string, post bool, errorText string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string) {
 	<div class="image-input-wrapper">
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
@@ -32,13 +32,15 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
 			<div id="image-url-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+				<label for="image-url">Velg URL</label>
 				<input
-					id={ inputName }
-					name={ inputName }
+					id="image-url"
+					name="image-url"
 					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
 					type="text"
 					value={ imageURL.String() }
 					placeholder="https://picsum.photos/id/1/900/600"
+					onclick="this.select()"
 				/>
 				if post {
 					<button
@@ -55,8 +57,9 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				}
 			</div>
 			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden" data-element-type="tab-content">
+				<label for="image-file">Velg fil</label>
 				<input
-					id={ inputName }
+					id="image-file"
 					name="image-file"
 					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
 					type="file"

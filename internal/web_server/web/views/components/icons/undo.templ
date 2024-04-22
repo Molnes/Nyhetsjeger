@@ -2,11 +2,11 @@ package icons
 
 import "fmt"
 
-// Person icon. Parameters are all in pixels.
-//Example: Person(1, "currentColor", 36, 36)
-templ Person(strokeWidth float64, stroke string, height int, width int) {
+//Undo arrow icon. Parameters are strokeWidth, stroke, and height and width in pixels.
+//Example: Undo(3, "currentColor", 24, 24)
+templ Undo(strokeWidth float64, stroke string, height int, width int) {
 	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } height={ fmt.Sprint(height) } width={ fmt.Sprint(width) }>
-		<path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+		<path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"></path>
 	</svg>
 	<!-- MIT License
 

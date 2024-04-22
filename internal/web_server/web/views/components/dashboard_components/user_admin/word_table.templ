@@ -1,6 +1,8 @@
 package user_admin
 
 import "math"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "fmt"
 
 // Calculates the maximum amount of pages needed to display all users.
 func calculateMaxPages(userAmount int, usernamesPerPage int) int {
@@ -17,17 +19,133 @@ func setRowContent(words []string, i int) string {
 	}
 }
 
+// deleteRow deletes a row from the table and adds the row to the deleteMap.
+// Adds styling to the row to indicate that it is marked for deletion.
+
+script deleteRow(rowId string, content string) {
+	var row = document.getElementById(rowId);
+	if (row != null) {
+		let parent = row.parentElement;
+		deleteMap.set(row.id, content);
+		parent.classList.add("bg-red-500", "border-b", "border-red-700");
+		parent.getElementsByClassName("del-button")[0].disabled = true;
+		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+		sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
+	}
+}
+
+// onEditRow is called when a row is edited, it adds the original value and the new value to the editMap.
+
+script onEditRow(id string, originalValue string, tableId string) {
+
+	var input = document.getElementById(id);
+	if (input != null) {
+		if (input.value != originalValue) {
+			editMap.set(input.id, [originalValue, input.value]);
+			let parent = input.parentElement;
+			parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+			sessionStorage.editMap = JSON.stringify(Array.from(editMap.entries()));
+			tableRowMap.set(id, tableId);
+			sessionStorage.tableRowMap = JSON.stringify(Array.from(tableRowMap.entries()));
+		}
+	}
+
+}
+
+// onUndo is called when the undo button is clicked, it removes the row from the deleteMap or the editMap.
+// The priority of undo is delete -> edit.
+
+script onUndo(id string) {
+	var row = document.getElementById(id);
+	if (row != null) {
+		if (deleteMap.has(id)) {
+			deleteMap.delete(id);
+			let parent = row.parentElement;
+			parent.classList.remove("bg-red-500", "border-b", "border-red-700");
+			parent.getElementsByClassName("del-button")[0].disabled = false;
+			parent.getElementsByClassName("del-button")[0].classList.remove("hidden");
+			
+			if (!editMap.has(row.id)) {
+				parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
+			}
+			sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
+		} else if (editMap.has(id)) {
+			let values = editMap.get(id);
+			let parent = row.parentElement;
+			editMap.delete(row.id);
+			parent.getElementsByClassName("undo-button")[0].classList.add("hidden");
+			row.value = values[0];
+			sessionStorage.editMap = JSON.stringify(Array.from(editMap.entries()));
+			tableRowMap.delete(id);
+			sessionStorage.tableRowMap = JSON.stringify(Array.from(tableRowMap.entries()));
+		}
+	}
+
+}
+
+// Makes a URL to the API endpoint for adding a new word to the list.
+func makeUsernameWordUrl(tableId string) templ.SafeURL {
+	return templ.URL(fmt.Sprintf("/api/v1/admin/username?table-id=%v", tableId))
+}
+
+// Stops the form from refreshing/redirecting the page when submitted.
+
+script stopFormRefresh(tableId string) {
+	var form = document.getElementById( "form-" + tableId );
+	if (form != null) {
+		form.addEventListener("submit", function(event) {
+			event.preventDefault();
+		});
+	}
+
+}
+
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
+	<script>
+		function refreshPage() {
+			location.reload();
+		}
+	</script>
 	<div>
+		<form
+			id={ fmt.Sprintf("form-%s", tableID) }
+			class="flex justify-center mb-4 w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem]"
+		>
+			<div class="w-1/2 flex-grow">
+				<label class="block" for={ fmt.Sprintf("word-input-%s", tableID) }>Legg til ord</label>
+				<div class="flex">
+					<input
+						class="bg-purple-100 px-2 py-1 rounded-input border border-clightindigo"
+						type="text"
+						name="username-word"
+						required="required"
+						placeholder="Legg til nytt ord"
+						id={ fmt.Sprintf("word-input-%s", tableID) }
+					/>
+				
+					<button
+						class="mx-3"
+						type="submit"
+						hx-post={ fmt.Sprintf("%s", makeUsernameWordUrl(tableID)) }
+						hx-swap="none"
+						hx-headers='{"HX-Refresh": refreshPage}'
+					>
+						@icons.Plus(80, "currentColor", 20, 20)
+					</button>
+				</div>
+			</div>
+		</form>
 		<table
 			id={ tableID }
-			class="table-fixed w-52 border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
+			class="table-fixed w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem] border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
 				[&_td]:border-black [&_tr]:h-8"
 		>
 			<thead>
-				<tr class="[&>th]:border-black">
-					<th class="px-4">{ tableName } </th>
+				<tr class="[&>th]:border-black block">
+					<th class="px-4 block whitespace-nowrap [&>*]:inline">
+						{ tableName }
+					</th>
 				</tr>
 			</thead>
 			<tbody
@@ -36,15 +154,28 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
 			>
 				for i := range usernamesPerPage {
-					<tr>
-						<td class="px-4 h-8 w-full">{ setRowContent(words, i) }</td>
+					<tr class="[&:not(:hover)_.del-button]:hidden">
+						<td
+							class="px-4 h-8 w-full flex flex-row items-center"
+						>
+							<label class="w-0 h-0 overflow-hidden" for={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) }> { fmt.Sprintf("Endre %v", setRowContent(words, i)) } </label>
+							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
+							<div class="ml-auto my-auto flex">
+								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
+									@icons.Undo(2, "gray", 24, 24)
+								</button>
+								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } class="del-button">
+									@icons.Trashcan(32, "gray", 24, 24)
+								</button>
+							</div>
+						</td>
 					</tr>
 				}
 			</tbody>
-			
 		</table>
 		<div class="flex justify-center mt-3">
-		@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
+			@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
 		</div>
+		@stopFormRefresh(tableID)
 	</div>
 }

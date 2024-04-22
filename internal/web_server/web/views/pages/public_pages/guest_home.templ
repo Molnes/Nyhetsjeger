@@ -8,7 +8,7 @@ import (
 )
 
 // Homepage for guest users. Shows available quiz.
-templ GuestHomePage(quiz *quizzes.Quiz) {
+templ GuestHomePage(quiz *quizzes.PartialQuiz) {
 	@layout_components.BaseLayout("Gjest Hjem") {
 		<main
 			id="main"

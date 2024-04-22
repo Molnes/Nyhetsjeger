@@ -28,13 +28,13 @@ templ SideMenu() {
 				@menuItem("Toppliste", "/dashboard/leaderboard", isSelected(ctx, Leaderboard)) {
 					@icons.Trophy(20, "currentColor", 20, 20)
 				}
+				@menuItem("Brukernavn", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
+					@icons.Person(1, "currentColor", 20, 20)
+				}
 				if isUserOrganizationAdmin(ctx) {
 					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
 						@icons.Key(20, "currentColor", 20, 20)
 					}
-				}
-				@menuItem("Brukernavn", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
-					@icons.Person(1, "currentColor", 20, 20)
 				}
 			</ul>
 		</nav>
