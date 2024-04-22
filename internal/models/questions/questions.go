@@ -123,7 +123,6 @@ func GetFirstQuestionID(db *sql.DB, quizID uuid.UUID) (uuid.UUID, error) {
 }
 
 // Returns all questions for a given quiz.
-// Includes the article for each question.
 // Includes the alternatives for each question.
 func GetQuestionsByQuizID(db *sql.DB, id *uuid.UUID) (*[]Question, error) {
 	rows, err := db.Query(
@@ -192,6 +191,7 @@ func GetNextQuestionInQuizByQuestionId(db *sql.DB, questionId uuid.UUID) (uuid.U
 }
 
 // Convert a row from the database to a Question.
+// Also adds the alternatives to the question. (separate query)
 func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 	var q Question
 	var imageURL sql.NullString
@@ -220,7 +220,7 @@ func scanQuestionFromFullRow(db *sql.DB, row *sql.Row) (*Question, error) {
 }
 
 // Converts a row from the database to a list of questions
-// Adds articles and alternatives to the questions. (separate queries)
+// Also adds the alternatives to the questions. (separate query)
 func scanQuestionsFromFullRows(db *sql.DB, rows *sql.Rows) (*[]Question, error) {
 	questions := []Question{}
 
@@ -276,7 +276,6 @@ func IsCorrectAnswer(db *sql.DB, questionID uuid.UUID, answerID uuid.UUID) (bool
 }
 
 // Get specific question by ID.
-// Includes the article for the question.
 // Includes the answer altneratives for the question.
 func GetQuestionByID(db *sql.DB, id uuid.UUID) (*Question, error) {
 	var q Question
