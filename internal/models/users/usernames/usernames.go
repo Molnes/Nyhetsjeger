@@ -29,76 +29,104 @@ const (
 )
 
 // setUaiAdjInfo sets the adjectives and relevant information for the UsernameAdminInfo struct.
-func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB) error {
+func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB, searchParam string) error {
 
 	err := db.QueryRow(`
 	WITH offsetvalue AS (
 		SELECT (
+			CASE 
+				WHEN $2 < 1 
+					THEN 1
+				WHEN ($3 <> '') IS TRUE AND $2 > (SELECT COUNT(*) FROM adjectives WHERE adjective SIMILAR TO '%' || $3 || '%') / $1
+					THEN CEIL((SELECT COUNT(*) FROM adjectives WHERE adjective SIMILAR TO '%' || $3 || '%')::float8 / $1::float8)
+				WHEN $2 > (SELECT COUNT(*) FROM adjectives) / $1
+					THEN CEIL((SELECT COUNT(*) FROM adjectives)::float8 / $1::float8)
+				ELSE $2
+			END
+		) as value
+	)
+					
+	SELECT ARRAY (
+		SELECT adjective
+			FROM adjectives
+			WHERE adjective SIMILAR TO '%' || $3 ||'%'
+			ORDER BY adjective ASC
+			LIMIT $1 OFFSET $1* (offsetvalue.value - 1)
+		)
+	as foo, COUNT(a.*), offsetvalue.value
+		FROM adjectives a, offsetvalue
+		WHERE a.adjective SIMILAR TO '%' || $3 ||'%'
+		GROUP BY offsetvalue.value;
+		`,
+		uai.UsernamesPerPage, uai.AdjPage, searchParam).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount, &uai.AdjPage)
+
+	if err == sql.ErrNoRows {
+		uai.Adjectives = []string{}
+		uai.AdjWordCount = 0
+		uai.AdjPage = 1
+		return nil
+	} else {
+		return err
+	}
+}
+
+// setUaiNounInfo sets the nouns and relevant information for the UsernameAdminInfo struct.
+func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB, searchParam string) error {
+	err := db.QueryRow(
+		`
+		WITH offsetvalue AS (
+			SELECT (
 				CASE 
-					WHEN $2 < 1 THEN 1
-					WHEN $2 > (SELECT COUNT(*) FROM adjectives) / $1
-						THEN CEIL((SELECT COUNT(*) FROM adjectives)::float8 / $1::float8)
+					WHEN $2 < 1 
+						THEN 1
+					WHEN ($3 <> '') IS TRUE AND $2 > (SELECT COUNT(*) FROM nouns WHERE noun SIMILAR TO '%' || $3 ||'%') / $1
+						THEN CEIL((SELECT COUNT(*) FROM nouns WHERE noun SIMILAR TO '%' || $3 || '%')::float8 / $1::float8)
+					WHEN $2 > (SELECT COUNT(*) FROM nouns) / $1
+						THEN CEIL((SELECT COUNT(*) FROM nouns)::float8 / $1::float8)
 					ELSE $2
 				END
 			) as value
 		)
-		
+						
 		SELECT ARRAY (
-		SELECT adjective
-		FROM adjectives
-		ORDER BY adjective ASC
-		LIMIT $1 OFFSET $1 * (offsetvalue.value - 1)
-		) as foo, COUNT(a.*), offsetvalue.value
-		FROM adjectives a, offsetvalue
-		GROUP BY offsetvalue.value;`,
-		uai.UsernamesPerPage, uai.AdjPage).Scan(pq.Array(&uai.Adjectives), &uai.AdjWordCount, &uai.AdjPage)
-
-	return err
-}
-
-// setUaiNounInfo sets the nouns and relevant information for the UsernameAdminInfo struct.
-func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB) error {
-	err := db.QueryRow(
-		`WITH offsetvalue AS (
-			SELECT (
-					CASE 
-						WHEN $2 < 1 THEN 1
-						WHEN $2 > (SELECT COUNT(*) FROM nouns) / $1
-							THEN CEIL((SELECT COUNT(*) FROM nouns)::float8 / $1::float8)
-						ELSE $2
-					END
-				) as value
-			)
-			
-			SELECT ARRAY (
 			SELECT noun
-			FROM nouns
-			ORDER BY noun ASC
-			LIMIT $1 OFFSET $1 * (offsetvalue.value - 1)
-			) as foo, COUNT(a.*), offsetvalue.value
+				FROM nouns
+				WHERE noun SIMILAR TO '%' || $3 ||'%'
+				ORDER BY noun ASC
+				LIMIT $1 OFFSET $1* (offsetvalue.value - 1)
+			)
+		as foo, COUNT(a.*), offsetvalue.value
 			FROM nouns a, offsetvalue
-			GROUP BY offsetvalue.value;`,
-		uai.UsernamesPerPage, uai.NounPage).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount, &uai.NounPage)
-
-	return err
+			WHERE a.noun SIMILAR TO '%' || $3 ||'%'
+			GROUP BY offsetvalue.value;
+			`,
+		uai.UsernamesPerPage, uai.NounPage, searchParam).Scan(pq.Array(&uai.Nouns), &uai.NounWordCount, &uai.NounPage)
+	if err == sql.ErrNoRows {
+		uai.Nouns = []string{}
+		uai.NounWordCount = 0
+		uai.NounPage = 1
+		return nil
+	} else {
+		return err
+	}
 }
 
 // GetUsernameAdminInfo returns a UsernameAdminInfo struct containing the adjectives and nouns and relevant information
 // for rendering the username administration page.
-func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPage int) (*UsernameAdminInfo, error) {
+func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPage int, search string) (*UsernameAdminInfo, error) {
 	uai := UsernameAdminInfo{}
 
 	uai.AdjPage = adjPage
 	uai.NounPage = nounPage
 	uai.UsernamesPerPage = usernamesPerPage
 
-	err := uai.setUaiAdjInfo(db)
+	err := uai.setUaiAdjInfo(db, search)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = uai.setUaiNounInfo(db)
+	err = uai.setUaiNounInfo(db, search)
 
 	if err != nil {
 		return nil, err

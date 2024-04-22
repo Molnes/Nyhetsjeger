@@ -200,7 +200,9 @@ func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) erro
 		pages = 25
 	}
 
-	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, adjPage, nounPage, pages)
+	search := c.QueryParam("search")
+
+	uai, err := usernames.GetUsernameAdminInfo(dph.sharedData.DB, adjPage, nounPage, pages, search)
 	if err != nil {
 		return err
 	}
