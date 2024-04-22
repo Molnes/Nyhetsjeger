@@ -70,15 +70,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
-			// Quiz Image
-			<form class="w-full my-1" hx-encoding="multipart/form-data">
-				<div class="flex flex-row items-center gap-2 mb-1">
-					<h2 class="block font-bold">Velg forsidebilde</h2>
-					@components.LoadingIndicator()
-				</div>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
-			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -161,6 +152,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
 			}
+			// Quiz Image
+			<form class="w-full my-1" hx-encoding="multipart/form-data">
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="block font-bold">Velg forsidebilde</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					&quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
+			</form>
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
