@@ -168,8 +168,10 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo, QuizActiveTo, "")
 			}
-			@components.LoadingIndicator()
-			@components.ErrorText("error-quiz", "")
+			<div>
+				@components.LoadingIndicator()
+				@components.ErrorText("error-quiz", "")
+			</div>
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
