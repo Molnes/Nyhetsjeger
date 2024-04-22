@@ -98,7 +98,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						class="underline"
 						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
 					>bla gjennom filene dine</button>
-					<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 mt-2 w-full text-center break-words">Ingen fil valgt</p>
+					<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 font-bold mt-2 w-full text-center break-words">Ingen fil valgt</p>
 				</div>
 				<div
 					id={ fmt.Sprintf("%s-file-drop-zone", idPrefix) }
