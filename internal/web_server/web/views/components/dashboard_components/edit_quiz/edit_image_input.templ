@@ -56,7 +56,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				if post {
 					<button
 						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button"
+						class="bg-clightindigo px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-post={ imageURLEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
@@ -80,7 +80,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					if post {
 						<button
 							type="button"
-							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
+							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0  border border-1 border-[transparent]"
 							hx-post={ imageFileEndpoint }
 							hx-trigger="click"
 							hx-swap="outerHTML"
@@ -127,7 +127,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				<button
 					id={ fmt.Sprintf("%s-remove-image-button", idPrefix) }
 					type="button"
-					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
+					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button border border-1 border-[transparent]"
 					if post {
 						hx-delete={ imageURLEndpoint }
 						hx-swap="outerHTML"

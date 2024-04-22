@@ -510,7 +510,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorText))
 	}
 
-	article := &articles.Article{}
+	articleId := uuid.NullUUID{}
 
 	// Only add article to DB if it is not empty.
 	// I.e. allow for no article, but not invalid article.
@@ -524,7 +524,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		}
 
 		articles.AddArticle(aah.sharedData.DB, tempArticle)
-		article = tempArticle
+		articleId = tempArticle.ID
 	}
 
 	// Get the question ID.
@@ -596,7 +596,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		ID:               questionID,
 		Text:             questionText,
 		ImageURL:         imageURL,
-		Article:          article,
+		ArticleID:        &articleId,
 		QuizID:           &quizID,
 		Points:           points,
 		TimeLimitSeconds: time,
