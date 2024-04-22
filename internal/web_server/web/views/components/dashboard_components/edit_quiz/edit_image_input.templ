@@ -4,14 +4,25 @@ import (
 	"net/url"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+	"fmt"
+)
+
+const (
+	IdPrefixQuiz     = "quiz"
+	IdPrefixQuestion = "question"
 )
 
 // An input field for updating the image.
 // When the value is changed, send a POST request to the given URL for updating the image.
 // It will trigger the previous loading indicator to display.
 // If post is set to false, it will not send a request when the value is changed.
-templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string) {
-	<div class="image-input-wrapper">
+//
+// The idPrefix is added to elements with ids used within JS scripts.
+// They need to be consistent in the replacement html,
+// and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
+// (example: quiz image editing and question image editing should have different prefixes to not interfere)
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
+	<div class={ fmt.Sprintf("%s-image-input-wrapper", idPrefix) }>
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
 				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card outline outline-1 outline-[transparent]"
@@ -31,10 +42,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
-			<div id="image-url-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
-				<label for="image-url">Velg URL</label>
+			<div id={ fmt.Sprintf("%s-image-url-input-tab", idPrefix) } class="flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
+				<label for={ fmt.Sprintf("%s-image-url-input", idPrefix) }>Velg URL</label>
 				<input
-					id="image-url"
+					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
 					name="image-url"
 					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
 					type="text"
@@ -49,36 +60,54 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						hx-post={ imageURLEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
+						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 						hx-target-4*="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 					>Last opp</button>
 				}
 			</div>
-			<div id="image-file-input" class="min-h-12 flex flex-row items-center gap-3 flex-wrap mb-3 hidden" data-element-type="tab-content">
-				<label for="image-file">Velg fil</label>
+			<div id={ fmt.Sprintf("%s-image-file-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
 				<input
-					id="image-file"
+					id={ fmt.Sprintf("%s-image-file-input", idPrefix) }
 					name="image-file"
-					class="bg-purple-100 px-4 py-1 rounded-input border border-clightindigo w-1/2 flex-grow"
+					hidden
 					type="file"
 					accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
 				/>
-				if post {
+				<div class="flex flex-row w-full justify-between items-center">
+					<label for={ fmt.Sprintf("%s-image-file-input", idPrefix) }>Velg en fil</label>
+					if post {
+						<button
+							type="button"
+							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
+							hx-post={ imageFileEndpoint }
+							hx-trigger="click"
+							hx-swap="outerHTML"
+							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
+							hx-target-4*="next .error-image"
+							hx-sync="closest form:abort"
+							hx-indicator="previous .htmx-indicator"
+						>Last opp</button>
+					}
+				</div>
+				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
+					@icons.Upload(2, "dimgray", 30, 30)
+					<p>Dra og slipp, eller</p>
 					<button
-						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button outline outline-1 outline-[transparent]"
-						hx-post={ imageFileEndpoint }
-						hx-trigger="click"
-						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
-						hx-target-4*="next .error-image"
-						hx-sync="closest form:abort"
-						hx-indicator="previous .htmx-indicator"
-					>Last opp</button>
-				}
+						class="underline"
+						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
+					>bla gjennom filene dine</button>
+					<p id={ fmt.Sprintf("%s-file-name-display", idPrefix) } class="text-gray-700 font-bold mt-2 w-full text-center break-words">Ingen fil valgt</p>
+				</div>
+				<div
+					id={ fmt.Sprintf("%s-file-drop-zone", idPrefix) }
+					class="absolute top-0 w-full h-full border border-dashed border-cindigo bg-purple-100 bg-opacity-75 rounded-card flex items-center justify-center text-4xl text-cindigo font-sans hidden"
+				>
+					Slipp her
+				</div>
 			</div>
+			@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
 			if imageURL.String() == "" && post {
@@ -96,28 +125,30 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					/>
 				</div>
 				<button
-					id="remove-image-button"
+					id={ fmt.Sprintf("%s-remove-image-button", idPrefix) }
 					type="button"
 					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button outline outline-1 outline-[transparent]"
 					if post {
 						hx-delete={ imageURLEndpoint }
 						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
+						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 						hx-indicator="previous .htmx-indicator"
 					}
 				>Fjern bilde</button>
 			}
 			@components.ErrorText("error-image", errorText)
 		</div>
-		@switchTabs()
+		@switchTabs(idPrefix)
 	</div>
 }
 
-script switchTabs() {
+script switchTabs(idPrefix string) {
+	const imageWrapper = document.querySelector(`.${idPrefix}-image-input-wrapper`);
+
 	// When the user clicks on the "URL" button, show the URL input and hide the file input.
 	// When the user clicks on the "Fil" button, show the file input and hide the URL input.const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
-	const tabcontents = document.querySelectorAll('[data-element-type="tab-content"]');
-	const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
+	const tabcontents = imageWrapper.querySelectorAll('[data-element-type="tab-content"]');
+	const tablinks = imageWrapper.querySelectorAll('[data-element-type="tab-link"]');
 
 	const switchTabsListener = (event, tablink, index) => {
 		// Toggle tab selected
@@ -146,7 +177,6 @@ script switchTabs() {
 	});
 
 	// Remove the event listeners if the image input wrapper is swapped.
-	const imageWrapper = document.querySelector('.image-input-wrapper');
 	const switchListener = (event) => {
 		if (event.detail.xhr.status < 300) {
 			imageWrapper.removeEventListener("htmx:afterSwap", switchListener);
@@ -156,4 +186,71 @@ script switchTabs() {
 		}
 	}
 	imageWrapper.addEventListener("htmx:afterSwap", switchListener);
+}
+
+// Adds drag-events listeners to the body, unhides the dropzone when a file is being dragged.
+// Updates the fileNameDisplay with the currently selected filename.
+
+script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string) {
+	const dropZone = document.getElementById(dropZoneId);
+
+	document.addEventListener('dragover', (evt) => {
+		if (evt.dataTransfer.types.includes("Files")) {
+			dropZone.classList.remove("hidden");
+			evt.preventDefault();
+
+			if (evt.srcElement.id == dropZoneId) {
+				evt.dataTransfer.dropEffect = "copy";
+			} else {
+				evt.dataTransfer.dropEffect = "none";
+			}
+		}
+	});
+
+	let enterTarget = null;
+	document.addEventListener('dragenter', (evt) => {
+		enterTarget = evt.target;
+	});
+
+	const inputField = document.getElementById(inputId);
+	document.addEventListener('drop', (evt) => {
+		dropZone.classList.add("hidden");
+		evt.preventDefault();
+
+		if (
+			(	evt.dataTransfer.files.length == 1 &&
+				evt.srcElement.id == dropZoneId)
+		) {
+			inputField.files = evt.dataTransfer.files;
+			inputField.dispatchEvent(new Event("change"));
+		}
+	});
+	
+
+	document.addEventListener('dragleave', (evt) => {
+		evt.preventDefault();
+		if (evt.target === enterTarget)  {
+			dropZone.classList.add("hidden");
+		}
+	});
+
+	const fileNameDisplay = document.getElementById(fileNameId);
+
+	// if file changes (either chosen with file chooser or drag-and-dropped)
+	inputField.addEventListener("change", (evt) => {
+		const files = evt.target.files;
+		if (files.length > 0) {
+			fileNameDisplay.innerText = files[0].name;
+		}
+	});
+
+	// set the file name display if there is a file selected already (may happen after refresh)
+	if (inputField.files.length > 0) {
+		fileNameDisplay.innerText = inputField.files[0].name;
+	}
+}
+
+script openFileChooser(fileInputId string) {
+	event.preventDefault();
+	document.getElementById(fileInputId).click();
 }
