@@ -151,7 +151,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<button
 					id="new-question-button"
 					type="button"
-					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button outline outline-1 outline-[transparent]"
+					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button border border-1 border-[transparent]"
 					hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) }
 					hx-swap="innerHTML"
 					hx-target="#question-modal"
@@ -179,7 +179,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
 						type="button"
-						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button outline outline-1 outline-[transparent]"
+						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
 						hx-target-4*=".error-quiz"
 						hx-sync="closest form:abort"
@@ -187,7 +187,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button outline outline-1 outline-[transparent]">Ferdig</a>
+					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button border border-1 border-[transparent]">Ferdig</a>
 				</div>
 			}
 		</div>
