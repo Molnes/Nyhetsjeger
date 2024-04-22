@@ -4,7 +4,6 @@ import (
 	"net/url"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
-	"github.com/google/uuid"
 	"fmt"
 )
 
@@ -12,8 +11,6 @@ const (
 	IdPrefixQuiz     = "quiz"
 	IdPrefixQuestion = "question"
 )
-
-var randomId uuid.UUID
 
 // An input field for updating the image.
 // When the value is changed, send a POST request to the given URL for updating the image.
@@ -23,9 +20,9 @@ var randomId uuid.UUID
 // The idPrefix is added to elements with ids used within JS scripts.
 // They need to be consistant in the replacement html,
 // and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
-// (example: quzi image editing and question iamge editing should have different prefixes to not interfere)
+// (example: quiz image editing and question iamge editing should have different prefixes to not interfere)
 templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
-	<div class="image-input-wrapper">
+	<div class={ fmt.Sprintf("%s-image-input-wrapper", idPrefix) }>
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
 				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
@@ -62,7 +59,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						hx-post={ imageURLEndpoint }
 						hx-trigger="click"
 						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
+						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 						hx-target-4*="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
@@ -86,7 +83,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 							hx-post={ imageFileEndpoint }
 							hx-trigger="click"
 							hx-swap="outerHTML"
-							hx-target="closest .image-input-wrapper"
+							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 							hx-target-4*="next .error-image"
 							hx-sync="closest form:abort"
 							hx-indicator="previous .htmx-indicator"
@@ -133,22 +130,24 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					if post {
 						hx-delete={ imageURLEndpoint }
 						hx-swap="outerHTML"
-						hx-target="closest .image-input-wrapper"
+						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 						hx-indicator="previous .htmx-indicator"
 					}
 				>Fjern bilde</button>
 			}
 			@components.ErrorText("error-image", errorText)
 		</div>
-		@switchTabs()
+		@switchTabs(idPrefix)
 	</div>
 }
 
-script switchTabs() {
+script switchTabs(idPrefix string) {
+	const imageWrapper = document.querySelector(`.${idPrefix}-image-input-wrapper`);
+
 	// When the user clicks on the "URL" button, show the URL input and hide the file input.
 	// When the user clicks on the "Fil" button, show the file input and hide the URL input.const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
-	const tabcontents = document.querySelectorAll('[data-element-type="tab-content"]');
-	const tablinks = document.querySelectorAll('[data-element-type="tab-link"]');
+	const tabcontents = imageWrapper.querySelectorAll('[data-element-type="tab-content"]');
+	const tablinks = imageWrapper.querySelectorAll('[data-element-type="tab-link"]');
 
 	const switchTabsListener = (event, tablink, index) => {
 		// Toggle tab selected
@@ -177,7 +176,6 @@ script switchTabs() {
 	});
 
 	// Remove the event listeners if the image input wrapper is swapped.
-	const imageWrapper = document.querySelector('.image-input-wrapper');
 	const switchListener = (event) => {
 		if (event.detail.xhr.status < 300) {
 			imageWrapper.removeEventListener("htmx:afterSwap", switchListener);
