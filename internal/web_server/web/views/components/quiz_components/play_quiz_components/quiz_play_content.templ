@@ -45,31 +45,35 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 // Template for a simple progress bar built with divs.
 templ progressBar(current uint, total uint) {
 	<div
-		class="flex justify-center items-center gap-2 isolate fixed bottom-5"
+		class="flex justify-center items-center gap-2 isolate fixed bottom-3 bg-gray-100 rounded-card py-1 px-3"
 		role="progressbar"
 		aria-label="Spørsmål"
 		aria-valuemin="0"
 		aria-valuenow={ fmt.Sprint(current) }
 		aria-valuemax={ fmt.Sprint(total) }
 	>
-		for i := uint(0); i < total; i++ {
-			<div
-				if i < current {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2"
-				} else {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2"
-				}
-			>
-				if i < total-1 {
-					<div
-						if i+1 < current {
-							class="w-4 h-2 bg-gray-600 relative -right-5 -z-10"
-						} else {
-							class="w-4 h-2 bg-gray-400 relative -right-5 -z-10"
-						}
-					></div>
-				}
-			</div>
+		if total < 3 || total > 10 {
+			<p>{ fmt.Sprintf("Spørsmål %d av %d", current, total) }</p>
+		} else {
+			for i := uint(0); i < total; i++ {
+				<div
+					if i < current {
+						class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2"
+					} else {
+						class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2"
+					}
+				>
+					if i < total-1 {
+						<div
+							if i+1 < current {
+								class="w-4 h-2 bg-gray-600 relative -right-5 -z-10"
+							} else {
+								class="w-4 h-2 bg-gray-400 relative -right-5 -z-10"
+							}
+						></div>
+					}
+				</div>
+			}
 		}
 	</div>
 }
