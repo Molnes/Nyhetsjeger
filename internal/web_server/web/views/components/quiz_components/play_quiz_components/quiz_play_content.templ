@@ -28,7 +28,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
-				class="h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
+				class="h-40 md:h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
 				alt=""
 			/>
@@ -45,7 +45,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 // Template for a simple progress bar built with divs.
 templ progressBar(current uint, total uint) {
 	<div
-		class="flex justify-center items-center gap-2 isolate"
+		class="flex justify-center items-center gap-2 isolate fixed bottom-5"
 		role="progressbar"
 		aria-label="Spørsmål"
 		aria-valuemin="0"
