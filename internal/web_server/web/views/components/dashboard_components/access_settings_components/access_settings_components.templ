@@ -151,6 +151,7 @@ templ AdminTableRow(admin *access_control.UserAdmin) {
 			<button
 				class="flex"
 				title="Slett administrator"
+				aria-label="Slett administrator"
 				hx-delete={ "/api/v1/organization-admin/access-control/admin?email=" + admin.Email }
 				hx-confirm="Er du sikker på at du vil slette denne administratoren?"
 			>

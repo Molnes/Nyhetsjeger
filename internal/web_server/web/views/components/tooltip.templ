@@ -20,7 +20,7 @@ templ Tooltip(tooltipText string) {
 	<span
 		role="tooltip"
 		class="z-20 absolute text-sm w-56 -translate-x-1/2 left-1/2 -top-1/2 -translate-y-full p-2 text-white bg-gray-500 rounded-lg 
-	after:absolute after:top-full after:left-1/2 after:-ml-1 after:border-4 after:border-solid after:border-transparent after:border-t-gray-500
-	hidden page"
+	after:absolute after:top-full after:left-1/2 after:-ml-1 after:border-4 after:border-solid after:border-transparent after:border-t-gray-500 after:-z-10
+	hidden page outline outline-1 outline-[transparent]"
 	>{ tooltipText }</span>
 }

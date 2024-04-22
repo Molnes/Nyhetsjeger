@@ -21,7 +21,7 @@ templ AddArticleInput(quizID string, nameInput string, errorText string) {
 		/>
 		<button
 			id="article-add-button"
-			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+			class="flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button border border-1 border-[transparent]"
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
 			hx-swap="beforeend"
 			hx-target="#article-list"

@@ -55,7 +55,7 @@ func (r Response) String() string {
 templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 	<div
 		id="quiz-summary"
-		class="flex flex-col gap-4 justify-start items-center px-1 isolate"
+		class="flex flex-col gap-5 justify-start items-center px-1 isolate"
 	>
 		<section class="flex flex-col gap-3 items-center">
 			<h1 class="text-3xl">Resultat</h1>
@@ -70,7 +70,7 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 					class="size-28 relative rounded-1/2 bg-white gradient-outline-circle"
 				}
 			>
-				<div class="circle">
+				<div class="circle border border-1 border-[transparent]">
 					// The fill element is animated to fill the circle to the correct percentage.
 					<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
 						<div class="primary-wave-filter">
@@ -96,11 +96,11 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 			</div>
 		</section>
 		<section class="flex flex-col gap-4 items-center scrollbar-hide w-full">
-			<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+			<p class="text-balance w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
 				{ GetResponse(summary.AchievedScore, summary.MaxScore).String() }
 			</p>
-			<div class="gradient-outline h-fit w-full">
-				<ol class={ "list-decimal pl-8 pr-4 py-4 space-y-5 min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card",calculateHeightDifference(getDigitsFromSummary(summary)) }>
+			<div class="gradient-outline h-fit w-full outline outline-1 outline-[transparent]">
+				<ol class={ "marker:text-[linkText] marker:font-bold list-decimal pl-8 pr-4 py-4 space-y-5 min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card",calculateHeightDifference(getDigitsFromSummary(summary)) }>
 					for _, aq := range summary.AnsweredQuestions {
 						@chosenAnswer(aq)
 					}
@@ -112,12 +112,12 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
 				hx-target="#quiz-summary"
 				hx-swap="outerHTML"
-				class="text-xl py-2 px-8 w-min gradient-bg-button"
+				class="text-xl py-2 px-8 gradient-bg-button border border-1 border-[transparent]"
 			>Neste</button>
 		} else {
 			<a
 				href="/quiz"
-				class="gradient-bg-button gradient-shadow px-8 py-3"
+				class="text-xl py-2 px-8 gradient-bg-button border border-1 border-[transparent]"
 			>Ferdig</a>
 		}
 	</div>

@@ -55,17 +55,17 @@ templ progressBar(current uint, total uint) {
 		for i := uint(0); i < total; i++ {
 			<div
 				if i < current {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2"
+					class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2 outline outline-3 outline-[transparent]"
 				} else {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2"
+					class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2 outline outline-1 outline-[transparent]"
 				}
 			>
 				if i < total-1 {
 					<div
 						if i+1 < current {
-							class="w-4 h-2 bg-gray-600 relative -right-5 -z-10"
+							class="w-4 h-2 bg-gray-600 relative -right-5 -z-10 outline outline-1 outline-[transparent]"
 						} else {
-							class="w-4 h-2 bg-gray-400 relative -right-5 -z-10"
+							class="w-4 h-2 bg-gray-400 relative -right-5 -z-10 outline outline-1 outline-[transparent]"
 						}
 					></div>
 				}
