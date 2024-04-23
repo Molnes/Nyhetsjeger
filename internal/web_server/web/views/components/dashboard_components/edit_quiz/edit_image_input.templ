@@ -1,10 +1,11 @@
 package dashboard_components
 
 import (
+	"fmt"
 	"net/url"
+	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
-	"fmt"
 )
 
 const (
@@ -126,13 +127,23 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					<input
 						id={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }
 						name="image-suggestion"
-						class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
+						class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo text-gray-700 w-1/2 flex-grow cursor-not-allowed"
 						type="text"
 						value={ imageURL.String() }
 						onclick="this.select()"
+						disabled
 					/>
+					<button
+						type="button"
+						class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
+						hx-get={ fmt.Sprintf("/api/v1/admin/%s/image/update-suggestions", idPrefix) }
+						hx-swap="outerHTML"
+						hx-target={ fmt.Sprintf("#%s-article-images", idPrefix) }
+						hx-target-4*="next .error-image"
+						hx-indicator="previous .htmx-indicator"
+					>Oppdater forslag</button>
 				</div>
-				@ArticleImages(getArticleImages())
+				@ArticleImages(getArticleImages(), idPrefix)
 			</div>
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
@@ -282,12 +293,23 @@ script openFileChooser(fileInputId string) {
 }
 
 func getArticleImages() []url.URL {
-	var images []url.URL
+	articleList := []articles.Article{
+		{
+			Title:      "Test article 1",
+			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/Xbv5Rx"},
+		},
+		{
+			Title:      "Test article 2",
+			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/kEAK3X"},
+		},
+		{
+			Title:      "Test article 3",
+			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/zEdjj4"},
+		},
+	}
 
 	// Add images to the slice here
-	images = append(images, url.URL{Scheme: "https", Host: "picsum.photos", Path: "/id/1/900/600"})
-	images = append(images, url.URL{Scheme: "https", Host: "picsum.photos", Path: "/id/2/900/600"})
-	images = append(images, url.URL{Scheme: "https", Host: "picsum.photos", Path: "/id/3/900/600"})
+	images, _ := articles.GetImagesFromArticles(&articleList)
 
 	return images
 }
