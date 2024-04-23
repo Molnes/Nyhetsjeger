@@ -57,7 +57,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				<input
 					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
 					name="image-url"
-					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
+					class="bg-purple-100 px-4 py-2 rounded-input border border-cindigo w-1/2 flex-grow"
 					type="text"
 					value={ imageURL.String() }
 					placeholder="https://picsum.photos/id/1/900/600"
@@ -102,7 +102,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						>Last opp</button>
 					}
 				</div>
-				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
+				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-cindigo text-gray-900">
 					@icons.Upload(2, "dimgray", 30, 30)
 					<p>Dra og slipp, eller</p>
 					<button
@@ -127,7 +127,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 					<input
 						id={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }
 						name="image-suggestion"
-						class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo text-gray-700 w-1/2 cursor-not-allowed"
+						class="bg-purple-100 px-4 py-2 rounded-input border border-cindigo text-gray-700 w-1/2 cursor-not-allowed"
 						type="hidden"
 						value={ imageURL.String() }
 						disabled
@@ -160,7 +160,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						height="200"
 						width="300"
 						style="height: 100%"
-						class="rounded-lg mx-auto object-cover"
+						class="rounded-lg mx-auto object-cover border border-clightindigo"
 						alt=""
 					/>
 				</div>

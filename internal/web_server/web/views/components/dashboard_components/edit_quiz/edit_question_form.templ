@@ -32,7 +32,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 		>
 			if len(*articles) == 0 {
 				<option value="" disabled selected>Ingen artikler lagt til enda</option>
@@ -54,7 +54,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			id="question"
 			name={ QuestionText }
 			type="text"
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 			value={ question.Text }
 			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
@@ -91,7 +91,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Velg poeng</label>
-				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
 						/* The points default 100 */
 						<option
@@ -109,7 +109,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			// Time limit
 			<div>
 				<label for={ QuestionTimeLimit } class="font-bold mr-1">Velg tidsbegrensning</label>
-				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, seconds := range []uint{10, 15, 30, 45, 60, 120, 180} {
 						/* The time limit is default 30 seconds */
 						<option
