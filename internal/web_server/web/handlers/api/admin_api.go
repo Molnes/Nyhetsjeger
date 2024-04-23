@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -818,6 +819,23 @@ func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL)
 	resp, err := http.Get(imageURL.String())
 	if err != nil {
 		return "", err
+	}
+
+	if resp.ContentLength <= 0 {
+		//retry up to 5 times if content length is 0 or -1
+		for i := 0; i < 5; i++ {
+			resp, err = http.Get(imageURL.String())
+			if err != nil {
+				return "", err
+			}
+			if resp.ContentLength > 0 {
+				break
+			}
+		}
+
+		if resp.ContentLength <= 0 {
+			return "", errors.New("could not fetch image")
+		}
 	}
 
 	defer resp.Body.Close()
