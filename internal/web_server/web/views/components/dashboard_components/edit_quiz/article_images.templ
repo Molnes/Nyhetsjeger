@@ -34,7 +34,8 @@ templ ArticleImages(images []url.URL, idPrefix string) {
 
 script articleImageButtons(idPrefix string) {
 	const buttons = document.querySelectorAll('[data-element-type="article-image-button"]');
-	const articleImageInput = document.querySelector(`#${idPrefix}-image-suggestion-input`);
+	const articleImageInput = document.querySelector(`#${idPrefix}-image-url-input`);
+	const imageUrlButton = document.querySelector(`#${idPrefix}-image-url-input+button`);
 
 	buttons.forEach(button => {
 		button.addEventListener('click', () => {
@@ -42,6 +43,9 @@ script articleImageButtons(idPrefix string) {
 			const src = img.getAttribute('src');
 
 			articleImageInput.value = src;
+			if (imageUrlButton != null) {
+				imageUrlButton.click();
+			}
 		});
 	});
 }

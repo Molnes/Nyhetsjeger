@@ -963,6 +963,27 @@ func (aah *AdminApiHandler) imageSuggestionsQuiz(c echo.Context) error {
 
 // Get image suggestions for a question
 func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
-	// TODO
-	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages([]url.URL{}, "question"))
+	// Get the article URL from form
+	articleURL, err := url.Parse(c.FormValue("article-url"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig artikkel URL"))
+	}
+
+	if articleURL.String() == "" {
+		return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages([]url.URL{}, "question"))
+	}
+
+	// Get the article from the URL
+	article, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
+	if err != nil {
+		return err
+	}
+
+	// Get the images from the articles
+	images, err := articles.GetImagesFromArticles(&[]articles.Article{*article})
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages(images, "question"))
 }

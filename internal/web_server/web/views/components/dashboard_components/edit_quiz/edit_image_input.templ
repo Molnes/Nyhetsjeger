@@ -30,7 +30,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				data-element-type="tab-link"
 				type="button"
 			>
-				URL
+				Med URL
 				@icons.Link(2, "dimgray", 20, 20)
 			</button>
 			<button
@@ -38,7 +38,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				data-element-type="tab-link"
 				type="button"
 			>
-				Fil
+				Med Fil
 				@icons.Upload(2, "dimgray", 20, 20)
 			</button>
 			<button
@@ -46,7 +46,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				data-element-type="tab-link"
 				type="button"
 			>
-				Forslag fra artikler
+				Fra artikler
 				@icons.Image(30, "dimgray", 25, 25)
 			</button>
 		</div>
@@ -123,16 +123,9 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 			// Suggestions from Articles
 			<div id={ fmt.Sprintf("%s-image-suggestion-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
 				<div class="flex flex-row gap-3 items-center justify-between w-full">
-					<label for={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }>Velg et bilde</label>
-					<input
-						id={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }
-						name="image-suggestion"
-						class="bg-purple-100 px-4 py-2 rounded-input border border-cindigo text-gray-700 w-1/2 cursor-not-allowed"
-						type="hidden"
-						value={ imageURL.String() }
-						disabled
-					/>
+					<h2>Velg et bilde</h2>
 					<button
+						id={ fmt.Sprintf("%s-image-suggestion-button", idPrefix) }
 						type="button"
 						class="flex flex-row gap-2 justify-center items-center bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
 						hx-get={ imageSuggestionEndpoint }
@@ -144,6 +137,10 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						Oppdater forslag
 						// #5B14F2 is the same as cindigo from the theme
 						@icons.Refresh(2.5, "#5B14F2", 20, 20)
+						// For questions, get the article from the dropdown and send it with the request to get suggested images.
+						if idPrefix == IdPrefixQuestion {
+							@getArticleFromDropdown(idPrefix)
+						}
 					</button>
 				</div>
 				@ArticleImages(nil, idPrefix)
@@ -293,4 +290,14 @@ script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string)
 script openFileChooser(fileInputId string) {
 	event.preventDefault();
 	document.getElementById(fileInputId).click();
+}
+
+// Get an article from the dropdown and send it with the request to get suggested images.
+
+script getArticleFromDropdown(idPrefix string) {
+	const imageSuggestionButton = document.getElementById(`${idPrefix}-image-suggestion-button`);
+
+	imageSuggestionButton.addEventListener('htmx:configRequest', function (evt) {
+		evt.detail.parameters['article-url'] = document.getElementById(`articles-list`).value;
+	});
 }
