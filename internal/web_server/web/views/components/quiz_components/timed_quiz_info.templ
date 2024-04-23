@@ -1,18 +1,21 @@
 package quiz_components
 
 script triggerTimedQuizInfo() {
-    const dontShow = window.localStorage.getItem('dont-show-time-warning')
-    if (dontShow !== 'true') {
+    const dontShow = window.localStorage.getItem('dont-show-time-warning');
+
+    const dialog = document.getElementById('time-quiz-info-dialog');
+
+    if (dialog && dontShow !== 'true') {
         event.preventDefault()
-        document.body.dispatchEvent(new CustomEvent('quiz-play-clicked', {detail: event}));
+        dialog.dispatchEvent(new CustomEvent('quiz-play-clicked', {detail: event}));
     }
 }
 
 script ShowTimedQuizInfoOnEvent() {
-    document.body.addEventListener('quiz-play-clicked',(evt) => {
+    const dialog = document.getElementById('time-quiz-info-dialog');
+    dialog.addEventListener('quiz-play-clicked',(evt) => {
         evt.preventDefault();
 
-        const dialog = document.getElementById('time-quiz-info-dialog');
         dialog.showModal();
 
         const okButton = dialog.querySelector('#time-quiz-info-dialog-ok-button');
