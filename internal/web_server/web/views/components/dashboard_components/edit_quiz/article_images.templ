@@ -6,26 +6,30 @@ import (
 )
 
 templ ArticleImages(images []url.URL, idPrefix string) {
-	<ul id={ fmt.Sprintf("%s-article-images", idPrefix) } class="flex flex-row justify-center flex-wrap w-full p-3 gap-5">
-		for _, img := range images {
-			<li>
-				<button
-					type="button"
-					data-element-type="article-image-button"
-					class="outline outline-2 outline-cindigo focus:outline-4 hover:outline-4 focus:outline-yellow-400 hover:outline-yellow-400 rounded-card focus:scale-105 hover:scale-105"
-				>
-					<img
-						src={ img.String() }
-						class="h-28 w-40 object-cover rounded-card"
-					/>
-				</button>
-			</li>
-		}
-		if len(images) == 0 {
-			<li class="w-full text-center px-4 py-2 border border-clightindigo bg-purple-50 rounded-card">Fant ingen bilder</li>
-		}
-		@articleImageButtons(idPrefix)
-	</ul>
+	<div id={ fmt.Sprintf("%s-article-images", idPrefix) } class="w-full max-h-96 mb-3 overflow-y-auto">
+		<ul
+			class="flex flex-row justify-center flex-wrap w-full p-3 gap-5"
+		>
+			for _, img := range images {
+				<li>
+					<button
+						type="button"
+						data-element-type="article-image-button"
+						class="outline outline-2 outline-cindigo focus:outline-4 hover:outline-4 focus:outline-yellow-400 hover:outline-yellow-400 rounded-card focus:scale-105 hover:scale-105"
+					>
+						<img
+							src={ img.String() }
+							class="h-28 w-40 object-cover rounded-card"
+						/>
+					</button>
+				</li>
+			}
+			if len(images) == 0 {
+				<li class="w-full text-center px-4 py-2 border border-clightindigo bg-purple-50 rounded-card">Fant ingen bilder</li>
+			}
+			@articleImageButtons(idPrefix)
+		</ul>
+	</div>
 }
 
 script articleImageButtons(idPrefix string) {

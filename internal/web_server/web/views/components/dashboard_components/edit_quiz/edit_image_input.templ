@@ -3,7 +3,6 @@ package dashboard_components
 import (
 	"fmt"
 	"net/url"
-	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
@@ -22,7 +21,7 @@ const (
 // They need to be consistent in the replacement html,
 // and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
 // (example: quiz image editing and question image editing should have different prefixes to not interfere)
-templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSuggestionEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
 	<div class={ fmt.Sprintf("%s-image-input-wrapper", idPrefix) }>
 		// Tabs for selecting image upload method
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
@@ -107,6 +106,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					@icons.Upload(2, "dimgray", 30, 30)
 					<p>Dra og slipp, eller</p>
 					<button
+						type="button"
 						class="underline"
 						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
 					>bla gjennom filene dine</button>
@@ -122,28 +122,31 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
 			// Suggestions from Articles
 			<div id={ fmt.Sprintf("%s-image-suggestion-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
-				<div class="flex flex-row gap-3 items-center w-full">
+				<div class="flex flex-row gap-3 items-center justify-between w-full">
 					<label for={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }>Velg et bilde</label>
 					<input
 						id={ fmt.Sprintf("%s-image-suggestion-input", idPrefix) }
 						name="image-suggestion"
-						class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo text-gray-700 w-1/2 flex-grow cursor-not-allowed"
-						type="text"
+						class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo text-gray-700 w-1/2 cursor-not-allowed"
+						type="hidden"
 						value={ imageURL.String() }
-						onclick="this.select()"
 						disabled
 					/>
 					<button
 						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
-						hx-get={ fmt.Sprintf("/api/v1/admin/%s/image/update-suggestions", idPrefix) }
+						class="flex flex-row gap-2 justify-center items-center bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
+						hx-get={ imageSuggestionEndpoint }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("#%s-article-images", idPrefix) }
 						hx-target-4*="next .error-image"
 						hx-indicator="previous .htmx-indicator"
-					>Oppdater forslag</button>
+					>
+						Oppdater forslag
+						// #5B14F2 is the same as cindigo from the theme
+						@icons.Refresh(2.5, "#5B14F2", 20, 20)
+					</button>
 				</div>
-				@ArticleImages(getArticleImages(), idPrefix)
+				@ArticleImages(nil, idPrefix)
 			</div>
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
@@ -290,26 +293,4 @@ script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string)
 script openFileChooser(fileInputId string) {
 	event.preventDefault();
 	document.getElementById(fileInputId).click();
-}
-
-func getArticleImages() []url.URL {
-	articleList := []articles.Article{
-		{
-			Title:      "Test article 1",
-			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/Xbv5Rx"},
-		},
-		{
-			Title:      "Test article 2",
-			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/kEAK3X"},
-		},
-		{
-			Title:      "Test article 3",
-			ArticleURL: url.URL{Scheme: "https", Host: "smp.no", Path: "/i/zEdjj4"},
-		},
-	}
-
-	// Add images to the slice here
-	images, _ := articles.GetImagesFromArticles(&articleList)
-
-	return images
 }

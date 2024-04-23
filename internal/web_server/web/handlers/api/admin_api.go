@@ -43,15 +43,18 @@ const (
 	errorFetchingImage     = "Kunne ikke hente bildet"
 	imageURLInput          = "image-url"
 	imageFileInput         = "image-file"
+	errorImageElementID    = "error-image"
 )
 
 // URLs
 const (
-	editQuizImageURL      = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
-	editQuizImageFile     = "/api/v1/admin/quiz/upload-image?quiz-id=%s"
-	editQuestionImageURL  = "/api/v1/admin/question/edit-image?question-id=%s"
-	editQuestionImageFile = "/api/v1/admin/question/upload-image?question-id=%s"
-	bucketImageURL        = "/images/"
+	editQuizImageURL         = "/api/v1/admin/quiz/edit-image?quiz-id=%s"
+	editQuizImageFile        = "/api/v1/admin/quiz/upload-image?quiz-id=%s"
+	editQuestionImageURL     = "/api/v1/admin/question/edit-image?question-id=%s"
+	editQuestionImageFile    = "/api/v1/admin/question/upload-image?question-id=%s"
+	imageSuggestionsQuiz     = "/api/v1/admin/quiz/image/update-suggestions?question-id=%s"
+	imageSuggestionsQuestion = "/api/v1/admin/question/image/update-suggestions?question-id=%s"
+	bucketImageURL           = "/images/"
 )
 
 // Creates a new AdminApiHandler
@@ -73,6 +76,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/quiz/add-article", aah.addArticleToQuiz)
 	e.DELETE("/quiz/delete-article", aah.deleteArticle)
 	e.POST("/quiz/rearrange-questions", aah.rearrangeQuestions)
+	e.GET("/quiz/image/update-suggestions", aah.imageSuggestionsQuiz)
 
 	e.POST("/question/edit", aah.editQuestion)
 	e.POST("/question/edit-image", aah.editQuestionImage)
@@ -80,6 +84,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/question/edit-image", aah.deleteQuestionImage)
 	e.DELETE("/question/delete", aah.deleteQuestion)
 	e.POST("/question/randomize-alternatives", aah.randomizeAlternatives)
+	e.GET("/question/image/update-suggestions", aah.imageSuggestionsQuestion)
 
 	e.POST("/username", aah.addUsername)
 	e.DELETE("/username", aah.deleteUsername)
@@ -125,8 +130,6 @@ func (aah *AdminApiHandler) editQuizTitle(c echo.Context) error {
 		title, quiz_id.String(), dashboard_pages.QuizTitle, ""))
 }
 
-const errorImageElementID = "error-image"
-
 // Updates the image of a quiz in the database.
 func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	// Get the quiz ID
@@ -159,7 +162,8 @@ func (aah *AdminApiHandler) editQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageURL, true, "", dashboard_components.IdPrefixQuiz))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id),
+		fmt.Sprintf(imageSuggestionsQuiz, quiz_id), imageURL, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
@@ -201,7 +205,8 @@ func (aah *AdminApiHandler) uploadQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), imageAsURL, true, "", dashboard_components.IdPrefixQuiz))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id),
+		fmt.Sprintf(imageSuggestionsQuiz, quiz_id), imageAsURL, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 // Removes the image for a quiz in the database.
@@ -219,7 +224,8 @@ func (dph *AdminApiHandler) deleteQuizImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id), &url.URL{}, true, "", dashboard_components.IdPrefixQuiz))
+		fmt.Sprintf(editQuizImageURL, quiz_id), fmt.Sprintf(editQuizImageFile, quiz_id),
+		fmt.Sprintf(imageSuggestionsQuiz, quiz_id), &url.URL{}, true, "", dashboard_components.IdPrefixQuiz))
 }
 
 // Deletes a quiz from the database.
@@ -697,7 +703,8 @@ func (aah *AdminApiHandler) editQuestionImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageURL, true, "", dashboard_components.IdPrefixQuestion))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID),
+		fmt.Sprintf(imageSuggestionsQuiz, questionID), imageURL, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Upload a new image for a question.
@@ -740,7 +747,8 @@ func (aah *AdminApiHandler) uploadQuestionImage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), imageAsURL, true, "", dashboard_components.IdPrefixQuestion))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID),
+		fmt.Sprintf(imageSuggestionsQuiz, questionID), imageAsURL, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Delete the image for a question in the database.
@@ -749,7 +757,8 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	questionID, err := uuid.Parse(c.QueryParam(queryParamQuestionID))
 	if err != nil {
 		return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-			fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, errorInvalidQuestionID, dashboard_components.IdPrefixQuestion))
+			fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID),
+			fmt.Sprintf(imageSuggestionsQuiz, questionID), &url.URL{}, true, errorInvalidQuestionID, dashboard_components.IdPrefixQuestion))
 	}
 
 	// Remove the image URL from the question
@@ -757,14 +766,16 @@ func (aah *AdminApiHandler) deleteQuestionImage(c echo.Context) error {
 	if err != nil {
 		if err == questions.ErrNoImageRemoved {
 			return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-				fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere", dashboard_components.IdPrefixQuestion))
+				fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID),
+				fmt.Sprintf(imageSuggestionsQuiz, questionID), &url.URL{}, true, "Spørsmål bilde kunne ikke bli fjernet. Prøv igjen senere", dashboard_components.IdPrefixQuestion))
 		}
 
 		return err
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.EditImageInput(
-		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID), &url.URL{}, true, "", dashboard_components.IdPrefixQuestion))
+		fmt.Sprintf(editQuestionImageURL, questionID), fmt.Sprintf(editQuestionImageFile, questionID),
+		fmt.Sprintf(imageSuggestionsQuiz, questionID), &url.URL{}, true, "", dashboard_components.IdPrefixQuestion))
 }
 
 // Uploads an image to the bucket from a form and returns the name of the image.
@@ -907,4 +918,33 @@ func (aah *AdminApiHandler) editUsername(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+// Get image suggestions for a quiz
+func (aah *AdminApiHandler) imageSuggestionsQuiz(c echo.Context) error {
+	// Get quiz ID
+	quizId, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorInvalidQuizID))
+	}
+
+	// Get articles in the quiz
+	arts, err := articles.GetArticlesByQuizID(aah.sharedData.DB, quizId)
+	if err != nil {
+		return err
+	}
+
+	// Get the images from the articles
+	images, err := articles.GetImagesFromArticles(arts)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages(images, "quiz"))
+}
+
+// Get image suggestions for a question
+func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
+	// TODO
+	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages([]url.URL{}, "question"))
 }
