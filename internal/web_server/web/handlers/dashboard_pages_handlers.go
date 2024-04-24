@@ -102,9 +102,9 @@ func (dph *DashboardPagesHandler) dashboardNewQuestionModal(c echo.Context) erro
 	newQuestion := questions.GetDefaultQuestion(quizId)
 
 	// Get all the articles for the quiz by quiz ID.
-	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quizId)
+	articleList, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, quizId)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, articles, quizId.String(), true))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(&newQuestion, &articles.Article{}, articleList, quizId.String(), true))
 }
 
 // Renders the modal for editing a question.
@@ -125,10 +125,23 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 		}
 	}
 
+	// Get the article if the ID is valid
+	article := &articles.Article{}
+	if question.ArticleID.Valid {
+		article, err = articles.GetArticleByID(dph.sharedData.DB, question.ArticleID.UUID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return echo.NewHTTPError(http.StatusNotFound, "The article for this question could not be found.")
+			} else {
+				return err
+			}
+		}
+	}
+
 	// Get all the articles for the quiz by quiz ID.
 	articles, _ := articles.GetArticlesByQuizID(dph.sharedData.DB, question.QuizID)
 
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(*question, articles, question.QuizID.String(), false))
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(question, article, articles, question.QuizID.String(), false))
 }
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {

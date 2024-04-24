@@ -23,7 +23,7 @@ templ QuestionAlternativesInput(alternatives []questions.Alternative) {
 							id={ fmt.Sprintf("question-%d", index+1) }
 							name={ fmt.Sprintf("question-alternative-%d", index+1) }
 							type="text"
-							class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
+							class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2"
 							if index < len(alternatives) {
 								value={ alternatives[index].Text }
 							}

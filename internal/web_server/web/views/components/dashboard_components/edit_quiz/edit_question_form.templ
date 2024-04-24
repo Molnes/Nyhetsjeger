@@ -21,8 +21,8 @@ const (
 // 4 answer alternatives (optional 2 to 4), and an image.
 // If the question isNew = true, it will be appended to the list of questions.
 // If the question isNew = false, it will replace the existing question in the list.
-templ EditQuestionForm(question questions.Question, articles *[]articles.Article, quizID string, isNew bool) {
-	<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk">
+templ EditQuestionForm(question *questions.Question, article *articles.Article, articles *[]articles.Article, quizID string, isNew bool) {
+	<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk spørsmål" aria-label="Lukk spørsmål">
 		@icons.Cross(3, "currentColor", 30, 30)
 	</button>
 	<form id="edit-question-form" hx-encoding="multipart/form-data">
@@ -32,20 +32,20 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 		>
 			if len(*articles) == 0 {
 				<option value="" disabled selected>Ingen artikler lagt til enda</option>
 			} else {
 				<option value="">Ingen artikkel valgt</option>
 			}
-			for _, article := range *articles {
+			for _, art := range *articles {
 				<option
-					value={ article.ArticleURL.String() }
-					if question.Article.ArticleURL == article.ArticleURL {
+					value={ art.ArticleURL.String() }
+					if art.ArticleURL == article.ArticleURL {
 						selected
 					}
-				>{  article.Title }</option>
+				>{  art.Title }</option>
 			}
 		</select>
 		// Question
@@ -54,7 +54,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			id="question"
 			name={ QuestionText }
 			type="text"
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 			value={ question.Text }
 			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
@@ -62,7 +62,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 		@QuestionAlternativesInput(question.Alternatives)
 		<button
 			type="button"
-			class="flex flex-row gap-1 items-center my-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white"
+			class="flex flex-row gap-1 items-center my-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white border border-1 border-[transparent]"
 			hx-post="/api/v1/admin/question/randomize-alternatives"
 			hx-swap="outerHTML"
 			hx-target="#alternatives-table"
@@ -81,7 +81,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), fmt.Sprintf("/api/v1/admin/question/upload-image?question-id=%s", question.ID),
-			&question.ImageURL, !isNew, "")
+			fmt.Sprintf("/api/v1/admin/question/image/update-suggestions?quiz-id=%s", question.ID), &question.ImageURL, !isNew, "", IdPrefixQuestion)
 		<div
 			class="relative mt-10 mb-5 text-sm text-gray-500 text-center overflow-hidden
 						before:content-[''] before:absolute before:h-px before:w-1/2 before:bg-gray-400 before:-left-[8ch] before:top-1/2
@@ -91,7 +91,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Velg poeng</label>
-				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
 						/* The points default 100 */
 						<option
@@ -109,7 +109,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			// Time limit
 			<div>
 				<label for={ QuestionTimeLimit } class="font-bold mr-1">Velg tidsbegrensning</label>
-				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, seconds := range []uint{10, 15, 30, 45, 60, 120, 180} {
 						/* The time limit is default 30 seconds */
 						<option
@@ -140,18 +140,18 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<button
 				id="close-modal-button"
 				type="button"
-				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
+				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button border border-1 border-[transparent]"
 				onclick="closeModal()"
 			>Avbryt</button>
 			if !isNew {
 				<button
 					id="delete-question-button"
 					type="button"
-					class="bg-red-600 text-white font-bold px-4 py-2 w-full rounded-button"
+					class="bg-red-600 text-white font-bold px-4 py-2 w-full rounded-button border border-1 border-[transparent]"
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
-					hx-target-4*=".error-question"
+					hx-target-error=".error-question"
 					hx-confirm="Er du sikker på at du ønsker å slette dette spørsmålet?"
 					hx-indicator="previous .htmx-indicator"
 				>Slett</button>
@@ -159,7 +159,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 			<button
 				id="submit-question-button"
 				type="submit"
-				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button"
+				class="bg-clightindigo font-bold px-4 py-2 w-full rounded-button border border-1 border-[transparent]"
 				hx-post={ fmt.Sprintf("/api/v1/admin/question/edit?quiz-id=%s&question-id=%s", quizID, question.ID) }
 				if isNew {
 					hx-swap="beforeend"
@@ -168,7 +168,7 @@ templ EditQuestionForm(question questions.Question, articles *[]articles.Article
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
 				}
-				hx-target-4*=".error-question"
+				hx-target-error=".error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>

@@ -18,7 +18,7 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 		<div class="overflow-auto flex flex-col">
 			if isUserAdmin(ctx) {
 				<a
-					class="text-md font-bold  gradient-bg-button text-white rounded-button text-center px-5 py-4 mt-5 mx-auto flex flex-row items-center justify-center gap-2"
+					class="text-md font-bold  gradient-bg-button text-white rounded-button text-center px-5 py-4 mt-5 mx-auto flex flex-row items-center justify-center gap-2 border border-1 border-[transparent]"
 					href="/dashboard"
 				>
 					Gå til Dashboardet
@@ -76,6 +76,7 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 				</div>
 			</div>
 		</div>
+		@quiz_components.TimeQuizInfoDialog()
 	}
 }
 

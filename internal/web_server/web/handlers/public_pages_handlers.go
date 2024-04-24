@@ -13,7 +13,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_roles"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
-	data_converting "github.com/Molnes/Nyhetsjeger/internal/utils/converting"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/public_pages"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
 	"github.com/google/uuid"
@@ -84,21 +83,16 @@ func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
 		return err
 	}
 
-	var quiz quizzes.Quiz
+	var partialQuiz quizzes.PartialQuiz
 	if quizId != uuid.Nil {
-		selectedQuiz, err := quizzes.GetQuizByID(pph.sharedData.DB, quizId)
+		selectedQuiz, err := quizzes.GetPartialQuizByID(pph.sharedData.DB, quizId)
 		if err != nil {
 			return err
 		}
-		quiz = *selectedQuiz
+		partialQuiz = *selectedQuiz
 	}
 
-	partialQuiz, err := data_converting.ConvertQuizToPartial(quiz, pph.sharedData.DB)
-	if err != nil {
-		return err
-	}
-
-	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(partialQuiz))
+	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(&partialQuiz))
 }
 
 const quizIdQueryParam = "quiz-id"

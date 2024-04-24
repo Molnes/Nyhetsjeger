@@ -14,11 +14,13 @@ import (
 )
 
 // Constants for the input names (for HTTP requests)
-const QuizTitle = "quiz-title"
-const QuizPublished = "quiz-is-published"
-const QuizArticleURL = "quiz-article-url"
-const QuizActiveFrom = "quiz-active-from"
-const QuizActiveTo = "quiz-active-to"
+const (
+	QuizTitle      = "quiz-title"
+	QuizPublished  = "quiz-is-published"
+	QuizArticleURL = "quiz-article-url"
+	QuizActiveFrom = "quiz-active-from"
+	QuizActiveTo   = "quiz-active-to"
+)
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
@@ -53,13 +55,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				document.body.addEventListener("htmx:afterSwap", (event) => {
 					// If the swap is successful, and it was not used to open the question modal
 					// Display a 'saved' message for 3 seconds
-					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
+					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' 
+					&& event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
+					&& event.target.id != 'question-article-images') {
 						changesSaved();
 					}
 				})
 			</script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
+			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringen automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -68,15 +72,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
-			// Quiz Image
-			<form class="w-full my-1" hx-encoding="multipart/form-data">
-				<div class="flex flex-row items-center gap-2 mb-1">
-					<h2 class="block font-bold">Velg forsidebilde</h2>
-					@components.LoadingIndicator()
-				</div>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, true, "")
-			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -149,7 +144,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<button
 					id="new-question-button"
 					type="button"
-					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
+					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button border border-1 border-[transparent]"
 					hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) }
 					hx-swap="innerHTML"
 					hx-target="#question-modal"
@@ -159,6 +154,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
 			}
+			// Quiz Image
+			<form class="w-full my-1" hx-encoding="multipart/form-data" onsubmit="return false;">
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="block font-bold">Velg forsidebilde</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					fmt.Sprintf("/api/v1/admin/quiz/image/update-suggestions?quiz-id=%s", quiz.ID), &quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
+			</form>
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -177,15 +181,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
 						type="button"
-						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button"
+						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
-						hx-target-4*=".error-quiz"
+						hx-target-error=".error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button">Ferdig</a>
+					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button border border-1 border-[transparent]">Ferdig</a>
 				</div>
 			}
 		</div>
