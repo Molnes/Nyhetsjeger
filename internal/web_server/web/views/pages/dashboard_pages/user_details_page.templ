@@ -9,7 +9,7 @@ import (
 
 templ UserDetailsPage(user users.User, rank user_ranking.UserRanking) {
 	@layout_components.DashBoardLayout("Brukerdetaljer") {
-		<div class="p-4 bg-white shadow-md rounded-md">
+		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
 			<h1 class="text-4xl">Brukerdetaljer</h1>
 			<h2 class="text-2xl">
 				{ fmt.Sprintf("Brukernavn: %s",
