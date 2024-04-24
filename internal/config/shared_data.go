@@ -12,4 +12,5 @@ type SharedData struct {
 	SessionStore *pgstore.PGStore
 	CryptoKey    []byte
 	Bucket       *minio.Client
+	OpenAIKey    string
 }
