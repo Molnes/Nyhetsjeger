@@ -58,22 +58,27 @@ func Api() {
 		log.Fatal("Error getting google oauth config: ", err)
 	}
 
-    endpoint, ok := os.LookupEnv("BUCKET_URL")
-    accessKeyID, ok := os.LookupEnv("BUCKET_ACCESS_KEY")
-    secretAccessKey, ok := os.LookupEnv("BUCKET_SECRET_KEY")
-    useSSL, ok := os.LookupEnv("BUCKET_USE_SSL")
+	endpoint, ok := os.LookupEnv("BUCKET_URL")
+	accessKeyID, ok := os.LookupEnv("BUCKET_ACCESS_KEY")
+	secretAccessKey, ok := os.LookupEnv("BUCKET_SECRET_KEY")
+	useSSL, ok := os.LookupEnv("BUCKET_USE_SSL")
 
+	minioClient, err := bucket.NewBucketConnection(endpoint, accessKeyID, secretAccessKey, useSSL == "true")
+	if err != nil {
+		log.Fatal("Error connecting to bucket: ", err)
+	}
 
-    minioClient, err := bucket.NewBucketConnection(endpoint, accessKeyID, secretAccessKey, useSSL == "true")
-    if err != nil {
-        log.Fatal("Error connecting to bucket: ", err)
-        }
+	openAIKey, ok := os.LookupEnv("OPENAI_KEY")
+	if !ok {
+		log.Fatal("No OpenAI key provided. Expected OPENAI_KEY")
+	}
 
 	sharedData := &config.SharedData{
 		DB:           databaseConn,
 		SessionStore: sessionStore,
 		CryptoKey:    cryptoKey,
-        Bucket:  minioClient,
+		Bucket:       minioClient,
+		OpenAIKey:    openAIKey,
 	}
 
 	router.SetupRouter(e, sharedData, googleOauthConfig)
