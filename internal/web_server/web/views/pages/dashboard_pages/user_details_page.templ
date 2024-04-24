@@ -5,24 +5,71 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
+	"time"
 )
 
-templ UserDetailsPage(user users.User, rank user_ranking.UserRanking) {
+type RankingCollection struct {
+	Monthly user_ranking.UserRanking
+	Yearly  user_ranking.UserRanking
+	AllTime user_ranking.UserRanking
+}
+
+templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 	@layout_components.DashBoardLayout("Brukerdetaljer") {
 		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
 			<h1 class="text-4xl">Brukerdetaljer</h1>
-			<h2 class="text-2xl">
-				{ fmt.Sprintf("Brukernavn: %s",
-            user.Username) }
-			</h2>
-			<h3 class="text-xl">
-				{ fmt.Sprintf("Epost: %s",
-            user.Email) }
-			</h3>
-			<div class="flex flex-row">
-				<p class="text-lg mr-2">{ fmt.Sprintf("Plassering: %d", rank.Placement) }</p>
-				<p class="text-lg">{ fmt.Sprintf("Poeng: %d", rank.Points) }</p>
-			</div>
+			<p class="text-2xl">
+				Brukernavn: <span class="font-semibold">{ fmt.Sprintf("%s", user.Username) }</span>
+			</p>
+			<p class="text-xl">
+				Epost: { fmt.Sprintf("%s",user.Email) }
+			</p>
+			<form>
+				<select
+					name=""
+					id=""
+				>
+					@monthOption(time.January, "Januar")
+					@monthOption(time.February, "Februar")
+					@monthOption(time.March, "Mars")
+					@monthOption(time.April, "April")
+					@monthOption(time.May, "Mai")
+					@monthOption(time.June, "Juni")
+					@monthOption(time.July, "Juli")
+					@monthOption(time.August, "August")
+					@monthOption(time.September, "September")
+					@monthOption(time.October, "Oktober")
+					@monthOption(time.November, "November")
+					@monthOption(time.December, "Desember")
+				</select>
+				<input type="number" min="2023" max="2099" step="1" value={ fmt.Sprintf("%v", time.Now().Year()) }/>
+			</form>
+			// <div class="flex flex-row">
+			// 	<p class="text-lg mr-2">{ fmt.Sprintf("Plassering: %d", ranking.Monthly.Placement) }</p>
+			// 	<p class="text-lg">{ fmt.Sprintf("Poeng: %d", ranking.Monthly.Points) }</p>
+			// </div>
+			@userRankingCard("Månedlig", &ranking.Monthly)
+			@userRankingCard("Årelig", &ranking.Yearly)
+			@userRankingCard("All tid", &ranking.AllTime)
 		</div>
 	}
+}
+
+templ userRankingCard(title string, rank *user_ranking.UserRanking) {
+	<div>
+		<h2>{ title }</h2>
+		<p>Plassering: { fmt.Sprintf("%d",rank.Placement) }</p>
+		<p>Poeng: { fmt.Sprintf("%d",rank.Points) }</p>
+	</div>
+}
+
+templ monthOption(month time.Month, norwegianText string) {
+	<option
+		value={ month.String() }
+		if time.Now().Month() == month {
+			selected
+		}
+	>
+		{ norwegianText }
+	</option>
 }

@@ -189,7 +189,13 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(*user, user_rank))
+	rankingCollection := dashboard_pages.RankingCollection{
+		Monthly: user_rank,
+		Yearly:  user_rank,
+		AllTime: user_rank,
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, &rankingCollection))
 }
 
 // Adds chosen menu item to the context, so it can be used in the template.
