@@ -68,7 +68,6 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						type="button"
 						class="bg-clightindigo px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-post={ imageURLEndpoint }
-						hx-trigger="click"
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 						hx-target-4*="next .error-image"
@@ -93,7 +92,6 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 							type="button"
 							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
 							hx-post={ imageFileEndpoint }
-							hx-trigger="click"
 							hx-swap="outerHTML"
 							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
 							hx-target-4*="next .error-image"
@@ -176,6 +174,9 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 			@components.ErrorText("error-image", errorText)
 		</div>
 		@switchTabs(idPrefix)
+		if (idPrefix == IdPrefixQuestion) {
+			@overrideErrorText(idPrefix)
+		}
 	</div>
 }
 
@@ -300,4 +301,16 @@ script getArticleFromDropdown(idPrefix string) {
 	imageSuggestionButton.addEventListener('htmx:configRequest', function (evt) {
 		evt.detail.parameters['article-url'] = document.getElementById(`articles-list`).value;
 	});
+}
+
+// HTMX fails to update the error text for image when it is inside the dialog. Reasons unknown. Manually override the response values.
+
+script overrideErrorText(idPrefix string) {
+	document.querySelector(`.${idPrefix}-image-input-wrapper`).addEventListener("htmx:beforeSwap", (event) => {
+		if (event.detail.xhr.status >= 400) {
+			event.detail.shouldSwap = true;
+			event.detail.isError = false;
+			event.detail.target = document.querySelector(`.${idPrefix}-image-input-wrapper`).querySelector(".error-image");
+		}
+	})
 }
