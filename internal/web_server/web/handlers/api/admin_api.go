@@ -907,6 +907,7 @@ func (aah *AdminApiHandler) editUsername(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// Get the username tables and render the page.
 func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
 	if err != nil { // If the page number is not a number, set it to 1.
@@ -927,8 +928,6 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 		search = c.QueryParam("search")
 	}
 
-	
-
 	uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, adjPage, nounPage, pages, search)
 	if err != nil {
 		return err
@@ -942,7 +941,7 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 
 	requestUrl := c.Request().URL
 
-	if (search != "") {
+	if search != "" {
 		relativeQuery.Set("search", search)
 		requestUrl.RawQuery = relativeQuery.Encode()
 	}
