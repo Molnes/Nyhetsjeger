@@ -100,6 +100,11 @@ script stopFormRefresh(tableId string) {
 
 }
 
+func addPathToUrl(url *url.URL) *url.URL {
+	url.Path = "/api/v1/admin/username/page"
+	return url
+}
+
 // A table that displays a list of words, includes pagination component.
 templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
 	<script>
