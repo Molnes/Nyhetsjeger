@@ -970,7 +970,7 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	}
 
 	if articleURL.String() == "" {
-		return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages([]url.URL{}, "question"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ingen artikkel er valgt. Fant ingen forslag"))
 	}
 
 	// Get the article from the URL
