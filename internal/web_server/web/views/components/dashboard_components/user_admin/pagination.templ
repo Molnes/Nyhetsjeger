@@ -2,17 +2,18 @@ package user_admin
 
 import "fmt"
 import "strconv"
+import "net/url"
 
 // Pagination is the main component for the pagination.
 // ID must be unique for each pagination component in the page.
 // queryParamKey is the key for the query parameter that will be used for the pagination.
 // maxPages is the maximum number of pages.
 // page is the current page.
-templ Pagination(id string, queryParamKey string, maxPages int, page int, ) {
-	@prevButton(page, id)
+templ Pagination(id string, queryParamKey string, maxPages int, page int, url *url.URL) {
+	@prevButton(page, id, url, queryParamKey)
 	@pageNumber(page, maxPages)
-	@nextButton(page, maxPages, id)
-	@insertHxGet(id, queryParamKey)
+	@nextButton(page, maxPages, id, url, queryParamKey)
+	/* @insertHxGet(id, queryParamKey) */
 }
 
 // handlePagination ensures that the page number is within the range of the maximum pages
@@ -25,36 +26,31 @@ func handlePagination(page int, maxPages int) int {
 	return page
 }
 
-// insertHxGet is a helper function that inserts the hx-get attribute to the pagination buttons
-script insertHxGet(id string, qp string) {
-	let ps = new URL(document.location.toString()).searchParams;
-	
-	let p = ps.get(qp);
+func createButtonUrl(url url.URL, pageChange int, queryParamKey string) string {
+	parameterString := url.Query()
 
-	var url = window.location.href.split('?')[0] + "?";
+	param := parameterString.Get(queryParamKey)
 
-	var prevUrl = url;
-	var nextUrl = url;
-
-	if (p == null) {
-		prevUrl += `${qp}=1`;
-		nextUrl += `${qp}=2`;
+	if param == "" {
+		param = "1"
 	}
 
-	// Get the other query parameters and create the url query string
-	for( var pair of ps.entries() ) {
-		if (pair[0] != qp) {
-			prevUrl += `&${pair[0]}=${pair[1]}`;
-			nextUrl += `&${pair[0]}=${pair[1]}`;
-		}
-		else {
-			prevUrl += `&${qp}=${(parseInt(p) - 1)}`;
-			nextUrl += `&${qp}=${(parseInt(p) + 1)}`;
-		}
+	page, err := strconv.Atoi(param)
+	if err != nil {
+		page = 1
 	}
 
-	document.getElementById( `prev-button-${id}` ).setAttribute("href", prevUrl.replace("?&", "?"));
-	document.getElementById( `next-button-${id}` ).setAttribute("href", nextUrl.replace("?&", "?"));
+	page += pageChange
+
+	if page < 1 {
+		page = 1
+	}
+
+	parameterString.Set(queryParamKey, strconv.Itoa(page))
+
+	url.RawQuery = parameterString.Encode()
+
+	return url.String()
 }
 
 // pageNumber is the component showing the current page number and the maximum pages
@@ -71,7 +67,7 @@ templ pageNumber(currentPage int, maxPages int) {
 }
 
 // prevButton is the component for the previous button
-templ prevButton(page int, parentTableID string) {
+templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey string) {
 	if page <= 1 {
 		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
@@ -81,27 +77,32 @@ templ prevButton(page int, parentTableID string) {
 			&lt;
 		</button>
 	} else {
-		<a
+		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
-			href=""
-			hx-boost="true"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
-		>&lt;</a>
+			hx-trigger="click"
+			hx-post={ createButtonUrl(*url, -1, queryParamKey) }
+			hx-swap="outerHTML"
+			hx-target="#tables-wrapper"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+		>&lt;</button>
 	}
 }
 
 // nextButton is the component for the next button
-templ nextButton(page int, maxPages int, parentTableID string) {
+templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, queryParamKey string) {
 	if page >= maxPages {
 		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
 			&gt;
 		</button>
 	} else {
-		<a
+		<button
 			id={ fmt.Sprintf("next-button-%v", parentTableID) }
-			href=""
-			hx-boost="true"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1 inline-block"
-		>&gt;</a>
+			hx-trigger="click"
+			hx-post={ createButtonUrl(*url, 1, queryParamKey) }
+			hx-swap="outerHTML"
+			hx-target="#tables-wrapper"
+			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+
+		>&gt;</button>
 	}
 }
