@@ -3,6 +3,7 @@ package user_admin
 import "math"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 import "fmt"
+import "net/url"
 
 // Calculates the maximum amount of pages needed to display all users.
 func calculateMaxPages(userAmount int, usernamesPerPage int) int {
@@ -106,7 +107,7 @@ func addPathToUrl(url *url.URL) *url.URL {
 }
 
 // A table that displays a list of words, includes pagination component.
-templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int) {
+templ WordTable(words []string, tableName string, page int, wordCount int, tableID string, pagnationParam string, usernamesPerPage int, url *url.URL) {
 	<script>
 		function refreshPage() {
 			location.reload();
@@ -179,7 +180,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			</tbody>
 		</table>
 		<div class="flex justify-center mt-3">
-			@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page)
+			@Pagination(tableID, pagnationParam, calculateMaxPages(wordCount, usernamesPerPage), page, addPathToUrl(url))
 		</div>
 		@stopFormRefresh(tableID)
 	</div>
