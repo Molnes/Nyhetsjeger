@@ -28,7 +28,7 @@ script deleteRow(rowId string, content string) {
 	if (row != null) {
 		let parent = row.parentElement;
 		deleteMap.set(row.id, content);
-		parent.classList.add("bg-red-500", "border-b", "border-red-700");
+		parent.classList.add("bg-red-300", "border-b", "border-red-700");
 		parent.getElementsByClassName("del-button")[0].disabled = true;
 		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 		sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
@@ -62,7 +62,7 @@ script onUndo(id string) {
 		if (deleteMap.has(id)) {
 			deleteMap.delete(id);
 			let parent = row.parentElement;
-			parent.classList.remove("bg-red-500", "border-b", "border-red-700");
+			parent.classList.remove("bg-red-300", "border-b", "border-red-700");
 			parent.getElementsByClassName("del-button")[0].disabled = false;
 			parent.getElementsByClassName("del-button")[0].classList.remove("hidden");
 			
@@ -148,15 +148,15 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 				[&_td]:border-black [&_tr]:h-8"
 		>
 			<thead>
-				<tr class="[&>th]:border-black block">
-					<th class="px-4 block whitespace-nowrap [&>*]:inline">
+				<tr class="[&>th]:border-black">
+					<th class="px-4 whitespace-nowrap [&>*]:inline">
 						{ tableName }
 					</th>
 				</tr>
 			</thead>
 			<tbody
 				class="
-						[&_tr:nth-child(odd)]:bg-purple-100  
+						[&_tr:nth-child(odd)]:bg-clightindigo  
 						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
 			>
 				for i := range usernamesPerPage {
@@ -168,10 +168,10 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
 							<div class="ml-auto my-auto flex">
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
-									@icons.Undo(2, "gray", 24, 24)
+									@icons.Undo(2, "currentColor", 24, 24)
 								</button>
 								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } class="del-button">
-									@icons.Trashcan(32, "gray", 24, 24)
+									@icons.Trashcan(32, "currentColor", 24, 24)
 								</button>
 							</div>
 						</td>
