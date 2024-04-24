@@ -299,7 +299,7 @@ script getArticleFromDropdown(idPrefix string) {
 	const imageSuggestionButton = document.getElementById(`${idPrefix}-image-suggestion-button`);
 
 	imageSuggestionButton.addEventListener('htmx:configRequest', function (evt) {
-		evt.detail.parameters['article-url'] = document.getElementById(`articles-list`).value;
+		evt.detail.parameters['article-url'] = document.getElementById('articles-list').value;
 	});
 }
 
