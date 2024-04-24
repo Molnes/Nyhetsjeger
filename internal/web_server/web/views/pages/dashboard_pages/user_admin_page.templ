@@ -5,9 +5,10 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"net/url"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
-// onSwap is a js script that run either when the page is loaded or when the htmx:afterSwap event is triggered. 
+// onSwap is a js script that run either when the page is loaded or when the htmx:afterSwap event is triggered.
 // It will highlight the rows that have been edited or deleted.
 
 script onSwap() {
@@ -18,7 +19,7 @@ script onSwap() {
 			var row = document.getElementById(key);
 			if (row) {
 				let parent = row.parentElement;
-				parent.classList.add("bg-red-500", "border-b", "border-red-700");
+				parent.classList.add("bg-red-300", "border-b", "border-red-700");
 				parent.getElementsByClassName("del-button")[0].classList.add("hidden");
 				parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 			}
@@ -42,7 +43,7 @@ script onSwap() {
 	});
 }
 
-// onSave is a js script that runs when the save button is clicked. 
+// onSave is a js script that runs when the save button is clicked.
 // It will send the changes to the server and clear the maps and the session storage.
 
 script onSave() {
@@ -77,15 +78,16 @@ script onSave() {
 		},
 		body: JSON.stringify(wordMap)
 	}).then(response => {
-		if ( /* response.ok */ true) {
+		if ( response.ok) {
 			editMap.clear();
 			tableRowMap.clear();
 
 			sessionStorage.removeItem("editMap");
 			sessionStorage.removeItem("tableRowMap");
+			location.reload();
 		}
 	});
-	location.reload();
+	
 }
 
 // reset is a js script that runs when the reset button is clicked. It will clear the maps and the session storage.
@@ -111,11 +113,12 @@ templ UsernameAdminPage(data *usernames.UsernameAdminInfo, url *url.URL) {
 	@layout_components.DashBoardLayout("Nyhetsjeger - Brukernavn administrasjon") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
 			<h2 class="text-xl font-bold">Brukernavn administrasjon</h2>
-			
-				<label class="w-0 h-0 block overflow-hidden" for="search-input">Søk etter ord</label>
+			<label class="w-0 h-0 block overflow-hidden" for="search-input">Søk etter ord</label>
+			<div class="flex flex-row items-center bg-white border border-gray-600 rounded-input px-1 py-1">
+				@icons.MagnifyingGlass(5, "currentColor", 20, 20)
 				<input
 					id="search-input"
-					class="border border-gray-600 rounded-input px-3 py-1"
+					class="ml-2 w-full"
 					type="search"
 					placeholder="Søk"
 					name="search"
@@ -124,6 +127,7 @@ templ UsernameAdminPage(data *usernames.UsernameAdminInfo, url *url.URL) {
 					hx-target="#tables-wrapper"
 					hx-swap="outerHTML"
 				/>
+			</div>
 			@user_admin.UsernameTables(data, url)
 			<div>
 				<button
