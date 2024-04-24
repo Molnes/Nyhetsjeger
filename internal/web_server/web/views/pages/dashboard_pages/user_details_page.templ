@@ -18,12 +18,27 @@ templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 	@layout_components.DashBoardLayout("Brukerdetaljer") {
 		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
 			<h1 class="text-4xl">Brukerdetaljer</h1>
-			<p class="text-2xl">
-				Brukernavn: <span class="font-semibold">{ fmt.Sprintf("%s", user.Username) }</span>
-			</p>
-			<p class="text-xl">
-				Epost: { fmt.Sprintf("%s",user.Email) }
-			</p>
+			<table>
+				<thead class="text-left">
+					<tr>
+						<th>Detaljer</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Brukernavn</td>
+						<td>{ user.Username }</td>
+					</tr>
+					<tr>
+						<td>E-post</td>
+						<td>{ user.Email }</td>
+					</tr>
+					<tr>
+						<td>Telefonnummer</td>
+						<td>{ user.Phone }</td>
+					</tr>
+				</tbody>
+			</table>
 			<form>
 				<select
 					name=""
