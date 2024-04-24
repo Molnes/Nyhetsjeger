@@ -207,5 +207,5 @@ func (dph *DashboardPagesHandler) getUsernameAdministration(c echo.Context) erro
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UsernameAdminPage(uai))
+	return utils.Render(c, http.StatusOK, dashboard_pages.UsernameAdminPage(uai, c.Request().URL))
 }
