@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -84,6 +86,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/username", aah.addUsername)
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
+	e.POST("/username/page", aah.getUsernamePages)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -902,4 +905,52 @@ func (aah *AdminApiHandler) editUsername(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
+	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		adjPage = 1
+	}
+	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
+	if err != nil { // If the page number is not a number, set it to 1.
+		nounPage = 1
+	}
+
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
+	if err != nil || pages < 5 || pages > 255 { // Sets to 25 if between a certain range.
+		pages = 25
+	}
+
+	search := c.FormValue("search")
+	if search == "" {
+		search = c.QueryParam("search")
+	}
+
+	
+
+	uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, adjPage, nounPage, pages, search)
+	if err != nil {
+		return err
+	}
+
+	// Creates a relative path with the queryparams to update the url of
+	// the client webpage.
+
+	var relativePath url.URL
+	relativeQuery := c.Request().URL.Query()
+
+	requestUrl := c.Request().URL
+
+	if (search != "") {
+		relativeQuery.Set("search", search)
+		requestUrl.RawQuery = relativeQuery.Encode()
+	}
+	log.Println(relativeQuery)
+
+	relativePath.RawQuery = relativeQuery.Encode()
+
+	c.Response().Header().Set("HX-Replace-Url", relativePath.String())
+
+	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
 }
