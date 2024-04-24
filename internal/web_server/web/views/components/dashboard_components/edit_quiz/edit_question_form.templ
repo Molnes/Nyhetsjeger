@@ -32,7 +32,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 		>
 			if len(*articles) == 0 {
 				<option value="" disabled selected>Ingen artikler lagt til enda</option>
@@ -54,7 +54,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			id="question"
 			name={ QuestionText }
 			type="text"
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
 			value={ question.Text }
 			placeholder="Hvilket år fikk Norge sin grunnlov?"
 		/>
@@ -81,7 +81,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			@components.LoadingIndicator()
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), fmt.Sprintf("/api/v1/admin/question/upload-image?question-id=%s", question.ID),
-			&question.ImageURL, !isNew, "", IdPrefixQuestion)
+			fmt.Sprintf("/api/v1/admin/question/image/update-suggestions?quiz-id=%s", question.ID), &question.ImageURL, !isNew, "", IdPrefixQuestion)
 		<div
 			class="relative mt-10 mb-5 text-sm text-gray-500 text-center overflow-hidden
 						before:content-[''] before:absolute before:h-px before:w-1/2 before:bg-gray-400 before:-left-[8ch] before:top-1/2
@@ -91,7 +91,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Velg poeng</label>
-				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionPoints } name={ QuestionPoints } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, points := range []uint{0, 25, 50, 75, 100, 125, 150} {
 						/* The points default 100 */
 						<option
@@ -109,7 +109,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 			// Time limit
 			<div>
 				<label for={ QuestionTimeLimit } class="font-bold mr-1">Velg tidsbegrensning</label>
-				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-clightindigo rounded-input px-4 py-2">
+				<select id={ QuestionTimeLimit } name={ QuestionTimeLimit } class="bg-purple-100 border border-cindigo rounded-input px-4 py-2">
 					for _, seconds := range []uint{10, 15, 30, 45, 60, 120, 180} {
 						/* The time limit is default 30 seconds */
 						<option
@@ -151,7 +151,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 					hx-delete={ fmt.Sprintf("/api/v1/admin/question/delete?question-id=%s", question.ID) }
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
-					hx-target-4*=".error-question"
+					hx-target-error=".error-question"
 					hx-confirm="Er du sikker på at du ønsker å slette dette spørsmålet?"
 					hx-indicator="previous .htmx-indicator"
 				>Slett</button>
@@ -168,7 +168,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 					hx-swap="outerHTML"
 					hx-target={ fmt.Sprintf("#question-%s", question.ID) }
 				}
-				hx-target-4*=".error-question"
+				hx-target-error=".error-question"
 				hx-sync="closest form:abort"
 				hx-indicator="previous .htmx-indicator"
 			>Lagre</button>

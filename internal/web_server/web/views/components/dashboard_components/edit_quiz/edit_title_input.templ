@@ -13,14 +13,14 @@ templ EditTitleInput(quizTitle string, quizID string, inputName string, errorTex
 		<input
 			id={ inputName }
 			name={ inputName }
-			class="bg-purple-100 border border-clightindigo rounded-input w-full px-4 py-2"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2"
 			type="text"
 			value={ quizTitle }
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-title?quiz-id=%s", quizID) }
 			hx-trigger="change"
 			hx-swap="outerHTML"
 			hx-target="#title-input-wrapper"
-			hx-target-4*=".error-title"
+			hx-target-error=".error-title"
 			hx-indicator="previous .htmx-indicator"
 			placeholder="Quiz: Uke X"
 		/>

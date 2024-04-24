@@ -1,0 +1,56 @@
+package icons
+
+import (
+	"fmt"
+)
+
+// Image icon. Parameters stroke width, height, width are all in pixels.
+// Example: Image(20, "currentColor", 20, 20)
+templ Image(strokeWidth float64, color string, height int, width int) {
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		class="shrink-0"
+		viewBox="0 0 512 512"
+		height={ fmt.Sprint(height) }
+		width={ fmt.Sprint(width) }
+	>
+		<rect
+			x="48"
+			y="80"
+			width="416"
+			height="352"
+			rx="48"
+			ry="48"
+			fill="none"
+			stroke={ color }
+			stroke-linejoin="round"
+			stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }
+		></rect>
+		<circle
+			cx="336"
+			cy="176"
+			r="32"
+			fill="none"
+			stroke={ color }
+			stroke-miterlimit="10"
+			stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }
+		></circle>
+		<path
+			d="M304 335.79l-90.66-90.49a32 32 0 00-43.87-1.3L48 352M224 432l123.34-123.34a32 32 0 0143.11-2L464 368"
+			fill="none"
+			stroke={ color }
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }
+		></path>
+	</svg>
+	<!-- MIT License
+
+Copyright (c) 2015-present Ionic (http://ionic.io/)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+}
