@@ -53,6 +53,5 @@ script stopTimerOn(eventName string, emitterId string) {
 		const timerElem = document.getElementById('timer');
 		timerElem.dispatchEvent(new CustomEvent('quiz:stop-timer'));
 		timerElem.style.animationPlayState = "paused";
-		console.log(timerElem.style.animationPlayState);
 	});
 }

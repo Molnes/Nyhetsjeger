@@ -1,10 +1,10 @@
 package dashboard_components
 
 import (
+	"fmt"
 	"net/url"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
-	"fmt"
 )
 
 const (
@@ -21,33 +21,43 @@ const (
 // They need to be consistent in the replacement html,
 // and there must not be multiple instances of EditImageInput with the same idPrefixes in the DOM.
 // (example: quiz image editing and question image editing should have different prefixes to not interfere)
-templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
+templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSuggestionEndpoint string, imageURL *url.URL, post bool, errorText string, idPrefix string) {
 	<div class={ fmt.Sprintf("%s-image-input-wrapper", idPrefix) }>
+		// Tabs for selecting image upload method
 		<div class="flex flex-row bg-violet-50 border border-clightindigo rounded-t-card overflow-hidden">
 			<button
-				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-200 hover:bg-violet-200 rounded-tl-card border-r border-solid border-clightindigo"
 				data-element-type="tab-link"
 				type="button"
 			>
-				Last opp med URL
+				Med URL
 				@icons.Link(2, "dimgray", 20, 20)
 			</button>
 			<button
-				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card"
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200"
 				data-element-type="tab-link"
 				type="button"
 			>
-				Last opp med fil
+				Med Fil
 				@icons.Upload(2, "dimgray", 20, 20)
+			</button>
+			<button
+				class="flex-grow flex flex-row gap-2 justify-center items-center px-4 py-3 bg-violet-100 hover:bg-violet-200 rounded-tr-card border-l border-solid border-clightindigo"
+				data-element-type="tab-link"
+				type="button"
+			>
+				Fra artikler
+				@icons.Image(30, "dimgray", 25, 25)
 			</button>
 		</div>
 		<div class="border-b border-l border-r border-clightindigo rounded-b-card p-4">
+			// Upload image by URL
 			<div id={ fmt.Sprintf("%s-image-url-input-tab", idPrefix) } class="flex flex-row items-center gap-3 flex-wrap mb-3" data-element-type="tab-content">
 				<label for={ fmt.Sprintf("%s-image-url-input", idPrefix) }>Velg URL</label>
 				<input
 					id={ fmt.Sprintf("%s-image-url-input", idPrefix) }
 					name="image-url"
-					class="bg-purple-100 px-4 py-2 rounded-input border border-clightindigo w-1/2 flex-grow"
+					class="bg-purple-100 px-4 py-2 rounded-input border border-cindigo w-1/2 flex-grow"
 					type="text"
 					value={ imageURL.String() }
 					placeholder="https://picsum.photos/id/1/900/600"
@@ -58,15 +68,15 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						type="button"
 						class="bg-clightindigo px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-post={ imageURLEndpoint }
-						hx-trigger="click"
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
-						hx-target-4*="next .error-image"
+						hx-target-error="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 					>Last opp</button>
 				}
 			</div>
+			// Upload image by file
 			<div id={ fmt.Sprintf("%s-image-file-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
 				<input
 					id={ fmt.Sprintf("%s-image-file-input", idPrefix) }
@@ -80,21 +90,21 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 					if post {
 						<button
 							type="button"
-							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0  border border-1 border-[transparent]"
+							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
 							hx-post={ imageFileEndpoint }
-							hx-trigger="click"
 							hx-swap="outerHTML"
 							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
-							hx-target-4*="next .error-image"
+							hx-target-error="next .error-image"
 							hx-sync="closest form:abort"
 							hx-indicator="previous .htmx-indicator"
 						>Last opp</button>
 					}
 				</div>
-				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-clightindigo text-gray-900">
+				<div class="flex flex-col w-full justify-center items-center bg-purple-50 px-4 py-2 rounded-input border border-cindigo text-gray-900">
 					@icons.Upload(2, "dimgray", 30, 30)
 					<p>Dra og slipp, eller</p>
 					<button
+						type="button"
 						class="underline"
 						onclick={ openFileChooser(fmt.Sprintf("%s-image-file-input", idPrefix)) }
 					>bla gjennom filene dine</button>
@@ -108,6 +118,31 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 				</div>
 			</div>
 			@indicateDragAndDrop(fmt.Sprintf("%s-image-file-input", idPrefix), fmt.Sprintf("%s-file-drop-zone", idPrefix), fmt.Sprintf("%s-file-name-display", idPrefix))
+			// Suggestions from Articles
+			<div id={ fmt.Sprintf("%s-image-suggestion-input-tab", idPrefix) } class="flex flex-col items-center gap-3 mb-3 hidden relative" data-element-type="tab-content">
+				<div class="flex flex-row gap-3 items-center justify-between w-full">
+					<h2>Velg et bilde</h2>
+					<button
+						id={ fmt.Sprintf("%s-image-suggestion-button", idPrefix) }
+						type="button"
+						class="flex flex-row gap-2 justify-center items-center bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
+						hx-get={ imageSuggestionEndpoint }
+						hx-swap="outerHTML"
+						hx-target={ fmt.Sprintf("#%s-article-images", idPrefix) }
+						hx-target-error="next .error-image"
+						hx-indicator="previous .htmx-indicator"
+					>
+						Oppdater forslag
+						// #5B14F2 is the same as cindigo from the theme
+						@icons.Refresh(2.5, "#5B14F2", 20, 20)
+						// For questions, get the article from the dropdown and send it with the request to get suggested images.
+						if idPrefix == IdPrefixQuestion {
+							@getArticleFromDropdown(idPrefix)
+						}
+					</button>
+				</div>
+				@ArticleImages(nil, idPrefix)
+			</div>
 			// If there is no image URL, display a message saying that no image is selected.
 			// If there is an image URL, display the image and a button to remove it.
 			if imageURL.String() == "" && post {
@@ -120,7 +155,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 						height="200"
 						width="300"
 						style="height: 100%"
-						class="rounded-lg mx-auto object-cover"
+						class="rounded-lg mx-auto object-cover border border-clightindigo"
 						alt=""
 					/>
 				</div>
@@ -139,6 +174,9 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageURL
 			@components.ErrorText("error-image", errorText)
 		</div>
 		@switchTabs(idPrefix)
+		if (idPrefix == IdPrefixQuestion) {
+			@overrideErrorText(idPrefix)
+		}
 	</div>
 }
 
@@ -253,4 +291,26 @@ script indicateDragAndDrop(inputId string, dropZoneId string, fileNameId string)
 script openFileChooser(fileInputId string) {
 	event.preventDefault();
 	document.getElementById(fileInputId).click();
+}
+
+// Get an article from the dropdown and send it with the request to get suggested images.
+
+script getArticleFromDropdown(idPrefix string) {
+	const imageSuggestionButton = document.getElementById(`${idPrefix}-image-suggestion-button`);
+
+	imageSuggestionButton.addEventListener('htmx:configRequest', function (evt) {
+		evt.detail.parameters['article-url'] = document.getElementById('articles-list').value;
+	});
+}
+
+// HTMX fails to update the error text for image when it is inside the dialog. Reasons unknown. Manually override the response values.
+
+script overrideErrorText(idPrefix string) {
+	document.querySelector(`.${idPrefix}-image-input-wrapper`).addEventListener("htmx:beforeSwap", (event) => {
+		if (event.detail.xhr.status >= 400) {
+			event.detail.shouldSwap = true;
+			event.detail.isError = false;
+			event.detail.target = document.querySelector(`.${idPrefix}-image-input-wrapper`).querySelector(".error-image");
+		}
+	})
 }

@@ -16,13 +16,13 @@ templ EditActiveEndInput(endTime time.Time, quizID string, inputName string) {
 			id={ inputName }
 			name={ inputName }
 			type="datetime-local"
-			class="bg-purple-100 px-4 py-2 border border-clightindigo rounded-input"
+			class="bg-purple-100 px-4 py-2 border border-cindigo rounded-input"
 			value={ data_handling.GetNorwayTime(endTime).Format("2006-01-02T15:04") }
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-end?quiz-id=%s", quizID) }
 			hx-trigger="blur"
 			hx-swap="outerHTML"
 			hx-target="#active-time-wrapper"
-			hx-target-4*=".error-active-time"
+			hx-target-error=".error-active-time"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		/>

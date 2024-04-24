@@ -55,7 +55,9 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				document.body.addEventListener("htmx:afterSwap", (event) => {
 					// If the swap is successful, and it was not used to open the question modal
 					// Display a 'saved' message for 3 seconds
-					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
+					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' 
+					&& event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
+					&& event.target.id != 'question-article-images') {
 						changesSaved();
 					}
 				})
@@ -70,15 +72,6 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
-			// Quiz Image
-			<form class="w-full my-1" hx-encoding="multipart/form-data">
-				<div class="flex flex-row items-center gap-2 mb-1">
-					<h2 class="block font-bold">Velg forsidebilde</h2>
-					@components.LoadingIndicator()
-				</div>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
-			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -161,6 +154,15 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
 			}
+			// Quiz Image
+			<form class="w-full my-1" hx-encoding="multipart/form-data" onsubmit="return false;">
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="block font-bold">Velg forsidebilde</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					fmt.Sprintf("/api/v1/admin/quiz/image/update-suggestions?quiz-id=%s", quiz.ID), &quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
+			</form>
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -181,7 +183,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						type="button"
 						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button border border-1 border-[transparent]"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
-						hx-target-4*=".error-quiz"
+						hx-target-error=".error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
