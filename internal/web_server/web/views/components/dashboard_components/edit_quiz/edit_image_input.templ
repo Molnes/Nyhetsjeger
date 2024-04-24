@@ -70,7 +70,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						hx-post={ imageURLEndpoint }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
-						hx-target-4*="next .error-image"
+						hx-target-error="next .error-image"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 					>Last opp</button>
@@ -94,7 +94,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 							hx-post={ imageFileEndpoint }
 							hx-swap="outerHTML"
 							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
-							hx-target-4*="next .error-image"
+							hx-target-error="next .error-image"
 							hx-sync="closest form:abort"
 							hx-indicator="previous .htmx-indicator"
 						>Last opp</button>
@@ -129,7 +129,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 						hx-get={ imageSuggestionEndpoint }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("#%s-article-images", idPrefix) }
-						hx-target-4*="next .error-image"
+						hx-target-error="next .error-image"
 						hx-indicator="previous .htmx-indicator"
 					>
 						Oppdater forslag

@@ -22,7 +22,7 @@ templ EditActiveEndInput(endTime time.Time, quizID string, inputName string) {
 			hx-trigger="blur"
 			hx-swap="outerHTML"
 			hx-target="#active-time-wrapper"
-			hx-target-4*=".error-active-time"
+			hx-target-error=".error-active-time"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		/>

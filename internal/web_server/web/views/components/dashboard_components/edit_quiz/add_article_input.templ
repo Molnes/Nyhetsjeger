@@ -25,7 +25,7 @@ templ AddArticleInput(quizID string, nameInput string, errorText string) {
 			hx-post={ fmt.Sprintf("/api/v1/admin/quiz/add-article?quiz-id=%s", quizID) }
 			hx-swap="beforeend"
 			hx-target="#article-list"
-			hx-target-4*=".error-article"
+			hx-target-error=".error-article"
 			hx-sync="closest form:abort"
 			hx-indicator="previous .htmx-indicator"
 		>
