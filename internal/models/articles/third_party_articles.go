@@ -86,6 +86,16 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	return article, nil
 }
 
+// Get an ArticleSMP by its ID.
+func GetSmpArticleByiID(articleID string) (ArticleSMP, error) {
+	article, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+	if err != nil {
+		log.Println("Error getting article: ", err)
+		return ArticleSMP{}, err
+	}
+	return article, nil
+}
+
 // Get the ID for ArticleSMP from the article URL.
 func GetSmpIdFromString(url string) (string, error) {
 	// Split the URL by "/"

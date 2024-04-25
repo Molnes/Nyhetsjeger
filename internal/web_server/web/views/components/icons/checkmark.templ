@@ -4,7 +4,9 @@ import "fmt"
 
 //Checkmark icon. Parameters stroke, height, width are all in pixels.
 templ Checkmark(strokeWidth float64, stroke string, height int, width int) {
-	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512"><path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M416 128L192 384l-96-96"></path></svg>
+	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512">
+		<path fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M416 128L192 384l-96-96"></path>
+	</svg>
 	<!-- MIT License
 
 Copyright (c) 2020 Refactoring UI Inc.

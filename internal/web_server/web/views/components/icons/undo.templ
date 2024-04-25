@@ -6,7 +6,7 @@ import "fmt"
 //Example: Undo(3, "currentColor", 24, 24)
 templ Undo(strokeWidth float64, stroke string, height int, width int) {
 	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } height={ fmt.Sprint(height) } width={ fmt.Sprint(width) }>
-		<path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"></path>
+		<path fill="none" stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"></path>
 	</svg>
 	<!-- MIT License
 

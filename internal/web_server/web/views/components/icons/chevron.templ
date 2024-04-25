@@ -6,8 +6,8 @@ import "fmt"
 //Example: Chevron(1.5, "currentColor", 6, 6)
 templ Chevron(strokeWidth float64, stroke string, height int, width int) {
 	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } class={ fmt.Sprintf("h-%d w-%d", height, width) }>
-		<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5"></path>
-		<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5"></path>
+		<path fill="none" stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5"></path>
+		<path fill="none" stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5"></path>
 	</svg>
 	<!-- MIT License
 
