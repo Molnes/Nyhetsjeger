@@ -10,6 +10,7 @@ import (
 
 const (
 	userRankingsTable = "user-rankings-table"
+	monthAndYearForm  = "month-and-year-form"
 )
 
 templ UserDetailsTable(user *users.User) {
@@ -37,6 +38,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 		class="flex flex-col"
 		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
 		hx-swap="outerHTML"
+		id={ monthAndYearForm }
 	>
 		<label for="month-input">
 			Velg måned
@@ -78,6 +80,23 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 			/>
 		</label>
 	</form>
+	@SyncQueryParameters(monthAndYearForm)
+}
+
+script SyncQueryParameters(formId string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener('htmx:afterRequest', (evt)=>{
+		if (evt.detail.xhr.status < 400) {
+			const chosenMonth = formElem.querySelector('select').value;
+			const chosenYear = formElem.querySelector('input').value;
+			
+			const url = new URL(window.location);
+			url.searchParams.set('month',chosenMonth);
+			url.searchParams.set('year',chosenYear);
+
+			window.history.replaceState(null, "", url.href);
+		}
+	});
 }
 
 templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
