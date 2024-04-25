@@ -55,8 +55,8 @@ func createButtonUrl(url url.URL, pageChange int, queryParamKey string) string {
 
 // pageNumber is the component showing the current page number and the maximum pages
 templ pageNumber(currentPage int, maxPages int) {
-	if maxPages != 1 {
-		<button class="border-cindigo bg-clightindigo border-y-2 text-indigo-300 px-3 py-1" disabled>
+	if maxPages > 1 {
+		<button class="border-cindigo border-y text-cindigo  px-3 py-1" disabled>
 			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
 		</button>
 	} else {
