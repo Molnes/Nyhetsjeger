@@ -82,12 +82,6 @@ type Alternative struct {
 func ParseJsonQuestion(c context.Context, jsonMessage string) (Question, error) {
 	question := Question{}
 
-	// remove all \n from the json string
-	jsonMessage = strings.ReplaceAll(jsonMessage, "\\n", "")
-
-	// remove all \ from the json string
-	jsonMessage = strings.ReplaceAll(jsonMessage, "\\", "")
-
 	// remove all ` from the json string
 	jsonMessage = strings.ReplaceAll(jsonMessage, "`", "")
 
