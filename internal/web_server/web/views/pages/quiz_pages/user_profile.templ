@@ -1,9 +1,7 @@
 package quiz_pages
 
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
-import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/profile_components"
 
 //Javascript function to show the delete confirmation modal
@@ -41,21 +39,7 @@ templ UserProfile(u *users.User) {
 			>
 				<h1 class="text-3xl font-bold">Profil instillinger</h1>
 				<div>
-					<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
-					<div class="flex items-center gap-3">
-						@user_management.UsernameInput("usrn-in", u.Username)
-						<button
-							id="randomize"
-							class="flex items-center gap-3 rounded-button border-2 border-gray-200 px-4 py-1"
-							type="button"
-							hx-patch="/api/v1/quiz/brukernavn"
-							hx-trigger="click"
-							hx-swap="outerHTML"
-							hx-target="#usrn-in"
-						>
-							@icons.Dice(16, "currentColor", 28, 28)
-						</button>
-					</div>
+					@profile_components.UserRandomizeButton(u)
 				</div>
 				<div class="flex items-center">
 					@profile_components.Participation_chackbox(u.OptInRanking)
