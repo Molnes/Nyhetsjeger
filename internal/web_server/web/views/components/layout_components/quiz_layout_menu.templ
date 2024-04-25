@@ -5,7 +5,7 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/q
 templ QuizLayoutMenu(pageTitle string) {
 	@BaseLayout(pageTitle) {
 		@quiz_components.BurgerMenu()
-		<main id="main" class="w-full md:w-3/4 lg:w-1/2 mx-auto">
+		<main id="main" class="w-full md:w-3/4 lg:w-1/2 max-w-screen-2xl mx-auto">
 			{ children... }
 		</main>
 	}
