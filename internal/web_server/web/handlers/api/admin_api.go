@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,10 +18,13 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
@@ -90,6 +94,8 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/username", aah.addUsername)
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
+
+	e.POST("/user-ranking/generate-table", aah.generateUserRankingsTable)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -986,4 +992,48 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages(images, "question"))
+}
+
+// Renders a ranking table for the given user. Displays the monthly, yearly and all time ranking.
+// Monthly and yearly rankings are displayed for the period provided as form data.
+// Expects user-id query parameter, chosen-month and chosen-year as form values.
+func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
+	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
+	}
+	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Funnet ikke brukeren med den angitte ID-en")
+		} else {
+			return err
+		}
+	}
+
+	chosenMonthStr := c.FormValue("chosen-month")
+	var chosenMonth time.Month
+
+	parsedTime, err := time.Parse("01", chosenMonthStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende måned verdi")
+	}
+	chosenMonth = parsedTime.Month()
+
+	chosenYearStr := c.FormValue("chosen-year")
+	var chosenYear uint
+
+	parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende år verdi")
+
+	}
+	chosenYear = uint(parsedYear)
+
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_user_details_components.UserAllRankingTable(rankingCollection))
 }
