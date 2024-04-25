@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -176,6 +177,29 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
+	chosenMonthStr := c.QueryParam("month")
+	var chosenMonth time.Month
+	if chosenMonthStr != "" {
+		parsedTime, err := time.Parse("01", chosenMonthStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("could not parse month: %v", err))
+		}
+		chosenMonth = parsedTime.Month()
+	} else {
+		chosenMonth = time.Now().Month()
+	}
+
+	chosenYearStr := c.QueryParam("year")
+	var year uint
+	if chosenYearStr != "" {
+		parsedYEar, err := strconv.ParseUint(chosenYearStr, 10, 64)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("could not parse year: %v", err))
+
+		}
+		year = uint(parsedYEar)
+	}
+
 	user_rank, err := user_ranking.GetUserRanking(dph.sharedData.DB, uuid_id, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -195,7 +219,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		AllTime: user_rank,
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, &rankingCollection))
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, &rankingCollection, chosenMonth, year))
 }
 
 // Adds chosen menu item to the context, so it can be used in the template.
