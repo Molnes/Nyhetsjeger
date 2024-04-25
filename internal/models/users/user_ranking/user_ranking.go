@@ -141,3 +141,53 @@ ORDER BY total_points DESC;
 	}
 	return ranking, nil
 }
+
+type RankingCollection struct {
+	Monthly UserRanking
+	Yearly  UserRanking
+	AllTime UserRanking
+}
+
+func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, year uint, timeZone *time.Location, username string) (*RankingCollection, error) {
+	monthRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Month)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			monthRank = createEmptyRanking(userId, username)
+		} else {
+			return nil, err
+		}
+	}
+	
+	yearRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Year)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			yearRank = createEmptyRanking(userId, username)
+		} else {
+			return nil, err
+		}
+	}
+
+	allTimeRank, err := GetUserRanking(db, userId, month, int(year), timeZone, All)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			allTimeRank = createEmptyRanking(userId, username)
+		} else {
+			return nil, err
+		}
+	}
+
+	return &RankingCollection{
+		monthRank,
+		yearRank,
+		allTimeRank,
+	}, nil
+}
+
+func createEmptyRanking(userID uuid.UUID, username string) UserRanking {
+	return UserRanking{
+		userID,
+		username,
+		0,
+		0,
+	}
+}
