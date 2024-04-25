@@ -108,6 +108,17 @@ script reset() {
 	}
 }
 
+script updateUrl() {
+	// add eventlistener to the search input
+	const searchInput = document.getElementById("search-input");
+	searchInput.addEventListener("htmx:beforeOnLoad", (event) => {
+		const search = searchInput.value;
+		const url = new URL(window.location.href);
+		url.searchParams.set("search", search);
+		history.pushState({}, "", url);
+	});
+}
+
 // The username administration page main function
 templ UsernameAdminPage(data *usernames.UsernameAdminInfo, url *url.URL) {
 	@layout_components.DashBoardLayout("Nyhetsjeger - Brukernavn administrasjon") {
