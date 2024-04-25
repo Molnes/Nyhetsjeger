@@ -109,11 +109,23 @@ templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
 
 templ monthOption(month time.Month, norwegianText string, selectedMonth time.Month) {
 	<option
-		value={ month.String() }
+		value={ monthToIntString(month) }
 		if selectedMonth == month {
-			selected
+			selected="true"
 		}
 	>
 		{ norwegianText }
 	</option>
+}
+
+func monthToIntString(month time.Month) string {
+	intValue := int(month)
+	var stringValue string
+	if intValue < 10 {
+		stringValue = fmt.Sprintf("0%d", intValue)
+	} else {
+		stringValue = fmt.Sprint(intValue)
+	}
+
+	return stringValue
 }
