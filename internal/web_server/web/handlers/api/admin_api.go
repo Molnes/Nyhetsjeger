@@ -1029,7 +1029,7 @@ func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 		}
 	}
 
-	chosenMonthStr := c.FormValue("chosen-month")
+	chosenMonthStr := c.FormValue(dashboard_user_details_components.MonthFormName)
 	var chosenMonth time.Month
 
 	parsedTime, err := time.Parse("01", chosenMonthStr)
@@ -1038,7 +1038,7 @@ func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	}
 	chosenMonth = parsedTime.Month()
 
-	chosenYearStr := c.FormValue("chosen-year")
+	chosenYearStr := c.FormValue(dashboard_user_details_components.YearFormName)
 	var chosenYear uint
 
 	parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)

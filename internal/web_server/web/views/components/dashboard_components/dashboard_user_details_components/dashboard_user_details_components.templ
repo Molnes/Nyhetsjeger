@@ -11,6 +11,10 @@ import (
 const (
 	userRankingsTable = "user-rankings-table"
 	monthAndYearForm  = "month-and-year-form"
+	MonthQueryParam   = "month" // name of the month query parameter
+	YearQueryParam    = "year" // name of the year query parameter
+	MonthFormName      = "chosen-month" // name of the form field with the month chosen
+	YearFormName       = "chosen-year" // name of the form field with the year chosen
 )
 
 templ UserDetailsTable(user *users.User) {
@@ -43,7 +47,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 		<label for="month-input">
 			Velg måned
 			<select
-				name="chosen-month"
+				name={ MonthFormName }
 				id="month-input"
 				hx-trigger="input changed"
 				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
@@ -70,7 +74,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 				hx-trigger="input changed"
 				hx-validate="true"
 				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
-				name="chosen-year"
+				name={ YearFormName }
 				id="year-input"
 				type="number"
 				min="2023"
@@ -80,10 +84,10 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 			/>
 		</label>
 	</form>
-	@SyncQueryParameters(monthAndYearForm)
+	@SyncQueryParameters(monthAndYearForm, MonthQueryParam, YearQueryParam)
 }
 
-script SyncQueryParameters(formId string) {
+script SyncQueryParameters(formId string, monthQeryParam string, yearQueryParam string) {
 	const formElem = document.getElementById(formId);
 	formElem.addEventListener('htmx:afterRequest', (evt)=>{
 		if (evt.detail.xhr.status < 400) {
@@ -91,8 +95,8 @@ script SyncQueryParameters(formId string) {
 			const chosenYear = formElem.querySelector('input').value;
 			
 			const url = new URL(window.location);
-			url.searchParams.set('month',chosenMonth);
-			url.searchParams.set('year',chosenYear);
+			url.searchParams.set(monthQeryParam, chosenMonth);
+			url.searchParams.set(yearQueryParam, chosenYear);
 
 			window.history.replaceState(null, "", url.href);
 		}

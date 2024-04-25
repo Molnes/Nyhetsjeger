@@ -17,6 +17,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/side_menu"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
@@ -176,7 +177,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
-	chosenMonthStr := c.QueryParam("month")
+	chosenMonthStr := c.QueryParam(dashboard_user_details_components.MonthQueryParam)
 	var chosenMonth time.Month
 	if chosenMonthStr != "" {
 		parsedTime, err := time.Parse("01", chosenMonthStr)
@@ -188,7 +189,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		chosenMonth = time.Now().Month()
 	}
 
-	chosenYearStr := c.QueryParam("year")
+	chosenYearStr := c.QueryParam(dashboard_user_details_components.YearQueryParam)
 	var chosenYear uint
 	if chosenYearStr != "" {
 		parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
