@@ -4,6 +4,7 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/l
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 import "github.com/Molnes/Nyhetsjeger/internal/models/users"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/profile_components"
 
 //Javascript function to show the delete confirmation modal
 
@@ -58,15 +59,7 @@ templ UserProfile(u *users.User) {
 					</div>
 				</div>
 				<div class="flex items-center">
-					<input
-						id="comp-check"
-						class="inline w-6 h-6 accent-cindigo cursor-pointer"
-						type="checkbox"
-						name="competition"
-						if u.OptInRanking {
-							checked
-						}
-					/>
+					@profile_components.Participation_chackbox(u.OptInRanking)
 					<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
 				</div>
 				<button class="py-2 px-8 bg-cindigo text-white rounded-input font-bold w-full" type="submit">Lagre</button>

@@ -1,0 +1,17 @@
+package profile_components
+
+templ Participation_chackbox(currentParticipation bool) {
+	<input
+		id="comp-check"
+		class="inline w-6 h-6 accent-cindigo cursor-pointer"
+		type="checkbox"
+		name="competition"
+		hx-post="/api/v1/quiz/participation"
+		hx-trigger="change"
+		hx-target="#comp-check"
+		hx-swap="outerHTML"
+		if currentParticipation {
+			checked
+		}
+	/>
+}
