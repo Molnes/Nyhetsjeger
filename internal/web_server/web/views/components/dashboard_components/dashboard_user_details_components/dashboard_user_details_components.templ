@@ -1,0 +1,119 @@
+package dashboard_user_details_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"fmt"
+	"time"
+)
+
+templ UserDetailsTable(user *users.User) {
+	<table
+		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+	>
+		<thead>
+			<tr
+				class="border-collapse border border-slate-500 bg-clightindigo text-black"
+			>
+				<th class="px-2 py-1">Datatype</th>
+				<th class="px-2 py-1">Verdi</th>
+			</tr>
+		</thead>
+		<tbody>
+			@userDetailsTableRow("Brukernavn", user.Username)
+			@userDetailsTableRow("E-post", user.Email)
+			@userDetailsTableRow("Telefonnummer", user.Phone)
+		</tbody>
+	</table>
+}
+
+templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint) {
+	<form
+		class="flex flex-col"
+	>
+		<label for="month-input">
+			Velg måned
+			<select
+				name="chosen-month"
+				id="month-input"
+				hx-trigger="input changed"
+				hx-post="/"
+			>
+				@monthOption(time.January, "Januar", chosenMonth)
+				@monthOption(time.February, "Februar", chosenMonth)
+				@monthOption(time.March, "Mars", chosenMonth)
+				@monthOption(time.April, "April", chosenMonth)
+				@monthOption(time.May, "Mai", chosenMonth)
+				@monthOption(time.June, "Juni", chosenMonth)
+				@monthOption(time.July, "Juli", chosenMonth)
+				@monthOption(time.August, "August", chosenMonth)
+				@monthOption(time.September, "September", chosenMonth)
+				@monthOption(time.October, "Oktober", chosenMonth)
+				@monthOption(time.November, "November", chosenMonth)
+				@monthOption(time.December, "Desember", chosenMonth)
+			</select>
+		</label>
+		<label
+			for="year-input"
+		>
+			Velg år
+			<input
+				hx-trigger="input changed"
+				hx-post="/"
+				name="chosen-year"
+				id="year-input"
+				type="number"
+				min="2023"
+				max="2099"
+				step="1"
+				hx-validate="true"
+				value={ fmt.Sprintf("%d", chosenYear) }
+			/>
+		</label>
+	</form>
+}
+
+templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
+	<table
+		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+	>
+		<thead>
+			<tr class="border-collapse border border-slate-500 bg-clightindigo text-black">
+				<th class="px-2 py-1">Periode</th>
+				<th class="px-2 py-1">Plassering</th>
+				<th class="px-2 py-1">Poeng</th>
+			</tr>
+		</thead>
+		<tbody>
+			@userRankingTableRow("Månedlig", &ranking.Monthly)
+			@userRankingTableRow("Årelig", &ranking.Yearly)
+			@userRankingTableRow("All tid", &ranking.AllTime)
+		</tbody>
+	</table>
+}
+
+templ userDetailsTableRow(title string, value string) {
+	<tr class="odd:bg-violet-50 even:bg-violet-100">
+		<td class="py-1 px-2">{ title }</td>
+		<td class="py-1 px-2">{ value }</td>
+	</tr>
+}
+
+templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
+	<tr class="odd:bg-violet-50 even:bg-violet-100">
+		<td class="py-1 px-2">{ title }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Placement) }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Points) }</td>
+	</tr>
+}
+
+templ monthOption(month time.Month, norwegianText string, selectedMonth time.Month) {
+	<option
+		value={ month.String() }
+		if selectedMonth == month {
+			selected
+		}
+	>
+		{ norwegianText }
+	</option>
+}
