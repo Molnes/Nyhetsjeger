@@ -11,12 +11,13 @@ import (
 const (
 	userRankingsTable = "user-rankings-table"
 	monthAndYearForm  = "month-and-year-form"
-	MonthQueryParam   = "month" // name of the month query parameter
-	YearQueryParam    = "year" // name of the year query parameter
-	MonthFormName      = "chosen-month" // name of the form field with the month chosen
-	YearFormName       = "chosen-year" // name of the form field with the year chosen
+	MonthQueryParam   = "month"        // name of the month query parameter
+	YearQueryParam    = "year"         // name of the year query parameter
+	MonthFormName     = "chosen-month" // name of the form field with the month chosen
+	YearFormName      = "chosen-year"  // name of the form field with the year chosen
 )
 
+// Table with user information.
 templ UserDetailsTable(user *users.User) {
 	<table
 		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
@@ -37,6 +38,8 @@ templ UserDetailsTable(user *users.User) {
 	</table>
 }
 
+// Form for selecting month and year to display ranking of a user in the given period.
+// Sends post requests to generate new table with rankings whenever the inputs change.
 templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId uuid.UUID) {
 	<form
 		class="flex flex-col"
@@ -84,10 +87,13 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 			/>
 		</label>
 	</form>
-	@SyncQueryParameters(monthAndYearForm, MonthQueryParam, YearQueryParam)
+	@syncQueryParameters(monthAndYearForm, MonthQueryParam, YearQueryParam)
 }
 
-script SyncQueryParameters(formId string, monthQeryParam string, yearQueryParam string) {
+// Keeps the url query parameters in the browser synchronized with the ones chosen by the user.
+// Triggered after succesful htmx requests dispatched by the form.
+
+script syncQueryParameters(formId string, monthQeryParam string, yearQueryParam string) {
 	const formElem = document.getElementById(formId);
 	formElem.addEventListener('htmx:afterRequest', (evt)=>{
 		if (evt.detail.xhr.status < 400) {
@@ -103,6 +109,8 @@ script SyncQueryParameters(formId string, monthQeryParam string, yearQueryParam 
 	});
 }
 
+// Table displaying user ranking provided in the RankingCollection.
+// One row per: monthly, yearly and all time rankings.
 templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
 	<table
 		id={ userRankingsTable }
@@ -123,6 +131,7 @@ templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
 	</table>
 }
 
+// Row in the UserDetailsTable
 templ userDetailsTableRow(title string, value string) {
 	<tr class="odd:bg-violet-50 even:bg-violet-100">
 		<td class="py-1 px-2">{ title }</td>
@@ -130,6 +139,7 @@ templ userDetailsTableRow(title string, value string) {
 	</tr>
 }
 
+// Row in the UserRankingTable
 templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
 	<tr class="odd:bg-violet-50 even:bg-violet-100">
 		<td class="py-1 px-2">{ title }</td>
@@ -138,10 +148,12 @@ templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
 	</tr>
 }
 
-templ monthOption(month time.Month, norwegianText string, selectedMonth time.Month) {
+// Selection option with the month value as a string padded with a 0 to always be two digits.
+// Norwegian text for display.
+templ monthOption(month time.Month, norwegianText string, currentlySelectedMonth time.Month) {
 	<option
 		value={ monthToIntString(month) }
-		if selectedMonth == month {
+		if  month == currentlySelectedMonth {
 			selected="true"
 		}
 	>
