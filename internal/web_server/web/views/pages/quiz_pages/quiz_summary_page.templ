@@ -28,7 +28,7 @@ const (
 )
 
 // Returns a response based on the user's score in the quiz.
-func GetResponse(score uint, maxScore uint) Response {
+func getResponse(score uint, maxScore uint) Response {
 	var ratio = float64(score) / float64(maxScore)
 	switch {
 	case ratio < 0.3:
@@ -55,7 +55,7 @@ func (r Response) String() string {
 templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 	<div
 		id="quiz-summary"
-		class="flex flex-col gap-5 justify-start items-center px-1 isolate"
+		class="flex flex-col justify-center items-center gap-5 py-3 isolate"
 	>
 		<section class="flex flex-col gap-3 items-center">
 			<h1 class="text-3xl">Resultat</h1>
@@ -95,17 +95,15 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
 			</div>
 		</section>
-		<section class="flex flex-col gap-4 items-center scrollbar-hide w-full">
+		<section class="flex flex-col gap-5 items-center scrollbar-hide w-full">
 			<p class="text-balance w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
-				{ GetResponse(summary.AchievedScore, summary.MaxScore).String() }
+				{ getResponse(summary.AchievedScore, summary.MaxScore).String() }
 			</p>
-			<div class="gradient-outline h-fit w-full rounded-card outline outline-1 outline-[transparent]">
-				<ol class={ "marker:text-[linkText] marker:font-bold list-decimal pl-8 pr-4 py-4 space-y-5 min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card",calculateHeightDifference(getDigitsFromSummary(summary)) }>
-					for _, aq := range summary.AnsweredQuestions {
-						@chosenAnswer(aq)
-					}
-				</ol>
-			</div>
+			<ol class="w-full gradient-outline outline outline-1 outline-[transparent] marker:text-[linkText] marker:font-bold list-decimal pl-8 pr-4 py-4 space-y-5 bg-white rounded-card">
+				for _, aq := range summary.AnsweredQuestions {
+					@chosenAnswer(aq)
+				}
+			</ol>
 		</section>
 		if summary.HasArticlesToShow {
 			<button
@@ -168,16 +166,4 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 // Returns the sum of number of digits in the achieved score and the maximum score.
 func getDigitsFromSummary(summary *user_quiz_summary.UserQuizSummary) int {
 	return len(strconv.Itoa(int(summary.AchievedScore))) + len(strconv.Itoa(int(summary.MaxScore)))
-}
-
-func calculateHeightDifference(digitsNumber int) string {
-	var str string
-	if digitsNumber > 10 {
-		str = "max-h-[calc(100dvh-27rem)]"
-	} else if digitsNumber > 6 {
-		str = "max-h-[calc(100dvh-25rem)]"
-	} else {
-		str = "max-h-[calc(100dvh-23rem)]"
-	}
-	return str
 }
