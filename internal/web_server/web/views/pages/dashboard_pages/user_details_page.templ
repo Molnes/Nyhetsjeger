@@ -15,9 +15,10 @@ type RankingCollection struct {
 }
 
 templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
-	@layout_components.DashBoardLayout("Brukerdetaljer") {
-		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-lg mx-auto">
-			<h1 class="text-4xl">Brukerdetaljer</h1>
+	@layout_components.DashBoardLayout("Brukerinformasjon") {
+		<div class="flex flex-col gap-3 px-8 py-6 max-w-screen-lg mx-auto">
+			<h1 class="text-4xl">Brukerinformasjon</h1>
+			<h2 class="text-2xl">Detaljer</h2>
 			<table
 				class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 			>
@@ -25,8 +26,8 @@ templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 					<tr
 						class="border-collapse border border-slate-500 bg-clightindigo text-black"
 					>
-						<th class="px-2 py-1">Detaljer</th>
-						<th></th>
+						<th class="px-2 py-1">Datatype</th>
+						<th class="px-2 py-1">Verdi</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -35,30 +36,50 @@ templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 					@userDetailsTableRow("Telefonnummer", user.Phone)
 				</tbody>
 			</table>
-			<form>
-				<select
-					name=""
-					id=""
+			<h2 class="text-2xl">Rankering</h2>
+			<form
+				class="flex flex-col"
+			>
+				<label for="month-input">
+					Velg måned
+					<select
+						name="chosen-month"
+						id="month-input"
+						hx-trigger="input changed"
+						hx-post="/"
+					>
+						@monthOption(time.January, "Januar")
+						@monthOption(time.February, "Februar")
+						@monthOption(time.March, "Mars")
+						@monthOption(time.April, "April")
+						@monthOption(time.May, "Mai")
+						@monthOption(time.June, "Juni")
+						@monthOption(time.July, "Juli")
+						@monthOption(time.August, "August")
+						@monthOption(time.September, "September")
+						@monthOption(time.October, "Oktober")
+						@monthOption(time.November, "November")
+						@monthOption(time.December, "Desember")
+					</select>
+				</label>
+				<label
+					for="year-input"
 				>
-					@monthOption(time.January, "Januar")
-					@monthOption(time.February, "Februar")
-					@monthOption(time.March, "Mars")
-					@monthOption(time.April, "April")
-					@monthOption(time.May, "Mai")
-					@monthOption(time.June, "Juni")
-					@monthOption(time.July, "Juli")
-					@monthOption(time.August, "August")
-					@monthOption(time.September, "September")
-					@monthOption(time.October, "Oktober")
-					@monthOption(time.November, "November")
-					@monthOption(time.December, "Desember")
-				</select>
-				<input type="number" min="2023" max="2099" step="1" value={ fmt.Sprintf("%v", time.Now().Year()) }/>
+					Velg år
+					<input
+						hx-trigger="input changed"
+						hx-post="/"
+						name="chosen-year"
+						id="year-input"
+						type="number"
+						min="2023"
+						max="2099"
+						step="1"
+						hx-validate="true"
+						value={ fmt.Sprintf("%d", time.Now().Year()) }
+					/>
+				</label>
 			</form>
-			// <div class="flex flex-row">
-			// 	<p class="text-lg mr-2">{ fmt.Sprintf("Plassering: %d", ranking.Monthly.Placement) }</p>
-			// 	<p class="text-lg">{ fmt.Sprintf("Poeng: %d", ranking.Monthly.Points) }</p>
-			// </div>
 			<table
 				class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 			>
