@@ -70,26 +70,28 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 					class="size-28 relative rounded-1/2 bg-white gradient-outline-circle"
 				}
 			>
-				<div class="circle">
-					// The fill element is animated to fill the circle to the correct percentage.
-					<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
-						<div class="primary-wave-filter">
-							<div class="primary-wave"></div>
+				<div class="rounded-1/2 w-full h-full contrast-more:border contrast-more:border-[transparent]">
+					<div class="circle">
+						// The fill element is animated to fill the circle to the correct percentage.
+						<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
+							<div class="primary-wave-filter">
+								<div class="primary-wave"></div>
+							</div>
+							<div class="secondary-wave-filter">
+								<div class="secondary-wave"></div>
+							</div>
 						</div>
-						<div class="secondary-wave-filter">
-							<div class="secondary-wave"></div>
+						// The result text
+						<div class="flex flex-col gap-3 absolute top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+							<p
+								class="[&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
+							>
+								<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+								<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
+								<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+							</p>
+							<p class="font-sans text-xs text-gray-200 text-center">poeng</p>
 						</div>
-					</div>
-					// The result text
-					<div class="flex flex-col gap-3 absolute top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2">
-						<p
-							class="[&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
-						>
-							<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-							<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
-							<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
-						</p>
-						<p class="font-sans text-xs text-gray-200 text-center">poeng</p>
 					</div>
 				</div>
 				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
@@ -150,7 +152,7 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 			<div class="shrink-0">
 				if aq.IsCorrect {
 					<span aria-label="korrekt">
-						@icons.Checkmark(100, "green", 20, 20)
+						@icons.Checkmark(80, "green", 20, 20)
 					</span>
 				} else {
 					<span aria-label="ukorrekt">
