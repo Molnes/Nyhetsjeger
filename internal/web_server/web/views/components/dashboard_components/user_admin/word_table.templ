@@ -30,6 +30,7 @@ script deleteRow(rowId string, content string) {
 		deleteMap.set(row.id, content);
 		parent.classList.add("bg-red-300", "border-b", "border-red-700");
 		parent.getElementsByClassName("del-button")[0].disabled = true;
+		parent.getElementsByClassName("del-button")[0].classList.add("hidden");
 		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
 		sessionStorage.deleteMap = JSON.stringify(Array.from(deleteMap.entries()));
 	}
