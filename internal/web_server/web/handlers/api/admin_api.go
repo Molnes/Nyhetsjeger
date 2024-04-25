@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/ai"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
@@ -93,6 +94,23 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
 	e.POST("/username/page", aah.getUsernamePages)
+
+	e.GET("/generate-ai-question", aah.getAIQuestion)
+}
+
+func (aah *AdminApiHandler) getAIQuestion(c echo.Context) error {
+	articleID := c.FormValue("article-id")
+	article, err := articles.GetSmpArticleByiID(articleID)
+	if err != nil {
+		return err
+	}
+
+	question, err := ai.GetJsonQuestions(c.Request().Context(), article, aah.sharedData.OpenAIKey)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, question)
 }
 
 // Handles the creation of a new default quiz in the DB.

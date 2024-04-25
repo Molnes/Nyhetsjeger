@@ -29,7 +29,7 @@ templ AnswerButtons(question *questions.Question) {
 			<button
 				type="submit"
 				name="answer-id"
-				class="answer-button gradient-shadow border border-1 border-[transparent]"
+				class="answer-button gradient-shadow"
 				value={ alternative.ID.String() }
 			>
 				{ alternative.Text }
@@ -54,7 +54,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		if answered.NextQuestionID != uuid.Nil {
 			<button
 				id="next-question-button"
-				class="gradient-bg-button gradient-shadow px-8 py-3 border border-1 border-[transparent]"
+				class="gradient-bg-button gradient-shadow px-8 py-3"
 				if utils.IsUserAuthenticated(ctx) {
 					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				} else {
@@ -72,14 +72,14 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		} else {
 			if utils.IsUserAuthenticated(ctx) {
 				<a
-					class="gradient-bg-button gradient-shadow px-8 py-3  border border-1 border-[transparent]"
+					class="gradient-bg-button gradient-shadow px-8 py-3"
 					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 				>
 					Ferdig
 				</a>
 			} else {
 				<button
-					class="gradient-bg-button gradient-shadow px-8 py-3  border border-1 border-[transparent]"
+					class="gradient-bg-button gradient-shadow px-8 py-3"
 					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
 					hx-target="#quiz-play-content"
 					hx-swap="outerHTML"
@@ -108,9 +108,9 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="answer-button w-full border border-1 border-[transparent] gradient-outline-thick gradient-shadow-always"
+			class="answer-button w-full gradient-outline-thick gradient-shadow-always"
 		} else {
-			class="answer-button w-full border border-1 border-[transparent]"
+			class="answer-button w-full"
 		}
 	>
 		{ alternative.Text }

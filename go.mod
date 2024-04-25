@@ -11,6 +11,7 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/lib/pq v1.10.9
 	github.com/minio/minio-go/v7 v7.0.69
+	github.com/sashabaranov/go-openai v1.22.0
 	golang.org/x/net v0.23.0
 	golang.org/x/oauth2 v0.17.0
 )

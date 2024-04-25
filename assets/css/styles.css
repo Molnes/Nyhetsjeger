@@ -326,7 +326,22 @@ a.cgradient:is(:hover, :focus),
 }
 
 @media (prefers-contrast: more) {
-    path {
+
+    path,
+    circle,
+    rect {
         stroke: currentcolor;
+    }
+
+    /* If there is a fill, set it to currentColor */
+    svg:not([fill="none"], [fill=""]),
+    svg>*:not([fill="none"], [fill=""]) {
+        fill: currentColor;
+    }
+
+    button,
+    a,
+    .circle {
+        border: 1px solid transparent;
     }
 }
