@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -166,12 +165,12 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid or missing user id")
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
 	}
 	user, err := users.GetUserByID(dph.sharedData.DB, uuid_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "No user with given id found.")
+			return echo.NewHTTPError(http.StatusNotFound, "Funnet ikke brukeren med den angitte ID-en")
 		} else {
 			return err
 		}
@@ -182,7 +181,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	if chosenMonthStr != "" {
 		parsedTime, err := time.Parse("01", chosenMonthStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("could not parse month: %v", err))
+			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig måned verdi")
 		}
 		chosenMonth = parsedTime.Month()
 	} else {
@@ -194,7 +193,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	if chosenYearStr != "" {
 		parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("could not parse year: %v", err))
+			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig år verdi")
 
 		}
 		chosenYear = uint(parsedYear)
