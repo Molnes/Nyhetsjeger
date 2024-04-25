@@ -152,23 +152,11 @@ templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
 // Norwegian text for display.
 templ monthOption(month time.Month, norwegianText string, currentlySelectedMonth time.Month) {
 	<option
-		value={ monthToIntString(month) }
+		value={ fmt.Sprintf("%02d", int(month)) }
 		if  month == currentlySelectedMonth {
 			selected="true"
 		}
 	>
 		{ norwegianText }
 	</option>
-}
-
-func monthToIntString(month time.Month) string {
-	intValue := int(month)
-	var stringValue string
-	if intValue < 10 {
-		stringValue = fmt.Sprintf("0%d", intValue)
-	} else {
-		stringValue = fmt.Sprint(intValue)
-	}
-
-	return stringValue
 }
