@@ -198,6 +198,8 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 
 		}
 		chosenYear = uint(parsedYear)
+	} else {
+		chosenYear = uint(time.Now().Year())
 	}
 
 	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(dph.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
