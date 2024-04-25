@@ -5,6 +5,11 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"fmt"
 	"time"
+	"github.com/google/uuid"
+)
+
+const (
+	userRankingsTable = "user-rankings-table"
 )
 
 templ UserDetailsTable(user *users.User) {
@@ -27,9 +32,11 @@ templ UserDetailsTable(user *users.User) {
 	</table>
 }
 
-templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint) {
+templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId uuid.UUID) {
 	<form
 		class="flex flex-col"
+		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
+		hx-swap="outerHTML"
 	>
 		<label for="month-input">
 			Velg måned
@@ -37,7 +44,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint) {
 				name="chosen-month"
 				id="month-input"
 				hx-trigger="input changed"
-				hx-post="/"
+				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
 			>
 				@monthOption(time.January, "Januar", chosenMonth)
 				@monthOption(time.February, "Februar", chosenMonth)
@@ -59,14 +66,14 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint) {
 			Velg år
 			<input
 				hx-trigger="input changed"
-				hx-post="/"
+				hx-validate="true"
+				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
 				name="chosen-year"
 				id="year-input"
 				type="number"
 				min="2023"
 				max="2099"
 				step="1"
-				hx-validate="true"
 				value={ fmt.Sprintf("%d", chosenYear) }
 			/>
 		</label>
@@ -75,6 +82,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint) {
 
 templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
 	<table
+		id={ userRankingsTable }
 		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 	>
 		<thead>
