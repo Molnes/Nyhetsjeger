@@ -60,8 +60,8 @@ templ pageNumber(currentPage int, maxPages int) {
 			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
 		</button>
 	} else {
-		<button class="border-cindigo border-y-2 text-cindigo px-3 py-1">
-			<input class="w-12 border border-clightindigo rounded-input text-center" type="text" value={ strconv.Itoa(currentPage) }/> of { strconv.Itoa(maxPages) }
+		<button class="border-cindigo border-y  text-indigo-300 px-3 py-1" disabled>
+			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
 		</button>
 	}
 }
@@ -71,7 +71,7 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey str
 	if page <= 1 {
 		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
-			class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1"
+			class="border-cindigo bg-gray-200 rounded-l-button border text-indigo-300 font-bold px-3 py-1"
 			disabled
 		>
 			&lt;
@@ -83,7 +83,7 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey str
 			hx-post={ createButtonUrl(*url, -1, queryParamKey) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+			class="border-cindigo border bg-clightindigo text-cindigo rounded-l-button font-bold px-3 py-1"
 		>&lt;</button>
 	}
 }
@@ -91,7 +91,8 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey str
 // nextButton is the component for the next button
 templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, queryParamKey string) {
 	if page >= maxPages {
-		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } class="border-cindigo bg-clightindigo border-2 text-indigo-300 font-bold px-3 py-1" disabled>
+		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } 
+		class="border-cindigo bg-gray-200 border rounded-r-button text-indigo-300 font-bold px-3 py-1" disabled>
 			&gt;
 		</button>
 	} else {
@@ -101,7 +102,7 @@ templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, que
 			hx-post={ createButtonUrl(*url, 1, queryParamKey) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
-			class="border-cindigo border-2 text-cindigo font-bold px-3 py-1"
+			class="border-cindigo border bg-clightindigo rounded-r-button text-cindigo font-bold px-3 py-1"
 
 		>&gt;</button>
 	}
