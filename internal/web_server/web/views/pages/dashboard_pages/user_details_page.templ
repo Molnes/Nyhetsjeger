@@ -60,12 +60,14 @@ templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 			// 	<p class="text-lg">{ fmt.Sprintf("Poeng: %d", ranking.Monthly.Points) }</p>
 			// </div>
 			<table
-				class="text-left"
+				class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
 			>
 				<thead>
-					<th>Periode</th>
-					<th>Plassering</th>
-					<th>Poeng</th>
+					<tr class="border-collapse border border-slate-500 bg-clightindigo text-black">
+						<th class="px-2 py-1">Periode</th>
+						<th class="px-2 py-1">Plassering</th>
+						<th class="px-2 py-1">Poeng</th>
+					</tr>
 				</thead>
 				<tbody>
 					@userRankingTableRow("Månedlig", &ranking.Monthly)
@@ -85,14 +87,10 @@ templ userDetailsTableRow(title string, value string) {
 }
 
 templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
-	<tr>
-		<td>{ title }</td>
-		<td>
-			{ fmt.Sprintf("%d",rank.Placement) }
-		</td>
-		<td>
-			{ fmt.Sprintf("%d",rank.Points) }
-		</td>
+	<tr class="odd:bg-violet-50 even:bg-violet-100">
+		<td class="py-1 px-2">{ title }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Placement) }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Points) }</td>
 	</tr>
 }
 
