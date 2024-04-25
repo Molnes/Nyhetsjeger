@@ -27,7 +27,7 @@ const (
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<script src="https://cdn.jsdelivr.net/npm/sortablejs@v1/Sortable.min.js"></script>
-		<div class="relative flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+		<div class="relative flex flex-col items-center gap-6 max-w-screen-md m-auto p-5">
 			<div
 				id="changes-saved-message"
 				class="fixed bottom-4 right-4 opacity-100 hidden flex-row gap-1 bg-white rounded-button border-4 border-cindigo px-4 py-2

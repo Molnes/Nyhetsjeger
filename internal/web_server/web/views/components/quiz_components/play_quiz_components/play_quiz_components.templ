@@ -45,7 +45,7 @@ templ AnswerButtons(question *questions.Question) {
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
-	<div class="flex flex-col gap-8 items-center w-full isolate">
+	<div class="flex flex-col gap-4 md:gap-8 items-center w-full isolate">
 		<div id="feedback-buttons-wrapper" class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
@@ -54,7 +54,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		if answered.NextQuestionID != uuid.Nil {
 			<button
 				id="next-question-button"
-				class="gradient-bg-button gradient-shadow px-8 py-3"
+				class="gradient-bg-button gradient-shadow px-8 py-2"
 				if utils.IsUserAuthenticated(ctx) {
 					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				} else {
@@ -72,14 +72,14 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		} else {
 			if utils.IsUserAuthenticated(ctx) {
 				<a
-					class="gradient-bg-button gradient-shadow px-8 py-3"
+					class="gradient-bg-button gradient-shadow px-8 py-2"
 					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 				>
 					Ferdig
 				</a>
 			} else {
 				<button
-					class="gradient-bg-button gradient-shadow px-8 py-3"
+					class="gradient-bg-button gradient-shadow px-8 py-2"
 					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
 					hx-target="#quiz-play-content"
 					hx-swap="outerHTML"

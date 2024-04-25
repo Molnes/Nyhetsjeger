@@ -13,7 +13,7 @@ import (
 templ QuizPlayContent(data *user_quiz.QuizData) {
 	<section
 		id="quiz-play-content"
-		class="flex flex-col items-center py-2 gap-6"
+		class="flex flex-col items-center md:py-2 gap-3 md:gap-6"
 	>
 		<div class="flex justify-between items-center w-full ">
 			<div class="w-24">
@@ -28,12 +28,12 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
-				class="h-40 md:h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
+				class="h-32 md:h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
 				alt=""
 			/>
 		}
-		<h2 class="text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
+		<h2 class="text-xl md:text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
 		@AnswerButtons(&data.CurrentQuestion)
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if !utils.IsUserAuthenticated(ctx) {
@@ -45,7 +45,7 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 // Template for a simple progress bar built with divs.
 templ progressBar(current uint, total uint) {
 	<div
-		class="flex justify-center items-center gap-2 isolate fixed bottom-3 bg-gray-100 rounded-card py-1 px-3"
+		class="flex justify-center items-center gap-2 isolate fixed bottom-3 bg-gray-100 rounded-[50vw] py-2 px-3 drop-shadow-md"
 		role="progressbar"
 		aria-label="Spørsmål"
 		aria-valuemin="0"

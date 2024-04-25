@@ -10,7 +10,7 @@ import (
 // Dashboard home page
 templ DashboardHomePage(unpublishedQuizzes []quizzes.Quiz, publishedQuizzes []quizzes.Quiz) {
 	@layout_components.DashBoardLayout("Dashboard") {
-		<div class="flex flex-col px-8 py-6 max-w-screen-lg mx-auto">
+		<div class="flex flex-col px-8 py-6 max-w-screen-2xl mx-auto">
 			<a
 				href="/quiz"
 				class="text-md font-bold bg-cindigo text-white hover:bg-cblue focus:bg-cblue rounded-button flex-grow-0 text-center px-5 py-4 mb-6 mx-auto flex flex-row items-center justify-center gap-2 border border-1 border-[transparent]"
