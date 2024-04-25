@@ -66,7 +66,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				if post {
 					<button
 						type="button"
-						class="bg-clightindigo px-4 py-2 rounded-button border border-1 border-[transparent]"
+						class="bg-clightindigo px-4 py-2 rounded-button"
 						hx-post={ imageURLEndpoint }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
@@ -90,7 +90,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 					if post {
 						<button
 							type="button"
-							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
+							class="bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
 							hx-post={ imageFileEndpoint }
 							hx-swap="outerHTML"
 							hx-target={ fmt.Sprintf("closest .%s-image-input-wrapper", idPrefix) }
@@ -125,7 +125,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 					<button
 						id={ fmt.Sprintf("%s-image-suggestion-button", idPrefix) }
 						type="button"
-						class="flex flex-row gap-2 justify-center items-center bg-clightindigo px-4 py-2 rounded-button flex-shrink-0 border border-1 border-[transparent]"
+						class="flex flex-row gap-2 justify-center items-center bg-clightindigo px-4 py-2 rounded-button flex-shrink-0"
 						hx-get={ imageSuggestionEndpoint }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("#%s-article-images", idPrefix) }
@@ -162,7 +162,7 @@ templ EditImageInput(imageURLEndpoint string, imageFileEndpoint string, imageSug
 				<button
 					id={ fmt.Sprintf("%s-remove-image-button", idPrefix) }
 					type="button"
-					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button border border-1 border-[transparent]"
+					class="bg-clightindigo px-4 py-2 block mx-auto rounded-button"
 					if post {
 						hx-delete={ imageURLEndpoint }
 						hx-swap="outerHTML"
