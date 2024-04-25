@@ -36,9 +36,8 @@ templ UserProfile(u *users.User) {
 		@showDeleteConfirmationModal()
 		<div class="mt-10">
 			<form
+				autocomplete="off"
 				class="grid gap-4 w-96"
-				action=""
-				method="post"
 			>
 				<h1 class="text-3xl font-bold">Profil instillinger</h1>
 				<div>
@@ -60,9 +59,7 @@ templ UserProfile(u *users.User) {
 				</div>
 				<div class="flex items-center">
 					@profile_components.Participation_chackbox(u.OptInRanking)
-					<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
 				</div>
-				<button class="py-2 px-8 bg-cindigo text-white rounded-input font-bold w-full" type="submit">Lagre</button>
 				<button
 					id="delete-button"
 					hx-delete="/api/v1/quiz/profil"
