@@ -161,17 +161,17 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
 			>
 				for i := range usernamesPerPage {
-					<tr class="[&:not(:hover)_.del-button]:hidden">
+					<tr class="[&:has(:hover,_input:focus,_.del-button:focus)_.del-button]:h-full [&:has(:hover,_input:focus,_.del-button:focus)_.del-button]:w-full ">
 						<td
-							class="px-4 h-8 w-full flex flex-row items-center"
+							class="px-3 h-8 w-full flex flex-row items-center"
 						>
 							<label class="w-0 h-0 overflow-hidden" for={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) }>{ fmt.Sprintf("Endre %v", setRowContent(words, i)) } </label>
-							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
-							<div class="ml-auto my-auto flex">
+							<input id={ fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)) } type="text" class="w-3/4 px-2 bg-transparent" onblur={ onEditRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i), tableID) } value={ setRowContent(words, i) }/>
+							<div class="ml-auto flex">
 								<button class="hidden undo-button" onclick={ onUndo(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i))) }>
 									@icons.Undo(2, "currentColor", 24, 24)
 								</button>
-								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } class="del-button">
+								<button onclick={ deleteRow(fmt.Sprintf("%v-%v", tableID, setRowContent(words, i)), setRowContent(words, i)) } class="del-button overflow-hidden h-0 w-0">
 									@icons.Trashcan(32, "currentColor", 24, 24)
 								</button>
 							</div>
