@@ -63,19 +63,34 @@ templ UserDetailsPage(user *users.User, ranking *RankingCollection) {
 			// 	<p class="text-lg mr-2">{ fmt.Sprintf("Plassering: %d", ranking.Monthly.Placement) }</p>
 			// 	<p class="text-lg">{ fmt.Sprintf("Poeng: %d", ranking.Monthly.Points) }</p>
 			// </div>
-			@userRankingCard("Månedlig", &ranking.Monthly)
-			@userRankingCard("Årelig", &ranking.Yearly)
-			@userRankingCard("All tid", &ranking.AllTime)
+			<table
+				class="text-left"
+			>
+				<thead>
+					<th>Periode</th>
+					<th>Plassering</th>
+					<th>Poeng</th>
+				</thead>
+				<tbody>
+					@userRankingTableRow("Månedlig", &ranking.Monthly)
+					@userRankingTableRow("Årelig", &ranking.Yearly)
+					@userRankingTableRow("All tid", &ranking.AllTime)
+				</tbody>
+			</table>
 		</div>
 	}
 }
 
-templ userRankingCard(title string, rank *user_ranking.UserRanking) {
-	<div>
-		<h2>{ title }</h2>
-		<p>Plassering: { fmt.Sprintf("%d",rank.Placement) }</p>
-		<p>Poeng: { fmt.Sprintf("%d",rank.Points) }</p>
-	</div>
+templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
+	<tr>
+		<td>{ title }</td>
+		<td>
+			{ fmt.Sprintf("%d",rank.Placement) }
+		</td>
+		<td>
+			{ fmt.Sprintf("%d",rank.Points) }
+		</td>
+	</tr>
 }
 
 templ monthOption(month time.Month, norwegianText string) {
