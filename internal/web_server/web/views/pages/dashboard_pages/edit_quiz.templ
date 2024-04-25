@@ -144,7 +144,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<button
 					id="new-question-button"
 					type="button"
-					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button border border-1 border-[transparent]"
+					class="mx-auto flex flex-row items-center bg-clightindigo px-4 py-2 gap-1 rounded-button"
 					hx-get={ fmt.Sprintf("/dashboard/edit-quiz/new-question?quiz-id=%s", quiz.ID) }
 					hx-swap="innerHTML"
 					hx-target="#question-modal"
@@ -181,7 +181,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
 					<button
 						type="button"
-						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button border border-1 border-[transparent]"
+						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
 						hx-target-error=".error-quiz"
 						hx-sync="closest form:abort"

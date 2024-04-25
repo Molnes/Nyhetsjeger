@@ -9,7 +9,7 @@ import (
 templ ArticleCard(article *articles.Article) {
 	<a
 		href={ templ.SafeURL(article.ArticleURL.String()) }
-		class="w-fit h-fit"
+		class="w-fit h-fit !border-none"
 		target="_blank"
 	>
 		<article class="flex flex-row items-center bg-white max-w-screen-md rounded-card overflow-hidden border-2 border-cindigo">
