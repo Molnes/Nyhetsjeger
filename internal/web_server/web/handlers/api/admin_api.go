@@ -1027,9 +1027,10 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 
 	if search != "" {
 		relativeQuery.Set("search", search)
-		requestUrl.RawQuery = relativeQuery.Encode()
+		
 	}
-	log.Println(relativeQuery)
+
+	requestUrl.RawQuery = relativeQuery.Encode()
 
 	relativePath.RawQuery = relativeQuery.Encode()
 
