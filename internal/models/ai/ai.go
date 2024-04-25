@@ -52,6 +52,9 @@ alternatives: [
 
 There should be at the minimum 2 to maximum 4 alternatives. 
 No other text should be returned. 
+Both the question and the alternatives should be based on the provided article.
+And it should be in norwegian, if the article is bokmål, the question should be in bokmål.
+If the article is nynorsk, the question should be in nynorsk.
 Article:`
 
 	articleText := ""
