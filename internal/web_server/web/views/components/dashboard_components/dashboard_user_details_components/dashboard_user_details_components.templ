@@ -56,7 +56,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 				</td>
 				<td>
 					<select
-						class="p-2 w-44 "
+						class="p-2 w-44 h-10 bg-purple-100 border border-cindigo rounded-input"
 						name={ MonthFormName }
 						id="month-input"
 						hx-trigger="input changed"
@@ -85,7 +85,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 				</td>
 				<td>
 					<input
-						class="p-2 w-44"
+						class="p-2 w-44 h-10 bg-purple-100 border border-cindigo rounded-input"
 						hx-trigger="input changed"
 						hx-validate="true"
 						hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
