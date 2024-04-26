@@ -26,7 +26,10 @@ func handlePagination(page int, maxPages int) int {
 	return page
 }
 
-func createButtonUrl(url url.URL, pageChange int, queryParamKey string) string {
+// createButtonUrl creates the URL for the next and previous buttons.
+// pageChange is the number of pages to move forward or backward.
+// queryParamName is the name for the query parameter that will be used for the pagination.
+func createButtonUrl(url url.URL, pageChange int, queryParamName string) string {
 	parameterString := url.Query()
 
 	param := parameterString.Get(queryParamKey)
