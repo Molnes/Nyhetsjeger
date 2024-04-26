@@ -851,8 +851,11 @@ func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL)
 	}
 
 	if resp.ContentLength <= 0 {
-		//retry up to 5 times if content length is 0 or -1
+		// retry up to 5 times if content length is 0 or -1
+		// with 200ms sleep between each retry
 		for i := 0; i < 5; i++ {
+			time.Sleep(200 * time.Millisecond)
+
 			resp, err = http.Get(imageURL.String())
 			if err != nil {
 				return "", err
