@@ -99,7 +99,7 @@ func CreateUser(db *sql.DB, ctx context.Context, partialUser *PartialUser) (*Use
 		ID:                 uuid.New(),
 		SsoID:              partialUser.SsoID,
 		Email:              partialUser.Email,
-		Phone:              "No phone number provided",
+		Phone:              "ikke tilgjengelig",
 		OptInRanking:       true,
 		Role:               user_roles.User,
 		AccessTokenCypher:  accessTokenCypher,

@@ -1,0 +1,177 @@
+package dashboard_user_details_components
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
+	"fmt"
+	"time"
+	"github.com/google/uuid"
+)
+
+const (
+	userRankingsTable = "user-rankings-table"
+	monthAndYearForm  = "month-and-year-form"
+	MonthQueryParam   = "month"        // name of the month query parameter
+	YearQueryParam    = "year"         // name of the year query parameter
+	MonthFormName     = "chosen-month" // name of the form field with the month chosen
+	YearFormName      = "chosen-year"  // name of the form field with the year chosen
+)
+
+// Table with user information.
+templ UserDetailsTable(user *users.User) {
+	<table
+		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+	>
+		<thead>
+			<tr
+				class="border-collapse border border-slate-500 bg-clightindigo text-black"
+			>
+				<th class="px-2 py-1">Datatype</th>
+				<th class="px-2 py-1">Verdi</th>
+			</tr>
+		</thead>
+		<tbody>
+			@userDetailsTableRow("Brukernavn", user.Username)
+			@userDetailsTableRow("E-post", user.Email)
+			@userDetailsTableRow("Telefonnummer", user.Phone)
+		</tbody>
+	</table>
+}
+
+// Form for selecting month and year to display ranking of a user in the given period.
+// Sends post requests to generate new table with rankings whenever the inputs change.
+templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId uuid.UUID) {
+	<form
+		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
+		hx-swap="outerHTML"
+		hx-indicator="previous .htmx-indicator"
+		id={ monthAndYearForm }
+		onsubmit="return false;"
+	>
+		<table class="border-separate border-spacing-y-4 mb-2">
+			<tr>
+				<td>
+					<label for="month-input" class="py-2 pr-2">
+						Velg måned
+					</label>
+				</td>
+				<td>
+					<select
+						class="p-2 w-44 h-10 bg-purple-100 border border-cindigo rounded-input"
+						name={ MonthFormName }
+						id="month-input"
+						hx-trigger="input changed"
+						hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
+					>
+						@monthOption(time.January, "Januar", chosenMonth)
+						@monthOption(time.February, "Februar", chosenMonth)
+						@monthOption(time.March, "Mars", chosenMonth)
+						@monthOption(time.April, "April", chosenMonth)
+						@monthOption(time.May, "Mai", chosenMonth)
+						@monthOption(time.June, "Juni", chosenMonth)
+						@monthOption(time.July, "Juli", chosenMonth)
+						@monthOption(time.August, "August", chosenMonth)
+						@monthOption(time.September, "September", chosenMonth)
+						@monthOption(time.October, "Oktober", chosenMonth)
+						@monthOption(time.November, "November", chosenMonth)
+						@monthOption(time.December, "Desember", chosenMonth)
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="year-input" class="py-2 pr-2">
+						Velg år
+					</label>
+				</td>
+				<td>
+					<input
+						class="p-2 w-44 h-10 bg-purple-100 border border-cindigo rounded-input"
+						hx-trigger="input changed"
+						hx-validate="true"
+						hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
+						name={ YearFormName }
+						id="year-input"
+						type="number"
+						min="2023"
+						max="2099"
+						step="1"
+						value={ fmt.Sprintf("%d", chosenYear) }
+					/>
+				</td>
+			</tr>
+		</table>
+	</form>
+	@syncQueryParameters(monthAndYearForm, MonthQueryParam, YearQueryParam)
+}
+
+// Keeps the url query parameters in the browser synchronized with the ones chosen by the user.
+// Triggered after succesful htmx requests dispatched by the form.
+
+script syncQueryParameters(formId string, monthQeryParam string, yearQueryParam string) {
+	const formElem = document.getElementById(formId);
+	formElem.addEventListener('htmx:afterRequest', (evt)=>{
+		if (evt.detail.xhr.status < 400) {
+			const chosenMonth = formElem.querySelector('select').value;
+			const chosenYear = formElem.querySelector('input').value;
+			
+			const url = new URL(window.location);
+			url.searchParams.set(monthQeryParam, chosenMonth);
+			url.searchParams.set(yearQueryParam, chosenYear);
+
+			window.history.replaceState(null, "", url.href);
+		}
+	});
+}
+
+// Table displaying user ranking provided in the RankingCollection.
+// One row per: monthly, yearly and all time rankings.
+templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
+	<table
+		id={ userRankingsTable }
+		class="border border-slate-500 text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+	>
+		<thead>
+			<tr class="border-collapse border border-slate-500 bg-clightindigo text-black">
+				<th class="px-2 py-1">Periode</th>
+				<th class="px-2 py-1">Plassering</th>
+				<th class="px-2 py-1">Poeng</th>
+			</tr>
+		</thead>
+		<tbody>
+			@userRankingTableRow("Månedlig", &ranking.Monthly)
+			@userRankingTableRow("Årlig", &ranking.Yearly)
+			@userRankingTableRow("All tid", &ranking.AllTime)
+		</tbody>
+	</table>
+}
+
+// Row in the UserDetailsTable
+templ userDetailsTableRow(title string, value string) {
+	<tr class="odd:bg-violet-50 even:bg-violet-100">
+		<td class="py-1 px-2">{ title }</td>
+		<td class="py-1 px-2">{ value }</td>
+	</tr>
+}
+
+// Row in the UserRankingTable
+templ userRankingTableRow(title string, rank *user_ranking.UserRanking) {
+	<tr class="odd:bg-violet-50 even:bg-violet-100">
+		<td class="py-1 px-2">{ title }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Placement) }</td>
+		<td class="py-1 px-2">{ fmt.Sprintf("%d",rank.Points) }</td>
+	</tr>
+}
+
+// Selection option with the month value as a string padded with a 0 to always be two digits.
+// Norwegian text for display.
+templ monthOption(month time.Month, norwegianText string, currentlySelectedMonth time.Month) {
+	<option
+		value={ fmt.Sprintf("%02d", int(month)) }
+		if  month == currentlySelectedMonth {
+			selected="true"
+		}
+	>
+		{ norwegianText }
+	</option>
+}
