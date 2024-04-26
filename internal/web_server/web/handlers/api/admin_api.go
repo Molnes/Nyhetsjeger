@@ -100,6 +100,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/question/generate", aah.getAiQuestion)
 }
 
+// Generate a question based on an article using artificial intelligence
 func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
 	// Get quiz ID
 	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
