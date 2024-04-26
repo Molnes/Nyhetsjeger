@@ -171,7 +171,7 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	user, err := users.GetUserByID(dph.sharedData.DB, uuid_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "Funnet ikke brukeren med den angitte ID-en")
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
 		} else {
 			return err
 		}

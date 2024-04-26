@@ -1023,7 +1023,7 @@ func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "Funnet ikke brukeren med den angitte ID-en")
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
 		} else {
 			return err
 		}
