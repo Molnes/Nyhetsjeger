@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/ai"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -59,6 +60,36 @@ func GetDefaultQuestion(quizId uuid.UUID) Question {
 		Points:       100,
 		Alternatives: []Alternative{},
 	}
+}
+
+// Convert an AI question to a normal question
+func ConvertAiQuestionToQuestion(quizId uuid.UUID, articleId uuid.UUID, aiQuestion ai.Question) *Question {
+	newQuestion := Question{
+		ID:               uuid.New(),
+		QuizID:           quizId,
+		Text:             aiQuestion.Question,
+		Points:           100,
+		TimeLimitSeconds: 30,
+		ArticleID: uuid.NullUUID{
+			UUID:  articleId,
+			Valid: true,
+		},
+		ImageURL:     url.URL{},
+		Alternatives: []Alternative{},
+	}
+
+	for index, alt := range aiQuestion.Alternatives {
+		newQuestion.Alternatives = append(newQuestion.Alternatives, Alternative{
+			ID:            uuid.New(),
+			QuestionID:    newQuestion.ID,
+			Text:          alt.AlternativeText,
+			IsCorrect:     alt.Correct,
+			PercentChosen: 0,
+			Arrangement:   uint(index + 1),
+		})
+	}
+
+	return &newQuestion
 }
 
 // Checks if the provided answer id is correct for this question.
