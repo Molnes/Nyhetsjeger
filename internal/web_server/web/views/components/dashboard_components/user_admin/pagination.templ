@@ -85,7 +85,7 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamName st
 			hx-post={ createButtonUrl(*url, -1, queryParamName) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
-			hx-target-error=".error-text"
+			hx-target-error=".error-username"
 			class="border-cindigo border bg-clightindigo text-cindigo rounded-l-button font-bold px-3 py-1"
 		>&lt;</button>
 	}
@@ -108,7 +108,7 @@ templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, que
 			hx-post={ createButtonUrl(*url, 1, queryParamName) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
-			hx-target-error=".error-text"
+			hx-target-error=".error-username"
 			class="border-cindigo border bg-clightindigo rounded-r-button text-cindigo font-bold px-3 py-1"
 		>&gt;</button>
 	}
