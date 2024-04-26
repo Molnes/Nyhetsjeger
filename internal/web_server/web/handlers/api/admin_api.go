@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
-	"github.com/Molnes/Nyhetsjeger/internal/models/ai"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
@@ -94,23 +93,6 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
 	e.POST("/username/page", aah.getUsernamePages)
-
-	e.GET("/generate-ai-question", aah.getAIQuestion)
-}
-
-func (aah *AdminApiHandler) getAIQuestion(c echo.Context) error {
-	articleID := c.FormValue("article-id")
-	article, err := articles.GetSmpArticleByiID(articleID)
-	if err != nil {
-		return err
-	}
-
-	question, err := ai.GetJsonQuestions(c.Request().Context(), article, aah.sharedData.OpenAIKey)
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, question)
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -1012,19 +994,23 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 // Get the username tables and render the page.
 func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
-	if err != nil { // If the page number is not a number, set it to 1.
+	// If the page number is not a number, set it to 1.
+	if err != nil {
 		adjPage = 1
 	}
 	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
-	if err != nil { // If the page number is not a number, set it to 1.
+	// If the page number is not a number, set it to 1.
+	if err != nil {
 		nounPage = 1
 	}
 
 	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
-	if err != nil || pages < 5 || pages > 255 { // Sets to 25 if between a certain range.
+	// Sets to 25 if between a certain range.
+	if err != nil || pages < 5 || pages > 255 {
 		pages = 25
 	}
 
+	// Get the search query
 	search := c.FormValue("search")
 	if search == "" {
 		search = c.QueryParam("search")
@@ -1037,21 +1023,14 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 
 	// Creates a relative path with the queryparams to update the url of
 	// the client webpage.
-
 	var relativePath url.URL
 	relativeQuery := c.Request().URL.Query()
-
 	requestUrl := c.Request().URL
-
 	if search != "" {
 		relativeQuery.Set("search", search)
-		
 	}
-
 	requestUrl.RawQuery = relativeQuery.Encode()
-
 	relativePath.RawQuery = relativeQuery.Encode()
-
 	c.Response().Header().Set("HX-Replace-Url", relativePath.String())
 
 	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
