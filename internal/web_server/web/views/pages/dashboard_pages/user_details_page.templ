@@ -6,6 +6,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"time"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 )
 
 templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection, chosenMonth time.Month, chosenYear uint) {
@@ -14,7 +15,12 @@ templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection,
 			<h1 class="text-4xl">Brukerinformasjon</h1>
 			<h2 class="text-2xl">Detaljer</h2>
 			@dashboard_user_details_components.UserDetailsTable(user)
-			<h2 class="text-2xl mt-4">Rankering</h2>
+			<div class="flex gap-2">
+				<h2 class="text-2xl mt-4">Rankering</h2>
+				<div class="mt-auto">
+					@components.LoadingIndicator()
+				</div>
+			</div>
 			@dashboard_user_details_components.MonthAndYearSelectionForm(chosenMonth, chosenYear, user.ID)
 			@dashboard_user_details_components.UserAllRankingTable(ranking)
 		</div>

@@ -44,6 +44,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 	<form
 		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
 		hx-swap="outerHTML"
+		hx-indicator="previous .htmx-indicator"
 		id={ monthAndYearForm }
 		onsubmit="return false;"
 	>
