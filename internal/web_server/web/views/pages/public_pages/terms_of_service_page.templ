@@ -8,7 +8,7 @@ import (
 // Page containg the terms of service
 templ TermsOfServicePage() {
 	@layout_components.BaseLayout("Vilkår og betingelser") {
-		<main id="main" class="w-full md:w-3/4 lg:w-1/2 mx-auto p-5">
+		<main id="main" class="w-full md:w-3/4 lg:w-1/2 max-w-screen-2xl mx-auto p-5">
 			@components.TermsOfService()
 		</main>
 	}

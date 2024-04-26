@@ -1,97 +1,13 @@
 package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
-
-// onRefresh is a js script that runs when the page is refreshed. It will highlight the rows that have been edited or deleted.
-
-script onRefresh() {
-	for (const [key, value] of deleteMap.entries()) {
-	var row = document.getElementById(key);
-	if (row) {
-		let parent = row.parentElement;
-		parent.classList.add("bg-red-500", "border-b", "border-red-700");
-		parent.getElementsByClassName("del-button")[0].classList.add("hidden");
-		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
-	}
-	}
-
-	for (const [key, value] of editMap.entries()) {
-	var row = document.getElementById(key);
-	if (row) {
-		let values = editMap.get(key);
-		let parent = row.parentElement;
-		parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
-		row.value = values[1];
-	}
-	}
-}
-
-// onSave is a js script that runs when the save button is clicked. It will send the changes to the server and clear the maps and the session storage.
-
-script onSave() {
-	fetch("/api/v1/admin/username", {
-		method: "DELETE",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(Array.from(deleteMap.values()))
-	}).then(response => {
-		if (response.ok) {
-			deleteMap.clear();
-			//Clear deletemap in sessionStorage.
-			sessionStorage.removeItem("deleteMap");
-		}
-	});
-
-
-	let tableNames = ["adjective-table", "noun-table"];
-	const wordMap = tableNames.reduce((map, tableName, index) => {
-		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
-			return value;
-		});
-		map[tableName] = wordList;
-		return map;
-	}, {});
-
-	fetch("/api/v1/admin/username/edit", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(wordMap)
-	}).then(response => {
-		if ( /* response.ok */ true) {
-			editMap.clear();
-			tableRowMap.clear();
-
-			sessionStorage.removeItem("editMap");
-			sessionStorage.removeItem("tableRowMap");
-		}
-	});
-	location.reload();
-}
-
-// reset is a js script that runs when the reset button is clicked. It will clear the maps and the session storage.
-
-script reset() {
-	let decision = confirm("Er du sikker på at du ønsker å nullstille endringer? Dette kan ikke angres.");
-
-	if (decision) {
-		deleteMap.clear();
-		editMap.clear();
-		tableRowMap.clear();
-
-		sessionStorage.removeItem("deleteMap");
-		sessionStorage.removeItem("editMap");
-		sessionStorage.removeItem("tableRowMap");
-
-		location.reload();
-	}
-}
+import "net/url"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 
 // Tables of the two components an username is created from: Nouns and adjectives
-templ UsernameTables(uai *usernames.UsernameAdminInfo) {
-	<script>
+templ UsernameTables(uai *usernames.UsernameAdminInfo, url *url.URL) {
+	<div id="tables-wrapper" class="flex gap-6 md:gap-12 xl:gap-24 flex-col sm:flex-row">
+		<script>
 		var deleteMap;
 		var editMap;
 		var tableRowMap;
@@ -114,19 +30,8 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo) {
 			tableRowMap = new Map(JSON.parse(sessionStorage.tableRowMap));
 		}
 	</script>
-	<div id="tables-wrapper" class="flex gap-6 md:gap-12 xl:gap-24 flex-col sm:flex-row">
-		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage)
-		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage)
+		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage, url)
+		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage, url)
+		@components.ErrorText("error-username", "")
 	</div>
-	<div>
-		<button
-			class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white"
-			onclick={ onSave() }
-		>Lagre</button>
-		<button
-			class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white ml-16"
-			onclick={ reset() }
-		>Nullstill</button>
-	</div>
-	@onRefresh()
 }

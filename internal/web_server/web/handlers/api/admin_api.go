@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -93,6 +95,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/username", aah.addUsername)
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
+	e.POST("/username/page", aah.getUsernamePages)
 
 	e.POST("/question/generate", aah.getAiQuestion)
 }
@@ -882,8 +885,13 @@ func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL)
 	}
 
 	if resp.ContentLength <= 0 {
-		//retry up to 5 times if content length is 0 or -1
+		// retry up to 5 times if content length is 0 or -1
+		// with increasing sleep between each retry
 		for i := 0; i < 5; i++ {
+			waitDuration := 200*i + 50
+			log.Printf("Retrying to fetch image in %d ms...", waitDuration)
+			time.Sleep(time.Duration(waitDuration) * time.Millisecond)
+
 			resp, err = http.Get(imageURL.String())
 			if err != nil {
 				return "", err
@@ -1035,4 +1043,49 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages(images, "question"))
+}
+
+// Get the username tables and render the page.
+func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
+	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
+	// If the page number is not a number, set it to 1.
+	if err != nil {
+		adjPage = 1
+	}
+	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
+	// If the page number is not a number, set it to 1.
+	if err != nil {
+		nounPage = 1
+	}
+
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
+	// Sets to 25 if between a certain range.
+	if err != nil || pages < 5 || pages > 255 {
+		pages = 25
+	}
+
+	// Get the search query
+	search := c.FormValue("search")
+	if search == "" {
+		search = c.QueryParam("search")
+	}
+
+	uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, adjPage, nounPage, pages, search)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-username", "Noe gikk galt med henting av brukernavn data. Prøv igjen senere. Hvis problemet vedvarer, kontakt administrator."))
+	}
+
+	// Creates a relative path with the queryparams to update the url of
+	// the client webpage.
+	var relativePath url.URL
+	relativeQuery := c.Request().URL.Query()
+	requestUrl := c.Request().URL
+	if search != "" {
+		relativeQuery.Set("search", search)
+	}
+	requestUrl.RawQuery = relativeQuery.Encode()
+	relativePath.RawQuery = relativeQuery.Encode()
+	c.Response().Header().Set("HX-Replace-Url", relativePath.String())
+
+	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
 }
