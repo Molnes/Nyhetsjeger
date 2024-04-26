@@ -10,6 +10,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/profile_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components/play_quiz_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
@@ -33,6 +34,22 @@ func (qah *QuizApiHandler) RegisterQuizApiHandlers(e *echo.Group) {
 	e.PATCH("/brukernavn", qah.patchRandomUsername)
 	e.DELETE("/profil", qah.deleteProfile)
 	e.POST("/accept-terms", qah.postAcceptTerms)
+	e.POST("/participation", qah.postParticipation)
+}
+
+func (qah *QuizApiHandler) postParticipation(c echo.Context) error {
+	userID := utils.GetUserIDFromCtx(c)
+	currentParticipationStauts, err := users.GetParticipationStatus(qah.sharedData.DB, userID)
+	if err != nil {
+		return err
+	}
+
+	err = users.SetParticipationStatus(qah.sharedData.DB, userID, !currentParticipationStauts)
+	if err != nil {
+		return err
+	}
+	//returning the new participation status
+	return utils.Render(c, http.StatusOK, profile_components.Participation_chackbox(!currentParticipationStauts))
 }
 
 func (qah *QuizApiHandler) getArticles(c echo.Context) error {

@@ -104,6 +104,7 @@ func SetupRouter(e *echo.Echo, sharedData *config.SharedData, oauthConfig *oauth
 	adminApiHandler.RegisterAdminApiHandlers(adminApiGroup)
 
 	organizationAdminApiGroup := apiGroup.Group("/organization-admin")
+	organizationAdminApiGroup.Use(authForce.EncofreAuthentication)
 	enforceOrganizationAdminMiddleware :=
 		middlewares.NewAuthorizationMiddleware(
 			sharedData,

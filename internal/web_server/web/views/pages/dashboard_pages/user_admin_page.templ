@@ -4,15 +4,167 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
+	"net/url"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
+// onSwap is a js script that run either when the page is loaded or when the htmx:afterSwap event is triggered.
+// It will highlight the rows that have been edited or deleted.
+
+script onSwap() {
+
+	const onSwap = () => {
+		for (const [key, value] of deleteMap.entries()) {
+			var row = document.getElementById(key);
+			if (row) {
+				let parent = row.parentElement;
+				parent.classList.add("bg-red-300", "border-b", "border-red-700");
+				parent.getElementsByClassName("del-button")[0].classList.add("hidden");
+				parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+			}
+		}
+
+		for (const [key, value] of editMap.entries()) {
+			var row = document.getElementById(key);
+			if (row) {
+				let values = editMap.get(key);
+				let parent = row.parentElement;
+				parent.getElementsByClassName("undo-button")[0].classList.remove("hidden");
+				row.value = values[1];
+			}
+		}
+	}
+
+	onSwap();
+
+	document.body.addEventListener('htmx:afterSwap', function (event) {
+		onSwap();
+	});
+}
+
+// onSave is a js script that runs when the save button is clicked.
+// It will send the changes to the server and clear the maps and the session storage.
+
+script onSave() {
+	fetch("/api/v1/admin/username", {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(Array.from(deleteMap.values()))
+	}).then(response => {
+		const errorText = document.querySelector(".error-username");
+		if (response.ok) {
+			deleteMap.clear();
+			//Clear deletemap in sessionStorage.
+			sessionStorage.removeItem("deleteMap");
+		}
+		else {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(result, 'text/html');
+			let res = doc.body.firstChild;
+			errorText.replaceWith(res);
+		}
+	});
+
+
+	let tableNames = ["adjective-table", "noun-table"];
+	const wordMap = tableNames.reduce((map, tableName, index) => {
+		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
+			return value;
+		});
+		map[tableName] = wordList;
+		return map;
+	}, {});
+
+	fetch("/api/v1/admin/username/edit", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(wordMap)
+	}).then(response => {
+		const errorText = document.querySelector(".error-username");
+		if ( response.ok) {
+			editMap.clear();
+			tableRowMap.clear();
+
+			sessionStorage.removeItem("editMap");
+			sessionStorage.removeItem("tableRowMap");
+			location.reload();
+		} else {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(result, 'text/html');
+			let res = doc.body.firstChild;
+			errorText.replaceWith(res);
+		}
+	});
+	
+}
+
+// reset is a js script that runs when the reset button is clicked. It will clear the maps and the session storage.
+
+script reset() {
+	let decision = confirm("Er du sikker på at du ønsker å nullstille endringene? Dette kan ikke angres.");
+
+	if (decision) {
+		deleteMap.clear();
+		editMap.clear();
+		tableRowMap.clear();
+
+		sessionStorage.removeItem("deleteMap");
+		sessionStorage.removeItem("editMap");
+		sessionStorage.removeItem("tableRowMap");
+
+		location.reload();
+	}
+}
+
+// updateUrl is a js script that runs when the search input is changed. It will update the url with the search query.
+script updateUrl() {
+	// add eventlistener to the search input
+	const searchInput = document.getElementById("search-input");
+	searchInput.addEventListener("htmx:beforeOnLoad", (event) => {
+		const search = searchInput.value;
+		const url = new URL(window.location.href);
+		url.searchParams.set("search", search);
+		history.pushState({}, "", url);
+	});
+}
+
 // The username administration page main function
-templ UsernameAdminPage(data *usernames.UsernameAdminInfo) {
+templ UsernameAdminPage(data *usernames.UsernameAdminInfo, url *url.URL) {
 	@layout_components.DashBoardLayout("Nyhetsjeger - Brukernavn administrasjon") {
 		<div class="flex flex-col items-center gap-6 max-w-screen-md m-auto p-5">
-			<h2 class="text-xl font-bold">Brukernavn administrasjon</h2>
-			// <input class="border border-gray-600 rounded-input px-2" type="text" placeholder="W.I.P" disabled/>
-			@user_admin.UsernameTables(data)
+			<h2 class="text-3xl font-bold">Brukernavn Administrasjon</h2>
+			<label class="w-0 h-0 block overflow-hidden" for="search-input">Søk etter ord</label>
+			<div class="relative [&>svg]:absolute [&>svg]:ml-2 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2">
+				@icons.MagnifyingGlass(5, "currentColor", 20, 20)
+				<input
+					id="search-input"
+					class="bg-white border border-gray-600 rounded-input pl-9 w-full h-full py-2"
+					type="search"
+					placeholder="Søk"
+					name="search"
+					hx-post="/api/v1/admin/username/page"
+					hx-trigger="input changed delay:500ms, search"
+					hx-target="#tables-wrapper"
+					hx-swap="outerHTML"
+				/>
+			</div>
+			@user_admin.UsernameTables(data, url)
+			<div>
+				<button
+					class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white"
+					onclick={ onSave() }
+				>Lagre</button>
+				<button
+					class="bg-clightindigo px-4 py-2 rounded-button hover:bg-cindigo hover:text-white ml-16"
+					onclick={ reset() }
+				>Nullstill</button>
+			</div>
+			@onSwap()
+			@updateUrl()
 		</div>
 	}
 }

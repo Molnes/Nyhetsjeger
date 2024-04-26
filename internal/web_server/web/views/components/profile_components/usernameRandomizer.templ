@@ -1,0 +1,23 @@
+package profile_components
+
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/user_management"
+import "github.com/Molnes/Nyhetsjeger/internal/models/users"
+
+templ UserRandomizeButton(u *users.User) {
+	<label for="usrn-in" class="font-bold inline-block mt-4 mb-2">Brukernavn</label>
+	<div class="flex items-center gap-3">
+		@user_management.UsernameInput("usrn-in", u.Username)
+		<button
+			id="randomize"
+			class="flex items-center gap-3 rounded-button border-2 border-gray-200 px-4 py-1"
+			type="button"
+			hx-patch="/api/v1/quiz/brukernavn"
+			hx-trigger="click"
+			hx-swap="outerHTML"
+			hx-target="#usrn-in"
+		>
+			@icons.Dice(16, "currentColor", 28, 28)
+		</button>
+	</div>
+}

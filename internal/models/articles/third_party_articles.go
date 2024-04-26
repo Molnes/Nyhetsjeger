@@ -67,7 +67,7 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	file, err := os.Open(filename)
 
 	if err != nil {
-		log.Println("Error opening file: ", err)
+		log.Println("Error opening file: ", err, filename)
 		return ArticleSMP{}, ErrArticleNotFound
 	}
 	defer file.Close()
@@ -86,14 +86,19 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	return article, nil
 }
 
-// Get an ArticleSMP by its ID.
-func GetSmpArticleByiID(articleID string) (ArticleSMP, error) {
-	article, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+// Get an ArticleSMP by its URL.
+func GetSmpArticleByURL(articleUrl *url.URL) (ArticleSMP, error) {
+	articleId, err := GetSmpIdFromString(articleUrl.String())
+	if err != nil {
+		return ArticleSMP{}, err
+	}
+
+	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleId))
 	if err != nil {
 		log.Println("Error getting article: ", err)
 		return ArticleSMP{}, err
 	}
-	return article, nil
+	return articleSMP, nil
 }
 
 // Get the ID for ArticleSMP from the article URL.
@@ -154,8 +159,8 @@ func getImagesOfArticle(article ArticleSMP) ([]url.URL, error) {
 	return images, nil
 }
 
-// Get an SMP Article by its URL.
-func GetSmpArticleByURL(articleUrl string) (Article, error) {
+// Get an Article by its SMP URL.
+func GetArticleBySmpUrl(articleUrl string) (Article, error) {
 	// TODO: Update this to fetch the article from the web instead of reading it from JSON.
 
 	// Get article's SMP ID

@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,12 +19,16 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -43,9 +48,11 @@ const (
 	errorQuestionElementID = "error-question"
 	errorUploadImage       = "Kunne ikke laste opp bildet"
 	errorFetchingImage     = "Kunne ikke hente bildet"
+	errorArticleURL        = "Ugyldig artikkel URL"
 	imageURLInput          = "image-url"
 	imageFileInput         = "image-file"
 	errorImageElementID    = "error-image"
+	errorAiQuestion        = "error-ai-question"
 )
 
 // URLs
@@ -92,22 +99,55 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
 
-	e.GET("/generate-ai-question", aah.getAIQuestion)
+	e.POST("/user-ranking/generate-table", aah.generateUserRankingsTable)
+	e.POST("/username/page", aah.getUsernamePages)
+
+	e.POST("/question/generate", aah.getAiQuestion)
 }
 
-func (aah *AdminApiHandler) getAIQuestion(c echo.Context) error {
-	articleID := c.FormValue("article-id")
-	article, err := articles.GetSmpArticleByiID(articleID)
+// Generate a question based on an article using artificial intelligence
+func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
+	// Get quiz ID
+	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, errorInvalidQuizID))
 	}
 
-	question, err := ai.GetJsonQuestions(c.Request().Context(), article, aah.sharedData.OpenAIKey)
-	if err != nil {
-		return err
+	// Get article URL
+	articleUrl, err := url.Parse(c.FormValue("question-article-url"))
+	if err != nil || articleUrl.String() == "" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, errorArticleURL))
 	}
 
-	return c.JSON(http.StatusOK, question)
+	// Get the SMP articleSmp
+	articleSmp, err := articles.GetSmpArticleByURL(articleUrl)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikkel data"))
+	}
+
+	// Generate a question
+	aiQuestion, err := ai.GetJsonQuestions(c.Request().Context(), articleSmp, aah.sharedData.OpenAIKey)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke generere spørsmål"))
+	}
+
+	// Get the current article
+	chosenArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleUrl)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikkelen"))
+	}
+
+	// Convert an AI question into a normal question
+	newQuestion := questions.ConvertAiQuestionToQuestion(quizId, chosenArticle.ID.UUID, aiQuestion)
+
+	// Get all articles for this quiz
+	articleList, err := articles.GetArticlesByQuizID(aah.sharedData.DB, quizId)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikler for quizen"))
+	}
+
+	c.Response().Header().Set("HX-Retarget", "#edit-question-form")
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, chosenArticle, articleList, quizId.String(), true))
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -395,14 +435,14 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 		}
 	} else {
 		// If not in DB, fetch the relevant article data and add it to the DB
-		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
+		tempArticle, err := articles.GetArticleBySmpUrl(articleURL.String())
 		if err != nil {
 
 			switch err {
 			case articles.ErrInvalidArticleID:
 				return article, "Ugyldig artikkel ID"
 			case articles.ErrInvalidArticleURL:
-				return article, "Ugyldig artikkel URL"
+				return article, errorArticleURL
 			case articles.ErrArticleNotFound:
 				return article, "Klarte ikke å finne artikkel data for denne URLen. Sjekk at URLen er riktig eller prøv igjen senere"
 			default:
@@ -436,7 +476,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
 	tempURL, err := url.Parse(articleURL)
 	if err != nil && err == sql.ErrNoRows {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorArticleElementID, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorArticleElementID, errorArticleURL))
 	}
 
 	// Ensure the article is in the database
@@ -989,11 +1029,11 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	// Get the article URL from form
 	articleURL, err := url.Parse(c.FormValue("article-url"))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorArticleURL))
 	}
 
 	if articleURL.String() == "" {
-		return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages([]url.URL{}, "question"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ingen artikkel er valgt. Fant ingen forslag"))
 	}
 
 	// Get the article from the URL
@@ -1009,4 +1049,93 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleImages(images, "question"))
+}
+
+// Get the username tables and render the page.
+func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
+	adjPage, err := strconv.Atoi(c.QueryParam("adj"))
+	// If the page number is not a number, set it to 1.
+	if err != nil {
+		adjPage = 1
+	}
+	nounPage, err := strconv.Atoi(c.QueryParam("noun"))
+	// If the page number is not a number, set it to 1.
+	if err != nil {
+		nounPage = 1
+	}
+
+	pages, err := strconv.Atoi(c.QueryParam("rows-per-page"))
+	// Sets to 25 if between a certain range.
+	if err != nil || pages < 5 || pages > 255 {
+		pages = 25
+	}
+
+	// Get the search query
+	search := c.FormValue("search")
+	if search == "" {
+		search = c.QueryParam("search")
+	}
+
+	uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, adjPage, nounPage, pages, search)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-username", "Noe gikk galt med henting av brukernavn data. Prøv igjen senere. Hvis problemet vedvarer, kontakt administrator."))
+	}
+
+	// Creates a relative path with the queryparams to update the url of
+	// the client webpage.
+	var relativePath url.URL
+	relativeQuery := c.Request().URL.Query()
+	requestUrl := c.Request().URL
+	if search != "" {
+		relativeQuery.Set("search", search)
+	}
+	requestUrl.RawQuery = relativeQuery.Encode()
+	relativePath.RawQuery = relativeQuery.Encode()
+	c.Response().Header().Set("HX-Replace-Url", relativePath.String())
+
+	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
+}
+
+// Renders a ranking table for the given user. Displays the monthly, yearly and all time ranking.
+// Monthly and yearly rankings are displayed for the period provided as form data.
+// Expects user-id query parameter, chosen-month and chosen-year as form values.
+func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
+	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
+	}
+	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
+		} else {
+			return err
+		}
+	}
+
+	chosenMonthStr := c.FormValue(dashboard_user_details_components.MonthFormName)
+	var chosenMonth time.Month
+
+	parsedTime, err := time.Parse("01", chosenMonthStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende måned verdi")
+	}
+	chosenMonth = parsedTime.Month()
+
+	chosenYearStr := c.FormValue(dashboard_user_details_components.YearFormName)
+	var chosenYear uint
+
+	parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende år verdi")
+
+	}
+	chosenYear = uint(parsedYear)
+
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_user_details_components.UserAllRankingTable(rankingCollection))
 }

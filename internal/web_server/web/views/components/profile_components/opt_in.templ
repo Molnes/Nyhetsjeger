@@ -1,0 +1,20 @@
+package profile_components
+
+templ Participation_chackbox(currentParticipation bool) {
+	<div id="participation-checkbox" class="flex items-center">
+    <input
+			id="comp-check"
+			class="inline w-6 h-6 accent-cindigo cursor-pointer"
+			type="checkbox"
+			name="competition"
+			hx-post="/api/v1/quiz/participation"
+			hx-trigger="change"
+			hx-target="#participation-checkbox"
+			hx-swap="outerHTML"
+			if currentParticipation {
+				checked
+			}
+		/>
+		<label for="comp-check" class="inline ml-2 cursor-pointer">Bli med i konkurranser</label>
+	</div>
+}
