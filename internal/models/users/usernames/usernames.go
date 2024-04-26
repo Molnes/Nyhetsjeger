@@ -37,7 +37,7 @@ func (uai *UsernameAdminInfo) setUaiAdjInfo(db *sql.DB, searchParam string) erro
 			CASE 
 				WHEN $2 < 1 
 					THEN 1
-				WHEN ($3 <> '') IS TRUE AND $2 > (SELECT COUNT(*) FROM adjectives WHERE adjective SIMILAR TO '%' || $3 || '%') / $1
+				WHEN ($3 != '') IS TRUE AND $2 > (SELECT COUNT(*) FROM adjectives WHERE adjective SIMILAR TO '%' || $3 || '%') / $1
 					THEN CEIL((SELECT COUNT(*) FROM adjectives WHERE adjective SIMILAR TO '%' || $3 || '%')::float8 / $1::float8)
 				WHEN $2 > (SELECT COUNT(*) FROM adjectives) / $1
 					THEN CEIL((SELECT COUNT(*) FROM adjectives)::float8 / $1::float8)
@@ -79,7 +79,7 @@ func (uai *UsernameAdminInfo) setUaiNounInfo(db *sql.DB, searchParam string) err
 				CASE 
 					WHEN $2 < 1 
 						THEN 1
-					WHEN ($3 <> '') IS TRUE AND $2 > (SELECT COUNT(*) FROM nouns WHERE noun SIMILAR TO '%' || $3 ||'%') / $1
+					WHEN ($3 != '') IS TRUE AND $2 > (SELECT COUNT(*) FROM nouns WHERE noun SIMILAR TO '%' || $3 ||'%') / $1
 						THEN CEIL((SELECT COUNT(*) FROM nouns WHERE noun SIMILAR TO '%' || $3 || '%')::float8 / $1::float8)
 					WHEN $2 > (SELECT COUNT(*) FROM nouns) / $1
 						THEN CEIL((SELECT COUNT(*) FROM nouns)::float8 / $1::float8)
