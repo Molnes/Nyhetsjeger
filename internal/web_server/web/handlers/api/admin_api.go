@@ -43,9 +43,11 @@ const (
 	errorQuestionElementID = "error-question"
 	errorUploadImage       = "Kunne ikke laste opp bildet"
 	errorFetchingImage     = "Kunne ikke hente bildet"
+	errorArticleURL        = "Ugyldig artikkel URL"
 	imageURLInput          = "image-url"
 	imageFileInput         = "image-file"
 	errorImageElementID    = "error-image"
+	errorAiQuestion        = "error-ai-question"
 )
 
 // URLs
@@ -92,22 +94,51 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.DELETE("/username", aah.deleteUsername)
 	e.POST("/username/edit", aah.editUsername)
 
-	e.GET("/generate-ai-question", aah.getAIQuestion)
+	e.POST("/question/generate", aah.getAiQuestion)
 }
 
-func (aah *AdminApiHandler) getAIQuestion(c echo.Context) error {
-	articleID := c.FormValue("article-id")
-	article, err := articles.GetSmpArticleByiID(articleID)
+func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
+	// Get quiz ID
+	quizId, err := uuid.Parse(c.QueryParam("quiz-id"))
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, errorInvalidQuizID))
 	}
 
-	question, err := ai.GetJsonQuestions(c.Request().Context(), article, aah.sharedData.OpenAIKey)
-	if err != nil {
-		return err
+	// Get article URL
+	articleUrl, err := url.Parse(c.FormValue("question-article-url"))
+	if err != nil || articleUrl.String() == "" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, errorArticleURL))
 	}
 
-	return c.JSON(http.StatusOK, question)
+	// Get the SMP articleSmp
+	articleSmp, err := articles.GetSmpArticleByURL(articleUrl)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikkel data"))
+	}
+
+	// Generate a question
+	aiQuestion, err := ai.GetJsonQuestions(c.Request().Context(), articleSmp, aah.sharedData.OpenAIKey)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke generere spørsmål"))
+	}
+
+	// Get the current article
+	chosenArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleUrl)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikkelen"))
+	}
+
+	// Convert an AI question into a normal question
+	newQuestion := questions.ConvertAiQuestionToQuestion(quizId, chosenArticle.ID.UUID, aiQuestion)
+
+	// Get all articles for this quiz
+	articleList, err := articles.GetArticlesByQuizID(aah.sharedData.DB, quizId)
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorAiQuestion, "Kunne ikke hente artikler for quizen"))
+	}
+
+	c.Response().Header().Set("HX-Retarget", "#edit-question-form")
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, chosenArticle, articleList, quizId.String(), true))
 }
 
 // Handles the creation of a new default quiz in the DB.
@@ -395,14 +426,14 @@ func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID)
 		}
 	} else {
 		// If not in DB, fetch the relevant article data and add it to the DB
-		tempArticle, err := articles.GetSmpArticleByURL(articleURL.String())
+		tempArticle, err := articles.GetArticleBySmpUrl(articleURL.String())
 		if err != nil {
 
 			switch err {
 			case articles.ErrInvalidArticleID:
 				return article, "Ugyldig artikkel ID"
 			case articles.ErrInvalidArticleURL:
-				return article, "Ugyldig artikkel URL"
+				return article, errorArticleURL
 			case articles.ErrArticleNotFound:
 				return article, "Klarte ikke å finne artikkel data for denne URLen. Sjekk at URLen er riktig eller prøv igjen senere"
 			default:
@@ -436,7 +467,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	articleURL := c.FormValue(dashboard_pages.QuizArticleURL)
 	tempURL, err := url.Parse(articleURL)
 	if err != nil && err == sql.ErrNoRows {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorArticleElementID, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorArticleElementID, errorArticleURL))
 	}
 
 	// Ensure the article is in the database
@@ -984,7 +1015,7 @@ func (aah *AdminApiHandler) imageSuggestionsQuestion(c echo.Context) error {
 	// Get the article URL from form
 	articleURL, err := url.Parse(c.FormValue("article-url"))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, "Ugyldig artikkel URL"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorArticleURL))
 	}
 
 	if articleURL.String() == "" {

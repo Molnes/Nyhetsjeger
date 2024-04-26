@@ -32,7 +32,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 		<select
 			id="articles-list"
 			name={ QuestionArticleURL }
-			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-5"
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2 mb-1"
 		>
 			if len(*articles) == 0 {
 				<option value="" disabled selected>Ingen artikler lagt til enda</option>
@@ -48,20 +48,25 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 				>{  art.Title }</option>
 			}
 		</select>
+		@components.ErrorText("error-ai-question", "")
+		<div class="block mx-auto w-fit">
+			@components.LoadingIndicator()
+		</div>
+		// The Hx-target here is wrong, but it has to target an element outside of the dialog to work.
+		// HX-Retarget is set on the API endpoint to target the correct element.
 		<button
-			type="button"
-			class="flex flex-row gap-2 items-center mb-2 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white border border-1 border-[transparent]"
+			type="submit"
+			class="flex flex-row gap-2 items-center mt-1 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white border border-1 border-[transparent]"
+			hx-post={ fmt.Sprintf("/api/v1/admin/question/generate?quiz-id=%s", quizID) }
 			hx-swap="outerHTML"
-			hx-target="#edit-question-form"
-			hx-indicator="next .htmx-indicator"
+			hx-target="#question-list"
+			hx-target-error=".error-ai-question"
+			hx-sync="closest form:abort"
+			hx-indicator="previous .htmx-indicator"
 		>
 			Generer spørsmål med KI 
 			@icons.Refresh(2, "currentColor", 20, 20)
 		</button>
-		<div class="block mx-auto w-fit">
-			@components.LoadingIndicator()
-		</div>
-		@components.ErrorText("error-ai-question", "")
 		<div
 			class="relative mt-4 mb-10 text-sm text-gray-500 text-center overflow-hidden
 						before:content-[''] before:absolute before:h-px before:w-1/2 before:bg-gray-400 before:-left-[6ch] before:top-1/2
@@ -106,7 +111,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 		</div>
 		@EditImageInput(fmt.Sprintf("/api/v1/admin/question/edit-image?question-id=%s", question.ID), fmt.Sprintf("/api/v1/admin/question/upload-image?question-id=%s", question.ID),
 			fmt.Sprintf("/api/v1/admin/question/image/update-suggestions?quiz-id=%s", question.ID), &question.ImageURL, !isNew, "", IdPrefixQuestion)
-		<div class="flex flex-row items-center flex-wrap mb-3 gap-5 justify-between">
+		<div class="flex flex-row items-center flex-wrap mt-5 mb-3 gap-5 justify-between">
 			// Points
 			<div>
 				<label for={ QuestionPoints } class="font-bold mr-1">Velg poeng</label>
