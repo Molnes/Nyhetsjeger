@@ -65,9 +65,9 @@ templ menuItem(text string, href string, highlight bool) {
 		<a
 			href={ templ.SafeURL(href) }
 			if highlight {
-				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-white "
+				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-gray-50 "
 			} else {
-				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-purple-100 hover:bg-white"
+				class="py-3 rounded-button lg:rounded-l-button lg:rounded-r-none flex flex-row items-center px-6 lg:pl-8 gap-2 bg-purple-100 hover:bg-gray-50"
 			}
 		>
 			{ children... }
