@@ -2,7 +2,8 @@ package icons
 
 import "fmt"
 
-// Magnifying glass icon. Parameters are all in pixels.
+// Magnifying glass icon. strokeWidth, height and width are in pixels.
+// stroke is the color of the icon. It can be a color name or a hex code.
 // Example: MagnifyingGlass(20, "currentColor", 20, 20)
 templ MagnifyingGlass(strokeWidth float64, stroke string, height int, width int) {
 	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512">
