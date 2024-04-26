@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
-	"github.com/Molnes/Nyhetsjeger/internal/utils/converting"
+	data_converting "github.com/Molnes/Nyhetsjeger/internal/utils/converting"
 )
 
 const (
@@ -43,10 +43,8 @@ func (qph *QuizPagesHandler) RegisterQuizHandlers(e *echo.Group) {
 	e.GET("/accept-terms", qph.getAcceptTermsPage)
 
 	e.GET("/brukernavn", qph.usernamePage)
-	e.POST("/brukernavn", qph.postUsername)
 
 	e.GET("/profil", qph.getProfile)
-	e.POST("/profil", qph.postUsername)
 }
 
 // Renders the quiz home page
@@ -179,18 +177,6 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
-}
-
-// Adds phone number and the leaderboards opt-in status to the user
-func (qph *QuizPagesHandler) postUsername(c echo.Context) error {
-	enterCompetition := c.FormValue("competition") == "on"
-
-	err := users.AssignOptInRankingToUser(qph.sharedData.DB, utils.GetUserIDFromCtx(c), enterCompetition)
-	if err != nil {
-		return err
-	}
-
-	return c.Redirect(http.StatusFound, "/quiz")
 }
 
 func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
