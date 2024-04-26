@@ -2,15 +2,17 @@ package icons
 
 import "fmt"
 
-// Person icon. Parameters are all in pixels.
-//Example: Person(1, "currentColor", 36, 36)
-templ Person(strokeWidth float64, stroke string, height int, width int) {
-	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } stroke={ stroke } height={ fmt.Sprint(height) } width={ fmt.Sprint(width) }>
-		<path fill="none" stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+//Trashcan icon. Parameters are strokeWidth, stroke, and height and width in pixels.
+//Example: Trashcan(32, "currentColor", 24, 24)
+templ Trashcan(strokeWidth float64, stroke string, height int, width int) {
+	<svg xmlns="http://www.w3.org/2000/svg" height={ fmt.Sprint(height) } width={ fmt.Sprint(width) } viewBox="0 0 512 512">
+		<path d="M112 112l20 320c.95 18.49 14.4 32 32 32h184c17.67 0 30.87-13.51 32-32l20-320" fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }></path>
+		<path fill="none" stroke={ stroke } stroke-linecap="round" stroke-miterlimit="10" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) } d="M80 112h352"></path>
+		<path d="M192 112V72h0a23.93 23.93 0 0124-24h80a23.93 23.93 0 0124 24h0v40M256 176v224M184 176l8 224M328 176l-8 224" fill="none" stroke={ stroke } stroke-linecap="round" stroke-linejoin="round" stroke-width={ fmt.Sprintf("%.1f", strokeWidth) }></path>
 	</svg>
 	<!-- MIT License
 
-Copyright (c) 2020 Refactoring UI Inc.
+Copyright (c) 2015-present Ionic (http://ionic.io/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
 

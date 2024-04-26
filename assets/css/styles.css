@@ -55,6 +55,7 @@
 }
 
 a.cgradient:is(:hover, :focus),
+.gradient-bg-button:is(:hover, :focus),
 .gradient-outline:has(.cgradient:is(:hover, :focus))::after,
 .answer-button:is(:hover, :focus):not(:disabled)::after,
 .timer-low.gradient-outline-circle::after {
@@ -83,6 +84,29 @@ a.cgradient:is(:hover, :focus),
 
     100% {
         filter: hue-rotate(80deg) blur(0.5rem);
+    }
+}
+
+@property --timer-value {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 360deg;
+}
+
+#timer {
+    --time: 0s;
+    background-image: conic-gradient(#5a14f232 var(--timer-value, 0deg),
+            #fff calc(var(--timer-value, 0deg) + 3deg) 360deg);
+    animation: timer var(--time) linear forwards;
+}
+
+@keyframes timer {
+    0% {
+        --timer-value: 360deg;
+    }
+
+    100% {
+        --timer-value: 00deg;
     }
 }
 
@@ -161,7 +185,7 @@ a.cgradient:is(:hover, :focus),
 }
 
 .answer-button {
-    @apply lg:text-lg leading-5 p-4 min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
+    @apply lg:text-lg leading-5 p-4 min-h-14 md:min-h-20 lg:min-h-24 rounded-button bg-white gradient-outline text-wrap;
 }
 
 @keyframes fadeOpacity {
@@ -191,6 +215,7 @@ a.cgradient:is(:hover, :focus),
     content: counter(css-counter) ". ";
     font-weight: bold;
     margin-right: 0.5rem;
+    color: linkText;
 }
 
 #points-fill {
@@ -203,7 +228,7 @@ a.cgradient:is(:hover, :focus),
 
     --wave-size: 15rem;
 
-    transition: top 5s linear;
+    transition: top 3s linear;
 }
 
 .text {
@@ -224,7 +249,7 @@ a.cgradient:is(:hover, :focus),
     clip-path: circle();
     overflow: hidden;
     background: var(--gradient);
-    box-shadow: inset 0 0 40px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 2rem 1rem rgba(0, 0, 0, 0.2);
 }
 
 .primary-wave-filter,
@@ -296,5 +321,25 @@ a.cgradient:is(:hover, :focus),
 
     100% {
         transform: rotate(360deg);
+    }
+}
+
+@media (prefers-contrast: more) {
+
+    path,
+    circle,
+    rect {
+        stroke: currentcolor;
+    }
+
+    /* If there is a fill, set it to currentColor */
+    svg:not([fill="none"], [fill=""]),
+    svg>*:not([fill="none"], [fill=""]) {
+        fill: currentColor;
+    }
+
+    button,
+    a {
+        border: 1px solid transparent;
     }
 }

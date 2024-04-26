@@ -86,6 +86,16 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 	return article, nil
 }
 
+// Get an ArticleSMP by its ID.
+func GetSmpArticleByiID(articleID string) (ArticleSMP, error) {
+	article, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+	if err != nil {
+		log.Println("Error getting article: ", err)
+		return ArticleSMP{}, err
+	}
+	return article, nil
+}
+
 // Get the ID for ArticleSMP from the article URL.
 func GetSmpIdFromString(url string) (string, error) {
 	// Split the URL by "/"
@@ -120,11 +130,28 @@ func GetSmpURLFromID(articleID string) *url.URL {
 func getMainImageOfArticle(article ArticleSMP) (*url.URL, error) {
 	for _, component := range article.Components {
 		if component.Type == "image" {
-			return url.Parse(fmt.Sprintf("https://vcdn.polarismedia.no/%s?fit=clip&h=700&q=80&tight=false&w=1000", component.ImageAsset.ID))
+			return url.Parse(fmt.Sprintf("https://vcdn.polarismedia.no/%s?fit=clip&h=600&w=900&q=80&tight=true", component.ImageAsset.ID))
 		}
 	}
 
 	return &url.URL{}, nil
+}
+
+// Get all the image components of an article.
+func getImagesOfArticle(article ArticleSMP) ([]url.URL, error) {
+	var images []url.URL
+
+	for _, component := range article.Components {
+		if component.Type == "image" {
+			imageURL, err := url.Parse(fmt.Sprintf("https://vcdn.polarismedia.no/%s?fit=clip&h=600&w=900&q=80&tight=true", component.ImageAsset.ID))
+			if err != nil {
+				return nil, err
+			}
+			images = append(images, *imageURL)
+		}
+	}
+
+	return images, nil
 }
 
 // Get an SMP Article by its URL.
@@ -167,4 +194,35 @@ func GetSmpArticleByURL(articleUrl string) (Article, error) {
 	}
 
 	return article, nil
+}
+
+// Get all the images of a list of articles.
+func GetImagesFromArticles(articles *[]Article) ([]url.URL, error) {
+	// Read the file using the article ID as filename
+	var images []url.URL
+
+	for _, article := range *articles {
+		// Get article's SMP ID
+		articleID, err := GetSmpIdFromString(article.ArticleURL.String())
+		if err != nil {
+			return nil, ErrInvalidArticleID
+		}
+
+		// Get the article data from the JSON file
+		articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+		if err != nil {
+			return nil, err
+		}
+
+		// Get all the images of an article
+		imageList, err := getImagesOfArticle(articleSMP)
+		if err != nil {
+			return nil, err
+		}
+
+		// Append the images to the list
+		images = append(images, imageList...)
+	}
+
+	return images, nil
 }

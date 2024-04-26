@@ -16,13 +16,14 @@ templ QuestionListItem(question *questions.Question) {
 		class="flex flex-row px-4 items-center sortable"
 		data-element-type="question-list-item"
 	>
-		<p class="drag-handle py-2 cursor-pointer flex-grow">{ question.Text }</p>
+		<p class="drag-handle py-3 cursor-pointer flex-grow">{ question.Text }</p>
 		<button
 			id={ fmt.Sprintf("edit-question-%s", question.ID) }
 			class="ml-auto"
 			data-element-type="edit-question-button"
 			type="button"
-			title="Rediger"
+			title="Rediger spørsmål"
+			aria-label="Rediger spørsmål"
 			hx-get={ fmt.Sprintf("/dashboard/edit-question?question-id=%s", question.ID) }
 			hx-swap="innerHTML"
 			hx-target="#question-modal"

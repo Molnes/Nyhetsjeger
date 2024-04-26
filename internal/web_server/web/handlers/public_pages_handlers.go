@@ -83,23 +83,23 @@ func (pph *PublicPagesHandler) getGuestHomePage(c echo.Context) error {
 		return err
 	}
 
-	var quiz quizzes.Quiz
+	var partialQuiz quizzes.PartialQuiz
 	if quizId != uuid.Nil {
-		selectedQuiz, err := quizzes.GetQuizByID(pph.sharedData.DB, quizId)
+		selectedQuiz, err := quizzes.GetPartialQuizByID(pph.sharedData.DB, quizId)
 		if err != nil {
 			return err
 		}
-		quiz = *selectedQuiz
+		partialQuiz = *selectedQuiz
 	}
 
-	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(&quiz))
+	return utils.Render(c, http.StatusOK, public_pages.GuestHomePage(&partialQuiz))
 }
 
 const quizIdQueryParam = "quiz-id"
 const currentQuestionQueryParam = "current-question"
 const totalPointsQueryParam = "total-points"
 
-// Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there. 
+// Handles get request to the guest play quiz page. If no parameters provided, an open quiz is found and user is redirected there.
 func (h *PublicPagesHandler) getGuestQuiz(c echo.Context) error {
 	openQuizId, err := user_quiz.GetOpenQuizId(h.sharedData.DB)
 	if err != nil {

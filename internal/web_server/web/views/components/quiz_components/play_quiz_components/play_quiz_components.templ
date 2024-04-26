@@ -45,8 +45,8 @@ templ AnswerButtons(question *questions.Question) {
 
 // Div with disabled buttons for each alternative in a question. Shows feedback on each alternative.
 templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
-	<div class="flex flex-col gap-8 items-center w-full isolate">
-		<div class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
+	<div class="flex flex-col gap-4 md:gap-8 items-center w-full isolate">
+		<div id="feedback-buttons-wrapper" class="grid grid-cols-2 gap-x-10 md:gap-x-14 gap-y-8 md:gap-y-10 w-full xl:w-3/4 px-1 md:px-6 my-4">
 			for _, alt := range answered.Question.Alternatives {
 				@feedbackButton(alt, alt.ID == answered.ChosenAnswerID)
 			}
@@ -54,7 +54,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		if answered.NextQuestionID != uuid.Nil {
 			<button
 				id="next-question-button"
-				class="gradient-bg-button gradient-shadow px-8 py-3"
+				class="gradient-bg-button gradient-shadow px-8 py-2"
 				if utils.IsUserAuthenticated(ctx) {
 					hx-get={ fmt.Sprintf("/api/v1/quiz/next-question/?quiz-id=%s", answered.Question.QuizID.String()) }
 				} else {
@@ -72,14 +72,14 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		} else {
 			if utils.IsUserAuthenticated(ctx) {
 				<a
-					class="gradient-bg-button gradient-shadow px-8 py-3"
+					class="gradient-bg-button gradient-shadow px-8 py-2"
 					href={ templ.SafeURL(fmt.Sprintf("/quiz/summary?quiz-id=%s", answered.Question.QuizID.String())) }
 				>
 					Ferdig
 				</a>
 			} else {
 				<button
-					class="gradient-bg-button gradient-shadow px-8 py-3"
+					class="gradient-bg-button gradient-shadow px-8 py-2"
 					hx-post={ fmt.Sprintf("/api/v1/guest/generate-summary?quiz-id=%s", answered.Question.QuizID.String()) }
 					hx-target="#quiz-play-content"
 					hx-swap="outerHTML"
@@ -92,6 +92,7 @@ templ FeedbackButtons(answered *user_quiz.UserAnsweredQuestion) {
 		}
 	</div>
 	@AddPointsToDisplay(answered.PointsAwarded, PointsDisplayId)
+	@dynamicIconSize()
 }
 
 // Same as FeedbackButtons, but save the passed user_quiz_summary.AnsweredQuestion in local storage in users browser.
@@ -107,16 +108,16 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 	<button
 		disabled
 		if isSelected {
-			class="answer-button gradient-outline-thick gradient-shadow-always w-full"
+			class="answer-button w-full gradient-outline-thick gradient-shadow-always"
 		} else {
 			class="answer-button w-full"
 		}
 	>
 		{ alternative.Text }
-		<div class="absolute -top-5 -left-5 z-10">
+		<div class="absolute -top-4 -left-4 md:-top-5 md:-left-5 z-10">
 			@feedbackCircle(alternative.IsCorrect)
 		</div>
-		<div class="absolute -bottom-5 -right-6 z-10">
+		<div class="absolute -bottom-4 -right-5 md:-bottom-5 md:-right-6 z-10">
 			@feedbackPercentage(alternative.PercentChosen, alternative.IsCorrect)
 		</div>
 	</button>
@@ -125,10 +126,11 @@ templ feedbackButton(alternative questions.Alternative, isSelected bool) {
 // A circular badge/card displaying check-mark or cross based on positive/negative feedback (correct, incorrect)
 templ feedbackCircle(isCorrect bool) {
 	<div
+		data-element-type="feedback-circle"
 		if isCorrect {
-			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-green-500"
+			class="flex items-center justify-center w-7 h-7 md:w-10 md:h-10 rounded-1/2 border border-1 border-[transparent] bg-green-500"
 		} else {
-			class="flex items-center justify-center w-10 h-10 rounded-1/2 bg-red-600"
+			class="flex items-center justify-center w-7 h-7 md:w-10 md:h-10 rounded-1/2 border border-1 border-[transparent] bg-red-600"
 		}
 	>
 		if isCorrect {
@@ -143,9 +145,9 @@ templ feedbackCircle(isCorrect bool) {
 templ feedbackPercentage(percentage float64, isCorrect bool) {
 	<div
 		if isCorrect {
-			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
+			class="flex items-center justify-center w-12 h-8 md:w-14 md:h-10 text-xs md:text-sm rounded-button font-bold bg-white border-4 border-green-500 text-green-800"
 		} else {
-			class="flex items-center justify-center w-14 h-10 text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
+			class="flex items-center justify-center w-12 h-8 md:w-14 md:h-10 text-xs md:text-sm rounded-button font-bold bg-white border-4 border-red-600 text-red-800"
 		}
 	>
 		{ displayPercentage(percentage) }
@@ -162,4 +164,18 @@ func displayPercentage(num float64) string {
 		str = fmt.Sprintf("%.1f%%", num*100)
 	}
 	return str
+}
+
+// Lowers the icon size of the feedback circle icons on screens smaller than tailwind md (768px wide)
+
+script dynamicIconSize() {
+	if (window.innerWidth <= 768) {
+		const feedbackButtonsWrapper = document.getElementById('feedback-buttons-wrapper');
+		const feedbackCircles = feedbackButtonsWrapper.querySelectorAll('[data-element-type="feedback-circle"]');
+		feedbackCircles.forEach((elem) => {
+			let icon = elem.querySelector('svg');
+			icon.setAttribute('height','20px');
+			icon.setAttribute('width','20px');
+		});
+	}
 }

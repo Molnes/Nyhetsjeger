@@ -15,6 +15,8 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/quiz_pages"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+
+	"github.com/Molnes/Nyhetsjeger/internal/utils/converting"
 )
 
 const (
@@ -54,14 +56,25 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		return err
 	}
 
+	partialQuizList, err := data_converting.ConvertQuizzesToPartial(quizList, qph.sharedData.DB)
+	if err != nil {
+		return err
+
+	}
+
 	oldQuizzes, err := quizzes.GetQuizzesByUserIDAndFinishedOrNotAndNotActive(qph.sharedData.DB, utils.GetUserIDFromCtx(c), false)
+	if err != nil {
+		return err
+	}
+
+	oldPartialQuizList, err := data_converting.ConvertQuizzesToPartial(oldQuizzes, qph.sharedData.DB)
 	if err != nil {
 		return err
 	}
 
 	userRankingInfo := user_ranking.UserRanking{}
 
-	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local,user_ranking.Month)
+	userRankingInfo, err = user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -79,8 +92,8 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		}
 	}
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
-		quizList,
-		oldQuizzes,
+		partialQuizList,
+		oldPartialQuizList,
 		userRankingInfo,
 	))
 }
@@ -148,7 +161,14 @@ func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(quizList))
+	// Convert to partial quizzes
+	partialQuizzes, err := data_converting.ConvertQuizzesToPartial(quizList, qph.sharedData.DB)
+
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(partialQuizzes))
 }
 
 func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {

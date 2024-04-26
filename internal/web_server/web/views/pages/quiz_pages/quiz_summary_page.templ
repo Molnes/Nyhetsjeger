@@ -16,12 +16,46 @@ templ QuizSummaryPage(summary *user_quiz_summary.UserQuizSummary) {
 	}
 }
 
+type Response string
+
+const (
+	Bad      Response = "Her må det leses flere nyheter, ja."
+	Ok       Response = "Du har fulgt bra med på nyhetene."
+	Good     Response = "Bra! Snart kan du bli en nyhetsjeger!"
+	VeryGood Response = "WOW! Du er rene nyhetsjegeren!"
+	Perfect  Response = "Du er en ekte nyhetsjeger! Kanskje er du årets nyhetsjeger?"
+	Default  Response = "Du har fulgt bra med på nyhetene."
+)
+
+// Returns a response based on the user's score in the quiz.
+func getResponse(score uint, maxScore uint) Response {
+	var ratio = float64(score) / float64(maxScore)
+	switch {
+	case ratio < 0.3:
+		return Bad
+	case ratio < 0.5:
+		return Ok
+	case ratio < 0.7:
+		return Good
+	case ratio < 0.95:
+		return VeryGood
+	case ratio <= 1:
+		return Perfect
+	default:
+		return Default
+	}
+}
+
+func (r Response) String() string {
+	return string(r)
+}
+
 // Quiz summary page content. Displays the user's score and a list of all the questions they answered.
 // Each question is displayed with the question text, the chosen alternative and whether the alternative was correct or not.
 templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 	<div
 		id="quiz-summary"
-		class="flex flex-col gap-8 justify-start items-center p-5 isolate"
+		class="flex flex-col justify-center items-center gap-5 py-3 isolate"
 	>
 		<section class="flex flex-col gap-3 items-center">
 			<h1 class="text-3xl">Resultat</h1>
@@ -36,49 +70,54 @@ templ QuizSummaryContent(summary *user_quiz_summary.UserQuizSummary) {
 					class="size-28 relative rounded-1/2 bg-white gradient-outline-circle"
 				}
 			>
-				<div class="circle">
-					// The fill element is animated to fill the circle to the correct percentage.
-					<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
-						<div class="primary-wave-filter">
-							<div class="primary-wave"></div>
+				<div class="rounded-1/2 w-full h-full contrast-more:border contrast-more:border-[transparent]">
+					<div class="circle">
+						// The fill element is animated to fill the circle to the correct percentage.
+						<div id="points-fill" class="absolute top-full w-full h-full grid place-items-center justify-center">
+							<div class="primary-wave-filter">
+								<div class="primary-wave"></div>
+							</div>
+							<div class="secondary-wave-filter">
+								<div class="secondary-wave"></div>
+							</div>
 						</div>
-						<div class="secondary-wave-filter">
-							<div class="secondary-wave"></div>
+						// The result text
+						<div class="flex flex-col gap-3 absolute top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+							<p
+								class="[&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
+							>
+								<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
+								<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
+								<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
+							</p>
+							<p class="font-sans text-xs text-gray-200 text-center">poeng</p>
 						</div>
 					</div>
-					// The result text
-					<p
-						class="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 [&>span]:relative [&>span]:leading-4 flex flex-row font-bold text-white"
-					>
-						<span class="w-2/5 text-right text-xl bottom-2">{ strconv.Itoa(int(summary.AchievedScore)) }</span>
-						<span class="w-1/5 text-center text-3xl mx-1" role="text" aria-label="av">/</span>
-						<span class="w-2/5 text-left text-xl top-2">{ strconv.Itoa(int(summary.MaxScore)) }</span>
-					</p>
 				</div>
 				@animateFill(int(float64(summary.AchievedScore) / float64(summary.MaxScore) * 100))
 			</div>
 		</section>
-		<section class="flex flex-col gap-4 items-center scrollbar-hide">
-			<h2 class="text-2xl">Oppsummering</h2>
-			<div class="gradient-outline w-fit h-fit">
-				<ol class="list-decimal pl-8 pr-4 py-4 space-y-5 max-h-[calc(100dvh-24rem)] min-w-80 max-w-full overflow-y-auto scrollbar-hide bg-white rounded-card">
-					for _, aq := range summary.AnsweredQuestions {
-						@chosenAnswer(aq)
-					}
-				</ol>
-			</div>
+		<section class="flex flex-col gap-5 items-center scrollbar-hide w-full">
+			<p class="text-balance w-full px-5 py-3 border border-clightindigo rounded-card bg-violet-100 text-center">
+				{ getResponse(summary.AchievedScore, summary.MaxScore).String() }
+			</p>
+			<ol class="w-full gradient-outline outline outline-1 outline-[transparent] marker:text-[linkText] marker:font-bold list-decimal pl-8 pr-4 py-4 space-y-5 bg-white rounded-card">
+				for _, aq := range summary.AnsweredQuestions {
+					@chosenAnswer(aq)
+				}
+			</ol>
 		</section>
 		if summary.HasArticlesToShow {
 			<button
 				hx-get={ fmt.Sprintf("/api/v1/quiz/articles?quiz-id=%v", summary.QuizID.String()) }
 				hx-target="#quiz-summary"
 				hx-swap="outerHTML"
-				class="text-xl py-2 px-8 w-min rounded-button bg-white gradient-outline gradient-shadow"
+				class="text-xl py-2 px-8 gradient-bg-button"
 			>Neste</button>
 		} else {
 			<a
 				href="/quiz"
-				class="gradient-bg-button gradient-shadow px-8 py-3"
+				class="text-xl py-2 px-8 gradient-bg-button"
 			>Ferdig</a>
 		}
 	</div>
@@ -92,7 +131,7 @@ script animateFill(percent int) {
 	// After a delay, set the top position.
 	setTimeout(() => {
 		circleFill.style.top = `${100-percent}%`;
-	}, 1000);
+	}, 100);
 }
 
 templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
@@ -113,7 +152,7 @@ templ chosenAnswer(aq user_quiz_summary.AnsweredQuestion) {
 			<div class="shrink-0">
 				if aq.IsCorrect {
 					<span aria-label="korrekt">
-						@icons.Checkmark(100, "green", 20, 20)
+						@icons.Checkmark(80, "green", 20, 20)
 					</span>
 				} else {
 					<span aria-label="ukorrekt">

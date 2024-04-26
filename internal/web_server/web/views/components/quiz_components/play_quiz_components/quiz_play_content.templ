@@ -13,12 +13,12 @@ import (
 templ QuizPlayContent(data *user_quiz.QuizData) {
 	<section
 		id="quiz-play-content"
-		class="flex flex-col items-center py-2 gap-6"
+		class="flex flex-col items-center md:py-2 gap-3 md:gap-6"
 	>
 		<div class="flex justify-between items-center w-full ">
 			<div class="w-24">
-				<a href="/quiz" aria-label="Lukk quiz">
-					@icons.Cross(3, "black", 40, 40)
+				<a href="/quiz" aria-label="Lukk quiz" class="!border-none">
+					@icons.Cross(3, "currentColor", 40, 40)
 				</a>
 			</div>
 			@timer(data.SecondsLeft, data.CurrentQuestion.TimeLimitSeconds)
@@ -28,12 +28,12 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 		</div>
 		if data.CurrentQuestion.ImageURL.String() != "" {
 			<img
-				class="h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
+				class="h-32 md:h-48 lg:h-60 object-cover rounded-card shadow-md mx-auto"
 				src={ data.CurrentQuestion.ImageURL.String() }
 				alt=""
 			/>
 		}
-		<h2 class="text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
+		<h2 class="text-xl md:text-2xl font-bold text-center">{ data.CurrentQuestion.Text }</h2>
 		@AnswerButtons(&data.CurrentQuestion)
 		@progressBar(data.CurrentQuestion.Arrangement, data.PartialQuiz.QuestionNumber)
 		if !utils.IsUserAuthenticated(ctx) {
@@ -45,31 +45,35 @@ templ QuizPlayContent(data *user_quiz.QuizData) {
 // Template for a simple progress bar built with divs.
 templ progressBar(current uint, total uint) {
 	<div
-		class="flex justify-center items-center gap-2 isolate"
+		class="flex justify-center items-center gap-2 isolate fixed bottom-3 bg-gray-100 rounded-[50vw] py-2 px-3 drop-shadow-md"
 		role="progressbar"
 		aria-label="Spørsmål"
 		aria-valuemin="0"
 		aria-valuenow={ fmt.Sprint(current) }
 		aria-valuemax={ fmt.Sprint(total) }
 	>
-		for i := uint(0); i < total; i++ {
-			<div
-				if i < current {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2"
-				} else {
-					class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2"
-				}
-			>
-				if i < total-1 {
-					<div
-						if i+1 < current {
-							class="w-4 h-2 bg-gray-600 relative -right-5 -z-10"
-						} else {
-							class="w-4 h-2 bg-gray-400 relative -right-5 -z-10"
-						}
-					></div>
-				}
-			</div>
+		if total < 3 || total > 10 {
+			<p>{ fmt.Sprintf("Spørsmål %d av %d", current, total) }</p>
+		} else {
+			for i := uint(0); i < total; i++ {
+				<div
+					if i < current {
+						class="flex flex-col justify-center w-6 h-6 bg-gray-600 rounded-1/2 outline outline-3 outline-[transparent]"
+					} else {
+						class="flex flex-col justify-center w-6 h-6 bg-gray-400 rounded-1/2 outline outline-1 outline-[transparent]"
+					}
+				>
+					if i < total-1 {
+						<div
+							if i+1 < current {
+								class="w-4 h-2 bg-gray-600 relative -right-5 -z-10 outline outline-1 outline-[transparent]"
+							} else {
+								class="w-4 h-2 bg-gray-400 relative -right-5 -z-10 outline outline-1 outline-[transparent]"
+							}
+						></div>
+					}
+				</div>
+			}
 		}
 	</div>
 }

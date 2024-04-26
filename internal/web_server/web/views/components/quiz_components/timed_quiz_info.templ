@@ -1,0 +1,65 @@
+package quiz_components
+
+// Shows timed quiz info dialog if the TimeQuizInfoDialog is in the DOM
+// and local storage does not have 'dont-show-time-warning'='true'
+
+script triggerTimedQuizInfo() {
+    const dontShow = window.localStorage.getItem('dont-show-time-warning');
+    const dialog = document.getElementById('time-quiz-info-dialog');
+    if (dialog && dontShow !== 'true') {
+        event.preventDefault()
+        dialog.dispatchEvent(new CustomEvent('quiz-play-clicked', {detail: event}));
+    }
+}
+
+// Dialog with info about timed quizzes.
+// Included a "dont show again" checkbox, value stored in local storage.
+templ TimeQuizInfoDialog() {
+	<dialog
+		id="time-quiz-info-dialog"
+		class="px-10 py-3 bg-white rounded-card border border-violet-100 "
+	>
+		<div
+			class="flex flex-col gap-2"
+		>
+			<h1 class="text-2xl font-semibold mb-1">Info</h1>
+			<p>Spørsmålene har en tidsgrense!</p>
+			<p>Svar raskere for å få <b>mer poeng</b>!</p>
+			<p class="text-gray-700 text-sm leading-tight">
+				Du kan svare etter tiden har gått ut, 
+				<br/>
+				men du vil få mindre poeng.
+			</p>
+			<label for="time-quiz-info-dont-show-again">
+				<input type="checkbox" name="dont-show-again" id="time-quiz-info-dont-show-again"/>
+				ikke vis igjen
+			</label>
+			<button
+				id="time-quiz-info-dialog-ok-button"
+				class="gradient-bg-button py-2 px-10 mx-auto mt-4"
+			>Ok</button>
+		</div>
+	</dialog>
+	@showTimedQuizInfoOnEvent()
+}
+
+// Adds event listener to the the TimeQuizInfoDialog, opens it on the 'time-quiz-info-dialog' event.
+// Expects the event to be a custom event with detail property set to the original click event.
+
+script showTimedQuizInfoOnEvent() {
+    const dialog = document.getElementById('time-quiz-info-dialog');
+    dialog.addEventListener('quiz-play-clicked',(evt) => {
+        dialog.showModal();
+
+        const okButton = dialog.querySelector('#time-quiz-info-dialog-ok-button');
+        okButton.onclick = function(clickEvt) {
+            const checkBox = dialog.querySelector('#time-quiz-info-dont-show-again')
+            if (checkBox.checked) {
+                window.localStorage.setItem('dont-show-time-warning','true');
+            }
+            dialog.close();
+            // set location to the link of the original anchor
+            window.location = evt.detail.target.href;
+        };
+    });
+}

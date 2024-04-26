@@ -14,19 +14,20 @@ import (
 )
 
 // Constants for the input names (for HTTP requests)
-const QuizTitle = "quiz-title"
-const QuizImageURL = "quiz-image-url"
-const QuizPublished = "quiz-is-published"
-const QuizArticleURL = "quiz-article-url"
-const QuizActiveFrom = "quiz-active-from"
-const QuizActiveTo = "quiz-active-to"
+const (
+	QuizTitle      = "quiz-title"
+	QuizPublished  = "quiz-is-published"
+	QuizArticleURL = "quiz-article-url"
+	QuizActiveFrom = "quiz-active-from"
+	QuizActiveTo   = "quiz-active-to"
+)
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
 templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<script src="https://cdn.jsdelivr.net/npm/sortablejs@v1/Sortable.min.js"></script>
-		<div class="relative flex flex-col items-center gap-6 max-w-screen-sm m-auto p-5">
+		<div class="relative flex flex-col items-center gap-6 max-w-screen-md m-auto p-5">
 			<div
 				id="changes-saved-message"
 				class="fixed bottom-4 right-4 opacity-100 hidden flex-row gap-1 bg-white rounded-button border-4 border-cindigo px-4 py-2
@@ -54,34 +55,27 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				document.body.addEventListener("htmx:afterSwap", (event) => {
 					// If the swap is successful, and it was not used to open the question modal
 					// Display a 'saved' message for 3 seconds
-					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' && event.target.id != 'alternatives-table') {
+					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' 
+					&& event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
+					&& event.target.id != 'question-article-images') {
 						changesSaved();
 					}
 				})
 			</script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringene automatisk. (Dette gjelder ikke for bilder).</p>
+			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringen automatisk. (Dette gjelder ikke for bilder).</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm() {
-				<div class="flex flex-row items-center gap-3 mb-1">
-					<label for={ QuizTitle } class="block font-bold">Tittel</label>
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<label for={ QuizTitle } class="block font-bold">Velg tittel</label>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
-			// Quiz Image
-			<form class="w-full my-1" hx-encoding="multipart/form-data">
-				<div class="flex flex-row items-center gap-3 mb-1">
-					<label for={ QuizImageURL } class="block font-bold">Forsidebilde</label>
-					@components.LoadingIndicator()
-				</div>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					&quiz.ImageURL, QuizImageURL, true, "")
-			</form>
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
-				<div class="flex flex-row items-center gap-3 mb-1">
-					<h2 class="font-bold">Artikler i quizen</h2>
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="font-bold">Velg artikler <span class="font-normal text-sm text-gray-600">(valgfritt)</span></h2>
 					@components.TooltipButton("Disse artiklene kan brukes for å linke et spørsmål direkte til en artikkel.")
 					@components.LoadingIndicator()
 				</div>
@@ -109,21 +103,20 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</ul>
 				@components.ErrorText("error-article-list", "")
 				@articleList()
-			}
-			// Quiz Active Time
-			@dashboard_components.EditQuizForm() {
-				<div class="flex flex-row items-center gap-3 mb-1">
-					<h2 class="font-bold">Aktiv</h2>
-					@components.TooltipButton("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
-					@components.LoadingIndicator()
-				</div>
-				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo, QuizActiveTo, "")
+				<script>
+					document.body.addEventListener("htmx:afterSwap", (event) => {
+						// If the swap is successful, and the target was the "article list", clear the input
+						if (event.detail.xhr.status < 300 && event.target.id == "article-list") {
+							document.querySelector("#quiz-article-url").value = ""
+						}
+					})
+				</script>
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm() {
-				<div class="flex flex-row items-center gap-3 mb-1">
-					<h2 class="font-bold">Spørsmål</h2>
-					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. Det er anbefalt mellom 5 til 10 spørsmål per quiz, men det er ingen begrensning. For å endre rekkefølgen på spørsmålene, trykk og drag dem til ønsket plassering.")
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="font-bold">Lag spørsmål</h2>
+					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. For å endre rekkefølgen, trykk og drag dem til ønsket plassering i listen. Anbefalt: 5–10 spørsmål.")
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
@@ -161,8 +154,28 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@icons.Plus(80, "#5B14F2", 20, 20)
 				</button>
 			}
-			@components.LoadingIndicator()
-			@components.ErrorText("error-quiz", "")
+			// Quiz Image
+			<form class="w-full my-1" hx-encoding="multipart/form-data" onsubmit="return false;">
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="block font-bold">Velg forsidebilde</h2>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					fmt.Sprintf("/api/v1/admin/quiz/image/update-suggestions?quiz-id=%s", quiz.ID), &quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
+			</form>
+			// Quiz Active Time
+			@dashboard_components.EditQuizForm() {
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<h2 class="font-bold">Velg aktiv periode</h2>
+					@components.TooltipButton("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
+					@components.LoadingIndicator()
+				</div>
+				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo, QuizActiveTo, "")
+			}
+			<div>
+				@components.LoadingIndicator()
+				@components.ErrorText("error-quiz", "")
+			</div>
 			// Quiz Buttons: Delete, Hide, OK
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row flex-wrap justify-center w-full px-5 gap-5">
@@ -170,13 +183,13 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						type="button"
 						class="bg-red-600 text-white font-bold px-4 py-2 rounded-button"
 						hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/delete-quiz?quiz-id=%s", quiz.ID) }
-						hx-target-4*=".error-quiz"
+						hx-target-error=".error-quiz"
 						hx-sync="closest form:abort"
 						hx-indicator="previous .htmx-indicator"
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button">Ferdig</a>
+					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button border border-1 border-[transparent]">Ferdig</a>
 				</div>
 			}
 		</div>
