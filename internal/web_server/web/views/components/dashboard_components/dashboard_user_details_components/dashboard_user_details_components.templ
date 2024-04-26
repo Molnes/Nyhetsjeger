@@ -42,51 +42,64 @@ templ UserDetailsTable(user *users.User) {
 // Sends post requests to generate new table with rankings whenever the inputs change.
 templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId uuid.UUID) {
 	<form
-		class="flex flex-col"
 		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
 		hx-swap="outerHTML"
 		id={ monthAndYearForm }
 		onsubmit="return false;"
 	>
-		<label for="month-input">
-			Velg måned
-			<select
-				name={ MonthFormName }
-				id="month-input"
-				hx-trigger="input changed"
-				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
-			>
-				@monthOption(time.January, "Januar", chosenMonth)
-				@monthOption(time.February, "Februar", chosenMonth)
-				@monthOption(time.March, "Mars", chosenMonth)
-				@monthOption(time.April, "April", chosenMonth)
-				@monthOption(time.May, "Mai", chosenMonth)
-				@monthOption(time.June, "Juni", chosenMonth)
-				@monthOption(time.July, "Juli", chosenMonth)
-				@monthOption(time.August, "August", chosenMonth)
-				@monthOption(time.September, "September", chosenMonth)
-				@monthOption(time.October, "Oktober", chosenMonth)
-				@monthOption(time.November, "November", chosenMonth)
-				@monthOption(time.December, "Desember", chosenMonth)
-			</select>
-		</label>
-		<label
-			for="year-input"
-		>
-			Velg år
-			<input
-				hx-trigger="input changed"
-				hx-validate="true"
-				hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
-				name={ YearFormName }
-				id="year-input"
-				type="number"
-				min="2023"
-				max="2099"
-				step="1"
-				value={ fmt.Sprintf("%d", chosenYear) }
-			/>
-		</label>
+		<table class="border-separate border-spacing-y-2">
+			<tr>
+				<td>
+					<label for="month-input" class="py-2 pr-2">
+						Velg måned
+					</label>
+				</td>
+				<td>
+					<select
+						class="p-2 w-44 "
+						name={ MonthFormName }
+						id="month-input"
+						hx-trigger="input changed"
+						hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
+					>
+						@monthOption(time.January, "Januar", chosenMonth)
+						@monthOption(time.February, "Februar", chosenMonth)
+						@monthOption(time.March, "Mars", chosenMonth)
+						@monthOption(time.April, "April", chosenMonth)
+						@monthOption(time.May, "Mai", chosenMonth)
+						@monthOption(time.June, "Juni", chosenMonth)
+						@monthOption(time.July, "Juli", chosenMonth)
+						@monthOption(time.August, "August", chosenMonth)
+						@monthOption(time.September, "September", chosenMonth)
+						@monthOption(time.October, "Oktober", chosenMonth)
+						@monthOption(time.November, "November", chosenMonth)
+						@monthOption(time.December, "Desember", chosenMonth)
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="year-input" class="py-2 pr-2">
+						Velg år
+					</label>
+				</td>
+				<td>
+					<input
+						class="p-2 w-44"
+						hx-trigger="input changed"
+						hx-validate="true"
+						hx-post={ fmt.Sprintf("/api/v1/admin/user-ranking/generate-table?user-id=%s", userId) }
+						name={ YearFormName }
+						id="year-input"
+						type="number"
+						min="2023"
+						max="2099"
+						step="1"
+						value={ fmt.Sprintf("%d", chosenYear) }
+					/>
+				</td>
+			</tr>
+		</table>
 	</form>
 	@syncQueryParameters(monthAndYearForm, MonthQueryParam, YearQueryParam)
 }

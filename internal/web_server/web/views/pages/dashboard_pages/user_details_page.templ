@@ -14,7 +14,7 @@ templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection,
 			<h1 class="text-4xl">Brukerinformasjon</h1>
 			<h2 class="text-2xl">Detaljer</h2>
 			@dashboard_user_details_components.UserDetailsTable(user)
-			<h2 class="text-2xl">Rankering</h2>
+			<h2 class="text-2xl mt-4">Rankering</h2>
 			@dashboard_user_details_components.MonthAndYearSelectionForm(chosenMonth, chosenYear, user.ID)
 			@dashboard_user_details_components.UserAllRankingTable(ranking)
 		</div>
