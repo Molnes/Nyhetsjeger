@@ -1018,7 +1018,7 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 
 	uai, err := usernames.GetUsernameAdminInfo(aah.sharedData.DB, adjPage, nounPage, pages, search)
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-username", "Noe gikk galt under henting av data. Prøv igjen senere. Hvis problemet vedvarer, kontakt administrator."))
 	}
 
 	// Creates a relative path with the queryparams to update the url of
