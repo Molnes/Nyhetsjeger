@@ -2,6 +2,7 @@ package user_admin
 
 import "github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 import "net/url"
+import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 
 // Tables of the two components an username is created from: Nouns and adjectives
 templ UsernameTables(uai *usernames.UsernameAdminInfo, url *url.URL) {
@@ -31,5 +32,6 @@ templ UsernameTables(uai *usernames.UsernameAdminInfo, url *url.URL) {
 	</script>
 		@WordTable(uai.Adjectives, "Adjektiv", uai.AdjPage, uai.AdjWordCount, "adjective-table", "adj", uai.UsernamesPerPage, url)
 		@WordTable(uai.Nouns, "Substantiv", uai.NounPage, uai.NounWordCount, "noun-table", "noun", uai.UsernamesPerPage, url)
+		@components.ErrorText("error-username", "")
 	</div>
 }
