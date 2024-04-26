@@ -6,14 +6,14 @@ import "net/url"
 
 // Pagination is the main component for the pagination.
 // ID must be unique for each pagination component in the page.
-// queryParamKey is the key for the query parameter that will be used for the pagination.
+// queryParamName is the key for the query parameter that will be used for the pagination.
 // maxPages is the maximum number of pages.
 // page is the current page.
-templ Pagination(id string, queryParamKey string, maxPages int, page int, url *url.URL) {
-	@prevButton(page, id, url, queryParamKey)
+templ Pagination(id string, queryParamName string, maxPages int, page int, url *url.URL) {
+	@prevButton(page, id, url, queryParamName)
 	@pageNumber(page, maxPages)
-	@nextButton(page, maxPages, id, url, queryParamKey)
-	/* @insertHxGet(id, queryParamKey) */
+	@nextButton(page, maxPages, id, url, queryParamName)
+	/* @insertHxGet(id, queryParamName) */
 }
 
 // handlePagination ensures that the page number is within the range of the maximum pages
@@ -32,7 +32,7 @@ func handlePagination(page int, maxPages int) int {
 func createButtonUrl(url url.URL, pageChange int, queryParamName string) string {
 	parameterString := url.Query()
 
-	param := parameterString.Get(queryParamKey)
+	param := parameterString.Get(queryParamName)
 
 	if param == "" {
 		param = "1"
@@ -49,7 +49,7 @@ func createButtonUrl(url url.URL, pageChange int, queryParamName string) string 
 		page = 1
 	}
 
-	parameterString.Set(queryParamKey, strconv.Itoa(page))
+	parameterString.Set(queryParamName, strconv.Itoa(page))
 
 	url.RawQuery = parameterString.Encode()
 
@@ -70,7 +70,7 @@ templ pageNumber(currentPage int, maxPages int) {
 }
 
 // prevButton is the component for the previous button
-templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey string) {
+templ prevButton(page int, parentTableID string, url *url.URL, queryParamName string) {
 	if page <= 1 {
 		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
@@ -83,7 +83,7 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey str
 		<button
 			id={ fmt.Sprintf("prev-button-%v", parentTableID) }
 			hx-trigger="click"
-			hx-post={ createButtonUrl(*url, -1, queryParamKey) }
+			hx-post={ createButtonUrl(*url, -1, queryParamName) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
 			class="border-cindigo border bg-clightindigo text-cindigo rounded-l-button font-bold px-3 py-1"
@@ -92,21 +92,23 @@ templ prevButton(page int, parentTableID string, url *url.URL, queryParamKey str
 }
 
 // nextButton is the component for the next button
-templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, queryParamKey string) {
+templ nextButton(page int, maxPages int, parentTableID string, url *url.URL, queryParamName string) {
 	if page >= maxPages {
-		<button id={ fmt.Sprintf("next-button-%v", parentTableID) } 
-		class="border-cindigo bg-gray-200 border rounded-r-button text-indigo-300 font-bold px-3 py-1" disabled>
+		<button
+			id={ fmt.Sprintf("next-button-%v", parentTableID) }
+			class="border-cindigo bg-gray-200 border rounded-r-button text-indigo-300 font-bold px-3 py-1"
+			disabled
+		>
 			&gt;
 		</button>
 	} else {
 		<button
 			id={ fmt.Sprintf("next-button-%v", parentTableID) }
 			hx-trigger="click"
-			hx-post={ createButtonUrl(*url, 1, queryParamKey) }
+			hx-post={ createButtonUrl(*url, 1, queryParamName) }
 			hx-swap="outerHTML"
 			hx-target="#tables-wrapper"
 			class="border-cindigo border bg-clightindigo rounded-r-button text-cindigo font-bold px-3 py-1"
-
 		>&gt;</button>
 	}
 }
