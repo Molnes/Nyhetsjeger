@@ -54,10 +54,17 @@ script onSave() {
 		},
 		body: JSON.stringify(Array.from(deleteMap.values()))
 	}).then(response => {
+		const errorText = document.querySelector(".error-username");
 		if (response.ok) {
 			deleteMap.clear();
 			//Clear deletemap in sessionStorage.
 			sessionStorage.removeItem("deleteMap");
+		}
+		else {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(result, 'text/html');
+			let res = doc.body.firstChild;
+			errorText.replaceWith(res);
 		}
 	});
 
@@ -78,6 +85,7 @@ script onSave() {
 		},
 		body: JSON.stringify(wordMap)
 	}).then(response => {
+		const errorText = document.querySelector(".error-username");
 		if ( response.ok) {
 			editMap.clear();
 			tableRowMap.clear();
@@ -85,6 +93,11 @@ script onSave() {
 			sessionStorage.removeItem("editMap");
 			sessionStorage.removeItem("tableRowMap");
 			location.reload();
+		} else {
+			let parser = new DOMParser();
+			let doc = parser.parseFromString(result, 'text/html');
+			let res = doc.body.firstChild;
+			errorText.replaceWith(res);
 		}
 	});
 	
