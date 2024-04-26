@@ -148,6 +148,7 @@ type RankingCollection struct {
 	AllTime UserRanking
 }
 
+// Gets a colleciton of user rankings, Monthly, Yearly and AllTime for the given period.
 func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, year uint, timeZone *time.Location, username string) (*RankingCollection, error) {
 	monthRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Month)
 	if err != nil {
@@ -183,6 +184,7 @@ func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, 
 	}, nil
 }
 
+// Creates a UserRanking struct with correct user data but points and placement set to 0.
 func createEmptyRanking(userID uuid.UUID, username string) UserRanking {
 	return UserRanking{
 		userID,
