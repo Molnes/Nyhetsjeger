@@ -46,6 +46,7 @@ templ MonthAndYearSelectionForm(chosenMonth time.Month, chosenYear uint, userId 
 		hx-target={ fmt.Sprintf("#%s", userRankingsTable) }
 		hx-swap="outerHTML"
 		id={ monthAndYearForm }
+		onsubmit="return false;"
 	>
 		<label for="month-input">
 			Velg måned
