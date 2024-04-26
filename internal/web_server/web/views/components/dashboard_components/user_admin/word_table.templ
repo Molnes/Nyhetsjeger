@@ -149,8 +149,9 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 				[&_td]:border-black [&_tr]:h-8"
 		>
 			<thead>
-				<tr class="[&>th]:border-black">
-					<th class="px-4 whitespace-nowrap [&>*]:inline">
+				<tr class="[&>th]:border-clightindigo">
+					<th class="px-4 py-2 pt-3 whitespace-nowrap [&>*]:inline border-b relative">
+						<a href={ templ.SafeURL(fmt.Sprintf("#pagination-%s", tableID)) } class="absolute text-white left-1/2 -translate-x-1/2 top-[9999999px] [&:focus]:top-1 bg-cindigo border-2 border-cindigo px-2 py-1 rounded-button">Hopp over tabell</a>
 						{ tableName }
 					</th>
 				</tr>

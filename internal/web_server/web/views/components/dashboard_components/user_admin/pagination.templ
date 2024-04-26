@@ -9,10 +9,10 @@ import "net/url"
 // queryParamName is the key for the query parameter that will be used for the pagination.
 // maxPages is the maximum number of pages.
 // page is the current page.
-templ Pagination(id string, queryParamName string, maxPages int, page int, url *url.URL) {
-	@prevButton(page, id, url, queryParamName)
-	@pageNumber(page, maxPages)
-	@nextButton(page, maxPages, id, url, queryParamName)
+templ Pagination(tableID string, queryParamName string, maxPages int, page int, url *url.URL) {
+	@prevButton(page, tableID, url, queryParamName)
+	@pageNumber(page, maxPages, tableID)
+	@nextButton(page, maxPages, tableID, url, queryParamName)
 	/* @insertHxGet(id, queryParamName) */
 }
 
@@ -57,13 +57,13 @@ func createButtonUrl(url url.URL, pageChange int, queryParamName string) string 
 }
 
 // pageNumber is the component showing the current page number and the maximum pages
-templ pageNumber(currentPage int, maxPages int) {
+templ pageNumber(currentPage int, maxPages int, tableID string) {
 	if maxPages > 1 {
-		<button class="border-cindigo border-y text-cindigo  px-3 py-1" disabled>
+		<button id={ fmt.Sprintf("pagination-%s", tableID) } class="border-cindigo border-y text-cindigo  px-3 py-1" disabled>
 			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
 		</button>
 	} else {
-		<button class="border-cindigo border-y  text-indigo-300 px-3 py-1" disabled>
+		<button id={ fmt.Sprintf("pagination-%s", tableID) } class="border-cindigo border-y  text-indigo-300 px-3 py-1" disabled>
 			{ fmt.Sprintf("%v of %v", handlePagination(currentPage, maxPages), maxPages) }
 		</button>
 	}
