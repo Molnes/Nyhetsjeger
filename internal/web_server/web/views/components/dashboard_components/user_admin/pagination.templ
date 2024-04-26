@@ -13,7 +13,6 @@ templ Pagination(tableID string, queryParamName string, maxPages int, page int, 
 	@prevButton(page, tableID, url, queryParamName)
 	@pageNumber(page, maxPages, tableID)
 	@nextButton(page, maxPages, tableID, url, queryParamName)
-	/* @insertHxGet(id, queryParamName) */
 }
 
 // handlePagination ensures that the page number is within the range of the maximum pages
