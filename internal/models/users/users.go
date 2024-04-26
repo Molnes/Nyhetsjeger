@@ -220,14 +220,28 @@ func AssignPhonenumberToUser(db *sql.DB, userID uuid.UUID, phonenumber string) e
 	return err
 }
 
-// Assigns the opt-in ranking value to a user in the database
-func AssignOptInRankingToUser(db *sql.DB, userID uuid.UUID, optInRanking bool) error {
+// Returns the participation status of the user in the quiz.
+func GetParticipationStatus(db *sql.DB, userID uuid.UUID) (bool, error) {
+	var participated bool
+	err := db.QueryRow(
+		`SELECT opt_in_ranking 
+	FROM users
+	WHERE id = $1;`, userID,
+	).Scan(&participated)
+	if err != nil {
+		return false, err
+	}
+	return participated, nil
+}
+
+// Sets the user's participation status.
+func SetParticipationStatus(db *sql.DB, userID uuid.UUID, optInRanking bool) error {
 	_, err := db.Exec(
 		`UPDATE users
-			SET opt_in_ranking = $2
-			WHERE id = $1`,
-		userID, optInRanking,
+	SET opt_in_ranking = $1
+	WHERE id = $2;`, optInRanking, userID,
 	)
+
 	return err
 }
 
@@ -304,8 +318,6 @@ func UpdateAcceptedTermsByUserID(db *sql.DB, userid uuid.UUID, isAccepted bool) 
 
 	return nil
 }
-
-
 
 // Returns the number of users in the database
 func GetUserCount(db *sql.DB) (int, error) {

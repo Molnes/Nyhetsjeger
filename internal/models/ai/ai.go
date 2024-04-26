@@ -52,7 +52,9 @@ alternatives: [
 
 There should be at the minimum 2 to maximum 4 alternatives. 
 No other text should be returned. 
-Both the question and the alternatives should be based on the provided article.
+Both the question and the alternatives should be based on the provided article, but do not mention that the question is based on an article.
+Make sure the question contains enough context that anyone who has previously read the article knows to which article the question refers.
+The alternatives should not be longer than 50 characters.
 And it should be in norwegian, if the article is bokmål, the question should be in bokmål.
 If the article is nynorsk, the question should be in nynorsk.
 Article:`
