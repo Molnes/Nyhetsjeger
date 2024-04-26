@@ -142,6 +142,7 @@ ORDER BY total_points DESC;
 	return ranking, nil
 }
 
+// Data transfer object wrapping 3 user rankings in the three DateRanges
 type RankingCollection struct {
 	Monthly UserRanking
 	Yearly  UserRanking
