@@ -102,6 +102,7 @@ func GetUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, ti
 	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
 
 	row := db.QueryRow(`
+    SELECT * FROM (
 SELECT user_id, SUM(total_points_awarded) AS total_points, 
 CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
 
@@ -123,10 +124,11 @@ AND q.published = true
 AND q.is_deleted = false
 AND q.active_from >$1
 AND q.active_to < $2
-AND u.opt_in_ranking = true AND u.id = $3
+AND u.opt_in_ranking = true 
 
 GROUP BY user_id, username
-ORDER BY total_points DESC;
+ORDER BY total_points DESC)
+WHERE user_id = $3;
 
     `, firstMoment, lastMoment, userID)
 
@@ -159,7 +161,7 @@ func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, 
 			return nil, err
 		}
 	}
-	
+
 	yearRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Year)
 	if err != nil {
 		if err == sql.ErrNoRows {
