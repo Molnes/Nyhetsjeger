@@ -10,11 +10,11 @@ const (
 
 // Displays points passed in
 templ PointsDisplay(points uint) {
-	<p class="inline-block text-white px-2 py-1 cgradient rounded-card">
-		<b>Poeng</b>
+	<p class="inline-block">
+		<b class="text-white px-2 py-1 cgradient rounded-card mb-3">Poeng</b>
 		<span
 			id={ PointsDisplayId }
-			class="odometer ml-1"
+			class="odometer pr-2 ml-1"
 		>
 			{ fmt.Sprintf("%v", points) }
 		</span>
