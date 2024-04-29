@@ -29,7 +29,7 @@ templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 			<h3 class="px-2 text-2xl mt-4 mx-auto text-center font-semibold text-gray-800 text-ellipsis overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
 			<div class="px-8">
 				<p class="font-semibold">Aktiv til:</p>
-				<p class="text-gray-600 text-sm">{ date_utils.DateToNorwegianString(quiz.ActiveTo) }</p>
+				<p class="text-gray-600 text-sm">{ date_utils.DateToNorwegianString(quiz.ActiveTo.UTC().Local()) }</p>
 			</div>
 			<a
 				class="gradient-bg-button py-2 px-4 min-w-24 mx-auto mb-4 uppercase"
