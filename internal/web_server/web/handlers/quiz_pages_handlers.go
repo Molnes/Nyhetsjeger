@@ -172,9 +172,9 @@ func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 
 func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
-	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
-	if error != nil {
-		return error
+	user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
@@ -182,9 +182,9 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
 func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 
-	user, error := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
-	if error != nil {
-		return error
+	user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+	if err != nil {
+		return err
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
