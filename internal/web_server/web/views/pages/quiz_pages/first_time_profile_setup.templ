@@ -1,0 +1,17 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+)
+
+templ FirstTimeProfileSetupPage(user *users.User) {
+	@layout_components.BaseLayout("Sette opp profil") {
+		<main
+			id="main"
+			class="min-h-dvh w-full md:w-3/4 lg:w-1/2 mx-auto px-4 text-center flex flex-col justify-center"
+		>
+			<h1>hola { user.Username }</h1>
+		</main>
+	}
+}
