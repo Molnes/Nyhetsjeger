@@ -1,0 +1,40 @@
+package quiz_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/profile_components"
+)
+
+// Page with information and inputs to generate new username and opt in/out of competitions
+templ FirstTimeProfileSetupPage(user *users.User) {
+	@layout_components.BaseLayout("Sette opp profil") {
+		<main
+			id="main"
+			class="min-h-dvh w-full md:w-3/4 lg:w-1/2 mx-auto px-4 flex flex-col justify-center"
+		>
+			<div class="w-fit flex flex-col justify-center gap-10 mx-auto ">
+				<h1 class="text-2xl text-center font-semibold">Hei og vellkommen!</h1>
+				<section>
+					<h2 class="text-xl font-semibold">Brukernavn</h2>
+					<p>Du har blitt tildelt et brukernavn!</p>
+					<p>Trykk på terningen for å generere et nytt tilfeldig brukernavn!</p>
+					<div class="mx-auto">
+						@profile_components.UserRandomizeButton(user)
+					</div>
+				</section>
+				<section>
+					<h2 class="text-xl font-semibold">Bli med i konkuranser</h2>
+					<p>
+						Brukernavnet ditt blir synnlig i topplistene,
+						og du kan bli kontaktet av oss for å bli premiert!
+					</p>
+					<div class="flex items-center flex-row justify-center mt-4">
+						@profile_components.Participation_chackbox(user.OptInRanking)
+					</div>
+				</section>
+				<a class="gradient-bg-button py-2 px-4 min-w-24 mx-auto mb-4 uppercase" href="/quiz">Ferdig</a>
+			</div>
+		</main>
+	}
+}
