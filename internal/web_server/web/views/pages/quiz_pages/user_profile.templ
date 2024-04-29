@@ -7,67 +7,83 @@ import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/p
 //Javascript function to show the delete confirmation modal
 
 script showDeleteConfirmationModal() {
-document.addEventListener("htmx:confirm", function(e) {
+        document.addEventListener("htmx:confirm", function (e) {
+                if (e.target.id === "delete-button") {
+                        e.preventDefault();
+                        document.getElementById("modal").classList.remove("hidden");
+                        document.getElementById("modal").classList.add("flex");
 
-if (e.target.id === "delete-button") {
+                        document
+                                .getElementById("accept-button")
+                                .addEventListener("click", function () {
+                                        document.getElementById("modal").classList.add("hidden");
+                                        document.getElementById("modal").classList.remove("flex");
+                                        e.detail.issueRequest(true);
+                                });
 
-e.preventDefault();
-document.getElementById("modal").classList.remove("hidden");
-document.getElementById("modal").classList.add("flex");
-
-document.getElementById("accept-button").addEventListener("click", function() {
-document.getElementById("modal").classList.add("hidden");
-document.getElementById("modal").classList.remove("flex");
-e.detail.issueRequest(true)
-});
-
-document.getElementById("refuse-button").addEventListener("click", function() {
-document.getElementById("modal").classList.add("hidden");
-document.getElementById("modal").classList.remove("flex");
-});
-}
-})
+                        document
+                                .getElementById("refuse-button")
+                                .addEventListener("click", function () {
+                                        document.getElementById("modal").classList.add("hidden");
+                                        document.getElementById("modal").classList.remove("flex");
+                                });
+                }
+        });
 }
 
 templ UserProfile(u *users.User) {
-@layout_components.QuizLayoutMenu("Nyhetsjeger - Profil") {
-@showDeleteConfirmationModal()
-<div class="mt-10 flex flex-col items-center gap-4">
-        <div id="modal"
-                class="bg-black bg-opacity-40 w-full h-full z-50 fixed top-0 left-0 flex justify-center items-center hidden">
-                <div class="w-full h-full flex justify-center items-center">
-                        <div class="w-1/3 bg-white rounded-card grid px-6 py-4 gap-3">
-                                <p class="text-lg text-center">Er du sikker på at du ønsker å slette kontoen din? Det er
-                                        permanent!</p>
-                                <div class="flex justify-evenly gap-3">
-                                        <button id="accept-button"
-                                                class="py-2 px-6  border-2 rounded-button font-bold bg-red-500 text-white">Slett!</button>
-                                        <button id="refuse-button"
-                                                class="py-2 px-6 bg-white border-2 rounded-button font-bold ">Avbryt</button>
-                                </div>
-                        </div>
-                </div>
-        </div>
-        <form autocomplete="off" class="grid gap-4 p-4">
-                <h1 class="text-3xl font-bold">Profil instillinger</h1>
-                <div>
-                        @profile_components.UserRandomizeButton(u)
-                </div>
-                <div class="flex items-center flex-row justify-center">
-                        @profile_components.Participation_chackbox(u.OptInRanking)
-                </div>
-                <ul class="mt-10 grid gap-4">
-                        <li class="flex items-center gap-3">
-                                <button class="block p-2 hover:bg-cblue w-full  bg-cindigo text-white rounded-input font-bold"
-                                        hx-post="/auth/logout">Logg ut</button>
-                        </li>
-                        <li class="flex items-center gap-3">
-                                <button id="delete-button" hx-delete="/api/v1/quiz/profil" hx-confirm=""
-                                        class="block p-2 hover:bg-red-500 w-full  bg-red-500 text-white rounded-input font-bold "
-                                        type="button">Slett konto</button>
-                        </li>
-                </ul>
-        </form>
-</div>
-}
+	@layout_components.QuizLayoutMenu("Nyhetsjeger - Profil") {
+		@showDeleteConfirmationModal()
+		<div class="mt-10 flex flex-col items-center gap-4">
+			<div
+				id="modal"
+				class="bg-black bg-opacity-40 w-full h-full z-50 fixed top-0 left-0 flex justify-center items-center hidden"
+			>
+				<div class="w-full h-full flex justify-center items-center">
+					<div class="w-1/3 bg-white rounded-card grid px-6 py-4 gap-3">
+						<p class="text-lg text-center">
+							Er du sikker på at du ønsker å slette kontoen din? Det er
+							permanent!
+						</p>
+						<div class="flex justify-evenly gap-3">
+							<button
+								id="accept-button"
+								class="py-2 px-6  border-2 rounded-button font-bold bg-red-500 text-white"
+							>Slett!</button>
+							<button
+								id="refuse-button"
+								class="py-2 px-6 bg-white border-2 rounded-button font-bold "
+							>Avbryt</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<form autocomplete="off" class="grid gap-4 p-4">
+				<h1 class="text-3xl font-bold">Profil instillinger</h1>
+				<div>
+					@profile_components.UserRandomizeButton(u)
+				</div>
+				<div class="flex items-center flex-row justify-center">
+					@profile_components.Participation_chackbox(u.OptInRanking)
+				</div>
+				<ul class="mt-10 grid gap-4">
+					<li class="flex items-center gap-3">
+						<button
+							class="block p-2 hover:bg-cblue w-full  bg-cindigo text-white rounded-input font-bold"
+							hx-post="/auth/logout"
+						>Logg ut</button>
+					</li>
+					<li class="flex items-center gap-3">
+						<button
+							id="delete-button"
+							hx-delete="/api/v1/quiz/profil"
+							hx-confirm=""
+							class="block p-2 hover:bg-red-500 w-full  bg-red-500 text-white rounded-input font-bold "
+							type="button"
+						>Slett konto</button>
+					</li>
+				</ul>
+			</form>
+		</div>
+	}
 }
