@@ -8,8 +8,10 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/icons"
 )
 
-// QuizCard is a component that displays a preview of a quiz in the form of a card
-templ QuizCard(quiz quizzes.PartialQuiz) {
+// QuizCard is a component that displays a preview of a quiz in the form of a card.
+// Includes the quiz image, title, number of questions, max score, and active to date.
+// Also includes a button to play the quiz.
+templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 	<div class="rounded-card w-56 gradient-shadow gradient-outline isolate outline outline-1 outline-[transparent]">
 		<img
 			src={ quiz.ImageURL.String() }
@@ -17,18 +19,20 @@ templ QuizCard(quiz quizzes.PartialQuiz) {
 			alt=""
 		/>
 		<div class="bg-white mt-0 grid grid-cols-1 gap-4 rounded-b-card">
+			if isActive {
+				<span class="absolute top-1 left-1 text-xs p-2 bg-clightindigo rounded-card">{ fmt.Sprintf("%d",quiz.MaxScore) } poeng</span>
+			}
 			<span class="absolute top-1 right-1 text-xs p-2 bg-clightindigo rounded-card flex items-center">
 				{ fmt.Sprintf("%d",quiz.QuestionNumber) }
 				@icons.QuestionMark(2, "darkorange", 10, 10)
 			</span>
-			<span class="absolute top-1 left-1 text-xs p-2 bg-clightindigo rounded-card">{ fmt.Sprintf("%d",quiz.MaxScore) } poeng</span>
 			<h3 class="px-2 text-2xl mt-4 mx-auto text-center font-semibold text-gray-800 text-ellipsis overflow-hidden whitespace-nowrap">{ quiz.Title }</h3>
 			<div class="px-8">
 				<p class="font-semibold">Aktiv til:</p>
 				<p class="text-gray-600 text-sm">{ date_utils.DateToNorwegianString(quiz.ActiveTo) }</p>
 			</div>
 			<a
-				class="gradient-bg-button py-2 px-10 mx-auto mb-4"
+				class="gradient-bg-button py-2 px-4 min-w-24 mx-auto mb-4 uppercase"
 				if utils.IsUserAuthenticated(ctx) {
 					href={ templ.SafeURL("/quiz/play?quiz-id=" + quiz.ID.String()) }
 				} else {
@@ -36,7 +40,11 @@ templ QuizCard(quiz quizzes.PartialQuiz) {
 				}
 				onclick={ triggerTimedQuizInfo() }
 			>
-				SPILL
+				if !isFinished {
+					Spill
+				} else {
+					Resultater
+				}
 			</a>
 		</div>
 	</div>

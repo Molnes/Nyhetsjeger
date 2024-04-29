@@ -30,7 +30,7 @@ templ GuestHomePage(quiz *quizzes.PartialQuiz) {
 						Tilbake til forsiden
 					</a>
 				} else {
-					@quiz_components.QuizCard(*quiz)
+					@quiz_components.QuizCard(*quiz, false, false)
 				}
 			</div>
 		</main>

@@ -127,7 +127,7 @@ AND q.active_to < $2
 AND u.opt_in_ranking = true 
 
 GROUP BY user_id, username
-ORDER BY total_points DESC)
+ORDER BY total_points DESC) AS ranking
 WHERE user_id = $3;
 
     `, firstMoment, lastMoment, userID)
