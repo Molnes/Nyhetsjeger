@@ -155,6 +155,6 @@ func (h *QuizApiHandler) postAcceptTerms(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	c.Response().Header().Set("HX-Redirect", "/")
+	c.Response().Header().Set("HX-Redirect", "/quiz/sette-opp-profil")
 	return c.NoContent(http.StatusNoContent)
 }
