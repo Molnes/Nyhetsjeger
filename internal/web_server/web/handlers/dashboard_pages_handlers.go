@@ -41,6 +41,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
+	g.GET("/leaderboard-table", dph.leaderboardTable)
 	g.GET("/user", dph.userDetails)
 	g.GET("/username-admin", dph.getUsernameAdministration)
 
@@ -147,11 +148,55 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
-	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+
+	year, err := strconv.Atoi(c.QueryParam("year"))
+	if err != nil {
+		year = time.Now().Year()
+	}
+
+	month, err := strconv.Atoi(c.QueryParam("month"))
+	if err != nil {
+		month = int(time.Now().Month())
+	}
+
+	dateRange, err := strconv.Atoi(c.QueryParam("date-range"))
+	if err != nil {
+		dateRange = 1
+	}
+	dateData := dashboard_pages.TableDate{
+		SelectedRange: user_ranking.DateRange(dateRange),
+		Year:          year,
+		Month:         time.Month(month),
+	}
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Month(month), year, time.Local, user_ranking.DateRange(dateRange))
 	if err != nil {
 		return err
 	}
-	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings))
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings, dateData))
+}
+
+func (dph *DashboardPagesHandler) leaderboardTable(c echo.Context) error {
+	dateRange, err := strconv.Atoi(c.QueryParam("date-range"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid date range")
+	}
+
+	month, err := strconv.Atoi(c.QueryParam("month"))
+	if err != nil && dateRange == 1 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid month")
+	}
+	year, err := strconv.Atoi(c.QueryParam("year"))
+	if err != nil && (dateRange == 2 || dateRange == 3) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid year")
+	}
+
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Month(month), year, time.Local, user_ranking.DateRange(dateRange))
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserRankingTable(rankings))
 }
 
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {

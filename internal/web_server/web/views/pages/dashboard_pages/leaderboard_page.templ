@@ -6,62 +6,192 @@ import (
 	"fmt"
 
 	"github.com/Molnes/Nyhetsjeger/internal/utils/data"
+	"time"
 )
 
-templ LeaderboardPage(rankings []user_ranking.UserRanking) {
+type TableDate struct {
+	SelectedRange user_ranking.DateRange
+	Month         time.Month
+	Year          int
+}
+
+script setQueryParams(dateRange user_ranking.DateRange, month time.Month, year int) {
+        const url = new URL(window.location);
+
+        if (dateRange == 1) {
+                url.searchParams.set("date-range", dateRange);
+                url.searchParams.delete("month");
+                url.searchParams.delete("year");
+        } else if (dateRange == 2) {
+                url.searchParams.set("date-range", dateRange);
+                url.searchParams.set("month", month);
+                url.searchParams.set("year", year);
+        } else if (dateRange == 3) {
+                url.searchParams.set("date-range", dateRange);
+                url.searchParams.set("year", year);
+        }
+        
+	const formElem = document.getElementById('date-selection');
+	formElem.addEventListener('htmx:afterRequest', (evt)=>{
+		if (evt.detail.xhr.status < 400) {
+		let chosenRange = formElem.querySelector('select[name="time"]').value;	
+
+			url.searchParams.set("date-range", dateRange);
+                url.searchParams.set("month", month);
+                url.searchParams.set("year", year);
+			window.history.replaceState(null, "", url.href);
+		}
+	});
+}
+
+templ LeaderboardPage(rankings []user_ranking.UserRanking, tableDateSelection TableDate) {
 	@layout_components.DashBoardLayout("Toppliste") {
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
-			<div class="mx-auto">
-				<table
-					class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
-				>
-					<colgroup>
-						<col class="min-w-22"/>
-						<col class="min-w-48"/>
-						<col class="min-w-30"/>
-					</colgroup>
-					<thead>
-						<tr class="border-collapse bg-cindigo text-white text-center">
-							<th class="px-4 py-3">Plass</th>
-							<th class="px-4 py-3">Navn</th>
-							<th class="px-4 py-3">Poeng</th>
-						</tr>
-					</thead>
-					<tbody>
-						if len(rankings) == 0 {
-							<tr class="text-center">
-								<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
-							</tr>
-						}
-						for _, user := range rankings {
-							<tr
-								class="text-center"
-							>
-								if user.Placement == 0 {
-									<td class="px-4 py-3">-</td>
-								} else if user.Placement == 1 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else if user.Placement == 2 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else if user.Placement == 3 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else {
-									<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
-								}
-								<td class="px-4 py-3"><a href={ templ.URL(fmt.Sprintf("/dashboard/user?user-id=%s", user.User_id.String())) }>{ user.Username } </a> </td>
-								<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+			<div>
+				// rankings can be sorted by month, year, or all time
+				<form id="date-selection" class="flex justify-center items-center">
+					<select name="time" class="border-2 border-cindigo rounded-card px-2 py-1" hx-target="#user-ranking-table" hx-swap="outerHTML">
+						<option
+							value="all_time"
+							hx-get="/dashboard/leaderboard-table?date-range=1"
+							if tableDateSelection.SelectedRange == user_ranking.All {
+								selected
+							}
+						>
+							All time
+						</option>
+						<option
+							value="month"
+							hx-get="/dashboard/leaderboard-table?date-range=2&month=4&year=2024"
+							if tableDateSelection.SelectedRange == user_ranking.Month {
+								selected
+							}
+						>Denne måneden</option>
+						<option
+							value="year"
+							hx-get="/dashboard/leaderboard-table?date-range=3&month=4&year=2024"
+							if tableDateSelection.SelectedRange == user_ranking.Year {
+								selected
+							}
+						>Dette året</option>
+					</select>
+				</form>
+				if tableDateSelection.SelectedRange == user_ranking.Year {
+					@YearController()
+				} else if tableDateSelection.SelectedRange == user_ranking.Month {
+					@MonthController()
+				}
+				@UserRankingTable(rankings)
 			</div>
+			@setQueryParams(tableDateSelection.SelectedRange, tableDateSelection.Month, tableDateSelection.Year)
 		</div>
 	}
+}
+
+templ UserRankingTable(userRankings []user_ranking.UserRanking) {
+	<div class="mx-auto" id="user-ranking-table">
+		<table
+			class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+		>
+			<colgroup>
+				<col class="min-w-22"/>
+				<col class="min-w-48"/>
+				<col class="min-w-30"/>
+			</colgroup>
+			<thead>
+				<tr class="border-collapse bg-cindigo text-white text-center">
+					<th class="px-4 py-3">Plass</th>
+					<th class="px-4 py-3">Navn</th>
+					<th class="px-4 py-3">Poeng</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(userRankings) == 0 {
+					<tr class="text-center">
+						<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
+					</tr>
+				}
+				for _, user := range userRankings {
+					<tr
+						class="text-center"
+					>
+						if user.Placement == 0 {
+							<td class="px-4 py-3">-</td>
+						} else if user.Placement == 1 {
+							<td class="px-4 py-3">
+								<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+							</td>
+						} else if user.Placement == 2 {
+							<td class="px-4 py-3">
+								<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+							</td>
+						} else if user.Placement == 3 {
+							<td class="px-4 py-3">
+								<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
+							</td>
+						} else {
+							<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
+						}
+						<td class="px-4 py-3"><a href={ templ.URL(fmt.Sprintf("/dashboard/user?user-id=%s", user.User_id.String())) }>{ user.Username } </a> </td>
+						<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ MonthController() {
+	<div class="flex justify-center items-center mt-5" id="month-navigation">
+		<form hx-get="/dashboard/leaderboard-table?date-range=2&month=4&year=2024" class="flex justify-center items-center" hx-target="#user-ranking-table" hx-swap="outerHTML">
+			<button class="border-2 border-cindigo rounded-card px-2 py-1" type="submit">Forrige måned</button>
+		</form>
+		<form hx-get="/dashboard/leaderboard-table?date-range=2&month=4&year=2024" class="flex justify-center items-center" hx-target="#user-ranking-table" hx-swap="outerHTML">
+			<button class="border-2 border-cindigo rounded-card px-2 py-1" type="submit">Neste måned</button>
+		</form>
+	</div>
+	@monthController()
+}
+
+script monthController() {
+
+        const formElem = document.getElementById('month-navigation');
+        formElem.addEventListener('submit', (evt)=>{
+                evt.preventDefault();
+                const url = new URL(window.location);
+                url.searchParams.set("date-range", 2);
+                url.searchParams.set("month", () => {
+                        url.searchParams.get("month") == 1 ? 12 : url.searchParams.get("month") - 1;
+                });
+                url.searchParams.set("year", () => {
+                        url.searchParams.get("month") == 1 ? url.searchParams.get("year") - 1 : url.searchParams.get("year");
+                });
+                window.location.href = url.href;
+        });
+}
+
+templ YearController() {
+	<div class="flex justify-center items-center mt-5" id="year-navigation">
+		<form hx-get="/dashboard/leaderboard-table?date-range=3&month=4&year=2024" class="flex justify-center items-center" hx-target="#user-ranking-table" hx-swap="outerHTML">
+			<button class="border-2 border-cindigo rounded-card px-2 py-1" type="submit">Forrige år</button>
+		</form>
+		<form hx-get="/dashboard/leaderboard-table?date-range=3&month=4&year=2024" class="flex justify-center items-center" hx-target="#user-ranking-table" hx-swap="outerHTML">
+			<button class="border-2 border-cindigo rounded-card px-2 py-1" type="submit">Neste år</button>
+		</form>
+	</div>
+	@yearController()
+}
+
+script yearController() {
+        const formElem = document.getElementById('year-navigation');
+        formElem.addEventListener('submit', (evt)=>{
+                evt.preventDefault();
+                const url = new URL(window.location);
+                url.searchParams.set("date-range", 3);
+                url.searchParams.set("year", () => {
+                        url.searchParams.get("year") - 1;
+                }); 
+                window.location.href = url.href;
+        });
 }
