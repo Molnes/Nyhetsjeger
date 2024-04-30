@@ -169,7 +169,7 @@ templ monthOption(month time.Month, norwegianText string, currentlySelectedMonth
 	<option
 		value={ fmt.Sprintf("%02d", int(month)) }
 		if  month == currentlySelectedMonth {
-			selected="true"
+			selected
 		}
 	>
 		{ norwegianText }
