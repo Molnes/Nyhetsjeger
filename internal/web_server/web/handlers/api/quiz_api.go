@@ -49,7 +49,7 @@ func (qah *QuizApiHandler) postParticipation(c echo.Context) error {
 		return err
 	}
 	//returning the new participation status
-	return utils.Render(c, http.StatusOK, profile_components.Participation_chackbox(!currentParticipationStauts))
+	return utils.Render(c, http.StatusOK, profile_components.ParticipationCheckbox(!currentParticipationStauts))
 }
 
 func (qah *QuizApiHandler) getArticles(c echo.Context) error {

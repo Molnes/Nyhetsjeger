@@ -30,7 +30,7 @@ templ FirstTimeProfileSetupPage(user *users.User) {
 						og du kan bli kontaktet av oss for å bli premiert!
 					</p>
 					<div class="flex items-center flex-row justify-center mt-4">
-						@profile_components.Participation_chackbox(user.OptInRanking)
+						@profile_components.ParticipationCheckbox(user.OptInRanking)
 					</div>
 				</section>
 				<a class="gradient-bg-button py-2 px-4 min-w-24 mx-auto mb-4 uppercase" href="/quiz">Ferdig</a>
