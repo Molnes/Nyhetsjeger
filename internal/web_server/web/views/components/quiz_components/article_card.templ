@@ -17,10 +17,10 @@ templ ArticleCard(article *articles.Article) {
 				src={ article.ImgURL.String() }
 				height="120"
 				width="120"
-				class="hidden md:block object-cover w-1/5 aspect-square"
+				class="block object-cover w-1/4 aspect-square"
 				alt=""
 			/>
-			<p class="font-bold text-center px-6 py-4 mx-auto md:text-xl leading-snug">{ article.Title }</p>
+			<p class="font-bold text-center px-3 py-2 md:px-6 md:py-4 mx-auto text-sm sm:text-base md:text-xl leading-snug">{ article.Title }</p>
 		</article>
 	</a>
 }
