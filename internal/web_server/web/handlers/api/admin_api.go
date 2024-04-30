@@ -53,6 +53,7 @@ const (
 	imageFileInput         = "image-file"
 	errorImageElementID    = "error-image"
 	errorAiQuestion        = "error-ai-question"
+	errorConvertingTime    = "Kunne ikke konvertere norsk tid til UTC+00"
 )
 
 // URLs
@@ -343,15 +344,15 @@ func (aah *AdminApiHandler) editQuizActiveStart(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
+	activeStartTime, err := data_handling.NorwayTimeToUtc(activeStart)
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusInternalServerError, components.ErrorText(errorActiveTimeElementID, errorConvertingTime))
 	}
 
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
+	activeEndTime, err := data_handling.NorwayTimeToUtc(activeEnd)
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusInternalServerError, components.ErrorText(errorActiveTimeElementID, errorConvertingTime))
 	}
 
 	// Ensure that the start time is before end time
@@ -381,15 +382,15 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 
 	// Get the time in Norway's timezone
 	activeEnd := c.FormValue(dashboard_pages.QuizActiveTo)
-	activeEndTime, err := data_handling.DateStringToNorwayTime(activeEnd)
+	activeEndTime, err := data_handling.NorwayTimeToUtc(activeEnd)
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusInternalServerError, components.ErrorText(errorActiveTimeElementID, errorConvertingTime))
 	}
 
 	activeStart := c.FormValue(dashboard_pages.QuizActiveFrom)
-	activeStartTime, err := data_handling.DateStringToNorwayTime(activeStart)
+	activeStartTime, err := data_handling.NorwayTimeToUtc(activeStart)
 	if err != nil {
-		return err
+		return utils.Render(c, http.StatusInternalServerError, components.ErrorText(errorActiveTimeElementID, errorConvertingTime))
 	}
 
 	// Ensure that the end time is after start time

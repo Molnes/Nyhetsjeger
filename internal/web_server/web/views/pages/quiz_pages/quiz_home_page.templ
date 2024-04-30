@@ -58,7 +58,7 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 						</p>
 					}
 					for _, quiz := range quizzes {
-						@quiz_components.QuizCard(quiz)
+						@quiz_components.QuizCard(quiz, true, false)
 					}
 				</div>
 			</div>
@@ -71,7 +71,7 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 						</p>
 					}
 					for _, quiz := range olderQuizzes {
-						@quiz_components.QuizCard(quiz)
+						@quiz_components.QuizCard(quiz, false, false)
 					}
 				</div>
 			</div>

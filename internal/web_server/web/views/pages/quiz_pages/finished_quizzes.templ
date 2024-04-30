@@ -4,6 +4,7 @@ package quiz_pages
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 import "github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 import "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/quiz_components"
+import "time"
 
 templ FinishedQuizzes(quizzes []quizzes.PartialQuiz) {
 	@layout_components.QuizLayoutMenu("Fullførte quizer") {
@@ -12,11 +13,11 @@ templ FinishedQuizzes(quizzes []quizzes.PartialQuiz) {
 			<div class="flex flex-wrap items-start p-4 lg:gap-20 gap-10">
 				if len(quizzes) == 0 {
 					<p class="text-xl w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
-                    Du har ikke fullført noen quizer enda.
+						Du har ikke fullført noen quizer enda.
 					</p>
 				}
 				for _, quiz := range quizzes {
-					@quiz_components.QuizCard(quiz)
+					@quiz_components.QuizCard(quiz, time.Now().Before(quiz.ActiveTo), true)
 				}
 			</div>
 		</div>
