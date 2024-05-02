@@ -4,12 +4,15 @@ import (
 	"testing"
 )
 
+// TestIsRoleAdmin tests the IsAdministrator method of the Role type
 func TestIsRoleAdmin(t *testing.T) {
 	quizAdmin := QuizAdmin
 	if !quizAdmin.IsAdministrator() {
 		t.Error("Expected quizAdmin to be an administrator role")
 	}
 }
+
+// TestIsRoleAdminOrganizationAdmin tests the IsAdministrator method of the Role type
 func TestIsRoleAdminOrganizationAdmin(t *testing.T) {
 	organizationAdmin := OrganizationAdmin
 	if !organizationAdmin.IsAdministrator() {
@@ -17,6 +20,7 @@ func TestIsRoleAdminOrganizationAdmin(t *testing.T) {
 	}
 }
 
+// TestIsRoleAdminUser tests the IsAdministrator method of the Role type
 func TestIsRoleAdminUser(t *testing.T) {
 	userRole := User
 	if userRole.IsAdministrator() {
