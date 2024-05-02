@@ -31,6 +31,9 @@ DROP TABLE IF EXISTS questions;
 
 DROP TABLE IF EXISTS quiz_articles;
 
+DROP TABLE IF EXISTS quiz_labels;
+DROP TABLE IF EXISTS labels;
+
 DROP TABLE IF EXISTS quizzes;
 
 DROP TABLE IF EXISTS articles;
