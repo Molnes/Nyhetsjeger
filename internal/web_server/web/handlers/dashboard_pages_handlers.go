@@ -8,6 +8,7 @@ import (
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
@@ -41,6 +42,8 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
+
+	g.GET("/labels", dph.labels)
 	g.GET("/user", dph.userDetails)
 	g.GET("/username-admin", dph.getUsernameAdministration)
 
@@ -63,6 +66,16 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardHomePage(nonPublishedQuizzes, publishedQuizzes))
+}
+
+// Renders the labels page.
+func (dph *DashboardPagesHandler) labels(c echo.Context) error {
+	addMenuContext(c, side_menu.Labels)
+	labels, err := labels.GetLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	return utils.Render(c, http.StatusOK, dashboard_pages.LabelsPage(labels))
 }
 
 // Renders the page for editing quiz.
