@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -38,6 +39,7 @@ type PartialQuiz struct {
 	Published      bool
 	QuestionNumber uint
 	MaxScore       uint
+	Labels         []labels.Label
 }
 
 // Create a default quiz.
@@ -489,6 +491,11 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 		return nil, err
 	}
 	pq.ImageURL = *tempURL
+
+	pq.Labels, err = labels.GetLabelByQuizzID(db, quizid)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pq, nil
 }
