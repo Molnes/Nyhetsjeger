@@ -1,8 +1,8 @@
 package profile_components
 
-templ Participation_chackbox(currentParticipation bool) {
+templ ParticipationCheckbox(currentParticipation bool) {
 	<div id="participation-checkbox" class="flex items-center">
-    <input
+		<input
 			id="comp-check"
 			class="inline w-6 h-6 accent-cindigo cursor-pointer"
 			type="checkbox"
@@ -11,6 +11,7 @@ templ Participation_chackbox(currentParticipation bool) {
 			hx-trigger="change"
 			hx-target="#participation-checkbox"
 			hx-swap="outerHTML"
+			hx-indicator="previous .htmx-indicator"
 			if currentParticipation {
 				checked
 			}
