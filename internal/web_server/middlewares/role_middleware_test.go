@@ -8,6 +8,7 @@ import (
 
 const expectedRoleError = "Expected role to be allowed"
 
+// TestNewAuthorizationMiddleware tests the NewAuthorizationMiddleware function
 func TestIsRoleAllowed(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin}
 	mw := NewAuthorizationMiddleware(nil, allowedRoles)
@@ -16,6 +17,7 @@ func TestIsRoleAllowed(t *testing.T) {
 	}
 }
 
+// TestIsRoleAllowedTwo tests the NewAuthorizationMiddleware function
 func TestIsRoleAllowedTwo(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin, user_roles.OrganizationAdmin}
 	mw := NewAuthorizationMiddleware(nil, allowedRoles)
@@ -27,6 +29,7 @@ func TestIsRoleAllowedTwo(t *testing.T) {
 	}
 }
 
+// TestIsRoleNotAllowed tests the NewAuthorizationMiddleware function
 func TestIsRoleNotAllowed(t *testing.T) {
 	allowedRoles := []user_roles.Role{user_roles.QuizAdmin}
 	mw := NewAuthorizationMiddleware(nil, allowedRoles)
