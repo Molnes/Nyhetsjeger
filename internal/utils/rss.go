@@ -32,6 +32,7 @@ type RSS struct {
 	Channel Channel  `xml:"channel"`
 }
 
+// GetRssFeed gets the rss feed from the root url
 func GetRssFeed() (RSS, error) {
 	//get the root url of the rss feed from .env
 	rssRootUrl := os.Getenv("ARTICLE_ROOT_URL")
