@@ -1,0 +1,22 @@
+package label_components
+
+import "fmt"
+import "github.com/Molnes/Nyhetsjeger/internal/models/labels"
+
+templ LabelItem(label labels.Label) {
+	<div class="flex flex-row items-center justify-between bg-white rounded-lg shadow-md p-4">
+		<div class="flex flex-col gap-2">
+			<h2 class="text-xl font-bold text-gray-800">{ label.Name }</h2>
+			<p class="text-gray-600">{ fmt.Sprintf("Aktiv: %t", label.Active) }</p>
+		</div>
+		<div class="flex flex-row gap-4">
+			<button class="bg-blue-500 text-white px-4 py-2 rounded-lg">Rediger</button>
+			<button
+				hx-delete={ fmt.Sprintf("/api/v1/admin/label?id=%s", label.ID.String()) }
+				hx-swap="outerHTML"
+				hx-target="#labels"
+				class="bg-red-500 text-white px-4 py-2 rounded-lg"
+			>Slett</button>
+		</div>
+	</div>
+}

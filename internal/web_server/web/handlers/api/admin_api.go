@@ -17,6 +17,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/ai"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
@@ -24,10 +25,12 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
+
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/label_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
@@ -104,6 +107,46 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/username/page", aah.getUsernamePages)
 
 	e.POST("/question/generate", aah.getAiQuestion)
+
+	e.DELETE("/label", aah.deleteLabel)
+	e.POST("/label/add", aah.addLabel)
+}
+
+func (aah *AdminApiHandler) addLabel(c echo.Context) error {
+	// Get the label name
+	labelName := c.FormValue("label-name")
+	if strings.TrimSpace(labelName) == "" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Navnet kan ikke være tomt"))
+	}
+
+	// Add the label to the database
+	labelID, err := labels.CreateLabel(aah.sharedData.DB, labelName)
+	if err != nil {
+		return err
+	}
+
+	label, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
+}
+
+func (aah *AdminApiHandler) deleteLabel(c echo.Context) error {
+        // Get the label ID
+        labelID, err := uuid.Parse(c.QueryParam("id"))
+        if err != nil {
+                return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+        }
+
+        // Delete the label from the database
+        err = labels.RemoveLabel(aah.sharedData.DB, labelID)
+        if err != nil {
+                return err
+        }
+
+        return c.NoContent(http.StatusOK)
 }
 
 // Generate a question based on an article using artificial intelligence
