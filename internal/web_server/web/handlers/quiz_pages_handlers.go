@@ -150,7 +150,9 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	}
 
 	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		userRankingInfo = user_ranking.UserRanking{}
+	} else if err != nil {
 		return err
 	}
 
