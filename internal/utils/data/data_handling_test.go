@@ -36,7 +36,7 @@ func TestConvertNullStringToURL(t *testing.T) {
 	}
 }
 
-// TestConvertNullStringToTime tests the ConvertNullStringToTime function
+// TestConvertNullStringToTime tests if time is converted to UTC
 func TestNorwayTimeToUtc(t *testing.T) {
 	// Test when the date is "2021-01-01T12:00"
 	expected, _ := time.Parse("2006-01-02T15:04Z07:00", "2021-01-01T11:00+00:00")
@@ -47,7 +47,7 @@ func TestNorwayTimeToUtc(t *testing.T) {
 	}
 }
 
-// TestFormatNumberWithSpaces tests the FormatNumberWithSpaces function
+// TestFormatNumberWithSpaces tests if numbers are corrected to norwegian format
 func TestFormatNumberWithSpaces(t *testing.T) {
 	// Test when the number is 1000000
 	expected := "1 000 000"
