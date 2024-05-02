@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
@@ -145,7 +146,14 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 
 // Renders the scoreboard page.
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
-	rankings, err := user_ranking.GetRanking(qph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+
+        labels, err := labels.GetLabels(qph.sharedData.DB)
+        if err != nil {
+                return err
+        }
+
+        // TODO: This is a temporary solution, should be changed to a dropdown or similar.
+	rankings, err := user_ranking.GetRanking(qph.sharedData.DB, labels[0].ID)
 	if err != nil {
 		return err
 	}

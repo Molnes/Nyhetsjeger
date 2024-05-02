@@ -23,10 +23,9 @@ const (
 )
 
 // Returns the ranking of all users who have opted in to the ranking.
-func GetRanking(db *sql.DB, month time.Month, year int, timeZone *time.Location, dateRange DateRange) ([]UserRanking, error) {
+func GetRanking(db *sql.DB, labelID uuid.UUID) ([]UserRanking, error) {
 
-	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
-
+	
 	rows, err := db.Query(`
         SELECT user_id, SUM(total_points_awarded) AS total_points, 
 CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
@@ -35,7 +34,11 @@ CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
 FROM "user_quizzes"
 JOIN (
 SELECT * FROM quizzes
-) as q ON q.id = quiz_id
+JOIN (
+SELECT * FROM quiz_labels
+WHERE label_id = $1
+) as ql ON ql.quiz_id = quizzes.id
+) as q ON q.id = user_quizzes.quiz_id
 
 JOIN (
 SELECT * FROM users
@@ -47,13 +50,11 @@ AND answered_within_active_time = true
 
 AND q.published = true
 AND q.is_deleted = false
-AND q.active_from >$1
-AND q.active_to < $2
 AND u.opt_in_ranking = true
 
 GROUP BY user_id, username
 ORDER BY total_points DESC;
-    `, firstMoment, lastMoment)
+    `, labelID)
 
 	if err != nil {
 		return nil, err

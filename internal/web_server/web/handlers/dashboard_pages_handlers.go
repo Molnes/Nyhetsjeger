@@ -160,7 +160,14 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
-	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+
+	labels, err := labels.GetLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Add a way to select which label to show the leaderboard for.
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, labels[0].ID)
 	if err != nil {
 		return err
 	}
