@@ -1,0 +1,38 @@
+package dashboard_pages
+
+import (
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
+	"fmt"
+)
+
+templ LabelsPage(labels []labels.Label) {
+	@layout_components.DashBoardLayout("Etiketter") {
+		<div class="flex flex-col gap-6 px-8 py-6 max-w-screen-md mx-auto">
+			<section>
+				<h1
+					class="text-3xl font-bold text-gray-800 mb-2"
+				>Ettiketter</h1>
+                
+                <p class="text-gray-600 mb-4">
+                    Her kan du se og redigere etiketter
+                </p>
+
+                <div class="flex flex-col gap-4">
+                    for _, label := range labels {
+                        <div class="flex flex-row items-center justify-between bg-white rounded-lg shadow-md p-4">
+                            <div class="flex flex-col gap-2">
+                                <h2 class="text-xl font-bold text-gray-800">{label.Name}</h2>
+                                <p class="text-gray-600">{fmt.Sprintf("Aktiv: %t", label.Active)}</p>
+                            </div>
+                            <div class="flex flex-row gap-4">
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg">Rediger</button>
+                                <button class="bg-red-500 text-white px-4 py-2 rounded-lg">Slett</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+			</section>
+		</div>
+        }
+}
