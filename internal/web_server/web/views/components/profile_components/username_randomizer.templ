@@ -16,6 +16,7 @@ templ UserRandomizeButton(u *users.User) {
 			hx-trigger="click"
 			hx-swap="outerHTML"
 			hx-target="#usrn-in"
+			hx-indicator="previous .htmx-indicator"
 		>
 			@icons.Dice(16, "currentColor", 28, 28)
 		</button>

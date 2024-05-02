@@ -12,6 +12,7 @@ services:
       POSTGRES_USER: ${DB_USER_ROOT}
       POSTGRES_PASSWORD: ${DB_PASSWORD_ROOT}
       POSTGRES_DB: ${DB_NAME}
+      TZ: ${TZ:-Europe/Oslo}
     volumes:
       - db-data:/var/lib/postgresql/data
     profiles:
@@ -29,11 +30,12 @@ services:
     environment:
       MINIO_ROOT_USER: ${BUCKET_USER_ROOT}
       MINIO_ROOT_PASSWORD: ${BUCKET_PASSWORD_ROOT}
+      TZ: ${TZ:-Europe/Oslo}
     volumes:
       - bucket-data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,6 +46,8 @@ services:
   adminer:
     image: adminer
     restart: always
+    environment:
+      TZ: ${TZ:-Europe/Oslo}
     ports:
       - 8081:8080
     depends_on:
@@ -60,6 +64,7 @@ services:
       - 8080:${PORT:-8080}
     environment:
       PORT: ${PORT:-8080}
+      TZ: ${TZ:-Europe/Oslo}
     depends_on:
       - db
     volumes:
@@ -74,6 +79,7 @@ services:
       - .env
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME:-localhost}
+      TZ: ${TZ:-Europe/Oslo}
     ports:
       - "80:80"
       - "443:443"
