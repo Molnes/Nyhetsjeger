@@ -73,15 +73,6 @@ script onSave() {
 
 
 	let tableNames = ["adjective-table", "noun-table"];
-	/* const wordMap = tableNames.reduce((map, tableName, index) => {
-		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
-			return value;
-		});
-		map[tableName] = wordList;
-		return map;
-	}, {}); */
-
-	//Create a map same as wordMap but where instead of a list there is a map with old value key "Old" and new value key "New".
 	const wordMap = tableNames.reduce((map, tableName, index) => {
 		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
 			return { Old: value[0], New: value[1] };
