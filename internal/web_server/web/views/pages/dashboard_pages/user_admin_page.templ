@@ -55,6 +55,10 @@ script onSave() {
 	}).then(response => {
 		const errorText = document.querySelector(".error-username");
 		if (response.ok) {
+			//Remove all instances of the deleted rows from the editMap.
+			for (const [key, value] of deleteMap.entries()) {
+				editMap.delete(key);
+			}
 			deleteMap.clear();
 			//Clear deletemap in sessionStorage.
 			sessionStorage.removeItem("deleteMap");
@@ -71,7 +75,7 @@ script onSave() {
 	let tableNames = ["adjective-table", "noun-table"];
 	const wordMap = tableNames.reduce((map, tableName, index) => {
 		let wordList = Array.from((editMap.entries()).filter(([key, value]) => tableRowMap.get(key) === tableName)).map(([key, value]) => {
-			return value;
+			return { Old: value[0], New: value[1] };
 		});
 		map[tableName] = wordList;
 		return map;
@@ -97,6 +101,7 @@ script onSave() {
 			let doc = parser.parseFromString(result, 'text/html');
 			let res = doc.body.firstChild;
 			errorText.replaceWith(res);
+			location.reload();
 		}
 	});
 	
