@@ -594,17 +594,17 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// I.e. allow for no article, but not invalid article.
 	if articleURLString != "" {
 		tempArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-		switch err {
-		case nil:
-			articleId = tempArticle.ID
-		case sql.ErrNoRows:
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(
-				errorQuestionElementID, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
-		default:
-			return err
+		if err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(
+					errorQuestionElementID, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
+			default:
+				return err
+			}
 		}
-
 		articles.AddArticle(aah.sharedData.DB, tempArticle)
+		articleId = tempArticle.ID
 	}
 
 	// Get the question ID.
@@ -627,14 +627,14 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Get the image file if it exists and upload it
 	imageFile, err := c.FormFile(imageFileInput)
 
-	switch err {
-	case http.ErrMissingFile:
-		hasFile = false
-	case nil:
-		break
-	default:
-		log.Println(err)
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorFetchingImage))
+	if err != nil {
+		switch err {
+		case http.ErrMissingFile:
+			hasFile = false
+		default:
+			log.Println(err)
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorFetchingImage))
+		}
 	}
 
 	if hasFile {
@@ -647,15 +647,15 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	} else if c.FormValue(imageURLInput) != "" {
 
 		imageURL, err = aah.handleImageUploadFromURL(c, imageURL)
-		switch err {
-		case errGetImageName:
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
-		case errParseURL:
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, err.Error()))
-		case nil:
-			break
-		default:
-			return err
+		if err != nil {
+			switch err {
+			case errGetImageName:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
+			case errParseURL:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, err.Error()))
+			default:
+				return err
+			}
 		}
 	}
 
@@ -672,13 +672,14 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	}
 
 	question, err := createQuestion(c, questionForm, aah.sharedData.DB)
-	switch err {
-	case errQuestionFromForm:
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
-	case nil:
-		break
-	default:
-		return err
+	if err != nil {
+		switch err {
+		case errQuestionFromForm:
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
+
+		default:
+			return err
+		}
 	}
 
 	// Return the "question item" element.
