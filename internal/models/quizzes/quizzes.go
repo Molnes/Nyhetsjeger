@@ -492,7 +492,7 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 	}
 	pq.ImageURL = *tempURL
 
-	pq.Labels, err = labels.GetLabelByQuizzID(db, quizid)
+	pq.Labels, err = labels.GetLabelByQuizID(db, quizid)
 	if err != nil {
 		return nil, err
 	}
