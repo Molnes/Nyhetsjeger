@@ -16,27 +16,6 @@ type Article struct {
 	ImgURL     url.URL       // The URL of the main image of the article.
 }
 
-func newArticleNoID(title string, articleURL url.URL, imgURL url.URL) Article {
-
-	return Article{
-		ID: uuid.NullUUID{
-			UUID:  uuid.New(),
-			Valid: true,
-		},
-		Title:      title,
-		ArticleURL: articleURL,
-		ImgURL:     imgURL,
-	}
-}
-func newArticle(ID uuid.NullUUID, title string, articleURL url.URL, imgURL url.URL) Article {
-	return Article{
-		ID:         ID,
-		Title:      title,
-		ArticleURL: articleURL,
-		ImgURL:     imgURL,
-	}
-}
-
 // Get the articles by Quiz ID.
 // These are all the articles attached to a quiz.
 // This does not guarantee they are used in the questions.

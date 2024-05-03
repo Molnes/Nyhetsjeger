@@ -22,6 +22,7 @@ const (
 	REDIRECT_COOKIE_NAME = "redirect-after-login"
 )
 
+// Creates a new AuthenticationMiddleware
 func NewAuthenticationMiddleware(data *config.SharedData, redirectToLogin bool) *AuthenticationMiddleware {
 	return &AuthenticationMiddleware{data, redirectToLogin}
 }

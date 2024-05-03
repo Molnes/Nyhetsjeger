@@ -45,6 +45,7 @@ type UserSessionData struct {
 	Email string
 }
 
+// Converts a User struct to a UserSessionData struct
 func (u *User) IntoSessionData() UserSessionData {
 	return UserSessionData{
 		ID:    u.ID,
@@ -163,6 +164,7 @@ func UpdateUserToken(db *sql.DB, userId uuid.UUID, newAccessToken string, newExp
 	return err
 }
 
+// Updates the role of the given user in the database.
 func scanUserFromFullRow(row *sql.Row) (*User, error) {
 	user := User{}
 	roleString := ""
@@ -245,6 +247,7 @@ func SetParticipationStatus(db *sql.DB, userID uuid.UUID, optInRanking bool) err
 	return err
 }
 
+// Deletes the user with the given ID from the database.
 func DeleteUserByID(db *sql.DB, userID uuid.UUID) error {
 	_, err := db.Exec(
 		`DELETE FROM users

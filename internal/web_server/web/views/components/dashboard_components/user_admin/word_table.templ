@@ -124,7 +124,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 				<label class="block mb-1" for={ fmt.Sprintf("word-input-%s", tableID) }>Legg til ord</label>
 				<div class="flex">
 					<input
-						class="px-2 py-1 w-1/2 flex-grow rounded-input border border-cindigo"
+						class="px-2 py-1 w-1/2 flex-grow rounded-input border border-cindigo bg-purple-100"
 						type="text"
 						name="username-word"
 						required="required"
@@ -132,20 +132,20 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 						id={ fmt.Sprintf("word-input-%s", tableID) }
 					/>
 					<button
-						class="h-8 w-8 ml-4 rounded-full flex justify-center items-center bg-white border border-cindigo"
+						class="h-8 w-8 ml-4 rounded-full flex justify-center items-center bg-clightindigo"
 						type="submit"
 						hx-post={ fmt.Sprintf("%s", makeUsernameWordUrl(tableID)) }
 						hx-swap="none"
 						hx-headers='{"HX-Refresh": refreshPage}'
 					>
-						@icons.Plus(80, "currentColor", 20, 20)
+						@icons.Plus(80, "#5B14F2", 20, 20)
 					</button>
 				</div>
 			</div>
 		</form>
 		<table
 			id={ tableID }
-			class="table-fixed w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem] border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-white
+			class="table-fixed w-52 md:w-[25vw] xl:w-[20vw] 2xl:w-[15vw]  max-w-[40rem] border-separate overflow-hidden border-spacing-0 rounded-card border border-gray-400 bg-violet-50
 				[&_td]:border-black [&_tr]:h-8"
 		>
 			<thead>
@@ -158,7 +158,7 @@ templ WordTable(words []string, tableName string, page int, wordCount int, table
 			</thead>
 			<tbody
 				class="
-						[&_tr:nth-child(odd)]:bg-clightindigo  
+						[&_tr:nth-child(odd)]:bg-violet-100  
 						[&>tr:last-child]:border-b [&>tr:last-child]:border-black"
 			>
 				for i := range usernamesPerPage {

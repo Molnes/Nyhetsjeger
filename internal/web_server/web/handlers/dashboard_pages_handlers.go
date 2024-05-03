@@ -145,6 +145,7 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(question, article, articles, question.QuizID.String(), false))
 }
 
+// Renders the leaderboard page.
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
 	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
@@ -154,6 +155,7 @@ func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings))
 }
 
+// Renders the access settings page.
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 	addMenuContext(c, side_menu.AccessSettings)
 	admins, err := access_control.GetAllAdmins(dph.sharedData.DB)
@@ -163,6 +165,7 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage(admins))
 }
 
+// Renders the user details page.
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
