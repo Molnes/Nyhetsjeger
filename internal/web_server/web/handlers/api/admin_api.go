@@ -1045,7 +1045,6 @@ func (aah *AdminApiHandler) deleteUsername(c echo.Context) error {
 // Takes in a map of of tables, and the old and new words in the tables.
 func (aah *AdminApiHandler) editUsername(c echo.Context) error {
 	wordList := make(map[string][]usernames.OldNew)
-	log.Println(wordList)
 	err := c.Bind(&wordList)
 	if err != nil {
 		return err
