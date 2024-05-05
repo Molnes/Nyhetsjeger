@@ -102,7 +102,13 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	// Get all the questions for the quiz by quiz ID.
 	questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, &uuid_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions))
+	// Get all available labels
+	labels, err := labels.GetActiveLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions, labels))
 }
 
 // Renders the modal for creating a new question.
