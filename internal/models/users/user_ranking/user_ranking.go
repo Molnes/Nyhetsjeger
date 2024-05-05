@@ -114,7 +114,56 @@ func GetDateRange(dateRange DateRange, timeZone *time.Location, year int, month 
 }
 
 // Returns the ranking of the specified user.
-func GetUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, timeZone *time.Location, dateRange DateRange) (UserRanking, error) {
+func GetUserRanking(db *sql.DB, userID uuid.UUID, label labels.Label) (UserRanking, error) {
+
+	row := db.QueryRow(`
+    SELECT * FROM (
+SELECT user_id, SUM(total_points_awarded) AS total_points, 
+CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
+
+RANK() OVER (ORDER BY SUM(total_points_awarded) DESC) as ranking
+FROM "user_quizzes"
+JOIN (
+SELECT * FROM quizzes
+JOIN (
+SELECT * FROM quiz_labels
+WHERE label_id = $1
+) as ql ON ql.quiz_id = quizzes.id
+) as q ON q.id = user_quizzes.quiz_id
+
+
+JOIN (
+SELECT * FROM users
+) as u ON u.id = user_id
+
+WHERE
+is_completed = true
+AND answered_within_active_time = true
+
+AND q.published = true
+AND q.is_deleted = false
+AND u.opt_in_ranking = true 
+
+GROUP BY user_id, username
+ORDER BY total_points DESC) AS ranking
+WHERE user_id = $2;
+
+    `, label.ID, userID)
+
+	ranking := UserRanking{}
+	err := row.Scan(
+		&ranking.User_id,
+		&ranking.Points,
+		&ranking.Username,
+		&ranking.Placement)
+	if err != nil {
+		return UserRanking{}, err
+	}
+	return ranking, nil
+}
+
+// Returns the ranking of the specified user.
+func GetDatedUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, timeZone *time.Location, dateRange DateRange) (UserRanking, error) {
 
 	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
 
@@ -170,7 +219,7 @@ type RankingCollection struct {
 
 // Gets a colleciton of user rankings, Monthly, Yearly and AllTime for the given period.
 func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, year uint, timeZone *time.Location, username string) (*RankingCollection, error) {
-	monthRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Month)
+	monthRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, Month)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			monthRank = createEmptyRanking(userId, username)
@@ -179,7 +228,7 @@ func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, 
 		}
 	}
 
-	yearRank, err := GetUserRanking(db, userId, month, int(year), timeZone, Year)
+	yearRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, Year)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			yearRank = createEmptyRanking(userId, username)
@@ -188,7 +237,7 @@ func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, 
 		}
 	}
 
-	allTimeRank, err := GetUserRanking(db, userId, month, int(year), timeZone, All)
+	allTimeRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, All)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			allTimeRank = createEmptyRanking(userId, username)
