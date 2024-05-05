@@ -27,6 +27,7 @@ type Quiz struct {
 	LastModifiedAt time.Time
 	Published      bool
 	IsDeleted      bool
+	Labels         []labels.Label
 }
 
 // PartialQuiz represents a quiz in the database with fewer fields.
@@ -78,6 +79,11 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 		id)
 
 	quiz, err := scanQuizFromFullRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	quiz.Labels, err = labels.GetLabelByQuizID(db, id)
 	if err != nil {
 		return nil, err
 	}
