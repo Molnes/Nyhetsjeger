@@ -176,7 +176,12 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 
 		ranking, err := user_ranking.GetRanking(qph.sharedData.DB, label.ID)
 		if err != nil {
-			return err
+			if err == sql.ErrNoRows {
+				ranking = []user_ranking.UserRanking{}
+			} else {
+
+				return err
+			}
 		}
 
 		ranksByLabel = append(ranksByLabel, user_ranking.RankingByLabel{
@@ -190,6 +195,20 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	for _, label := range labels {
 		ranking, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), label)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+				if err != nil {
+					return err
+				}
+				userRankingInfo = append(userRankingInfo, user_ranking.UserRankingWithLabel{
+					User_id:   user.ID,
+					Username:  user.Username,
+					Points:    0,
+					Placement: 0,
+					Label:     label,
+				})
+				continue
+			}
 			return err
 		}
 
