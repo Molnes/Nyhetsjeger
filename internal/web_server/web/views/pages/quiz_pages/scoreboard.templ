@@ -8,64 +8,90 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 )
 
-templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
+templ ScoreBoardContainer(labelRanking []user_ranking.RankingByLabel, userInfo user_ranking.UserRanking) {
 	@layout_components.QuizLayoutMenu("Scoreboard") {
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
-			<div class="mx-auto">
-				<table
-					class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
-				>
-					<colgroup>
-						<col class="min-w-22"/>
-						<col class="min-w-48"/>
-						<col class="min-w-30"/>
-					</colgroup>
-					<thead>
-						<tr class="border-collapse bg-cindigo text-white text-center outline outline-1 outline-[transparent]">
-							<th class="px-4 py-3">Plass</th>
-							<th class="px-4 py-3">Navn</th>
-							<th class="px-4 py-3">Poeng</th>
-						</tr>
-					</thead>
-					<tbody>
-						if len(rankings) == 0 {
-							<tr class="text-center">
-								<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
-							</tr>
-						}
-						for _, user := range rankings {
-							<tr
-								if user == userInfo {
-									class="text-center font-bold bg-clightindigo"
-								} else {
-									class="text-center"
-								}
-							>
-								if user.Placement == 0 {
-									<td class="px-4 py-3">-</td>
-								} else if user.Placement == 1 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else if user.Placement == 2 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else if user.Placement == 3 {
-									<td class="px-4 py-3">
-										<div class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold">{ fmt.Sprintf("%d", user.Placement) }</div>
-									</td>
-								} else {
-									<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
-								}
-								<td class="px-4 py-3">{ user.Username }</td>
-								<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
+			for _, ranking := range labelRanking {
+				<div class="w-full flex flex-col items-center">
+					<h2 class="text-2xl font-bold mt-10 mb-5">{ fmt.Sprintf("Toppliste for %s", ranking.Label.Name) }</h2>
+					@Scoreboard(ranking.Ranking, userInfo)
+				</div>
+			}
 		</div>
 	}
+}
+
+templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
+	<div class="mx-auto">
+		<table
+			class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
+		>
+			<colgroup>
+				<col class="min-w-22"/>
+				<col class="min-w-48"/>
+				<col class="min-w-30"/>
+			</colgroup>
+			<thead>
+				<tr
+					class="border-collapse bg-cindigo text-white text-center outline outline-1 outline-[transparent]"
+				>
+					<th class="px-4 py-3">Plass</th>
+					<th class="px-4 py-3">Navn</th>
+					<th class="px-4 py-3">Poeng</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(rankings) == 0 {
+					<tr class="text-center">
+						<td class="px-4 py-3 border" colspan="3">Fant ingen brukere i topplisten!</td>
+					</tr>
+				}
+				for _, user := range rankings {
+					<tr
+						if user==userInfo {
+							class="text-center font-bold bg-clightindigo"
+						} else {
+							class="text-center"
+						}
+					>
+						if user.Placement == 0 {
+							<td class="px-4 py-3">-</td>
+						} else if user.Placement == 1 {
+							<td class="px-4 py-3">
+								<div
+									class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-yellow-500 text-yellow-900 font-bold"
+								>
+									{ fmt.Sprintf("%d", user.Placement) }
+								</div>
+							</td>
+						} else if user.Placement == 2 {
+							<td class="px-4 py-3">
+								<div
+									class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-gray-400 text-gray-800 font-bold"
+								>
+									{ fmt.Sprintf("%d", user.Placement) }
+								</div>
+							</td>
+						} else if user.Placement == 3 {
+							<td class="px-4 py-3">
+								<div
+									class="mx-auto rounded-1/2 w-6 h-6 leading-6 bg-amber-600 text-amber-950 font-bold"
+								>
+									{ fmt.Sprintf("%d", user.Placement) }
+								</div>
+							</td>
+						} else {
+							<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
+						}
+						<td class="px-4 py-3">{ user.Username }</td>
+						<td class="px-4 py-3">
+							{ fmt.Sprintf("%s",
+                                        data_handling.FormatNumberWithSpaces(user.Points)) }
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 }
