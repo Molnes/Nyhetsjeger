@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserRanking represents a user's ranking in the scoreboard.
 type UserRanking struct {
 	User_id   uuid.UUID
 	Username  string
@@ -15,6 +16,16 @@ type UserRanking struct {
 	Placement int
 }
 
+// UserRankingWithLabel represents a user's ranking in the scoreboard with a label.
+type UserRankingWithLabel struct {
+	User_id   uuid.UUID
+	Username  string
+	Points    int
+	Placement int
+	Label     labels.Label
+}
+
+// RankingByLabel represents a ranking of users by label.
 type RankingByLabel struct {
 	Label   labels.Label
 	Ranking []UserRanking
