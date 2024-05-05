@@ -1,0 +1,82 @@
+package dashboard_components
+
+import (
+	"fmt"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
+)
+
+// A dropdown menu for selecting the applied labels for a quiz.
+// When the value is changed, send a POST request to the server to update the labels.
+// It will trigger the previous loading indicator to display.
+// if the labels are clicked, it will remove the label from the quiz.
+templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.Label, quizID string, inputName string,
+	errorText string) {
+	<div id="label-dropdown-wrapper">
+		<div class="flex items-center mb-2">
+			for _, label := range appliedLabels {
+				<div
+					hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/edit-labels?quiz-id=%s&label-id=%s", quizID, label.ID) }
+					hx-trigger="click"
+					hx-swap="outerHTML"
+					hx-target="#label-dropdown-wrapper"
+					hx-target-error=".error-labels"
+					hx-indicator="previous .htmx-indicator"
+					class="flex items-center bg-cindigo text-white px-2 py-1 rounded-full mr-2"
+				>
+					<span class="bg-cindigo text-white px-2 py-1 rounded-full mr-2 cursor-pointer flex items-center">
+						{ label.Name }
+						<a>
+							<svg
+								class="w-4 h-4 text-red-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M6 18L18 6M6 6l12 12"
+								></path>
+							</svg>
+						</a>
+					</span>
+				</div>
+			}
+		</div>
+		<select
+			id={ inputName }
+			name={ inputName }
+			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2"
+			multiple
+			hx-trigger="change"
+			hx-swap="outerHTML"
+			hx-target="#label-dropdown-wrapper"
+			hx-target-error=".error-labels"
+			hx-indicator="previous .htmx-indicator"
+		>
+			for _, label := range availableLabels {
+				if !isInList(label, appliedLabels) {
+					<option
+						hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-labels?quiz-id=%s&label-id=%s", quizID,
+                        label.ID.String()) }
+					>
+						{ label.Name }
+					</option>
+				}
+			}
+		</select>
+		@components.ErrorText("error-labels", errorText)
+	</div>
+}
+
+func isInList(label labels.Label, list []labels.Label) bool {
+	for _, l := range list {
+		if l.ID == label.ID {
+			return true
+		}
+	}
+	return false
+}
