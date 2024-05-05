@@ -147,20 +147,29 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 // Renders the scoreboard page.
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 
-        labels, err := labels.GetLabels(qph.sharedData.DB)
-        if err != nil {
-                return err
-        }
-
-        // TODO: This is a temporary solution, should be changed to a dropdown or similar.
-	rankings, err := user_ranking.GetRanking(qph.sharedData.DB, labels[0].ID)
+	labels, err := labels.GetActiveLabels(qph.sharedData.DB)
 	if err != nil {
 		return err
 	}
 
+	ranksByLabel := []user_ranking.RankingByLabel{}
+	for _, label := range labels {
+
+		ranking, err := user_ranking.GetRanking(qph.sharedData.DB, label.ID)
+		if err != nil {
+			return err
+		}
+
+		ranksByLabel = append(ranksByLabel, user_ranking.RankingByLabel{
+			Label:   label,
+			Ranking: ranking,
+		})
+
+	}
+
 	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
 
-	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings, userRankingInfo))
+	return utils.Render(c, http.StatusOK, quiz_pages.ScoreBoardContainer(ranksByLabel, userRankingInfo))
 }
 
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {

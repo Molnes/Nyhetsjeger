@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/google/uuid"
 )
 
@@ -12,6 +13,11 @@ type UserRanking struct {
 	Username  string
 	Points    int
 	Placement int
+}
+
+type RankingByLabel struct {
+	Label   labels.Label
+	Ranking []UserRanking
 }
 
 type DateRange int
@@ -25,7 +31,6 @@ const (
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB, labelID uuid.UUID) ([]UserRanking, error) {
 
-	
 	rows, err := db.Query(`
         SELECT user_id, SUM(total_points_awarded) AS total_points, 
 CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
