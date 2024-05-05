@@ -124,3 +124,31 @@ func RemoveLabel(db *sql.DB, id uuid.UUID) error {
 	}
 	return nil
 }
+
+// UpdateLabel set is_active
+func UpdateLabel(db *sql.DB, id uuid.UUID, active bool) error {
+	_, err := db.Exec("UPDATE labels SET is_active=$1 WHERE id=$2", active, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetActiveLabels returns a list of all active labels in the database.
+func GetActiveLabels(db *sql.DB) ([]Label, error) {
+	rows, err := db.Query("SELECT id, name, created_at, is_active FROM labels WHERE is_active=true")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	labels := []Label{}
+	for rows.Next() {
+		var label Label
+		if err := rows.Scan(&label.ID, &label.Name, &label.CreatedAt, &label.Active); err != nil {
+			return nil, err
+		}
+		labels = append(labels, label)
+	}
+	return labels, nil
+}
