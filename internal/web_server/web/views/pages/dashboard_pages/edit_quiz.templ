@@ -11,6 +11,7 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 )
 
 // Constants for the input names (for HTTP requests)
@@ -20,11 +21,12 @@ const (
 	QuizArticleURL = "quiz-article-url"
 	QuizActiveFrom = "quiz-active-from"
 	QuizActiveTo   = "quiz-active-to"
+	QuizLabels     = "quiz-labels"
 )
 
 // The "Edit quiz" page. This page is used to edit a quiz.
 // Add title, image, articles, active time, questions and answers.
-templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question) {
+templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]questions.Question, availableLabels []labels.Label) {
 	@layout_components.DashBoardLayout("Rediger Quiz") {
 		<script src="https://cdn.jsdelivr.net/npm/sortablejs@v1/Sortable.min.js"></script>
 		<div class="relative flex flex-col items-center gap-6 max-w-screen-md m-auto p-5">
@@ -37,33 +39,36 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				@icons.Checkmark(80, "#22C55E", 25, 25)
 			</div>
 			<script>
-				function changesSaved() {
-					message = document.querySelector("#changes-saved-message")
+                function changesSaved() {
+                        message = document.querySelector("#changes-saved-message")
 
-						message.classList.remove("hidden")
-						message.classList.add("flex")
-						message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
+                        message.classList.remove("hidden")
+                        message.classList.add("flex")
+                        message.classList.add("animate-[fadeOpacity_3s_linear_forwards]")
 
-						setTimeout(
-							function() {
-								message.classList.add("hidden")
-								message.classList.remove("flex")
-								message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
-							}, 3000)
-				}
+                        setTimeout(
+                                function () {
+                                        message.classList.add("hidden")
+                                        message.classList.remove("flex")
+                                        message.classList.remove("animate-[fadeOpacity_3s_linear_forwards]")
+                                }, 3000)
+                }
 
-				document.body.addEventListener("htmx:afterSwap", (event) => {
-					// If the swap is successful, and it was not used to open the question modal
-					// Display a 'saved' message for 3 seconds
-					if (event.detail.xhr.status < 300 && event.target.id != 'question-modal' 
-					&& event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
-					&& event.target.id != 'question-article-images') {
-						changesSaved();
-					}
-				})
-			</script>
+                document.body.addEventListener("htmx:afterSwap", (event) => {
+                        // If the swap is successful, and it was not used to open the question modal
+                        // Display a 'saved' message for 3 seconds
+                        if (event.detail.xhr.status < 300 && event.target.id != 'question-modal'
+                                && event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
+                                && event.target.id != 'question-article-images') {
+                                changesSaved();
+                        }
+                })
+        </script>
 			<h1 class="text-3xl font-bold">Rediger Quiz</h1>
-			<p class="font-sans font-bold text-gray-500 text-center text-balance">Trykk utenfor et tekstfelt for å lagre endringen automatisk. (Dette gjelder ikke for bilder).</p>
+			<p class="font-sans font-bold text-gray-500 text-center text-balance">
+				Trykk utenfor et tekstfelt for å lagre
+				endringen automatisk. (Dette gjelder ikke for bilder).
+			</p>
 			// Quiz Title
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
@@ -72,10 +77,19 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				</div>
 				@dashboard_components.EditTitleInput(quiz.Title, quiz.ID.String(), QuizTitle, "")
 			}
+			@dashboard_components.EditQuizForm() {
+				<div class="flex flex-row items-center gap-2 mb-1">
+					<label for={ QuizLabels } class="block font-bold">Velg kategorier</label>
+					@components.LoadingIndicator()
+				</div>
+				@dashboard_components.EditAppliedLabels(quiz.Labels, availableLabels, quiz.ID.String(), QuizLabels, "")
+			}
 			// Quiz Articles
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
-					<h2 class="font-bold">Velg artikler <span class="font-normal text-sm text-gray-600">(valgfritt)</span></h2>
+					<h2 class="font-bold">
+						Velg artikler <span class="font-normal text-sm text-gray-600">(valgfritt)</span>
+					</h2>
 					@components.TooltipButton("Disse artiklene kan brukes for å linke et spørsmål direkte til en artikkel.")
 					@components.LoadingIndicator()
 				</div>
@@ -87,7 +101,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				>
 					<li
 						id="no-articles-warning"
-						if len(*articles) == 0 {
+						if len(*articles)==0 {
 							class="text-center p-4"
 						} else {
 							class="text-center p-4 hidden"
@@ -97,26 +111,27 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					</li>
 					for _, article := range *articles {
 						if article.ID.Valid {
-							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz.ID.String())
+							@dashboard_components.ArticleListItem(article.ArticleURL.String(), article.Title,
+								article.ID.UUID.String(), quiz.ID.String())
 						}
 					}
 				</ul>
 				@components.ErrorText("error-article-list", "")
 				@articleList()
 				<script>
-					document.body.addEventListener("htmx:afterSwap", (event) => {
-						// If the swap is successful, and the target was the "article list", clear the input
-						if (event.detail.xhr.status < 300 && event.target.id == "article-list") {
-							document.querySelector("#quiz-article-url").value = ""
-						}
-					})
-				</script>
+                document.body.addEventListener("htmx:afterSwap", (event) => {
+                        // If the swap is successful, and the target was the "article list", clear the input
+                        if (event.detail.xhr.status < 300 && event.target.id == "article-list") {
+                                document.querySelector("#quiz-article-url").value = ""
+                        }
+                })
+        </script>
 			}
 			// Quiz Questions
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
 					<h2 class="font-bold">Lag spørsmål</h2>
-					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. For å endre rekkefølgen, trykk og drag dem til ønsket plassering i listen. Anbefalt: 5–10 spørsmål.")
+					@components.TooltipButton("Man kan legge til, redigere og slette spørsmål. For å endre rekkefølgen, trykk og drag dem til ønsket plassering i listen. Anbefalt: 5-10 spørsmål.")
 					@components.LoadingIndicator()
 				</div>
 				// List of all questions
@@ -127,7 +142,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 				>
 					<li
 						id="no-questions-warning"
-						if len(*questions) == 0 {
+						if len(*questions)==0 {
 							class="text-center p-4"
 						} else {
 							class="text-center p-4 hidden"
@@ -160,8 +175,10 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					<h2 class="block font-bold">Velg forsidebilde</h2>
 					@components.LoadingIndicator()
 				</div>
-				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID), fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
-					fmt.Sprintf("/api/v1/admin/quiz/image/update-suggestions?quiz-id=%s", quiz.ID), &quiz.ImageURL, true, "", dashboard_components.IdPrefixQuiz)
+				@dashboard_components.EditImageInput(fmt.Sprintf("/api/v1/admin/quiz/edit-image?quiz-id=%s", quiz.ID),
+					fmt.Sprintf("/api/v1/admin/quiz/upload-image?quiz-id=%s", quiz.ID),
+					fmt.Sprintf("/api/v1/admin/quiz/image/update-suggestions?quiz-id=%s", quiz.ID), &quiz.ImageURL, true,
+					"", dashboard_components.IdPrefixQuiz)
 			</form>
 			// Quiz Active Time
 			@dashboard_components.EditQuizForm() {
@@ -170,7 +187,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 					@components.TooltipButton("Quizen blir tilgjengelig for brukere først i 'aktiv' perioden selv om den er publisert tidligere, men kan spilles i 'arkivet' etter den ikke lenger er aktiv (for en mindre poengsum).")
 					@components.LoadingIndicator()
 				</div>
-				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo, QuizActiveTo, "")
+				@composite_components.EditActiveTimeInput(quiz.ID.String(), quiz.ActiveFrom, QuizActiveFrom, quiz.ActiveTo,
+					QuizActiveTo, "")
 			}
 			<div>
 				@components.LoadingIndicator()
@@ -189,37 +207,37 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 						hx-confirm="Er du sikker på at du ønsker å slette denne quizen?"
 					>Slett quiz</button>
 					@dashboard_components.ToggleQuizPublished(quiz.Published, quiz.ID.String(), QuizPublished)
-					<a href="/dashboard" class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button border border-1 border-[transparent]">Ferdig</a>
+					<a
+						href="/dashboard"
+						class="bg-clightindigo font-bold px-4 py-2 text-center rounded-button border border-1 border-[transparent]"
+					>Ferdig</a>
 				</div>
 			}
 		</div>
 	}
-	<dialog
-		id="question-modal"
-		class="px-10 py-5 border border-black border-solid min-w-80 max-w-screen-md w-3/4 lg:w-1/2"
-	></dialog>
+	<dialog id="question-modal" class="px-10 py-5 border border-black border-solid min-w-80 max-w-screen-md w-3/4 lg:w-1/2"></dialog>
 	@modalWindowScript()
 }
 
 // Opens the modal window needed to add or edit a question.
 
 script modalWindowScript() {
-		const questionModal = document.getElementById("question-modal");
+const questionModal = document.getElementById("question-modal");
 
-		// Open the modal window
-		function openQuestionModal() {
-			if (!questionModal.open) {
-				questionModal.showModal();
-			}
-		}
+// Open the modal window
+function openQuestionModal() {
+if (!questionModal.open) {
+questionModal.showModal();
+}
+}
 
-		// Add event listener to 'add' and 'edit' question buttons.
-		// When the button is clicked, open the modal window.
-		document.body.addEventListener('htmx:afterOnLoad', function (event) {
-			if (event.detail.elt.id === 'new-question-button' || event.detail.elt.dataset.elementType === 'edit-question-button') {
-				openQuestionModal();
-			}
-		});
+// Add event listener to 'add' and 'edit' question buttons.
+// When the button is clicked, open the modal window.
+document.body.addEventListener('htmx:afterOnLoad', function (event) {
+if (event.detail.elt.id === 'new-question-button' || event.detail.elt.dataset.elementType === 'edit-question-button') {
+openQuestionModal();
+}
+});
 }
 
 // This script is used to observe changes in the article list.
@@ -227,33 +245,33 @@ script modalWindowScript() {
 // If the last article is removed, the warning should be shown.
 
 script articleList() {
-		const articleList = document.getElementById("article-list");
-		const noArticlesWarning = document.getElementById("no-articles-warning");
+const articleList = document.getElementById("article-list");
+const noArticlesWarning = document.getElementById("no-articles-warning");
 
-		// Observe if the children of article list are mutated (added or removed)
-		const observer = new MutationObserver(handleChanges);
-		const config = { childList: true };
-		observer.observe(articleList, config);
+// Observe if the children of article list are mutated (added or removed)
+const observer = new MutationObserver(handleChanges);
+const config = { childList: true };
+observer.observe(articleList, config);
 
-		// If the article list is changed, this function is called
-		function handleChanges(mutationsList, observer) {
-				mutationsList.forEach(mutation => {
-						if (mutation.type === 'childList') {
-								updateWarningVisibility();
-						}
-				});
-		}
+// If the article list is changed, this function is called
+function handleChanges(mutationsList, observer) {
+mutationsList.forEach(mutation => {
+if (mutation.type === 'childList') {
+updateWarningVisibility();
+}
+});
+}
 
-		// Update if the warning should be shown or not
-		const updateWarningVisibility = () => {
-			document.getElementsByClassName("error-article")[0].innerText = "";
-			// If the warning is shown, but an article is appended, hide the warning
-			if (noArticlesWarning && articleList.children.length > 1) {
-				noArticlesWarning.classList.add("hidden");
-			} else if (noArticlesWarning) {
-				noArticlesWarning.classList.remove("hidden");
-			}
-		}
+// Update if the warning should be shown or not
+const updateWarningVisibility = () => {
+document.getElementsByClassName("error-article")[0].innerText = "";
+// If the warning is shown, but an article is appended, hide the warning
+if (noArticlesWarning && articleList.children.length > 1) {
+noArticlesWarning.classList.add("hidden");
+} else if (noArticlesWarning) {
+noArticlesWarning.classList.remove("hidden");
+}
+}
 }
 
 // This script is used to observe changes in the question list.
@@ -261,80 +279,80 @@ script articleList() {
 // If the last question is removed, the warning should be shown.
 
 script questionList() {
-		const questionList = document.getElementById("question-list");
-		const noQuestionsWarning = document.getElementById("no-questions-warning");
+const questionList = document.getElementById("question-list");
+const noQuestionsWarning = document.getElementById("no-questions-warning");
 
-		// Observe if the children of question list are mutated (added or removed)
-		const observer = new MutationObserver(handleChanges);
-		const config = { childList: true };
-		observer.observe(questionList, config);
+// Observe if the children of question list are mutated (added or removed)
+const observer = new MutationObserver(handleChanges);
+const config = { childList: true };
+observer.observe(questionList, config);
 
-		// If the question list is changed, this function is called
-		function handleChanges(mutationsList, observer) {
-				mutationsList.forEach(mutation => {
-						if (mutation.type === 'childList') {
-								updateWarningVisibility();
-						}
-				});
-		}
+// If the question list is changed, this function is called
+function handleChanges(mutationsList, observer) {
+mutationsList.forEach(mutation => {
+if (mutation.type === 'childList') {
+updateWarningVisibility();
+}
+});
+}
 
-		// Update if the warning should be shown or not
-		const updateWarningVisibility = () => {
-			// If the warning is shown, but a question is appended, hide the warning
-			if (noQuestionsWarning && questionList.children.length > 1) {
-				noQuestionsWarning.classList.add("hidden");
-			} else if (noQuestionsWarning) {
-				noQuestionsWarning.classList.remove("hidden");
-			}
-		}
+// Update if the warning should be shown or not
+const updateWarningVisibility = () => {
+// If the warning is shown, but a question is appended, hide the warning
+if (noQuestionsWarning && questionList.children.length > 1) {
+noQuestionsWarning.classList.add("hidden");
+} else if (noQuestionsWarning) {
+noQuestionsWarning.classList.remove("hidden");
+}
+}
 }
 
 // Make the questions sortable, and save the new arrangement.
 
 script sortableQuestions(quizId string) {
-	htmx.onLoad(function(content) {
-    Sortable.create(document.getElementById("question-list"), {
-			animation: 150,
-			handle: ".drag-handle",
-			onEnd: function(event) {
-				// Get all the question IDs and their arrangement in the list (first one is 1, second is 2, etc.)
-				// Send a POST request to the server with this mapping.
-				const questionList = document.getElementById("question-list");
-				const questions = questionList.children;
-				const questionIDs = Array.from(questions).map(question => question.getAttribute("data-question-id"));
-				questionIDs.shift();
+htmx.onLoad(function(content) {
+Sortable.create(document.getElementById("question-list"), {
+animation: 150,
+handle: ".drag-handle",
+onEnd: function(event) {
+// Get all the question IDs and their arrangement in the list (first one is 1, second is 2, etc.)
+// Send a POST request to the server with this mapping.
+const questionList = document.getElementById("question-list");
+const questions = questionList.children;
+const questionIDs = Array.from(questions).map(question => question.getAttribute("data-question-id"));
+questionIDs.shift();
 
-				const idMap = questionIDs.reduce((map, id, index) => {
-					map[index + 1] = id;
-					return map;
-				}, {});
+const idMap = questionIDs.reduce((map, id, index) => {
+map[index + 1] = id;
+return map;
+}, {});
 
-				fetch(`/api/v1/admin/quiz/rearrange-questions?quiz-id=${quizId}`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						"HX-Swap": "outerHTML",
-						"HX-Target": "#question-list",
-					},
-					body: JSON.stringify(idMap),
-				}).then((response) => {
-					let errorText = document.querySelectorAll(".error-question-list")[0];
+fetch(`/api/v1/admin/quiz/rearrange-questions?quiz-id=${quizId}`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+"HX-Swap": "outerHTML",
+"HX-Target": "#question-list",
+},
+body: JSON.stringify(idMap),
+}).then((response) => {
+let errorText = document.querySelectorAll(".error-question-list")[0];
 
-					if (response.status >= 400) {
-						// Show error message if error
-						response.text().then((result) => {
-							let parser = new DOMParser();
-							let doc = parser.parseFromString(result, 'text/html');
-							let res = doc.body.firstChild;
-							errorText.replaceWith(res);
-						})
-					} else if (response.status == 200) {
-						// Clear error message and show "saved" message if success
-						errorText.innerHTML = "";
-						changesSaved();
-					}
-				});
-			}
-		});
-	});
+if (response.status >= 400) {
+// Show error message if error
+response.text().then((result) => {
+let parser = new DOMParser();
+let doc = parser.parseFromString(result, 'text/html');
+let res = doc.body.firstChild;
+errorText.replaceWith(res);
+})
+} else if (response.status == 200) {
+// Clear error message and show "saved" message if success
+errorText.innerHTML = "";
+changesSaved();
+}
+});
+}
+});
+});
 }
