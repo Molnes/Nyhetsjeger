@@ -10,7 +10,7 @@ const (
 	Leaderboard    = 1
 	AccessSettings = 2
 	UserAdmin      = 3
-    Labels          = 4
+	Labels         = 4
 
 	MENU_CONTEXT_KEY = "chosen-side-menu-item"
 )
@@ -32,9 +32,9 @@ templ SideMenu() {
 				@menuItem("Brukernavn", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
 					@icons.Person(1, "currentColor", 20, 20)
 				}
-                @menuItem("Kategorier", "/dashboard/labels", isSelected(ctx, Labels)) {
-                    @icons.Clock(20, "currentColor", 20, 20)
-                }
+				@menuItem("Kategorier", "/dashboard/labels", isSelected(ctx, Labels)) {
+					@icons.MagnifyingGlass(1, "currentColor", 20, 20)
+				}
 				if isUserOrganizationAdmin(ctx) {
 					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
 						@icons.Key(20, "currentColor", 20, 20)
