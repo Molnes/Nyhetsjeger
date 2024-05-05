@@ -8,21 +8,25 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/layout_components"
 )
 
-templ ScoreBoardContainer(labelRanking []user_ranking.RankingByLabel, userInfo user_ranking.UserRanking) {
+templ ScoreBoardContainer(labelRanking []user_ranking.RankingByLabel, userInfo []user_ranking.UserRankingWithLabel) {
 	@layout_components.QuizLayoutMenu("Scoreboard") {
 		<div class="w-full flex flex-col items-center overflow-x-auto">
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			for _, ranking := range labelRanking {
 				<div class="w-full flex flex-col items-center">
 					<h2 class="text-2xl font-bold mt-10 mb-5">{ fmt.Sprintf("Toppliste for %s", ranking.Label.Name) }</h2>
-					@Scoreboard(ranking.Ranking, userInfo)
+					for _, userInfo := range userInfo {
+						if userInfo.Label.ID == ranking.Label.ID {
+							@Scoreboard(ranking.Ranking, userInfo)
+						}
+					}
 				</div>
 			}
 		</div>
 	}
 }
 
-templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRanking) {
+templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.UserRankingWithLabel) {
 	<div class="mx-auto">
 		<table
 			class="border-2 border-cindigo mr-auto text-left rounded-card border-separate border-spacing-0 overflow-hidden"
@@ -49,7 +53,7 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 				}
 				for _, user := range rankings {
 					<tr
-						if user==userInfo {
+						if user.User_id==userInfo.User_id {
 							class="text-center font-bold bg-clightindigo"
 						} else {
 							class="text-center"
