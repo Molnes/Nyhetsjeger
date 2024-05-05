@@ -110,6 +110,9 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 
 	e.DELETE("/label", aah.deleteLabel)
 	e.POST("/label/add", aah.addLabel)
+
+	e.POST("/quiz/edit-labels", aah.editQuizLabels)
+	e.DELETE("/quiz/edit-labels", aah.deleteQuizLabel)
 }
 
 func (aah *AdminApiHandler) addLabel(c echo.Context) error {
@@ -133,20 +136,88 @@ func (aah *AdminApiHandler) addLabel(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
 }
 
+func (aah *AdminApiHandler) editQuizLabels(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", errorInvalidQuizID))
+	}
+
+	// Get the label ID
+	labelID, err := uuid.Parse(c.FormValue("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	// Add the label to the quiz
+	err = labels.AddLabelToQuizz(aah.sharedData.DB, quizID, labelID)
+	if err != nil {
+		return err
+	}
+
+	// get active labels
+	activeLabels, err := labels.GetActiveLabels(aah.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	// get applied labels
+	appliedLabels, err := labels.GetLabelByQuizID(aah.sharedData.DB, quizID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditAppliedLabels(appliedLabels, activeLabels, quizID.String(), "", ""))
+}
+
+func (aah *AdminApiHandler) deleteQuizLabel(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", errorInvalidQuizID))
+	}
+
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	// Remove the label from the quiz
+	err = labels.RemoveLabelFromQuizz(aah.sharedData.DB, quizID, labelID)
+	if err != nil {
+		return err
+	}
+
+	// get active labels
+	activeLabels, err := labels.GetActiveLabels(aah.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	// get applied labels
+	appliedLabels, err := labels.GetLabelByQuizID(aah.sharedData.DB, quizID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditAppliedLabels(appliedLabels, activeLabels, quizID.String(), "", ""))
+}
+
 func (aah *AdminApiHandler) deleteLabel(c echo.Context) error {
-        // Get the label ID
-        labelID, err := uuid.Parse(c.QueryParam("id"))
-        if err != nil {
-                return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
-        }
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
 
-        // Delete the label from the database
-        err = labels.RemoveLabel(aah.sharedData.DB, labelID)
-        if err != nil {
-                return err
-        }
+	// Delete the label from the database
+	err = labels.RemoveLabel(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
 
-        return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusOK)
 }
 
 // Generate a question based on an article using artificial intelligence
