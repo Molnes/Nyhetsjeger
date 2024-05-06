@@ -22,7 +22,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-
 type PostgreSQLContainer struct {
 	testcontainers.Container
 	MappedPort string
@@ -119,20 +118,25 @@ func (s *DbIntegrationTestBaseSuite) TearDownSuite() {
 }
 
 // This is required for the migration files to be available for the migrator utility.
+//
 //go:embed migrations/*.sql
 var fs embed.FS
 
+var migrator *migrate.Migrate
+
 // Creates the migration utility.
 func getMigrator(dbUrl string) (*migrate.Migrate, error) {
-	d, err := iofs.New(fs, "migrations")
-	if err != nil {
-		return nil, err
+	if migrator == nil {
+		d, err := iofs.New(fs, "migrations")
+		if err != nil {
+			return nil, err
+		}
+		migrator, err = migrate.NewWithSourceInstance("iofs", d, dbUrl)
+		if err != nil {
+			return nil, err
+		}
 	}
-	m, err := migrate.NewWithSourceInstance("iofs", d, dbUrl)
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
+	return migrator, nil
 }
 
 // Runs before each test.
