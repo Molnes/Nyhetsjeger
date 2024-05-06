@@ -167,17 +167,28 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
 
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		labelID = uuid.Nil
+	}
+
 	labels, err := labels.GetLabels(dph.sharedData.DB)
 	if err != nil {
 		return err
 	}
 
-	// TODO: Add a way to select which label to show the leaderboard for.
-	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, labels[0].ID)
+	if labelID == uuid.Nil {
+		if len(labels) > 0 {
+			labelID = labels[0].ID
+		}
+	}
+
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, labelID)
 	if err != nil {
 		return err
 	}
-	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings))
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings, labels, labelID))
 }
 
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
