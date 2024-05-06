@@ -1,4 +1,4 @@
-package test
+package db_test
 
 import (
 	"context"
@@ -8,11 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/db/db_populator"
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/docker/go-connections/nat"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -92,9 +94,6 @@ func TestDBSuite(t *testing.T) {
 	suite.Run(t, new(DbTestSuite))
 }
 
-//go:embed migrations/*.sql
-var fs embed.FS
-
 func (s *DbTestSuite) SetupSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer ctxCancel()
@@ -106,39 +105,72 @@ func (s *DbTestSuite) SetupSuite() {
 	db, err := database.NewDatabaseConnection(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
 	s.db = db
-
-	// migrate the database up
-	d, err := iofs.New(fs, "migrations")
-	s.Require().NoError(err)
-
-	m, err := migrate.NewWithSourceInstance("iofs", d, s.psqlContainer.getDBUrl())
-	s.Require().NoError(err)
-
-	err = m.Up()
-	s.Require().NoError(err)
 }
 
 func (s *DbTestSuite) TearDownSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer ctxCancel()
 
+	s.Require().NoError(s.db.Close())
 	s.Require().NoError(s.psqlContainer.Terminate(ctx))
 }
 
+//go:embed migrations/*.sql
+var fs embed.FS
+
+func getMigrator(dbUrl string) (*migrate.Migrate, error) {
+	d, err := iofs.New(fs, "migrations")
+	if err != nil {
+		return nil, err
+	}
+	m, err := migrate.NewWithSourceInstance("iofs", d, dbUrl)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// run before each test
+func (s *DbTestSuite) SetupTest() {
+	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
+	s.Require().NoError(err)
+	s.Require().NoError(migrator.Up())
+
+	db_populator.PopulateDbWithTestData(s.db)
+}
+
+// run after each test
+func (s *DbTestSuite) TearDownTest() {
+	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
+	s.Require().NoError(err)
+	s.Require().NoError(migrator.Down())
+}
+
 func (s *DbTestSuite) TestDatabaseConnection() {
-	var number int
+	var id uuid.UUID
 	err := s.db.QueryRow(`
-	SELECT count(*)
-	FROM pg_stat_user_tables;`).Scan(&number)
+	SELECT id
+	FROM quizzes LIMIT 1;`).Scan(&id)
 	s.Require().NoError(err)
 
-	s.Require().Equal(12, number)
+	_, err = s.db.Exec(`DELETE FROM quizzes WHERE id=$1`, id)
+	s.Require().NoError(err)
+
+	var number int
+	err = s.db.QueryRow(`
+	SELECT count(*)
+	FROM quizzes;`).Scan(&number)
+	s.Require().NoError(err)
+
+	s.Require().Equal(1, number)
 }
 
 func (s *DbTestSuite) TestDatabaseConnection2() {
 	var number int
-	err := s.db.QueryRow(`SELECT 1;`).Scan(&number)
+	err := s.db.QueryRow(`
+	SELECT count(*)
+	FROM quizzes;`).Scan(&number)
 	s.Require().NoError(err)
 
-	s.Require().Equal(1, number)
+	s.Require().Equal(2, number)
 }
