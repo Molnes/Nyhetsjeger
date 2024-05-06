@@ -10,10 +10,9 @@ import (
 // When the value is changed, send a POST request to the server to update the labels.
 // It will trigger the previous loading indicator to display.
 // if the labels are clicked, it will remove the label from the quiz.
-templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.Label, quizID string, inputName string,
-	errorText string) {
+templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.Label, quizID string, inputName string, errorText string) {
 	<div id="label-dropdown-wrapper">
-		<div class="flex items-center mb-2">
+		<div class="flex items-center mb-2 flex-wrap">
 			for _, label := range appliedLabels {
 				<div
 					hx-delete={ fmt.Sprintf("/api/v1/admin/quiz/edit-labels?quiz-id=%s&label-id=%s", quizID, label.ID) }
@@ -22,15 +21,15 @@ templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.L
 					hx-target="#label-dropdown-wrapper"
 					hx-target-error=".error-labels"
 					hx-indicator="previous .htmx-indicator"
-					class="flex items-center bg-cindigo text-white px-2 py-1 rounded-full mr-2"
+					class="flex items-center bg-cindigo text-white px-2 py-1 rounded-full mr-2 mb-2 cursor-pointer"
 				>
-					<span class="bg-cindigo text-white px-2 py-1 rounded-full mr-2 cursor-pointer flex items-center">
+					<span class="bg-cindigo text-white px-2 py-1 rounded-full cursor-pointer flex items-center">
 						{ label.Name }
 						<a>
 							<svg
-								class="w-4 h-4 text-red-500"
+								class="w-4 h-4 text-red-500 ml-2"
 								fill="none"
-								stroke="currentColor"
+								stroke="white"
 								viewBox="0 0 24 24"
 								xmlns="http://www.w3.org/2000/svg"
 							>
@@ -49,7 +48,7 @@ templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.L
 		<select
 			id={ inputName }
 			name={ inputName }
-			class="bg-purple-100 border border-cindigo rounded-input w-full px-4 py-2"
+			class="w-full bg-white border border-gray-300 rounded-lg px-2 py-1 max-h-32 overflow-y-auto"
 			multiple
 			hx-trigger="change"
 			hx-swap="outerHTML"
@@ -60,6 +59,8 @@ templ EditAppliedLabels(appliedLabels []labels.Label, availableLabels []labels.L
 			for _, label := range availableLabels {
 				if !isInList(label, appliedLabels) {
 					<option
+						class="bg-cindigo text-white px-2 py-1 mb-2 rounded-full mr-2 cursor-pointer"
+						value={ label.ID.String() }
 						hx-post={ fmt.Sprintf("/api/v1/admin/quiz/edit-labels?quiz-id=%s&label-id=%s", quizID,
                         label.ID.String()) }
 					>
