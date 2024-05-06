@@ -1,5 +1,8 @@
 package db_integration_test_suite
 
+// This file constains base test suite that can be used by other modules to perform integration testing.
+// Make sure to tag files containing integration tests with `//go:build integration` at the top.
+
 import (
 	"context"
 	"database/sql"
@@ -19,7 +22,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// code in this file is inspired by and partly borrowed from https://dev.to/kliukovkin/integration-tests-with-go-and-testcontainers-6o5
 
 type PostgreSQLContainer struct {
 	testcontainers.Container
@@ -40,7 +42,9 @@ func (c *PostgreSQLContainer) getDBUrl() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, c.Host, c.MappedPort, dbName)
 }
 
-func NewPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
+// Creates new postgresql testcontainer
+// Container setup code in this file is inspired by and partly borrowed from https://dev.to/kliukovkin/integration-tests-with-go-and-testcontainers-6o5
+func newPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
 
 	containerPort := psqlPort + "/tcp"
 
@@ -83,17 +87,20 @@ func NewPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
 	}, nil
 }
 
+// Base test suite for integration tests requiring sql database connection
 type DbIntegrationTestBaseSuite struct {
 	suite.Suite
 	psqlContainer *PostgreSQLContainer
 	DB            *sql.DB
 }
 
+// Runs once at test suite setup.
+// Creates test psql container, creates a databse connection and sets a pointer to it as the struct field.
 func (s *DbIntegrationTestBaseSuite) SetupSuite() {
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer ctxCancel()
 
-	psqlContainer, err := NewPostgreSQLContainer(ctx)
+	psqlContainer, err := newPostgreSQLContainer(ctx)
 	s.Require().NoError(err)
 	s.psqlContainer = psqlContainer
 
@@ -102,6 +109,7 @@ func (s *DbIntegrationTestBaseSuite) SetupSuite() {
 	s.DB = db
 }
 
+// Ran when the suite is done. Closes the DB conenction and terminates the container.
 func (s *DbIntegrationTestBaseSuite) TearDownSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer ctxCancel()
@@ -110,9 +118,11 @@ func (s *DbIntegrationTestBaseSuite) TearDownSuite() {
 	s.Require().NoError(s.psqlContainer.Terminate(ctx))
 }
 
+// This is required for the migration files to be available for the migrator utility.
 //go:embed migrations/*.sql
 var fs embed.FS
 
+// Creates the migration utility.
 func getMigrator(dbUrl string) (*migrate.Migrate, error) {
 	d, err := iofs.New(fs, "migrations")
 	if err != nil {
@@ -125,7 +135,8 @@ func getMigrator(dbUrl string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-// run before each test
+// Runs before each test.
+// Migrates the database up, runs population (seeding) function.
 func (s *DbIntegrationTestBaseSuite) SetupTest() {
 	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
@@ -134,7 +145,8 @@ func (s *DbIntegrationTestBaseSuite) SetupTest() {
 	db_populator.PopulateDbWithTestData(s.DB)
 }
 
-// run after each test
+// Runs after each test.
+// Migrates the DB all the way down, removing all data.
 func (s *DbIntegrationTestBaseSuite) TearDownTest() {
 	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
