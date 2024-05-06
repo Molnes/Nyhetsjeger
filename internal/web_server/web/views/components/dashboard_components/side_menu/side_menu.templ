@@ -32,8 +32,8 @@ templ SideMenu() {
 				@menuItem("Brukernavn", "/dashboard/username-admin", isSelected(ctx, UserAdmin)) {
 					@icons.Person(1, "currentColor", 20, 20)
 				}
-				@menuItem("Kategorier", "/dashboard/labels", isSelected(ctx, Labels)) {
-					@icons.MagnifyingGlass(1, "currentColor", 20, 20)
+				@menuItem("Etiketter", "/dashboard/labels", isSelected(ctx, Labels)) {
+					@icons.Tag(1, "currentColor", 20, 20)
 				}
 				if isUserOrganizationAdmin(ctx) {
 					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
