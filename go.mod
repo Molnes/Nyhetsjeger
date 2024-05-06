@@ -3,7 +3,7 @@ module github.com/Molnes/Nyhetsjeger
 go 1.22.0
 
 require (
-	github.com/a-h/templ v0.2.648
+	github.com/a-h/templ v0.2.663
 	github.com/antonlindstrom/pgstore v0.0.0-20220421113606-e3a6e3fed12a
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
