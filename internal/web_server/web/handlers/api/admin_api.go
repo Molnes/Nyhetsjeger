@@ -109,6 +109,7 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 
 	e.DELETE("/label", aah.deleteLabel)
 	e.POST("/label/add", aah.addLabel)
+	e.POST("/label/edit-labels", aah.editLabels)
 
 	e.POST("/quiz/edit-labels", aah.editQuizLabels)
 	e.DELETE("/quiz/edit-labels", aah.deleteQuizLabel)
@@ -131,6 +132,36 @@ func (aah *AdminApiHandler) addLabel(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
+	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
+}
+
+func (aah *AdminApiHandler) editLabels(c echo.Context) error {
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	currentLabel, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+	log.Println(currentLabel.Active)
+
+	// change the active status of the label
+	err = labels.UpdateLabel(aah.sharedData.DB, labelID, !currentLabel.Active)
+	if err != nil {
+		return err
+	}
+
+	// return the updated label
+	label, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	log.Println(label.Active)
 
 	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
 }
