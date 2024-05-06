@@ -35,3 +35,9 @@ run-bruno:
 
 populate-usernames:
 	./scripts/add-nickname-words.sh
+
+test-unit:
+	go test ./...
+
+test-integration:
+	go test --tags=integration ./...
