@@ -20,7 +20,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
@@ -1219,35 +1218,30 @@ func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
 	}
-	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
+	//	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
+	//	if err != nil {
+	//		if err == sql.ErrNoRows {
+	//			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
+	//		} else {
+	//			return err
+	//		}
+	//	}
+
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende label-id")
+	}
+
+	label, err := labels.GetLabelByID(h.sharedData.DB, labelID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke kategorien med den angitte ID-en")
 		} else {
 			return err
 		}
 	}
 
-	chosenMonthStr := c.FormValue(dashboard_user_details_components.MonthFormName)
-	var chosenMonth time.Month
-
-	parsedTime, err := time.Parse("01", chosenMonthStr)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende måned verdi")
-	}
-	chosenMonth = parsedTime.Month()
-
-	chosenYearStr := c.FormValue(dashboard_user_details_components.YearFormName)
-	var chosenYear uint
-
-	parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende år verdi")
-
-	}
-	chosenYear = uint(parsedYear)
-
-	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, label)
 	if err != nil {
 		return err
 	}

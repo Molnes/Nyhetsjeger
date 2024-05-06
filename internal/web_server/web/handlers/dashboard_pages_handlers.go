@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
@@ -18,7 +17,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/side_menu"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
@@ -214,37 +212,33 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
-	chosenMonthStr := c.QueryParam(dashboard_user_details_components.MonthQueryParam)
-	var chosenMonth time.Month
-	if chosenMonthStr != "" {
-		parsedTime, err := time.Parse("01", chosenMonthStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig måned verdi")
+	allLabels, err := labels.GetLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		if len(allLabels) > 0 {
+			labelID = allLabels[0].ID
 		}
-		chosenMonth = parsedTime.Month()
-	} else {
-		chosenMonth = time.Now().Month()
+
 	}
 
-	chosenYearStr := c.QueryParam(dashboard_user_details_components.YearQueryParam)
-	var chosenYear uint
-	if chosenYearStr != "" {
-		parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig år verdi")
-
+	label, err := labels.GetLabelByID(dph.sharedData.DB, labelID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke label med den angitte ID-en")
+		} else {
+			return err
 		}
-		chosenYear = uint(parsedYear)
-	} else {
-		chosenYear = uint(time.Now().Year())
 	}
 
-	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(dph.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(dph.sharedData.DB, uuid_id, label)
 	if err != nil {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, rankingCollection, chosenMonth, chosenYear))
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, rankingCollection, allLabels, labelID))
 }
 
 // Adds chosen menu item to the context, so it can be used in the template.

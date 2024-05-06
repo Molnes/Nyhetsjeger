@@ -162,21 +162,20 @@ WHERE user_id = $2;
 	return ranking, nil
 }
 
-// Returns the ranking of the specified user.
-func GetDatedUserRanking(db *sql.DB, userID uuid.UUID, month time.Month, year int, timeZone *time.Location, dateRange DateRange) (UserRanking, error) {
-
-	firstMoment, lastMoment := GetDateRange(dateRange, timeZone, year, month)
+// Returns the ranking of the specified user regardless of label.
+func GetUserRankingAllLabels(db *sql.DB, userID uuid.UUID) (UserRanking, error) {
 
 	row := db.QueryRow(`
     SELECT * FROM (
 SELECT user_id, SUM(total_points_awarded) AS total_points, 
 CONCAT(u.username_adjective, ' ', u.username_noun) AS username,
 
- RANK() OVER (ORDER BY SUM(total_points_awarded) DESC) as ranking
+RANK() OVER (ORDER BY SUM(total_points_awarded) DESC) as ranking
 FROM "user_quizzes"
 JOIN (
 SELECT * FROM quizzes
-) as q ON q.id = quiz_id
+) as q ON q.id = user_quizzes.quiz_id
+
 
 JOIN (
 SELECT * FROM users
@@ -188,15 +187,13 @@ AND answered_within_active_time = true
 
 AND q.published = true
 AND q.is_deleted = false
-AND q.active_from >$1
-AND q.active_to < $2
 AND u.opt_in_ranking = true 
 
 GROUP BY user_id, username
 ORDER BY total_points DESC) AS ranking
-WHERE user_id = $3;
+WHERE user_id = $1;
 
-    `, firstMoment, lastMoment, userID)
+    `, userID)
 
 	ranking := UserRanking{}
 	err := row.Scan(
@@ -212,44 +209,39 @@ WHERE user_id = $3;
 
 // Data transfer object wrapping 3 user rankings in the three DateRanges
 type RankingCollection struct {
-	Monthly UserRanking
-	Yearly  UserRanking
+	ByLabel UserRankingWithLabel
 	AllTime UserRanking
 }
 
 // Gets a colleciton of user rankings, Monthly, Yearly and AllTime for the given period.
-func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, month time.Month, year uint, timeZone *time.Location, username string) (*RankingCollection, error) {
-	monthRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, Month)
+func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, label labels.Label) (*RankingCollection, error) {
+	labelRank, err := GetUserRanking(db, userId, label)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			monthRank = createEmptyRanking(userId, username)
+			labelRank = createEmptyRanking(userId, "")
 		} else {
 			return nil, err
 		}
 	}
 
-	yearRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, Year)
+	allTimeRank, err := GetUserRankingAllLabels(db, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			yearRank = createEmptyRanking(userId, username)
-		} else {
-			return nil, err
-		}
-	}
-
-	allTimeRank, err := GetDatedUserRanking(db, userId, month, int(year), timeZone, All)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			allTimeRank = createEmptyRanking(userId, username)
+			allTimeRank = createEmptyRanking(userId, "")
 		} else {
 			return nil, err
 		}
 	}
 
 	return &RankingCollection{
-		monthRank,
-		yearRank,
-		allTimeRank,
+		ByLabel: UserRankingWithLabel{
+			User_id:   labelRank.User_id,
+			Username:  labelRank.Username,
+			Points:    labelRank.Points,
+			Placement: labelRank.Placement,
+			Label:     label,
+		},
+		AllTime: allTimeRank,
 	}, nil
 }
 
