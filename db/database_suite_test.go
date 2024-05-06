@@ -3,12 +3,16 @@ package test
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/database"
 	"github.com/docker/go-connections/nat"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -88,6 +92,9 @@ func TestDBSuite(t *testing.T) {
 	suite.Run(t, new(DbTestSuite))
 }
 
+//go:embed migrations/*.sql
+var fs embed.FS
+
 func (s *DbTestSuite) SetupSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer ctxCancel()
@@ -100,6 +107,15 @@ func (s *DbTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 	s.db = db
 
+	// migrate the database up
+	d, err := iofs.New(fs, "migrations")
+	s.Require().NoError(err)
+
+	m, err := migrate.NewWithSourceInstance("iofs", d, s.psqlContainer.getDBUrl())
+	s.Require().NoError(err)
+
+	err = m.Up()
+	s.Require().NoError(err)
 }
 
 func (s *DbTestSuite) TearDownSuite() {
@@ -111,10 +127,12 @@ func (s *DbTestSuite) TearDownSuite() {
 
 func (s *DbTestSuite) TestDatabaseConnection() {
 	var number int
-	err := s.db.QueryRow(`SELECT 2;`).Scan(&number)
+	err := s.db.QueryRow(`
+	SELECT count(*)
+	FROM pg_stat_user_tables;`).Scan(&number)
 	s.Require().NoError(err)
 
-	s.Require().Equal(2, number)
+	s.Require().Equal(12, number)
 }
 
 func (s *DbTestSuite) TestDatabaseConnection2() {
