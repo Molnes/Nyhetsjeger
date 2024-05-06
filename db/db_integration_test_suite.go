@@ -1,11 +1,10 @@
-package db_test
+package db_integration_test_suite
 
 import (
 	"context"
 	"database/sql"
 	"embed"
 	"fmt"
-	"testing"
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/db/db_populator"
@@ -14,7 +13,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -58,6 +56,7 @@ func NewPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
 			},
 			Image:      fmt.Sprintf("%s:%s", psqlImage, imageTag),
 			WaitingFor: wait.ForListeningPort(nat.Port(containerPort)),
+			Cmd:        []string{"-c", "log_statement=all"},
 		},
 		Started: true,
 	}
@@ -84,17 +83,13 @@ func NewPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
 	}, nil
 }
 
-type DbTestSuite struct {
+type DbIntegrationTestBaseSuite struct {
 	suite.Suite
 	psqlContainer *PostgreSQLContainer
-	db            *sql.DB
+	DB            *sql.DB
 }
 
-func TestDBSuite(t *testing.T) {
-	suite.Run(t, new(DbTestSuite))
-}
-
-func (s *DbTestSuite) SetupSuite() {
+func (s *DbIntegrationTestBaseSuite) SetupSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer ctxCancel()
 
@@ -104,14 +99,14 @@ func (s *DbTestSuite) SetupSuite() {
 
 	db, err := database.NewDatabaseConnection(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
-	s.db = db
+	s.DB = db
 }
 
-func (s *DbTestSuite) TearDownSuite() {
+func (s *DbIntegrationTestBaseSuite) TearDownSuite() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer ctxCancel()
 
-	s.Require().NoError(s.db.Close())
+	s.Require().NoError(s.DB.Close())
 	s.Require().NoError(s.psqlContainer.Terminate(ctx))
 }
 
@@ -131,46 +126,17 @@ func getMigrator(dbUrl string) (*migrate.Migrate, error) {
 }
 
 // run before each test
-func (s *DbTestSuite) SetupTest() {
+func (s *DbIntegrationTestBaseSuite) SetupTest() {
 	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
 	s.Require().NoError(migrator.Up())
 
-	db_populator.PopulateDbWithTestData(s.db)
+	db_populator.PopulateDbWithTestData(s.DB)
 }
 
 // run after each test
-func (s *DbTestSuite) TearDownTest() {
+func (s *DbIntegrationTestBaseSuite) TearDownTest() {
 	migrator, err := getMigrator(s.psqlContainer.getDBUrl())
 	s.Require().NoError(err)
 	s.Require().NoError(migrator.Down())
-}
-
-func (s *DbTestSuite) TestDatabaseConnection() {
-	var id uuid.UUID
-	err := s.db.QueryRow(`
-	SELECT id
-	FROM quizzes LIMIT 1;`).Scan(&id)
-	s.Require().NoError(err)
-
-	_, err = s.db.Exec(`DELETE FROM quizzes WHERE id=$1`, id)
-	s.Require().NoError(err)
-
-	var number int
-	err = s.db.QueryRow(`
-	SELECT count(*)
-	FROM quizzes;`).Scan(&number)
-	s.Require().NoError(err)
-
-	s.Require().Equal(1, number)
-}
-
-func (s *DbTestSuite) TestDatabaseConnection2() {
-	var number int
-	err := s.db.QueryRow(`
-	SELECT count(*)
-	FROM quizzes;`).Scan(&number)
-	s.Require().NoError(err)
-
-	s.Require().Equal(2, number)
 }

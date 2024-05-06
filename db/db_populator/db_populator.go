@@ -9,14 +9,15 @@ import (
 	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
+	// "github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/google/uuid"
 )
 
 func PopulateDbWithTestData(db *sql.DB) {
 	createSampleQuiz(db, "Ukentlig quiz 1")
 	createSampleQuiz(db, "Ukentlig quiz 2")
-	createTestUser(db)
+	createTestUsernames(db)
+	// createTestUser(db)
 }
 
 func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
@@ -166,7 +167,27 @@ func getSampleAricle() *articles.Article {
 	return &article
 }
 
-func createTestUser(db *sql.DB) error {
+// func createTestUser(db *sql.DB) error {
+// 	_, err := db.Exec(`INSERT INTO adjectives VALUES ('adj1'), ('adj2');`)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = db.Exec(`INSERT INTO nouns VALUES ('noun1'), ('noun2');`)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	ctx := context.Background()
+// 	_, err = users.CreateUser(db, ctx, &users.PartialUser{
+// 		SsoID:        "test_user_sso_id",
+// 		Email:        "test_user@email.com",
+// 		AccessToken:  "",
+// 		RefreshToken: "",
+// 		TokenExpire:  time.Now().Add(time.Hour),
+// 	})
+// 	return err
+// }
+
+func createTestUsernames(db *sql.DB) error {
 	_, err := db.Exec(`INSERT INTO adjectives VALUES ('adj1'), ('adj2');`)
 	if err != nil {
 		return err
@@ -175,13 +196,5 @@ func createTestUser(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()
-	_, err = users.CreateUser(db, ctx, &users.PartialUser{
-		SsoID:        "test_user_sso_id",
-		Email:        "test_user@email.com",
-		AccessToken:  "",
-		RefreshToken: "",
-		TokenExpire:  time.Now().Add(time.Hour),
-	})
-	return err
+	return nil
 }
