@@ -1,3 +1,5 @@
+//go:build unit
+
 package data_handling_test
 
 import (
