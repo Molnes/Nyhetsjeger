@@ -28,42 +28,11 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 			<div class="p-4">
 				<p class="text-3xl p-4">Hei, <b>{ userInfo[0].Username }</b>!</p>
 				<h2 class="text-4xl p-4">Din statistikk</h2>
-				<div class="p-4">
-					<table class="p-4">
-						<tbody>
-							for _, userInfo := range userInfo {
-								<tr class="ml-4">
-									<td class="text-2xl text-gray-700">
-										<h3 class="text-2xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
-									</td>
-									<td class="text-2xl text-gray-700">
-										<a
-											href="/quiz/toppliste"
-											class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
-										>
-											{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
-											<span class="text-2xl text-gray-700">poeng</span>
-										</a>
-									</td>
-									<td class="text-2xl text-gray-700">
-										<a
-											href="/quiz/toppliste"
-											class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
-										>
-											@icons.Trophy(40, "orange", 36, 36)
-											if userInfo.Placement != 0 {
-												<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
-												<span class="text-2xl text-gray-700">plass</span>
-											} else {
-												<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
-											}
-										</a>
-									</td>
-								</tr>
-							}
-						</tbody>
-					</table>
-				</div>
+				if userInfo[0].Label == user_ranking.EmptyRanking().Label {
+					<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">Det ser ut som om det ikke er noen aktive Quiz samlinger for øyeblikket. Kom tilbake senere.</p>
+				} else {
+					@something(userInfo)
+				}
 			</div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizer</h2>
@@ -107,3 +76,43 @@ func isUserAdmin(ctx context.Context) bool {
 	}
 	return role.IsAdministrator()
 }
+
+templ something(userInfo []user_ranking.UserRankingWithLabel) {
+	<div class="p-4">
+		<table class="p-4">
+			<tbody>
+				for _, userInfo := range userInfo {
+					<tr class="ml-4">
+						<td class="text-2xl text-gray-700">
+							<h3 class="text-2xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
+						</td>
+						<td class="text-2xl text-gray-700">
+							<a
+								href="/quiz/toppliste"
+								class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
+							>
+								{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
+								<span class="text-2xl text-gray-700">poeng</span>
+							</a>
+						</td>
+						<td class="text-2xl text-gray-700">
+							<a
+								href="/quiz/toppliste"
+								class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
+							>
+								@icons.Trophy(40, "orange", 36, 36)
+								if userInfo.Placement != 0 {
+									<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
+									<span class="text-2xl text-gray-700">plass</span>
+								} else {
+									<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
+								}
+							</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+

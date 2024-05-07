@@ -76,6 +76,26 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	if len(activeLabels) == 0 {
+		user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+		if err != nil {
+			return err
+		}
+
+		return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
+			partialQuizList,
+			oldPartialQuizList,
+			[]user_ranking.UserRankingWithLabel{
+				{
+					User_id:   user.ID,
+					Username:  user.Username,
+					Points:    0,
+					Placement: 0,
+					Label:     labels.Label{},
+				},
+			},
+		))
+	}
 
 	userRankingInfo := []user_ranking.UserRankingWithLabel{}
 
@@ -171,7 +191,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-  
+
 	ranksByLabel := []user_ranking.RankingByLabel{}
 	for _, label := range labels {
 

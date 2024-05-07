@@ -39,6 +39,17 @@ const (
 	Year  DateRange = 2
 )
 
+// Returns an empty UserRankingWithLabel struct.
+func EmptyRanking() UserRankingWithLabel {
+	return UserRankingWithLabel{
+		User_id:   uuid.Nil,
+		Username:  "",
+		Points:    0,
+		Placement: 0,
+		Label:     labels.Label{},
+	}
+}
+
 // Returns the ranking of all users who have opted in to the ranking.
 func GetRanking(db *sql.DB, labelID uuid.UUID) ([]UserRanking, error) {
 
