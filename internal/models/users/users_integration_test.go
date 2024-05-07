@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type UsersIntegrationTestSuit struct {
+type UsersIntegrationTestSuite struct {
 	db_integration_test_suite.DbIntegrationTestBaseSuite
 }
 
 func TestUsersIntegrationSuite(t *testing.T) {
-	suite.Run(t, new(UsersIntegrationTestSuit))
+	suite.Run(t, new(UsersIntegrationTestSuite))
 }
 
-func (s *UsersIntegrationTestSuit) TestCreateUser() {
+func (s *UsersIntegrationTestSuite) TestCreateUser() {
 	const (
 		ssoId = "1000000test"
 		email = "integration_test_user@email.com"

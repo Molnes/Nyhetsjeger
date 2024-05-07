@@ -9,15 +9,15 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type UsersIntegrationTestSuit struct {
+type UsersIntegrationTestSuite struct {
 	db_integration_test_suite.DbIntegrationTestBaseSuite
 }
 
 func TestQuizzesIntegrationSuite(t *testing.T) {
-	suite.Run(t, new(UsersIntegrationTestSuit))
+	suite.Run(t, new(UsersIntegrationTestSuite))
 }
 
-func (s *UsersIntegrationTestSuit) TestCreateQuiz() {
+func (s *UsersIntegrationTestSuite) TestCreateQuiz() {
 	quiz := CreateDefaultQuiz()
 
 	id, err := CreateQuiz(s.DB, quiz)
@@ -26,7 +26,7 @@ func (s *UsersIntegrationTestSuit) TestCreateQuiz() {
 	s.Require().Equal(quiz.ID, *id)
 }
 
-func (s *UsersIntegrationTestSuit) TestGetQuizByIdQuiz() {
+func (s *UsersIntegrationTestSuite) TestGetQuizById() {
 	quiz := CreateDefaultQuiz()
 
 	_, err := CreateQuiz(s.DB, quiz)
