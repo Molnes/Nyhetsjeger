@@ -27,31 +27,43 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 			}
 			<div class="p-4">
 				<p class="text-3xl p-4">Hei, <b>{ userInfo[0].Username }</b>!</p>
-				<h2 class="text-4xl">Din statistikk</h2>
-				for _, userInfo := range userInfo {
-					<div class="flex flex-wrap justify-between lg:justify-start items-center p-4 gap-3">
-						<h3 class="text-2xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
-						<a
-							href="/quiz/toppliste"
-							class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
-						>
-							{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
-							<span class="text-2xl text-gray-700">poeng</span>
-						</a>
-						<a
-							href="/quiz/toppliste"
-							class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
-						>
-							@icons.Trophy(40, "orange", 36, 36)
-							if userInfo.Placement != 0 {
-								<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
-								<span class="text-2xl text-gray-700">plass</span>
-							} else {
-								<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
+				<h2 class="text-4xl p-4">Din statistikk</h2>
+				<div class="p-4">
+					<table class="p-4">
+						<tbody>
+							for _, userInfo := range userInfo {
+								<tr class="ml-4">
+									<td class="text-2xl text-gray-700">
+										<h3 class="text-2xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
+									</td>
+									<td class="text-2xl text-gray-700">
+										<a
+											href="/quiz/toppliste"
+											class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
+										>
+											{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
+											<span class="text-2xl text-gray-700">poeng</span>
+										</a>
+									</td>
+									<td class="text-2xl text-gray-700">
+										<a
+											href="/quiz/toppliste"
+											class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
+										>
+											@icons.Trophy(40, "orange", 36, 36)
+											if userInfo.Placement != 0 {
+												<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
+												<span class="text-2xl text-gray-700">plass</span>
+											} else {
+												<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
+											}
+										</a>
+									</td>
+								</tr>
 							}
-						</a>
-					</div>
-				}
+						</tbody>
+					</table>
+				</div>
 			</div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizer</h2>
