@@ -41,3 +41,31 @@ Example:
 make run
 ```
 Alternatively, you can check out the commands in the [Makefile](./Makefile) and run them manually.
+
+
+
+# Testing
+The project has unit and integration tests, they live in separate files and are tagged with go build tags.  
+
+
+**unit tests**: `filename_test.go`, build tag `unit`  
+**integration tests**: `filename_integration_test.go`, build tag `integration`  
+
+Add the build tags to your LSP configuration so you get syntax highlighting and autocompletion in the test files.  
+VScode `settings.json` example:  
+```json
+{
+    "go.buildFlags": [
+        "-tags=integration,unit"
+    ],
+    "go.testTags": "integration,unit",
+}
+```
+
+To run the tests, use specific Make targets
+```bash
+make test-unit
+make test-integration
+```
+
+Note: Integration tests use [Testcontainers](https://golang.testcontainers.org/), which requires Docker to be running.
