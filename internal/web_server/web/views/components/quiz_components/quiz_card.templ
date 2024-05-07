@@ -31,19 +31,17 @@ templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 				{ quiz.Title }
 			</h3>
 			<div class="px-8">
-				<p class="font-semibold">Aktiv til:</p>
+				<b>Aktiv til:</b>
 				<p class="text-gray-600 text-sm">
 					{ date_utils.DateToNorwegianString(quiz.ActiveTo.UTC().Local()) }
 				</p>
-				<div class="h-12">
+				<div class="flex flex-wrap gap-1 mt-2">
 					if len(quiz.Labels) > 0 {
 						<p class="font-semibold">Tags:</p>
 						/* scrollable tags with scrollbar*/
-						<div class="flex flex-wrap h-8 overflow-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-							for _, label := range quiz.Labels {
-								<span class="text-sm text-white bg-indigo-700 px-2 py-1 rounded-full mr-2 text-nowrap">{ label.Name }</span>
-							}
-						</div>
+						for _, label := range quiz.Labels {
+							<span class="text-sm bg-clightindigo px-3 py-1 rounded-full text-nowrap">{ label.Name }</span>
+						}
 					}
 				</div>
 			</div>
