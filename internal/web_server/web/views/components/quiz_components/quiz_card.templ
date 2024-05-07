@@ -35,10 +35,12 @@ templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 				<p class="text-gray-600 text-sm">
 					{ date_utils.DateToNorwegianString(quiz.ActiveTo.UTC().Local()) }
 				</p>
-				<p class="font-semibold">Tags:</p>
-				for _, label := range quiz.Labels {
-					<span class="text-sm text-gray-600 bg-yellow-200 px-2 py-1 rounded-full mr-2">{ label.Name }</span>
-				}
+				<div class="h-12">
+					<p class="font-semibold">Tags:</p>
+					for _, label := range quiz.Labels {
+						<span class="text-sm text-gray-600 bg-yellow-200 px-2 py-1 rounded-full mr-2 text-nowrap">{ label.Name }</span>
+					}
+				</div>
 			</div>
 			<a
 				class="gradient-bg-button py-2 px-4 min-w-24 mx-auto mb-4 uppercase"
