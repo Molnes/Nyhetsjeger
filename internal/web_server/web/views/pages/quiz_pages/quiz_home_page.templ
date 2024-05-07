@@ -78,33 +78,33 @@ func isUserAdmin(ctx context.Context) bool {
 }
 
 templ leaderboards(userInfo []user_ranking.UserRankingWithLabel) {
-	<table class="border-separate border-spacing-4">
+	<table class="border-separate border-spacing-2 md:border-spacing-x-4">
 		<tbody>
 			for _, userInfo := range userInfo {
-				<tr class="ml-4">
+				<tr>
 					<td>
-						<h3 class="text-xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 border border-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
+						<h3 class="md:text-xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 border border-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
 					</td>
-					<td class="text-xl text-gray-700">
+					<td>
 						<a
 							href="/quiz/toppliste"
-							class="text-2xl border-gray-500 bg-white rounded-card px-3 py-2 border"
+							class="md:text-2xl border-gray-500 bg-white rounded-card px-3 py-2 border whitespace-nowrap"
 						>
 							{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
-							<span class="text-xl text-gray-700">poeng</span>
+							<span class="md:text-xl text-gray-700">poeng</span>
 						</a>
 					</td>
 					<td>
 						<a
 							href="/quiz/toppliste"
-							class="text-xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
+							class="md:text-xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
 						>
 							@icons.Trophy(36, "orange", 26, 26)
 							if userInfo.Placement != 0 {
 								<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
-								<span class="text-lg text-gray-700">plass</span>
+								<span class="md:text-lg text-gray-700">plass</span>
 							} else {
-								<span class="mx-2 text-xl text-gray-700">Ikke rangert</span>
+								<span class="mx-2 md:text-xl text-gray-700">Ikke rangert</span>
 							}
 						</a>
 					</td>
