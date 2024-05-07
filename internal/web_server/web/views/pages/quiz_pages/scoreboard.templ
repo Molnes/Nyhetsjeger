@@ -14,7 +14,7 @@ templ ScoreBoardContainer(labelRanking []user_ranking.RankingByLabel, userInfo [
 			<h1 class="text-3xl font-bold  mt-10 mb-10">Toppliste</h1>
 			for _, ranking := range labelRanking {
 				<div class="w-full flex flex-col items-center">
-					<h2 class="text-2xl font-bold mt-10 mb-5">{ fmt.Sprintf("Toppliste for %s", ranking.Label.Name) }</h2>
+					<h2 class="text-2xl font-bold mt-10 mb-5">{ fmt.Sprintf("%s", ranking.Label.Name) }</h2>
 					for _, userInfo := range userInfo {
 						if userInfo.Label.ID == ranking.Label.ID {
 							@Scoreboard(ranking.Ranking, userInfo)
