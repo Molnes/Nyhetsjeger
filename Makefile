@@ -37,7 +37,9 @@ populate-usernames:
 	./scripts/add-nickname-words.sh
 
 test-unit:
+	templ generate -path ./internal/web_server/web/
 	go test -tags=unit ./...
 
 test-integration:
+	templ generate -path ./internal/web_server/web/
 	go test -tags=integration ./...
