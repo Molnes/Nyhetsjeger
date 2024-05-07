@@ -36,13 +36,15 @@ templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 					{ date_utils.DateToNorwegianString(quiz.ActiveTo.UTC().Local()) }
 				</p>
 				<div class="h-12">
-					<p class="font-semibold">Tags:</p>
-					/* scrollable tags with scrollbar*/
-					<div class="flex flex-wrap h-8 overflow-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-						for _, label := range quiz.Labels {
-							<span class="text-sm text-white bg-indigo-700 px-2 py-1 rounded-full mr-2 text-nowrap">{ label.Name }</span>
-						}
-					</div>
+					if len(quiz.Labels) > 0 {
+						<p class="font-semibold">Tags:</p>
+						/* scrollable tags with scrollbar*/
+						<div class="flex flex-wrap h-8 overflow-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+							for _, label := range quiz.Labels {
+								<span class="text-sm text-white bg-indigo-700 px-2 py-1 rounded-full mr-2 text-nowrap">{ label.Name }</span>
+							}
+						</div>
+					}
 				</div>
 			</div>
 			<a
