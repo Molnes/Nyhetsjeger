@@ -29,6 +29,7 @@ type QuizPagesHandler struct {
 	sharedData *config.SharedData
 }
 
+// Creates a new QuizPagesHandler
 func NewQuizPagesHandler(sharedData *config.SharedData) *QuizPagesHandler {
 	return &QuizPagesHandler{sharedData}
 }
@@ -170,7 +171,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
+  
 	ranksByLabel := []user_ranking.RankingByLabel{}
 	for _, label := range labels {
 
@@ -221,12 +222,12 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 		}
 
 		userRankingInfo = append(userRankingInfo, rankInfo)
-
 	}
 
 	return utils.Render(c, http.StatusOK, quiz_pages.ScoreBoardContainer(ranksByLabel, userRankingInfo))
 }
 
+// Renders the finished quizzes page.
 func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	quizList, err := quizzes.GetQuizzesByUserIDAndFinishedOrNot(qph.sharedData.DB, utils.GetUserIDFromCtx(c), true)
 	if err != nil {
@@ -242,6 +243,7 @@ func (qph *QuizPagesHandler) getFinishedQuizzes(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.FinishedQuizzes(partialQuizzes))
 }
 
+// Renders the username page
 func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 
 	user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -252,6 +254,7 @@ func (qph *QuizPagesHandler) usernamePage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.UsernamePage(user))
 }
 
+// Renders the profile page
 func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 
 	user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
@@ -262,6 +265,7 @@ func (qph *QuizPagesHandler) getProfile(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.UserProfile(user))
 }
 
+// Renders the accept terms page
 func (gph *QuizPagesHandler) getAcceptTermsPage(c echo.Context) error {
 	user, err := users.GetUserByID(gph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {
@@ -274,6 +278,7 @@ func (gph *QuizPagesHandler) getAcceptTermsPage(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, quiz_pages.AcceptTermsPage())
 }
 
+// Renders the first time profile setup page
 func (qph *QuizPagesHandler) getFirstTimeProfileSetupPage(c echo.Context) error {
 	user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
 	if err != nil {

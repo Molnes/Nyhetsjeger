@@ -35,6 +35,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v7"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type AdminApiHandler struct {
@@ -48,14 +50,17 @@ const (
 	queryParamQuestionID   = "question-id"
 	errorInvalidQuestionID = "Ugyldig eller manglende question-id"
 	errorQuestionElementID = "error-question"
-	errorUploadImage       = "Kunne ikke laste opp bildet"
+	errorUploadImage       = "kunne ikke laste opp bildet"
 	errorFetchingImage     = "Kunne ikke hente bildet"
 	errorArticleURL        = "Ugyldig artikkel URL"
 	imageURLInput          = "image-url"
 	imageFileInput         = "image-file"
 	errorImageElementID    = "error-image"
+	errorQuizElementID     = "error-quiz"
+	errorQuestionListID    = "error-question-list"
 	errorAiQuestion        = "error-ai-question"
 	errorConvertingTime    = "Kunne ikke konvertere norsk tid til UTC+00"
+	headerType             = "Content-Type"
 )
 
 // URLs
@@ -68,6 +73,10 @@ const (
 	imageSuggestionsQuestion = "/api/v1/admin/question/image/update-suggestions?question-id=%s"
 	bucketImageURL           = "/images/"
 )
+
+var errQuestionFromForm error = errors.New("kunne ikke hente spørsmål fra skjema")
+var errGetImageName error = errors.New(errorUploadImage)
+var errParseURL error = errors.New("kunne ikke parse URL")
 
 // Creates a new AdminApiHandler
 func NewAdminApiHandler(sharedData *config.SharedData) *AdminApiHandler {
@@ -437,7 +446,7 @@ func (aah *AdminApiHandler) deleteQuiz(c echo.Context) error {
 	// Parse the quiz ID from the query parameter
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-quiz",
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuizElementID,
 			fmt.Sprintf("Kunne ikke slette quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
@@ -457,7 +466,7 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-quiz",
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuizElementID,
 			fmt.Sprintf("Kunne ikke skjule/publisere quiz: %s. (Feil oppstod: %s)", errorInvalidQuizID, data_handling.GetNorwayTime(time.Now()))))
 	}
 
@@ -466,7 +475,7 @@ func (aah *AdminApiHandler) editQuizPublished(c echo.Context) error {
 	err = quizzes.UpdatePublishedStatusByQuizID(aah.sharedData.DB, c.Request().Context(), quiz_id, published == "on")
 	if err != nil {
 		if err == quizzes.ErrNoQuestions {
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-quiz",
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuizElementID,
 				"Kan ikke publisere en quiz uten spørsmål. Legg til minst ett spørsmål før du publiserer quizen."))
 		}
 
@@ -561,6 +570,9 @@ func (aah *AdminApiHandler) editQuizActiveEnd(c echo.Context) error {
 func conditionallyAddArticle(db *sql.DB, articleURL *url.URL, quizID *uuid.UUID) (*articles.Article, string) {
 	// Get the article ID from the URL
 	articleID, err := articles.GetSmpIdFromString(articleURL.String())
+	if err != nil {
+		return nil, "Klarte ikke å hente artikkel ID fra URL"
+	}
 	articleURL = articles.GetSmpURLFromID(articleID)
 
 	// Check if the article is already in the DB
@@ -609,7 +621,7 @@ const errorArticleElementID = "error-article"
 // Adds an article to a quiz in the database.
 func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	// Set HX-Reswap header to "outerHTML" for error response
-	c.Response().Header().Set("HX-Reswap", "outerHTML")
+	c.Response().Header().Set(hxReswap, "outerHTML")
 
 	// Get the quiz ID
 	quiz_id, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -637,7 +649,7 @@ func (aah *AdminApiHandler) addArticleToQuiz(c echo.Context) error {
 	}
 
 	// Set HX-Reswap header to "outerHTML" for error response
-	c.Response().Header().Set("HX-Reswap", "beforeend")
+	c.Response().Header().Set(hxReswap, "beforeend")
 
 	return utils.Render(c, http.StatusOK, dashboard_components.ArticleListItem(
 		article.ArticleURL.String(), article.Title, article.ID.UUID.String(), quiz_id.String()))
@@ -671,7 +683,7 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", errorInvalidQuizID))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionListID, errorInvalidQuizID))
 	}
 
 	// Get the map of question IDs and their new arrangement number.
@@ -679,14 +691,14 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 	questionsList := make(map[int]uuid.UUID)
 	err = c.Bind(&questionsList)
 	if err != nil {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionListID, "Ugyldig liste med spørsmål. Det må være en map med rekkefølge og IDer"))
 	}
 
 	// Rearrange the questions
 	err = questions.RearrangeQuestions(aah.sharedData.DB, c.Request().Context(), quizID, questionsList)
 	if err != nil {
 		if err == questions.ErrNonSequentialQuestions {
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-question-list", "Spørsmålene må ha en sekvensiell rekkefølge"))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionListID, "Spørsmålene må ha en sekvensiell rekkefølge"))
 		}
 		return err
 	}
@@ -699,7 +711,7 @@ func (aah *AdminApiHandler) rearrangeQuestions(c echo.Context) error {
 // If the question ID is found, the question will be updated.
 func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// Set HX-Reswap header to "outerHTML" for error response
-	c.Response().Header().Set("HX-Reswap", "outerHTML")
+	c.Response().Header().Set(hxReswap, "outerHTML")
 
 	// Get the quiz ID
 	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
@@ -726,13 +738,15 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	// I.e. allow for no article, but not invalid article.
 	if articleURLString != "" {
 		tempArticle, err := articles.GetArticleByURL(aah.sharedData.DB, articleURL)
-		if err == sql.ErrNoRows {
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(
-				errorQuestionElementID, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
-		} else if err != nil {
-			return err
+		if err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(
+					errorQuestionElementID, "Fant ikke artikkelen. Sjekk at URLen er riktig eller prøv igjen senere"))
+			default:
+				return err
+			}
 		}
-
 		articles.AddArticle(aah.sharedData.DB, tempArticle)
 		articleId = tempArticle.ID
 	}
@@ -756,48 +770,36 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	var hasFile = true
 	// Get the image file if it exists and upload it
 	imageFile, err := c.FormFile(imageFileInput)
+
 	if err != nil {
-		if err == http.ErrMissingFile {
+		switch err {
+		case http.ErrMissingFile:
 			hasFile = false
-		} else {
+		default:
 			log.Println(err)
 			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorFetchingImage))
 		}
 	}
 
 	if hasFile {
-		// Upload image from File
-		imageName, err := aah.uploadImage(c, imageFile)
+
+		imageURL, err = aah.handleImageUploadFromFile(c, imageFile)
 		if err != nil {
-			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorUploadImage))
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, cases.Title(language.Norwegian, cases.Compact).String(err.Error())))
 		}
 
-		// Set the image URL for the quiz
-		imageURLString = aah.sharedData.Bucket.EndpointURL().String() + bucketImageURL + imageName
-
-		// Parse the image URL
-		imageURL, err = url.Parse(imageURLString)
-		if err != nil {
-			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorUploadImage))
-		}
 	} else if c.FormValue(imageURLInput) != "" {
-		// Upload image from URL
-		imageName, err := aah.uploadImageFromURL(c, *imageURL)
-		if err != nil {
-			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorUploadImage))
-		}
 
-		// Set the image URL for the quiz
-		imageURLString = aah.sharedData.Bucket.EndpointURL().String() + bucketImageURL + imageName
-
-		// Parse the image URL
-		imageURL, err = url.Parse(imageURLString)
+		imageURL, err = aah.handleImageUploadFromURL(c, imageURL)
 		if err != nil {
-			log.Println(err)
-			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, errorUploadImage))
+			switch err {
+			case errGetImageName:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
+			case errParseURL:
+				return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorImageElementID, err.Error()))
+			default:
+				return err
+			}
 		}
 	}
 
@@ -812,38 +814,97 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		TimeLimitSeconds: time,
 		Alternatives:     alternatives,
 	}
+
+	question, err := createQuestion(c, questionForm, aah.sharedData.DB)
+	if err != nil {
+		switch err {
+		case errQuestionFromForm:
+			return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, err.Error()))
+
+		default:
+			return err
+		}
+	}
+
+	// Return the "question item" element.
+	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(question))
+}
+
+// Uploads an image to the bucket from a file.
+func (aah *AdminApiHandler) handleImageUploadFromFile(c echo.Context, imageFile *multipart.FileHeader) (*url.URL, error) {
+	// Upload image from File
+	imageName, err := aah.uploadImage(c, imageFile)
+	if err != nil {
+		log.Println(err)
+		return nil, errGetImageName
+	}
+
+	return aah.handleImageUpload(imageName)
+}
+
+// Uploads an image to the bucket from a url.
+func (aah *AdminApiHandler) handleImageUploadFromURL(c echo.Context, url *url.URL) (*url.URL, error) {
+	// Upload image from File
+	imageName, err := aah.uploadImageFromURL(c, *url)
+	if err != nil {
+		log.Println(err)
+		return nil, errGetImageName
+	}
+
+	return aah.handleImageUpload(imageName)
+}
+
+// Uploads an image to the bucket from a file.
+func (aah AdminApiHandler) handleImageUpload(imageName string) (*url.URL, error) {
+	// Set the image URL for the quiz
+	imageURLString := aah.sharedData.Bucket.EndpointURL().String() + bucketImageURL + imageName
+
+	// Parse the image URL
+	imageURL, err := url.Parse(imageURLString)
+	if err != nil {
+		log.Println(err)
+		errParseURL = err
+		return nil, errParseURL
+	}
+	return imageURL, nil
+}
+
+// Creates a new question object from the form data.
+func createQuestion(c echo.Context, questionForm questions.QuestionForm, db *sql.DB) (*questions.Question, error) {
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
-		return utils.Render(c, http.StatusBadRequest, components.ErrorText(errorQuestionElementID, errorText))
+
+		errQuestionFromForm = errors.New(errorText)
+		return nil, errQuestionFromForm
 	}
 
 	// Get the question by ID from the database.
-	tempQuestion, err := questions.GetQuestionByID(aah.sharedData.DB, questionID)
+	tempQuestion, err := questions.GetQuestionByID(db, questionForm.ID)
 
 	// If the question doesn't exist in the database.
 	if err == sql.ErrNoRows {
 		// Save the question to the database.
-		err = questions.AddNewQuestion(aah.sharedData.DB, c.Request().Context(), &question)
+		err = questions.AddNewQuestion(db, c.Request().Context(), &question)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Set HX-Reswap header to "beforeend" for success response
-		c.Response().Header().Set("HX-Reswap", "beforeend")
-	} else if tempQuestion.ID == questionID {
+		c.Response().Header().Set(hxReswap, "beforeend")
+	} else if tempQuestion.ID == questionForm.ID {
 		// If the question ID is found, update the question.
-		question.ID = questionID
-		err = questions.UpdateQuestion(aah.sharedData.DB, c.Request().Context(), &question)
+		question.ID = questionForm.ID
+		err = questions.UpdateQuestion(db, c.Request().Context(), &question)
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Return the "question item" element.
-	return utils.Render(c, http.StatusOK, dashboard_components.QuestionListItem(&question))
+	return &question, nil
 }
 
 // Delete a question with the given ID from the database.
@@ -996,7 +1057,7 @@ func (aah *AdminApiHandler) uploadImage(c echo.Context, image *multipart.FileHea
 	// get file name
 	filename := image.Filename
 	// get file content type
-	contentType := image.Header.Get("Content-Type")
+	contentType := image.Header.Get(headerType)
 	// get file extension
 	extension := strings.Split(filename, ".")[1]
 	// generate random file name
@@ -1059,11 +1120,11 @@ func (aah *AdminApiHandler) uploadImageFromURL(c echo.Context, imageURL url.URL)
 
 	defer resp.Body.Close()
 
-	fileType := resp.Header.Get("Content-Type")
+	fileType := resp.Header.Get(headerType)
 
 	randomName := fmt.Sprintf("%s.%s", uuid.New().String(), strings.Split(fileType, "/")[1])
 
-	err = aah.uploadImageToBucket(c, resp.Body, "images", randomName, resp.ContentLength, resp.Header.Get("Content-Type"))
+	err = aah.uploadImageToBucket(c, resp.Body, "images", randomName, resp.ContentLength, resp.Header.Get(headerType))
 	if err != nil {
 		return "", err
 	}
