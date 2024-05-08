@@ -5,11 +5,13 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
-	"time"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
+	"github.com/google/uuid"
+	"fmt"
 )
 
-templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection, chosenMonth time.Month, chosenYear uint) {
+templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection, labels []labels.Label, selectedLabel uuid.UUID) {
 	@layout_components.DashBoardLayout("Brukerinformasjon") {
 		<div class="flex flex-col gap-3 px-8 py-6 max-w-screen-lg mx-auto">
 			<h1 class="text-4xl">Brukerinformasjon</h1>
@@ -21,8 +23,39 @@ templ UserDetailsPage(user *users.User, ranking *user_ranking.RankingCollection,
 					@components.LoadingIndicator()
 				</div>
 			</div>
-			@dashboard_user_details_components.MonthAndYearSelectionForm(chosenMonth, chosenYear, user.ID)
+			@UserDetailsLabelSelectorComponent(labels, selectedLabel, user.ID)
 			@dashboard_user_details_components.UserAllRankingTable(ranking)
 		</div>
 	}
+}
+
+// Component to select label for displaying the correct leaderboard
+// takes in a list of labels to display in the dropdown
+// can be searched if the list is long
+templ UserDetailsLabelSelectorComponent(labels []labels.Label, selectedLabelID uuid.UUID, selectedUserID uuid.UUID) {
+	<div class="w-full flex justify-center">
+		<div class="flex items-center">
+			<label for="label" class="text-lg font-bold mr-2">Velg Etikett:</label>
+			<select
+				id="label"
+				class="border-2 border-cindigo rounded-lg px-2 py-1"
+			>
+				for _, label := range labels {
+					<option
+						value={ label.ID.String() }
+						href={ fmt.Sprintf("/dashboard/user?user-id=%s&label-id=%s", selectedUserID.String(), label.ID.String()) }
+						hx-get={ fmt.Sprintf("/dashboard/user?user-id=%s&label-id=%s", selectedUserID.String(), label.ID.String()) }
+						hx-push-url="true"
+						hx-swap="outerHTML"
+						hx-target="body"
+						if label.ID == selectedLabelID {
+							selected
+						}
+					>
+						{ label.Name }
+					</option>
+				}
+			</select>
+		</div>
+	</div>
 }

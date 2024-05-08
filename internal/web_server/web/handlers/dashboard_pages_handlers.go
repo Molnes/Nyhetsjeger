@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
@@ -17,7 +17,6 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	"github.com/Molnes/Nyhetsjeger/internal/utils"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/middlewares"
-	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/side_menu"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
@@ -41,6 +40,8 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/edit-quiz/new-question", dph.dashboardNewQuestionModal)
 	g.GET("/edit-question", dph.dashboardEditQuestionModal)
 	g.GET("/leaderboard", dph.leaderboard)
+
+	g.GET("/labels", dph.labels)
 	g.GET("/user", dph.userDetails)
 	g.GET("/username-admin", dph.getUsernameAdministration)
 
@@ -63,6 +64,16 @@ func (dph *DashboardPagesHandler) dashboardHomePage(c echo.Context) error {
 	}
 
 	return utils.Render(c, http.StatusOK, dashboard_pages.DashboardHomePage(nonPublishedQuizzes, publishedQuizzes))
+}
+
+// Renders the labels page.
+func (dph *DashboardPagesHandler) labels(c echo.Context) error {
+	addMenuContext(c, side_menu.Labels)
+	labels, err := labels.GetLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	return utils.Render(c, http.StatusOK, dashboard_pages.LabelsPage(labels))
 }
 
 // Renders the page for editing quiz.
@@ -89,7 +100,13 @@ func (dph *DashboardPagesHandler) dashboardEditQuiz(c echo.Context) error {
 	// Get all the questions for the quiz by quiz ID.
 	questions, _ := questions.GetQuestionsByQuizID(dph.sharedData.DB, &uuid_id)
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions))
+	// Get all available labels
+	labels, err := labels.GetActiveLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.EditQuiz(quiz, articles, questions, labels))
 }
 
 // Renders the modal for creating a new question.
@@ -145,15 +162,35 @@ func (dph *DashboardPagesHandler) dashboardEditQuestionModal(c echo.Context) err
 	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(question, article, articles, question.QuizID.String(), false))
 }
 
+// Renders the leaderboard page.
 func (dph *DashboardPagesHandler) leaderboard(c echo.Context) error {
 	addMenuContext(c, side_menu.Leaderboard)
-	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		labelID = uuid.Nil
+	}
+
+	labels, err := labels.GetLabels(dph.sharedData.DB)
 	if err != nil {
 		return err
 	}
-	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings))
+
+	if labelID == uuid.Nil {
+		if len(labels) > 0 {
+			labelID = labels[0].ID
+		}
+	}
+
+	rankings, err := user_ranking.GetRanking(dph.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_pages.LeaderboardPage(rankings, labels, labelID))
 }
 
+// Renders the access settings page.
 func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 	addMenuContext(c, side_menu.AccessSettings)
 	admins, err := access_control.GetAllAdmins(dph.sharedData.DB)
@@ -163,6 +200,7 @@ func (dph *DashboardPagesHandler) accessSettings(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, dashboard_pages.AccessSettingsPage(admins))
 }
 
+// Renders the user details page.
 func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
@@ -177,37 +215,33 @@ func (dph *DashboardPagesHandler) userDetails(c echo.Context) error {
 		}
 	}
 
-	chosenMonthStr := c.QueryParam(dashboard_user_details_components.MonthQueryParam)
-	var chosenMonth time.Month
-	if chosenMonthStr != "" {
-		parsedTime, err := time.Parse("01", chosenMonthStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig måned verdi")
+	allLabels, err := labels.GetLabels(dph.sharedData.DB)
+	if err != nil {
+		return err
+	}
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		if len(allLabels) > 0 {
+			labelID = allLabels[0].ID
 		}
-		chosenMonth = parsedTime.Month()
-	} else {
-		chosenMonth = time.Now().Month()
+
 	}
 
-	chosenYearStr := c.QueryParam(dashboard_user_details_components.YearQueryParam)
-	var chosenYear uint
-	if chosenYearStr != "" {
-		parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig år verdi")
-
+	label, err := labels.GetLabelByID(dph.sharedData.DB, labelID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke label med den angitte ID-en")
+		} else {
+			return err
 		}
-		chosenYear = uint(parsedYear)
-	} else {
-		chosenYear = uint(time.Now().Year())
 	}
 
-	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(dph.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(dph.sharedData.DB, uuid_id, label)
 	if err != nil {
 		return err
 	}
 
-	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, rankingCollection, chosenMonth, chosenYear))
+	return utils.Render(c, http.StatusOK, dashboard_pages.UserDetailsPage(user, rankingCollection, allLabels, labelID))
 }
 
 // Adds chosen menu item to the context, so it can be used in the template.

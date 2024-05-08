@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/lib/pq"
 )
@@ -119,7 +120,8 @@ func GetUsernameAdminInfo(db *sql.DB, adjPage int, nounPage int, usernamesPerPag
 	uai.AdjPage = adjPage
 	uai.NounPage = nounPage
 	uai.UsernamesPerPage = usernamesPerPage
-
+	search = strings.ToLower(search)
+	
 	err := uai.setUaiAdjInfo(db, search)
 
 	if err != nil {

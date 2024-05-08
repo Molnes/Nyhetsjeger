@@ -17,6 +17,7 @@ var ErrInvalidArticleID = errors.New("third_party_articles: invalid article ID")
 var ErrInvalidArticleURL = errors.New("third_party_articles: invalid article URL")
 var ErrArticleNotFound = errors.New("third_party_articles: could not find article")
 var ErrUnableToFetchData = errors.New("third_party_articles: unable to fetch article data")
+const readJsonPath = "data/articles/%s.json"
 
 // The data structure for a third party article (Sunnmørsposten).
 /* This struct was automatically generated from a JSON file using https://transform.tools/json-to-go */
@@ -74,6 +75,9 @@ func readJSONtoArticleSMP(filename string) (ArticleSMP, error) {
 
 	// Read file
 	byteValue, err := io.ReadAll(file)
+	if err != nil {
+		return ArticleSMP{}, ErrArticleNotFound
+	}
 
 	// Parse JSON to ArticleSMP
 	var article ArticleSMP
@@ -93,7 +97,7 @@ func GetSmpArticleByURL(articleUrl *url.URL) (ArticleSMP, error) {
 		return ArticleSMP{}, err
 	}
 
-	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleId))
+	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf(readJsonPath, articleId))
 	if err != nil {
 		log.Println("Error getting article: ", err)
 		return ArticleSMP{}, err
@@ -176,7 +180,7 @@ func GetArticleBySmpUrl(articleUrl string) (Article, error) {
 	}
 
 	// Get the article data from the JSON file
-	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+	articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf(readJsonPath, articleID))
 	if err != nil {
 		return Article{}, err
 	}
@@ -214,7 +218,7 @@ func GetImagesFromArticles(articles *[]Article) ([]url.URL, error) {
 		}
 
 		// Get the article data from the JSON file
-		articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf("data/articles/%s.json", articleID))
+		articleSMP, err := readJSONtoArticleSMP(fmt.Sprintf(readJsonPath, articleID))
 		if err != nil {
 			return nil, err
 		}

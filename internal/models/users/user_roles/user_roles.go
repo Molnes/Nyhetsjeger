@@ -16,6 +16,7 @@ const (
 	organizationAdminString = "organization_admin"
 )
 
+// String returns the string representation of the role
 func (r Role) String() string {
 	var roleString string
 	switch r {
@@ -29,6 +30,7 @@ func (r Role) String() string {
 	return roleString
 }
 
+// RoleFromString returns the role from the string representation
 func RoleFromString(role string) Role {
 	var r Role
 	switch role {
@@ -42,6 +44,7 @@ func RoleFromString(role string) Role {
 	return r
 }
 
+// IsAdministrator returns true if the role is an administrator role
 func (r Role) IsAdministrator() bool {
 	return r == QuizAdmin || r == OrganizationAdmin
 }

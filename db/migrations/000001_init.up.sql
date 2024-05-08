@@ -44,6 +44,20 @@ CREATE TABLE IF NOT EXISTS quizzes (
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS labels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    UNIQUE (name)
+);
+
+CREATE TABLE IF NOT EXISTS quiz_labels (
+    quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    label_id UUID NOT NULL REFERENCES labels(id) ON DELETE CASCADE,
+    PRIMARY KEY (quiz_id, label_id)
+);
+
 CREATE TABLE IF NOT EXISTS quiz_articles (
     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
     article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,

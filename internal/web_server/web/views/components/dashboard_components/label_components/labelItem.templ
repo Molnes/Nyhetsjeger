@@ -1,0 +1,32 @@
+package label_components
+
+import "fmt"
+import "github.com/Molnes/Nyhetsjeger/internal/models/labels"
+
+templ LabelItem(label labels.Label) {
+	<div class="flex items-center justify-between bg-white rounded-lg shadow-md p-4 labelItem border-cindigo border-2">
+		<div class="flex flex-col">
+			<h2 class="text-xl font-bold text-gray-800">{ label.Name }</h2>
+			<p class="text-sm text-gray-500">{ fmt.Sprintf("Opprettet %s", label.CreatedAt.Format("02.01.2006")) }</p>
+		</div>
+		<div class="flex items-center gap-4">
+			<!-- Active label checkbox -->
+			<input
+				type="checkbox"
+				hx-post={ fmt.Sprintf("/api/v1/admin/label/edit-labels?label-id=%s", label.ID.String()) }
+				hx-swap="outerHTML"
+				hx-target="closest .labelItem"
+				class="form-checkbox h-6 w-6 accent-cindigo"
+				if label.Active {
+					checked
+				}
+			/>
+			<button
+				hx-delete={ fmt.Sprintf("/api/v1/admin/label?id=%s", label.ID.String()) }
+				hx-swap="outerHTML"
+				hx-target="closest .labelItem"
+				class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+			>Slett</button>
+		</div>
+	</div>
+}

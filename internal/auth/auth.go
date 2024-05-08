@@ -25,29 +25,6 @@ type GoogleSsoConfig struct {
 	ClientSecret string
 }
 
-// func init() {
-// 	redirect_url, ok := os.LookupEnv("GOOGLE_REDIRECT_URL")
-// 	if !ok {
-// 		log.Fatal("No redirect url provided. Expected GOOGLE_REDIRECT_URL")
-// 	}
-// 	client_id, ok := os.LookupEnv("GOOGLE_CLIENT_ID")
-// 	if !ok {
-// 		log.Fatal("No client id provided. Expected GOOGLE_CLIENT_ID")
-// 	}
-// 	client_secret, ok := os.LookupEnv("GOOGLE_CLIENT_SECRET")
-// 	if !ok {
-// 		log.Fatal("No client secret provided. Expected GOOGLE_CLIENT_SECRET")
-// 	}
-// 	GoogleOauthConfig = oauth2.Config{
-// 		ClientID:     client_id,
-// 		ClientSecret: client_secret,
-// 		RedirectURL:  redirect_url,
-// 		Endpoint:     google.Endpoint,
-// 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-// 	}
-
-// }
-
 // Generates a new state and sets it as a cookie
 // Returns the state so it can be sent to the oauth provider
 func GenerateAndSetStateOauthCookie(c echo.Context) string {
