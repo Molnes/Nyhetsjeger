@@ -1302,22 +1302,13 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
 }
 
-// Renders a ranking table for the given user. Displays the monthly, yearly and all time ranking.
-// Monthly and yearly rankings are displayed for the period provided as form data.
-// Expects user-id query parameter, chosen-month and chosen-year as form values.
+// Renders a ranking table for the given user. Displays the label and all time ranking.
+// Expects user-id query parameter, and label-id query parameter.
 func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
 	}
-	//	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
-	//	if err != nil {
-	//		if err == sql.ErrNoRows {
-	//			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
-	//		} else {
-	//			return err
-	//		}
-	//	}
 
 	labelID, err := uuid.Parse(c.QueryParam("label-id"))
 	if err != nil {
