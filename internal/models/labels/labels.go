@@ -99,10 +99,7 @@ func GetQuizzesByLabelID(db *sql.DB, labelID uuid.UUID) ([]uuid.UUID, error) {
 // It will fail if the label is already associated with the quizz.
 func AddLabelToQuizz(db *sql.DB, quizzID, labelID uuid.UUID) error {
 	_, err := db.Exec("INSERT INTO quiz_labels (quiz_id, label_id) VALUES ($1, $2)", quizzID, labelID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // RemoveLabelFromQuizz removes a label from a quizz.
