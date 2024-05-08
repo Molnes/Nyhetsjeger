@@ -139,8 +139,10 @@ templ UserAllRankingTable(ranking *user_ranking.RankingCollection) {
 			</tr>
 		</thead>
 		<tbody>
-			@userRankingTableRow("Månedlig", &ranking.Monthly)
-			@userRankingTableRow("Årlig", &ranking.Yearly)
+			@userRankingTableRow(ranking.ByLabel.Label.Name,
+				&user_ranking.UserRanking{
+					Placement: ranking.ByLabel.Placement,
+					Points:    ranking.ByLabel.Points})
 			@userRankingTableRow("All tid", &ranking.AllTime)
 		</tbody>
 	</table>

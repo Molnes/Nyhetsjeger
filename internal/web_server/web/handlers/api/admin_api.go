@@ -17,17 +17,19 @@ import (
 	"github.com/Molnes/Nyhetsjeger/internal/config"
 	"github.com/Molnes/Nyhetsjeger/internal/models/ai"
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
-	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_ranking"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/usernames"
 	utils "github.com/Molnes/Nyhetsjeger/internal/utils"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
+
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/dashboard_user_details_components"
 	dashboard_components "github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/edit_quiz/composite_components"
+	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/label_components"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/components/dashboard_components/user_admin"
 	"github.com/Molnes/Nyhetsjeger/internal/web_server/web/views/pages/dashboard_pages"
 	"github.com/google/uuid"
@@ -113,6 +115,148 @@ func (aah *AdminApiHandler) RegisterAdminApiHandlers(e *echo.Group) {
 	e.POST("/username/page", aah.getUsernamePages)
 
 	e.POST("/question/generate", aah.getAiQuestion)
+
+	e.DELETE("/label", aah.deleteLabel)
+	e.POST("/label/add", aah.addLabel)
+	e.POST("/label/edit-labels", aah.editLabels)
+
+	e.POST("/quiz/edit-labels", aah.editQuizLabels)
+	e.DELETE("/quiz/edit-labels", aah.deleteQuizLabel)
+}
+
+func (aah *AdminApiHandler) addLabel(c echo.Context) error {
+	// Get the label name
+	labelName := c.FormValue("label-name")
+	if strings.TrimSpace(labelName) == "" {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Navnet kan ikke være tomt"))
+	}
+
+	// Add the label to the database
+	labelID, err := labels.CreateLabel(aah.sharedData.DB, labelName)
+	if err != nil {
+		return err
+	}
+
+	label, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
+}
+
+func (aah *AdminApiHandler) editLabels(c echo.Context) error {
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	currentLabel, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+	log.Println(currentLabel.Active)
+
+	// change the active status of the label
+	err = labels.UpdateLabel(aah.sharedData.DB, labelID, !currentLabel.Active)
+	if err != nil {
+		return err
+	}
+
+	// return the updated label
+	label, err := labels.GetLabelByID(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	log.Println(label.Active)
+
+	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
+}
+
+func (aah *AdminApiHandler) editQuizLabels(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", errorInvalidQuizID))
+	}
+
+	// Get the label ID
+	labelID, err := uuid.Parse(c.FormValue("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	// Add the label to the quiz
+	err = labels.AddLabelToQuiz(aah.sharedData.DB, quizID, labelID)
+	if err != nil {
+		return err
+	}
+
+	// get active labels
+	activeLabels, err := labels.GetActiveLabels(aah.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	// get applied labels
+	appliedLabels, err := labels.GetLabelByQuizID(aah.sharedData.DB, quizID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditAppliedLabels(appliedLabels, activeLabels, quizID.String(), "", ""))
+}
+
+func (aah *AdminApiHandler) deleteQuizLabel(c echo.Context) error {
+	// Get the quiz ID
+	quizID, err := uuid.Parse(c.QueryParam(queryParamQuizID))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", errorInvalidQuizID))
+	}
+
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	// Remove the label from the quiz
+	err = labels.RemoveLabelFromQuiz(aah.sharedData.DB, quizID, labelID)
+	if err != nil {
+		return err
+	}
+
+	// get active labels
+	activeLabels, err := labels.GetActiveLabels(aah.sharedData.DB)
+	if err != nil {
+		return err
+	}
+
+	// get applied labels
+	appliedLabels, err := labels.GetLabelByQuizID(aah.sharedData.DB, quizID)
+	if err != nil {
+		return err
+	}
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditAppliedLabels(appliedLabels, activeLabels, quizID.String(), "", ""))
+}
+
+func (aah *AdminApiHandler) deleteLabel(c echo.Context) error {
+	// Get the label ID
+	labelID, err := uuid.Parse(c.QueryParam("id"))
+	if err != nil {
+		return utils.Render(c, http.StatusBadRequest, components.ErrorText("error-label", "Ugyldig eller manglende label-id"))
+	}
+
+	// Delete the label from the database
+	err = labels.RemoveLabel(aah.sharedData.DB, labelID)
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 // Generate a question based on an article using artificial intelligence
@@ -1158,43 +1302,29 @@ func (aah *AdminApiHandler) getUsernamePages(c echo.Context) error {
 	return utils.Render(c, http.StatusOK, user_admin.UsernameTables(uai, requestUrl))
 }
 
-// Renders a ranking table for the given user. Displays the monthly, yearly and all time ranking.
-// Monthly and yearly rankings are displayed for the period provided as form data.
-// Expects user-id query parameter, chosen-month and chosen-year as form values.
+// Renders a ranking table for the given user. Displays the label and all time ranking.
+// Expects user-id query parameter, and label-id query parameter.
 func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	uuid_id, err := uuid.Parse(c.QueryParam("user-id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende user-id")
 	}
-	user, err := users.GetUserByID(h.sharedData.DB, uuid_id)
+
+	labelID, err := uuid.Parse(c.QueryParam("label-id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende label-id")
+	}
+
+	label, err := labels.GetLabelByID(h.sharedData.DB, labelID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke brukeren med den angitte ID-en")
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke etikett med den angitte ID-en")
 		} else {
 			return err
 		}
 	}
 
-	chosenMonthStr := c.FormValue(dashboard_user_details_components.MonthFormName)
-	var chosenMonth time.Month
-
-	parsedTime, err := time.Parse("01", chosenMonthStr)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende måned verdi")
-	}
-	chosenMonth = parsedTime.Month()
-
-	chosenYearStr := c.FormValue(dashboard_user_details_components.YearFormName)
-	var chosenYear uint
-
-	parsedYear, err := strconv.ParseUint(chosenYearStr, 10, 64)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Ugyldig eller manglende år verdi")
-
-	}
-	chosenYear = uint(parsedYear)
-
-	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, chosenMonth, chosenYear, time.Local, user.Username)
+	rankingCollection, err := user_ranking.GetUserRankingsInAllRanges(h.sharedData.DB, uuid_id, label)
 	if err != nil {
 		return err
 	}

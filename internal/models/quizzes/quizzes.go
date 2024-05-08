@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	data_handling "github.com/Molnes/Nyhetsjeger/internal/utils/data"
 	"github.com/google/uuid"
 )
@@ -26,6 +27,7 @@ type Quiz struct {
 	LastModifiedAt time.Time
 	Published      bool
 	IsDeleted      bool
+	Labels         []labels.Label
 }
 
 // PartialQuiz represents a quiz in the database with fewer fields.
@@ -38,6 +40,7 @@ type PartialQuiz struct {
 	Published      bool
 	QuestionNumber uint
 	MaxScore       uint
+	Labels         []labels.Label
 }
 
 // Create a default quiz.
@@ -76,6 +79,11 @@ func GetQuizByID(db *sql.DB, id uuid.UUID) (*Quiz, error) {
 		id)
 
 	quiz, err := scanQuizFromFullRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	quiz.Labels, err = labels.GetLabelByQuizID(db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -489,6 +497,11 @@ func GetPartialQuizByID(db *sql.DB, quizid uuid.UUID) (*PartialQuiz, error) {
 		return nil, err
 	}
 	pq.ImageURL = *tempURL
+
+	pq.Labels, err = labels.GetLabelByQuizID(db, quizid)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pq, nil
 }

@@ -3,9 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/config"
+	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/Molnes/Nyhetsjeger/internal/models/quizzes"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/Molnes/Nyhetsjeger/internal/models/users/user_quiz"
@@ -72,23 +72,65 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		return err
 	}
 
-	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+	activeLabels, err := labels.GetActiveLabels(qph.sharedData.DB)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
-			if err != nil {
-				return err
-			}
-			userRankingInfo = user_ranking.UserRanking{
-				Username:  user.Username,
-				Points:    0,
-				Placement: 0,
-			}
-		} else {
-
+		return err
+	}
+	if len(activeLabels) == 0 {
+		user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+		if err != nil {
 			return err
 		}
+
+		return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
+			partialQuizList,
+			oldPartialQuizList,
+			[]user_ranking.UserRankingWithLabel{
+				{
+					UserID:    user.ID,
+					Username:  user.Username,
+					Points:    0,
+					Placement: 0,
+					Label:     labels.Label{},
+				},
+			},
+		))
 	}
+
+	userRankingInfo := []user_ranking.UserRankingWithLabel{}
+
+	for _, label := range activeLabels {
+		ranking, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), label)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+				if err != nil {
+					return err
+				}
+				userRankingInfo = append(userRankingInfo, user_ranking.UserRankingWithLabel{
+					UserID:    user.ID,
+					Username:  user.Username,
+					Points:    0,
+					Placement: 0,
+					Label:     label,
+				})
+				continue
+			}
+			return err
+		}
+
+		rankInfo := user_ranking.UserRankingWithLabel{
+			UserID:    ranking.UserID,
+			Username:  ranking.Username,
+			Points:    ranking.Points,
+			Placement: ranking.Placement,
+			Label:     label,
+		}
+
+		userRankingInfo = append(userRankingInfo, rankInfo)
+
+	}
+
 	return utils.Render(c, http.StatusOK, quiz_pages.QuizHomePage(
 		partialQuizList,
 		oldPartialQuizList,
@@ -144,19 +186,65 @@ func (qph *QuizPagesHandler) getQuizSummary(c echo.Context) error {
 
 // Renders the scoreboard page.
 func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
-	rankings, err := user_ranking.GetRanking(qph.sharedData.DB, time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
+
+	labels, err := labels.GetActiveLabels(qph.sharedData.DB)
 	if err != nil {
 		return err
 	}
 
-	userRankingInfo, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), time.Now().Month(), time.Now().Year(), time.Local, user_ranking.Month)
-	if err == sql.ErrNoRows {
-		userRankingInfo = user_ranking.UserRanking{}
-	} else if err != nil {
-		return err
+	ranksByLabel := []user_ranking.RankingByLabel{}
+	for _, label := range labels {
+
+		ranking, err := user_ranking.GetRanking(qph.sharedData.DB, label.ID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ranking = []user_ranking.UserRanking{}
+			} else {
+
+				return err
+			}
+		}
+
+		ranksByLabel = append(ranksByLabel, user_ranking.RankingByLabel{
+			Label:   label,
+			Ranking: ranking,
+		})
+
 	}
 
-	return utils.Render(c, http.StatusOK, quiz_pages.Scoreboard(rankings, userRankingInfo))
+	userRankingInfo := []user_ranking.UserRankingWithLabel{}
+	for _, label := range labels {
+		ranking, err := user_ranking.GetUserRanking(qph.sharedData.DB, utils.GetUserIDFromCtx(c), label)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				user, err := users.GetUserByID(qph.sharedData.DB, utils.GetUserIDFromCtx(c))
+				if err != nil {
+					return err
+				}
+				userRankingInfo = append(userRankingInfo, user_ranking.UserRankingWithLabel{
+					UserID:    user.ID,
+					Username:  user.Username,
+					Points:    0,
+					Placement: 0,
+					Label:     label,
+				})
+				continue
+			}
+			return err
+		}
+
+		rankInfo := user_ranking.UserRankingWithLabel{
+			UserID:    ranking.UserID,
+			Username:  ranking.Username,
+			Points:    ranking.Points,
+			Placement: ranking.Placement,
+			Label:     label,
+		}
+
+		userRankingInfo = append(userRankingInfo, rankInfo)
+	}
+
+	return utils.Render(c, http.StatusOK, quiz_pages.ScoreBoardContainer(ranksByLabel, userRankingInfo))
 }
 
 // Renders the finished quizzes page.

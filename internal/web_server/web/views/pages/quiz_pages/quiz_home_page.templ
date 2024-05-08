@@ -13,7 +13,7 @@ import (
 )
 
 // Quiz home page
-templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.PartialQuiz, userInfo user_ranking.UserRanking) {
+templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.PartialQuiz, userInfo []user_ranking.UserRankingWithLabel) {
 	@layout_components.QuizLayoutMenu("Quizer") {
 		<div class="overflow-auto flex flex-col">
 			if isUserAdmin(ctx) {
@@ -26,34 +26,21 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 				</a>
 			}
 			<div class="p-4">
-				<p class="text-3xl p-4">Hei, <b>{ userInfo.Username }</b>!</p>
-				<div class="flex flex-wrap justify-between lg:justify-start items-center p-4 gap-3">
-					<a
-						href="/quiz/toppliste"
-						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border"
-					>
-						{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
-						<span class="text-2xl text-gray-700">poeng</span>
-					</a>
-					<a
-						href="/quiz/toppliste"
-						class="text-3xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
-					>
-						@icons.Trophy(40, "orange", 36, 36)
-						if userInfo.Placement != 0 {
-							<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
-							<span class="text-2xl text-gray-700">plass</span>
-						} else {
-							<span class="mx-2 text-2xl text-gray-700">Ikke rangert</span>
-						}
-					</a>
-				</div>
+				<p class="text-3xl p-4">Hei, <b>{ userInfo[0].Username }</b>!</p>
+				<h2 class="text-4xl p-4">Din statistikk</h2>
+				if userInfo[0].Label == user_ranking.EmptyRanking().Label {
+					<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">Det ser ut som om det ikke er noen aktive topplister for øyeblikket. Kom tilbake senere.</p>
+				} else {
+					@leaderboards(userInfo)
+				}
 			</div>
 			<div class="p-4">
 				<h2 class="text-4xl p-4">Aktive quizer</h2>
-				<div class="flex flex-row justify-center md:justify-start flex-wrap p-4 lg:gap-20 gap-10">
+				<div class="flex flex-row items-start justify-center md:justify-start flex-wrap p-4 lg:gap-20 gap-10">
 					if len(quizzes) == 0 {
-						<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+						<p
+							class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center"
+						>
 							Wow, du har fullført alle aktive quizer! Du er rå! Kom tilbake senere.
 						</p>
 					}
@@ -66,7 +53,9 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 				<h2 class="text-4xl p-4">Tidligere quizer</h2>
 				<div class="flex flex-row justify-center md:justify-start flex-wrap p-4 lg:gap-20 gap-10">
 					if len(olderQuizzes) == 0 {
-						<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">
+						<p
+							class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center"
+						>
 							Wow, du har fullført alle tidligere quizer! Kom tilbake senere.
 						</p>
 					}
@@ -86,4 +75,41 @@ func isUserAdmin(ctx context.Context) bool {
 		return false
 	}
 	return role.IsAdministrator()
+}
+
+templ leaderboards(userInfo []user_ranking.UserRankingWithLabel) {
+	<table class="border-separate border-spacing-2 md:border-spacing-x-4">
+		<tbody>
+			for _, userInfo := range userInfo {
+				<tr>
+					<td>
+						<h3 class="md:text-xl text-gray-700 w-full lg:w-auto text-center bg-violet-100 border border-violet-100 rounded-card p-2">{ fmt.Sprint(userInfo.Label.Name) }</h3>
+					</td>
+					<td>
+						<a
+							href="/quiz/toppliste"
+							class="md:text-2xl border-gray-500 bg-white rounded-card px-3 py-2 border whitespace-nowrap"
+						>
+							{ fmt.Sprint(data_handling.FormatNumberWithSpaces(userInfo.Points)) }
+							<span class="md:text-xl text-gray-700">poeng</span>
+						</a>
+					</td>
+					<td>
+						<a
+							href="/quiz/toppliste"
+							class="md:text-xl border-gray-500 bg-white rounded-card px-3 py-2 border flex items-center "
+						>
+							@icons.Trophy(36, "orange", 26, 26)
+							if userInfo.Placement != 0 {
+								<span class="mx-2">{ fmt.Sprint(userInfo.Placement) }.</span>
+								<span class="md:text-lg text-gray-700">plass</span>
+							} else {
+								<span class="mx-2 md:text-xl text-gray-700">Ikke rangert</span>
+							}
+						</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }
