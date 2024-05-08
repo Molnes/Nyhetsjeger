@@ -2,7 +2,6 @@ package user_ranking
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/labels"
 	"github.com/google/uuid"
@@ -103,25 +102,6 @@ ORDER BY total_points DESC;
 
 	}
 	return rankings, nil
-}
-
-// Returns the first and last moment of the specified date range.
-func GetDateRange(dateRange DateRange, timeZone *time.Location, year int, month time.Month) (time.Time, time.Time) {
-	var firstMoment time.Time
-	var lastMoment time.Time
-
-	switch dateRange {
-	case All:
-		firstMoment = time.Date(0, 1, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = time.Date(9999, 12, 31, 23, 59, 59, 0, timeZone)
-	case Month:
-		firstMoment = time.Date(year, month, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = firstMoment.AddDate(0, 1, 0).Add(-time.Nanosecond * 1)
-	case Year:
-		firstMoment = time.Date(year, 1, 1, 0, 0, 0, 0, timeZone)
-		lastMoment = time.Date(year, 12, 31, 23, 59, 59, 0, timeZone)
-	}
-	return firstMoment, lastMoment
 }
 
 // Returns the ranking of the specified user.
