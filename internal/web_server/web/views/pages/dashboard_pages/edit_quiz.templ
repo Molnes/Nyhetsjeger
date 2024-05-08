@@ -79,7 +79,7 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
 			}
 			@dashboard_components.EditQuizForm() {
 				<div class="flex flex-row items-center gap-2 mb-1">
-					<label for={ QuizLabels } class="block font-bold">Velg kategorier</label>
+					<label for={ QuizLabels } class="block font-bold">Velg etiketter</label>
 					@components.LoadingIndicator()
 				</div>
 				@dashboard_components.EditAppliedLabels(quiz.Labels, availableLabels, quiz.ID.String(), QuizLabels, "")
