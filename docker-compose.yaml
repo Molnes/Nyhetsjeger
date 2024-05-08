@@ -48,6 +48,8 @@ services:
     restart: always
     environment:
       TZ: ${TZ:-Europe/Oslo}
+      ADMINER_PLUGINS: "enum-types"
+      ADMINER_DESIGN: "dracula"
     ports:
       - 8081:8080
     depends_on:
