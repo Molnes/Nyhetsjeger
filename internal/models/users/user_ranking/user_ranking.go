@@ -10,7 +10,7 @@ import (
 
 // UserRanking represents a user's ranking in the scoreboard.
 type UserRanking struct {
-	User_id   uuid.UUID
+	UserID    uuid.UUID
 	Username  string
 	Points    int
 	Placement int
@@ -18,7 +18,7 @@ type UserRanking struct {
 
 // UserRankingWithLabel represents a user's ranking in the scoreboard with a label.
 type UserRankingWithLabel struct {
-	User_id   uuid.UUID
+	UserID    uuid.UUID
 	Username  string
 	Points    int
 	Placement int
@@ -42,7 +42,7 @@ const (
 // Returns an empty UserRankingWithLabel struct.
 func EmptyRanking() UserRankingWithLabel {
 	return UserRankingWithLabel{
-		User_id:   uuid.Nil,
+		UserID:    uuid.Nil,
 		Username:  "",
 		Points:    0,
 		Placement: 0,
@@ -93,7 +93,7 @@ ORDER BY total_points DESC;
 	for rows.Next() {
 		var ranking UserRanking
 		if err := rows.Scan(
-			&ranking.User_id,
+			&ranking.UserID,
 			&ranking.Points,
 			&ranking.Username,
 			&ranking.Placement); err != nil {
@@ -163,7 +163,7 @@ WHERE user_id = $2;
 
 	ranking := UserRanking{}
 	err := row.Scan(
-		&ranking.User_id,
+		&ranking.UserID,
 		&ranking.Points,
 		&ranking.Username,
 		&ranking.Placement)
@@ -208,7 +208,7 @@ WHERE user_id = $1;
 
 	ranking := UserRanking{}
 	err := row.Scan(
-		&ranking.User_id,
+		&ranking.UserID,
 		&ranking.Points,
 		&ranking.Username,
 		&ranking.Placement)
@@ -246,7 +246,7 @@ func GetUserRankingsInAllRanges(db *sql.DB, userId uuid.UUID, label labels.Label
 
 	return &RankingCollection{
 		ByLabel: UserRankingWithLabel{
-			User_id:   labelRank.User_id,
+			UserID:    labelRank.UserID,
 			Username:  labelRank.Username,
 			Points:    labelRank.Points,
 			Placement: labelRank.Placement,

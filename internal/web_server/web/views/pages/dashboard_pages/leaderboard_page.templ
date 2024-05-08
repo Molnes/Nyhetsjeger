@@ -96,7 +96,7 @@ templ AdminScoreboardComponent(rankings []user_ranking.UserRanking) {
 						} else {
 							<td class="px-4 py-3">{ fmt.Sprintf("%d", user.Placement) }</td>
 						}
-						<td class="px-4 py-3"><a href={ templ.URL(fmt.Sprintf("/dashboard/user?user-id=%s", user.User_id.String())) }>{ user.Username } </a> </td>
+						<td class="px-4 py-3"><a href={ templ.URL(fmt.Sprintf("/dashboard/user?user-id=%s", user.UserID.String())) }>{ user.Username } </a> </td>
 						<td class="px-4 py-3">{ fmt.Sprintf("%s", data_handling.FormatNumberWithSpaces(user.Points)) }</td>
 					</tr>
 				}

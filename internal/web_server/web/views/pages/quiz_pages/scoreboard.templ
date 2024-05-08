@@ -53,7 +53,7 @@ templ Scoreboard(rankings []user_ranking.UserRanking, userInfo user_ranking.User
 				}
 				for _, user := range rankings {
 					<tr
-						if user.User_id==userInfo.User_id {
+						if user.UserID==userInfo.UserID {
 							class="text-center font-bold bg-clightindigo"
 						} else {
 							class="text-center"

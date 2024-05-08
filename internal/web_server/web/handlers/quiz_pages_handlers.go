@@ -87,7 +87,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 			oldPartialQuizList,
 			[]user_ranking.UserRankingWithLabel{
 				{
-					User_id:   user.ID,
+					UserID:    user.ID,
 					Username:  user.Username,
 					Points:    0,
 					Placement: 0,
@@ -108,7 +108,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 					return err
 				}
 				userRankingInfo = append(userRankingInfo, user_ranking.UserRankingWithLabel{
-					User_id:   user.ID,
+					UserID:    user.ID,
 					Username:  user.Username,
 					Points:    0,
 					Placement: 0,
@@ -120,7 +120,7 @@ func (qph *QuizPagesHandler) quizHomePage(c echo.Context) error {
 		}
 
 		rankInfo := user_ranking.UserRankingWithLabel{
-			User_id:   ranking.User_id,
+			UserID:    ranking.UserID,
 			Username:  ranking.Username,
 			Points:    ranking.Points,
 			Placement: ranking.Placement,
@@ -222,7 +222,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 					return err
 				}
 				userRankingInfo = append(userRankingInfo, user_ranking.UserRankingWithLabel{
-					User_id:   user.ID,
+					UserID:    user.ID,
 					Username:  user.Username,
 					Points:    0,
 					Placement: 0,
@@ -234,7 +234,7 @@ func (qph *QuizPagesHandler) getScoreboard(c echo.Context) error {
 		}
 
 		rankInfo := user_ranking.UserRankingWithLabel{
-			User_id:   ranking.User_id,
+			UserID:    ranking.UserID,
 			Username:  ranking.Username,
 			Points:    ranking.Points,
 			Placement: ranking.Placement,
