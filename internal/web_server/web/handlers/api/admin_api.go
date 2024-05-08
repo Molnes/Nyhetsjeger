@@ -189,7 +189,7 @@ func (aah *AdminApiHandler) editQuizLabels(c echo.Context) error {
 	}
 
 	// Add the label to the quiz
-	err = labels.AddLabelToQuizz(aah.sharedData.DB, quizID, labelID)
+	err = labels.AddLabelToQuiz(aah.sharedData.DB, quizID, labelID)
 	if err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func (aah *AdminApiHandler) deleteQuizLabel(c echo.Context) error {
 	}
 
 	// Remove the label from the quiz
-	err = labels.RemoveLabelFromQuizz(aah.sharedData.DB, quizID, labelID)
+	err = labels.RemoveLabelFromQuiz(aah.sharedData.DB, quizID, labelID)
 	if err != nil {
 		return err
 	}

@@ -76,7 +76,7 @@ func GetLabelByQuizID(db *sql.DB, quizID uuid.UUID) ([]Label, error) {
 }
 
 // GetQuizzesByLabelID returns a list of quizz IDs that are associated with the given label.
-// It will return an empty list if the label is not associated with any quizz.
+// It will return an empty list if the label is not associated with any quiz.
 func GetQuizzesByLabelID(db *sql.DB, labelID uuid.UUID) ([]uuid.UUID, error) {
 	rows, err := db.Query("SELECT quiz_id FROM quiz_labels WHERE label_id=$1", labelID)
 	if err != nil {
@@ -95,17 +95,17 @@ func GetQuizzesByLabelID(db *sql.DB, labelID uuid.UUID) ([]uuid.UUID, error) {
 	return quizzIDs, nil
 }
 
-// AddLabelToQuizz adds a label to a quizz.
+// AddLabelToQuiz adds a label to a quizz.
 // It will fail if the label is already associated with the quizz.
-func AddLabelToQuizz(db *sql.DB, quizzID, labelID uuid.UUID) error {
+func AddLabelToQuiz(db *sql.DB, quizzID, labelID uuid.UUID) error {
 	_, err := db.Exec("INSERT INTO quiz_labels (quiz_id, label_id) VALUES ($1, $2)", quizzID, labelID)
 	return err
 }
 
-// RemoveLabelFromQuizz removes a label from a quizz.
+// RemoveLabelFromQuiz removes a label from a quizz.
 // It will fail if the label is not associated with the quizz.
-func RemoveLabelFromQuizz(db *sql.DB, quizzID, labelID uuid.UUID) error {
-	_, err := db.Exec("DELETE FROM quiz_labels WHERE quiz_id=$1 AND label_id=$2", quizzID, labelID)
+func RemoveLabelFromQuiz(db *sql.DB, quizID uuid.UUID, labelID uuid.UUID) error {
+	_, err := db.Exec("DELETE FROM quiz_labels WHERE quiz_id=$1 AND label_id=$2", quizID, labelID)
 	if err != nil {
 		return err
 	}
