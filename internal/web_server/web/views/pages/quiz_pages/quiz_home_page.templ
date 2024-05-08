@@ -29,7 +29,7 @@ templ QuizHomePage(quizzes []quizzes.PartialQuiz, olderQuizzes []quizzes.Partial
 				<p class="text-3xl p-4">Hei, <b>{ userInfo[0].Username }</b>!</p>
 				<h2 class="text-4xl p-4">Din statistikk</h2>
 				if userInfo[0].Label == user_ranking.EmptyRanking().Label {
-					<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">Det ser ut som om det ikke er noen aktive Quiz samlinger for øyeblikket. Kom tilbake senere.</p>
+					<p class="text-balance w-full p-5 border border-clightindigo rounded-card bg-violet-100 text-center">Det ser ut som om det ikke er noen aktive topplister for øyeblikket. Kom tilbake senere.</p>
 				} else {
 					@leaderboards(userInfo)
 				}
