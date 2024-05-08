@@ -1327,7 +1327,7 @@ func (h *AdminApiHandler) generateUserRankingsTable(c echo.Context) error {
 	label, err := labels.GetLabelByID(h.sharedData.DB, labelID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke kategorien med den angitte ID-en")
+			return echo.NewHTTPError(http.StatusNotFound, "Fant ikke etikett med den angitte ID-en")
 		} else {
 			return err
 		}
