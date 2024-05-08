@@ -37,7 +37,7 @@ templ QuizCard(quiz quizzes.PartialQuiz, isActive bool, isFinished bool) {
 				</p>
 				<div class="flex flex-wrap gap-1 mt-2">
 					if len(quiz.Labels) > 0 {
-						<p class="font-semibold">Tags:</p>
+						<p class="font-semibold">Topplister:</p>
 						/* scrollable tags with scrollbar*/
 						for _, label := range quiz.Labels {
 							<span class="text-sm bg-clightindigo px-3 py-1 rounded-full text-nowrap">{ label.Name }</span>
