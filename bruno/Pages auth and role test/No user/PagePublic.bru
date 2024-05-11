@@ -1,19 +1,20 @@
 meta {
-  name: ApiOrganizationAdmin
+  name: PagePublic
   type: http
-  seq: 4
+  seq: 1
 }
 
 get {
-  url: {{host}}/api/v1/organization-admin/nonexistentroute
+  url: {{host}}
   body: none
   auth: none
 }
 
 assert {
-  res.status: eq 401
+  res.status: eq 200
 }
 
 script:pre-request {
   req.setHeader("Cookie", "");
+  
 }
