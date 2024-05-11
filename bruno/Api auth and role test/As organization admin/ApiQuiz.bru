@@ -1,5 +1,5 @@
 meta {
-  name: ApiQuiz no session
+  name: ApiQuiz
   type: http
   seq: 2
 }
@@ -11,10 +11,5 @@ get {
 }
 
 assert {
-  res.status: eq 401
-}
-
-script:pre-request {
-  req.setHeader("Cookie", "")
-  
+  res.status: eq 404
 }

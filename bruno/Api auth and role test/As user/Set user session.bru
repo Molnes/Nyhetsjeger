@@ -1,0 +1,37 @@
+meta {
+  name: Set user session
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host_user_assign}}/user
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const cookies = res.getHeader('set-cookie');
+  
+  if(cookies) {
+    bru.setVar("cookie", cookies.join('; '));
+  }
+}
+
+docs {
+  Use this or similar request to get a session with a specified role assigned
+  supported routes and roles are:  
+  `/user`  
+  `/admin`  
+  `/organization-admin`  
+  
+  
+  remember post response script:  
+  ```js
+  const cookies = res.getHeader('set-cookie');
+  
+  if(cookies) {
+    bru.setVar("cookie", cookies.join('; '));
+  }
+  ```
+}

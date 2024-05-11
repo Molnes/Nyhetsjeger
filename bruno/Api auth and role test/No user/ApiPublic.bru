@@ -1,0 +1,20 @@
+meta {
+  name: ApiPublic
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/api/v1/guest/nonexistentroute
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "")
+  
+}

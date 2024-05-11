@@ -1,7 +1,7 @@
 meta {
-  name: ApiAdmin with admin session
+  name: ApiAdmin
   type: http
-  seq: 9
+  seq: 3
 }
 
 get {
@@ -11,5 +11,10 @@ get {
 }
 
 assert {
-  res.status: eq 404
+  res.status: eq 401
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "")
+  
 }
