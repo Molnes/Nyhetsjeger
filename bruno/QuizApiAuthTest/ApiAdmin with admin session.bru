@@ -1,0 +1,15 @@
+meta {
+  name: ApiAdmin with admin session
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{host}}/api/v1/admin/nonexistentroute
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

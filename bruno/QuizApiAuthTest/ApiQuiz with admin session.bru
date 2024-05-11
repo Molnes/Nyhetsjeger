@@ -1,0 +1,15 @@
+meta {
+  name: ApiQuiz with admin session
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{host}}/api/v1/quiz/nonexistentroute
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}
