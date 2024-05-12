@@ -156,7 +156,6 @@ func (aah *AdminApiHandler) editLabels(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Println(currentLabel.Active)
 
 	// change the active status of the label
 	err = labels.UpdateLabel(aah.sharedData.DB, labelID, !currentLabel.Active)
@@ -169,8 +168,6 @@ func (aah *AdminApiHandler) editLabels(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	log.Println(label.Active)
 
 	return utils.Render(c, http.StatusOK, label_components.LabelItem(label))
 }
@@ -767,7 +764,6 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
 		if alternativeText != "" && tempId == "" {
-			log.Println(alternativeText, tempId)
 			alternativeId = uuid.New()
 		}
 		alternatives[index] = questions.PartialAlternative{ID: alternativeId, Text: alternativeText, IsCorrect: isCorrect == "on"}
