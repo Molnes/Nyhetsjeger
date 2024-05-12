@@ -44,6 +44,7 @@ type Alternative struct {
 }
 
 type PartialAlternative struct {
+	ID        uuid.UUID
 	Text      string
 	IsCorrect bool
 }
@@ -509,13 +510,14 @@ func CreateQuestionFromForm(form QuestionForm) (Question, string) {
 	hasCorrectAlternative := false
 
 	// Only add alternatives that are not empty
-	for _, alt := range form.Alternatives {
+	for i, alt := range form.Alternatives {
 		// Do not count empty white space as an alternative
-		if strings.TrimSpace(alt.Text) != "" {
+		if (strings.TrimSpace(alt.Text) != "") || (strings.TrimSpace(alt.Text) == "" && alt.ID != uuid.Nil) {
 			question.Alternatives = append(question.Alternatives, Alternative{
-				ID:        uuid.New(),
-				Text:      alt.Text,
-				IsCorrect: alt.IsCorrect,
+				ID:          alt.ID,
+				Text:        alt.Text,
+				IsCorrect:   alt.IsCorrect,
+				Arrangement: uint(i + 1),
 			})
 
 			if alt.IsCorrect {
@@ -608,29 +610,34 @@ func UpdateQuestion(db *sql.DB, ctx context.Context, question *Question) error {
 		return ErrNoQuestionUpdated
 	}
 
-	// Delete old alternatives
-	_, err = tx.Exec(
-		`DELETE FROM answer_alternatives
-		WHERE question_id = $1;`,
-		question.ID,
-	)
-
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	// Insert the alternatives into the database
+	// Update the alternatives
 	for _, a := range question.Alternatives {
-		_, err = tx.Exec(
-			`INSERT INTO answer_alternatives (id, text, correct, question_id)
-			VALUES ($1, $2, $3, $4);`,
-			a.ID, a.Text, a.IsCorrect, question.ID,
-		)
+		// If the alternative ID exists, but the text is empty, delete the alternative
+		if a.Text == "" {
+			_, err := tx.Exec(
+				`DELETE FROM answer_alternatives
+				WHERE id = $1;`,
+				a.ID,
+			)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			// Either insert or update, based on if it exists already
+			_, err := tx.Exec(
+				`INSERT INTO answer_alternatives (id, text, correct, question_id)
+				VALUES ($1, $2, $3, $4)
+				ON CONFLICT (id)
+				DO UPDATE SET text = $2, correct = $3, arrangement = $5
+				WHERE answer_alternatives.id = $1;`,
+				a.ID, a.Text, a.IsCorrect, question.ID, a.Arrangement,
+			)
 
-		if err != nil {
-			tx.Rollback()
-			return err
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 
