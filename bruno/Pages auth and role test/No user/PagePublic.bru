@@ -1,0 +1,20 @@
+meta {
+  name: PagePublic
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "");
+  
+}

@@ -1,0 +1,19 @@
+meta {
+  name: ApiAdmin
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/api/v1/admin/nonexistentroute
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "");
+}

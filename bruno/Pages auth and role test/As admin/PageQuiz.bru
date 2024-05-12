@@ -1,0 +1,15 @@
+meta {
+  name: PageQuiz
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{host}}/quiz
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
