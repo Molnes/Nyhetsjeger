@@ -5,11 +5,11 @@ meta {
 }
 
 get {
-  url: {{host}}/dashboard/access-control
+  url: {{host}}/dashboard/access-settings
   body: none
   auth: none
 }
 
 assert {
-  res.status: eq 404
+  res.status: eq 200
 }
