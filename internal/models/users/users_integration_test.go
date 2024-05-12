@@ -4,10 +4,12 @@ package users
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
 	db_integration_test_suite "github.com/Molnes/Nyhetsjeger/db"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -66,4 +68,17 @@ func (s *UsersIntegrationTestSuite) TestGetUserByEmail() {
 	s.Require().NoError(err)
 
 	s.Require().Equal(userById, user)
+}
+
+func (s *UsersIntegrationTestSuite) TestNonexistentUserById() {
+	_, err := GetUserByID(s.DB, uuid.Nil)
+	s.Require().EqualError(err, sql.ErrNoRows.Error())
+}
+func (s *UsersIntegrationTestSuite) TestNonexistentUserBySsoId() {
+	_, err := GetUserBySsoID(s.DB, "")
+	s.Require().EqualError(err, sql.ErrNoRows.Error())
+}
+func (s *UsersIntegrationTestSuite) TestNonexistentUserByEmail() {
+	_, err := GetUserByEmail(s.DB, "")
+	s.Require().EqualError(err, sql.ErrNoRows.Error())
 }
