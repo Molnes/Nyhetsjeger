@@ -762,9 +762,15 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 	var alternatives [4]questions.PartialAlternative
 	for index := range 4 {
 		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
+		tempId := c.FormValue(fmt.Sprintf("question-alternative-%d-id", index+1))
+		alternativeId, _ := uuid.Parse(tempId)
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
-		alternatives[index] = questions.PartialAlternative{Text: alternativeText, IsCorrect: isCorrect == "on"}
+		if alternativeText != "" && tempId == "" {
+			log.Println(alternativeText, tempId)
+			alternativeId = uuid.New()
+		}
+		alternatives[index] = questions.PartialAlternative{ID: alternativeId, Text: alternativeText, IsCorrect: isCorrect == "on"}
 	}
 
 	var hasFile = true
@@ -815,7 +821,7 @@ func (aah *AdminApiHandler) editQuestion(c echo.Context) error {
 		Alternatives:     alternatives,
 	}
 
-	question, err := createQuestion(c, questionForm, aah.sharedData.DB)
+	question, err := createOrEditQuestion(c, questionForm, aah.sharedData.DB)
 	if err != nil {
 		switch err {
 		case errQuestionFromForm:
@@ -869,8 +875,8 @@ func (aah AdminApiHandler) handleImageUpload(imageName string) (*url.URL, error)
 	return imageURL, nil
 }
 
-// Creates a new question object from the form data.
-func createQuestion(c echo.Context, questionForm questions.QuestionForm, db *sql.DB) (*questions.Question, error) {
+// Creates or edit a question in the database.
+func createOrEditQuestion(c echo.Context, questionForm questions.QuestionForm, db *sql.DB) (*questions.Question, error) {
 	question, errorText := questions.CreateQuestionFromForm(questionForm)
 	if errorText != "" {
 
@@ -1138,9 +1144,10 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 	var alternatives []questions.Alternative
 	for index := range 4 {
 		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
+		alternativeId, _ := uuid.Parse(c.FormValue(fmt.Sprintf("question-alternative-%d-id", index+1)))
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
-		alternatives = append(alternatives, questions.Alternative{Text: alternativeText, IsCorrect: isCorrect == "on"})
+		alternatives = append(alternatives, questions.Alternative{ID: alternativeId, Text: alternativeText, IsCorrect: isCorrect == "on"})
 	}
 
 	// Shuffle the alternatives
@@ -1150,7 +1157,6 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 
 	// Return the "alternatives" table.
 	return utils.Render(c, http.StatusOK, dashboard_components.QuestionAlternativesInput(alternatives))
-
 }
 
 // Add the given word to the username tables.
