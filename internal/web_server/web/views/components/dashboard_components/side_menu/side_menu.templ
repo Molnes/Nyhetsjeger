@@ -36,7 +36,7 @@ templ SideMenu() {
 					@icons.Tag(1, "currentColor", 20, 20)
 				}
 				if isUserOrganizationAdmin(ctx) {
-					@menuItem("Tilgang", "/dashboard/access-settings", isSelected(ctx, AccessSettings)) {
+					@menuItem("Tilgang", "/dashboard/organization-admin/access-settings", isSelected(ctx, AccessSettings)) {
 						@icons.Key(20, "currentColor", 20, 20)
 					}
 				}
