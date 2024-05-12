@@ -37,3 +37,33 @@ func (s *UsersIntegrationTestSuite) TestCreateUser() {
 	s.Require().Equal(ssoId, user.SsoID)
 	s.Require().Equal(email, user.Email)
 }
+
+func (s *UsersIntegrationTestSuite) TestGetUserById() {
+	user, err := GetUserByID(s.DB, s.InsertedValues.UserId)
+	s.Require().NoError(err)
+
+	s.Require().Equal(s.InsertedValues.UserId, user.ID)
+	s.Require().Equal(s.InsertedValues.UserSsoId, user.SsoID)
+	s.Require().Equal(s.InsertedValues.UserEmail, user.Email)
+}
+
+func (s *UsersIntegrationTestSuite) TestGetUserBySsoId() {
+	userById, err := GetUserByID(s.DB, s.InsertedValues.UserId)
+	s.Require().NoError(err)
+
+	user, err := GetUserBySsoID(s.DB, s.InsertedValues.UserSsoId)
+	s.Require().NoError(err)
+
+	s.Require().Equal(userById, user)
+
+}
+
+func (s *UsersIntegrationTestSuite) TestGetUserByEmail() {
+	userById, err := GetUserByID(s.DB, s.InsertedValues.UserId)
+	s.Require().NoError(err)
+
+	user, err := GetUserByEmail(s.DB, s.InsertedValues.UserEmail)
+	s.Require().NoError(err)
+
+	s.Require().Equal(userById, user)
+}
