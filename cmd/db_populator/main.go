@@ -10,6 +10,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Script used to seed the database with test data. Same test data is used in integration testing.
+//
+// This is a separate main, this code never makes it into the application itself.
 func main() {
 	err := godotenv.Load()
 
@@ -30,7 +33,11 @@ func main() {
 	defer db.Close()
 
 	log.Println("----- Populating database -----")
-	defer log.Println("----- Database populated -----")
 
-	db_populator.PopulateDbWithTestData(db)
+	_, err = db_populator.PopulateDbWithTestData(db)
+	if err != nil {
+		log.Fatal("Error populating the database: ", err)
+	}
+
+	log.Println("----- Database populated -----")
 }
