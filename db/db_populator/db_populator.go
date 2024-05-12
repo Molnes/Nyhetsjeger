@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
-	// "github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/google/uuid"
 )
 
@@ -187,9 +185,16 @@ var sampleQuestion3 = question{
 	},
 }
 
-func getSampleAricle() *articles.Article {
+type article struct {
+	ID         uuid.NullUUID
+	Title      string
+	ArticleURL url.URL
+	ImgURL     url.URL
+}
+
+func getSampleAricle() *article {
 	id := uuid.New()
-	article := articles.Article{
+	article := article{
 		ID: uuid.NullUUID{
 			UUID:  id,
 			Valid: true,
