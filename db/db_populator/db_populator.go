@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type knownValues struct {
+type KnownValues struct {
 	UserId    uuid.UUID
 	UserSsoId string
 	UserEmail string
@@ -18,7 +18,7 @@ type knownValues struct {
 	Quiz2Id2  uuid.UUID
 }
 
-func PopulateDbWithTestData(db *sql.DB) (*knownValues, error) {
+func PopulateDbWithTestData(db *sql.DB) (*KnownValues, error) {
 	quizId1, err := createSampleQuiz(db, "Ukentlig quiz 1")
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func PopulateDbWithTestData(db *sql.DB) (*knownValues, error) {
 		return nil, err
 	}
 
-	return &knownValues{
+	return &KnownValues{
 		userdata.userId,
 		userdata.ssoId,
 		userdata.email,
