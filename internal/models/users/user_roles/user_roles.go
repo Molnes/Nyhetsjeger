@@ -3,14 +3,13 @@ package user_roles
 type Role int
 
 const (
-	User              Role = 0
-	QuizAdmin         Role = 1
-	OrganizationAdmin Role = 2
-
-	ROLE_CONTEXT_KEY = "user-role" // The key used to store the user role in the context
+	User Role = iota
+	QuizAdmin
+	OrganizationAdmin
 )
 
 const (
+	ROLE_CONTEXT_KEY        = "user-role" // The key used to store the user role in the context
 	userString              = "user"
 	quizAdminString         = "quiz_admin"
 	organizationAdminString = "organization_admin"

@@ -89,8 +89,9 @@ func newPostgreSQLContainer(ctx context.Context) (*PostgreSQLContainer, error) {
 // Base test suite for integration tests requiring sql database connection
 type DbIntegrationTestBaseSuite struct {
 	suite.Suite
-	psqlContainer *PostgreSQLContainer
-	DB            *sql.DB
+	psqlContainer  *PostgreSQLContainer
+	DB             *sql.DB
+	InsertedValues *db_populator.KnownValues
 }
 
 // Runs once at test suite setup.
@@ -146,7 +147,9 @@ func (s *DbIntegrationTestBaseSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.Require().NoError(migrator.Up())
 
-	db_populator.PopulateDbWithTestData(s.DB)
+	knownvals, err := db_populator.PopulateDbWithTestData(s.DB)
+	s.Require().NoError(err)
+	s.InsertedValues = knownvals
 }
 
 // Runs after each test.

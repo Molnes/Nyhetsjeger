@@ -4,27 +4,53 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/url"
 	"time"
 
-	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
-	// "github.com/Molnes/Nyhetsjeger/internal/models/users"
 	"github.com/google/uuid"
 )
 
-func PopulateDbWithTestData(db *sql.DB) {
-	createSampleQuiz(db, "Ukentlig quiz 1")
-	createSampleQuiz(db, "Ukentlig quiz 2")
-	createTestUsernames(db)
-	// createTestUser(db)
+type KnownValues struct {
+	UserId    uuid.UUID
+	UserSsoId string
+	UserEmail string
+	QuizId1   uuid.UUID
+	Quiz2Id2  uuid.UUID
 }
 
-func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
+func PopulateDbWithTestData(db *sql.DB) (*KnownValues, error) {
+	quizId1, err := createSampleQuiz(db, "Ukentlig quiz 1")
+	if err != nil {
+		return nil, err
+	}
+	quizId2, err := createSampleQuiz(db, "Ukentlig quiz 2")
+	if err != nil {
+		return nil, err
+	}
+	userdata, err := createTestUser(db)
+	if err != nil {
+		return nil, err
+	}
+
+	err = createTestUsernames(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return &KnownValues{
+		userdata.userId,
+		userdata.ssoId,
+		userdata.email,
+		quizId1,
+		quizId2,
+	}, nil
+}
+
+func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) error {
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	article := getSampleAricle()
@@ -38,7 +64,7 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 			($1, $2, $3, $4);`,
 		article.ID, article.Title, article.ArticleURL.String(), article.ImgURL.String())
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	_, err = tx.Exec(
@@ -48,15 +74,16 @@ func createSampleQuizArticle(db *sql.DB, quizID uuid.UUID) {
 			($1, $2);`,
 		quizID, article.ID)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
-func createSampleQuiz(db *sql.DB, title string) {
+func createSampleQuiz(db *sql.DB, title string) (uuid.UUID, error) {
 	var quizID uuid.UUID
 	row := db.QueryRow(
 		`INSERT INTO quizzes (title, active_from, active_to, image_url, published)
@@ -66,16 +93,29 @@ func createSampleQuiz(db *sql.DB, title string) {
 
 	err := row.Scan(&quizID)
 	if err != nil {
-		log.Println(err)
+		return uuid.Nil, err
 	}
 
-	createSampleQuizArticle(db, quizID)
+	err = createSampleQuizArticle(db, quizID)
+	if err != nil {
+		return uuid.Nil, err
+	}
 
 	for range 3 {
-		createQuestion(db, quizID, sampleQuestion1)
-		createQuestion(db, quizID, sampleQuestion2)
-		createQuestion(db, quizID, sampleQuestion3)
+		err = createQuestion(db, quizID, sampleQuestion1)
+		if err != nil {
+			return uuid.Nil, err
+		}
+		err = createQuestion(db, quizID, sampleQuestion2)
+		if err != nil {
+			return uuid.Nil, err
+		}
+		err = createQuestion(db, quizID, sampleQuestion3)
+		if err != nil {
+			return uuid.Nil, err
+		}
 	}
+	return quizID, nil
 }
 
 type answerAlt struct {
@@ -88,13 +128,13 @@ type question struct {
 	answer_alts []answerAlt
 }
 
-func createQuestion(db *sql.DB, quizID uuid.UUID, question question) {
+func createQuestion(db *sql.DB, quizID uuid.UUID, question question) error {
 	questionID := uuid.New()
 
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	tx.Exec(
 		`INSERT INTO questions (id, question, image_url, article_id, quiz_id, points)
@@ -109,9 +149,10 @@ func createQuestion(db *sql.DB, quizID uuid.UUID, question question) {
 			alternativeID, questionID, a.answer, a.correct)
 	}
 	if err := tx.Commit(); err != nil {
-		log.Println(err)
+		return err
 	}
 
+	return nil
 }
 
 var sampleQuestion1 = question{
@@ -144,9 +185,16 @@ var sampleQuestion3 = question{
 	},
 }
 
-func getSampleAricle() *articles.Article {
+type article struct {
+	ID         uuid.NullUUID
+	Title      string
+	ArticleURL url.URL
+	ImgURL     url.URL
+}
+
+func getSampleAricle() *article {
 	id := uuid.New()
-	article := articles.Article{
+	article := article{
 		ID: uuid.NullUUID{
 			UUID:  id,
 			Valid: true,
@@ -167,25 +215,45 @@ func getSampleAricle() *articles.Article {
 	return &article
 }
 
-// func createTestUser(db *sql.DB) error {
-// 	_, err := db.Exec(`INSERT INTO adjectives VALUES ('adj1'), ('adj2');`)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	_, err = db.Exec(`INSERT INTO nouns VALUES ('noun1'), ('noun2');`)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	ctx := context.Background()
-// 	_, err = users.CreateUser(db, ctx, &users.PartialUser{
-// 		SsoID:        "test_user_sso_id",
-// 		Email:        "test_user@email.com",
-// 		AccessToken:  "",
-// 		RefreshToken: "",
-// 		TokenExpire:  time.Now().Add(time.Hour),
-// 	})
-// 	return err
-// }
+type testUserData struct {
+	userId uuid.UUID
+	ssoId  string
+	email  string
+}
+
+func createTestUser(db *sql.DB) (*testUserData, error) {
+	_, err := db.Exec(`INSERT INTO adjectives VALUES ('test');`)
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.Exec(`INSERT INTO nouns VALUES ('user');`)
+	if err != nil {
+		return nil, err
+	}
+
+	userData := testUserData{
+		uuid.New(),
+		"test_user_sso_id",
+		"test_user@email.com",
+	}
+
+	_, err = db.Exec(
+		`INSERT INTO users
+		(id, sso_user_id, email, phone, opt_in_ranking, accepted_terms, role, access_token, token_expires_at, refresh_token, username_adjective, username_noun)
+		SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, random_username.adjective, random_username.noun
+		FROM (
+			SELECT adjective, noun
+			FROM available_usernames 
+			OFFSET floor(random() * (SELECT COUNT(*) FROM available_usernames)) 
+		LIMIT 1) AS random_username;`,
+		userData.userId, userData.ssoId, userData.email, "no phone", true, true, "user",
+		"", time.Now().Add(time.Hour), "")
+
+	if err != nil {
+		return nil, err
+	}
+	return &userData, nil
+}
 
 func createTestUsernames(db *sql.DB) error {
 	_, err := db.Exec(`INSERT INTO adjectives VALUES ('adj1'), ('adj2');`)
