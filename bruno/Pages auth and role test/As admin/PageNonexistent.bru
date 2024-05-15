@@ -1,0 +1,15 @@
+meta {
+  name: PageNonexistent
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{host}}/dashboard/nonexistent
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

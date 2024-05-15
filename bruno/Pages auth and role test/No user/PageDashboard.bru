@@ -1,0 +1,24 @@
+meta {
+  name: PageDashboard
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/dashboard
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 307
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "");
+  req.setMaxRedirects(0);
+}
+
+docs {
+  Expecting redirect to login page (307 Temporary Redirect)
+}

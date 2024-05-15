@@ -13,13 +13,15 @@ templ ArticleCard(article *articles.Article) {
 		target="_blank"
 	>
 		<article class="flex flex-row items-center bg-white max-w-screen-md rounded-card overflow-hidden border-2 border-cindigo">
-			<img
-				src={ article.ImgURL.String() }
-				height="120"
-				width="120"
-				class="block object-cover w-1/4 aspect-square"
-				alt=""
-			/>
+			<div class="w-1/4 h-full">
+				<img
+					src={ article.ImgURL.String() }
+					height="120"
+					width="120"
+					class="block object-cover w-full aspect-square"
+					alt=""
+				/>
+			</div>
 			<p class="w-3/4 font-bold text-center px-3 py-2 md:px-6 md:py-4 mx-auto text-sm sm:text-base md:text-xl leading-snug">{ article.Title }</p>
 		</article>
 	</a>

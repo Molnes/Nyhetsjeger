@@ -1,0 +1,24 @@
+meta {
+  name: PageQuiz
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{host}}/quiz
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 307
+}
+
+script:pre-request {
+  req.setHeader("Cookie", "");
+  req.setMaxRedirects(0);
+}
+
+docs {
+  Expecting redirect to login page (307 Temporary Redirect)
+}

@@ -1,11 +1,11 @@
 meta {
-  name: QuizApi no session
+  name: ApiQuiz
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
-  url: {{host}}/api/v1/test
+  url: {{host}}/api/v1/quiz/nonexistentroute
   body: none
   auth: none
 }
@@ -15,6 +15,5 @@ assert {
 }
 
 script:pre-request {
-  req.setHeader("Cookie", "")
-  
+  req.setHeader("Cookie", "");
 }

@@ -1,0 +1,15 @@
+meta {
+  name: ApiOrganizationAdmin
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/api/v1/organization-admin/nonexistentroute
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+}

@@ -46,7 +46,7 @@ func (dph *DashboardPagesHandler) RegisterDashboardHandlers(g *echo.Group) {
 	g.GET("/username-admin", dph.getUsernameAdministration)
 
 	mw := middlewares.NewAuthorizationMiddleware(dph.sharedData, []user_roles.Role{user_roles.OrganizationAdmin})
-	organizationAdminGroup := g.Group("", mw.EnforceRole)
+	organizationAdminGroup := g.Group("/organization-admin", mw.EnforceRole)
 	organizationAdminGroup.GET("/access-settings", dph.accessSettings)
 }
 

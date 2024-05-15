@@ -20,6 +20,13 @@ templ QuestionAlternativesInput(alternatives []questions.Alternative) {
 				<tr>
 					<td class="py-1">
 						<input
+							type="hidden"
+							name={ fmt.Sprintf("question-alternative-%d-id", index+1) }
+							if index < len(alternatives) {
+								value={ alternatives[index].ID.String() }
+							}
+						/>
+						<input
 							id={ fmt.Sprintf("question-%d", index+1) }
 							name={ fmt.Sprintf("question-alternative-%d", index+1) }
 							type="text"
