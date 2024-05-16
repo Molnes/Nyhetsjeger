@@ -1,14 +1,14 @@
 # Nyhetsjeger  
 Bachelor Project for SMP  
 
-# Tools  
+# Dev environment setup  
 In order to run and develop this project, you will need a set of tools.  
 
 - [Visual Studio Code](https://code.visualstudio.com/) - editor recommanded for this project, tools and plugins listed below transform it into an IDE.
 
 - [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) - We use it for consistant developer experience, as well as development in similar environment to production. Allows us to use Linux-specific toolchains. This simplifies development of scripts.  
 
-**All tooling below must be accessible in WSL**
+**All tooling below must be accessible in WSL** (Excep if you are using all tools natice to your OS)
 
 - [Golang](https://go.dev/doc/install) - the project is primarily written in GO  
     Remember to add go and go's binaries to your **path**!  
@@ -42,6 +42,37 @@ make run
 ```
 Alternatively, you can check out the commands in the [Makefile](./Makefile) and run them manually.
 
+# Initial setup
+Before you can get started running the application you need to get a few things sorted.
+
+## .env file
+Copy the `.env.example` file to `.env`.  
+```bash
+cp .env.example .env
+```
+Change the default passwords and secrets to your own!  
+
+Standup the services in docker-compose, and run the db migrations.  
+```bash
+make initialize-docker
+```
+And then migrate the database, either
+```bash
+make reset-db
+```
+Alternatively, if you **don't** want dummy/test data
+```bash
+make migrate-up
+./scripts/add-db-usr.sh
+./scripts/add-nickname-words.sh
+```
+
+
+Setup a Goole Cloud project, generate client ID and secret, update the `.env` file.  
+
+Setup MinIO (dashboard can be accessed at localhost:9001), generate access and secret keys, update the `.env` file.
+
+
 
 
 # Testing
@@ -69,3 +100,12 @@ make test-integration
 ```
 
 Note: Integration tests use [Testcontainers](https://golang.testcontainers.org/), which requires Docker to be running.
+
+## API testing with Bruno
+To run the Bruno tets, you need the application running locally.
+
+Then 
+```bash
+make run-bruno
+```
+The above uses bru CLI via npx, you may be asked to install it first time you run it.
