@@ -291,6 +291,16 @@ func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
 	// Convert an AI question into a normal question
 	newQuestion := questions.ConvertAiQuestionToQuestion(quizId, chosenArticle.ID.UUID, aiQuestion)
 
+	// Get question ID. If it is not found, it is a new question.
+	// If it is found, replace the randomly generated ID with the real one.
+	questionId, err := uuid.Parse(c.QueryParam("question-id"))
+	isNew := false
+	if err != nil {
+		isNew = true
+	} else {
+		newQuestion.ID = questionId
+	}
+
 	// Get all articles for this quiz
 	articleList, err := articles.GetArticlesByQuizID(aah.sharedData.DB, quizId)
 	if err != nil {
@@ -298,7 +308,8 @@ func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
 	}
 
 	c.Response().Header().Set("HX-Retarget", "#edit-question-form")
-	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, chosenArticle, articleList, quizId.String(), true))
+
+	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, chosenArticle, articleList, quizId.String(), isNew))
 }
 
 // Handles the creation of a new default quiz in the DB.
