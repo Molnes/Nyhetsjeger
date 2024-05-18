@@ -1149,6 +1149,9 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 	for index := range 4 {
 		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
 		alternativeId, _ := uuid.Parse(c.FormValue(fmt.Sprintf("question-alternative-%d-id", index+1)))
+		if alternativeId == uuid.Nil {
+			alternativeId = uuid.New()
+		}
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
 		alternatives = append(alternatives, questions.Alternative{ID: alternativeId, Text: alternativeText, IsCorrect: isCorrect == "on"})
