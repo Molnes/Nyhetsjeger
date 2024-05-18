@@ -291,15 +291,12 @@ func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
 	// Convert an AI question into a normal question
 	newQuestion := questions.ConvertAiQuestionToQuestion(quizId, chosenArticle.ID.UUID, aiQuestion)
 
-	// Get question ID. If it is not found, it is a new question.
-	// If it is found, replace the randomly generated ID with the real one.
+	// Get question ID. If it is found, replace the randomly generated ID with the real one.
 	questionId, err := uuid.Parse(c.QueryParam("question-id"))
-	isNew := false
-	if err != nil {
-		isNew = true
-	} else {
+	if err == nil {
 		newQuestion.ID = questionId
 	}
+	isNew := c.FormValue("is-new") == "true"
 
 	// Get all articles for this quiz
 	articleList, err := articles.GetArticlesByQuizID(aah.sharedData.DB, quizId)
@@ -1152,6 +1149,9 @@ func (aah *AdminApiHandler) randomizeAlternatives(c echo.Context) error {
 	for index := range 4 {
 		// The alternatives match the arrangement number (1, 2, 3, 4, etc.) not the index number.
 		alternativeId, _ := uuid.Parse(c.FormValue(fmt.Sprintf("question-alternative-%d-id", index+1)))
+		if alternativeId == uuid.Nil {
+			alternativeId = uuid.New()
+		}
 		alternativeText := c.FormValue(fmt.Sprintf("question-alternative-%d", index+1))
 		isCorrect := c.FormValue(fmt.Sprintf("question-alternative-%d-is-correct", index+1))
 		alternatives = append(alternatives, questions.Alternative{ID: alternativeId, Text: alternativeText, IsCorrect: isCorrect == "on"})
