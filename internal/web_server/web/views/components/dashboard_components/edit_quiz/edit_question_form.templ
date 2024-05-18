@@ -2,6 +2,7 @@ package dashboard_components
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Molnes/Nyhetsjeger/internal/models/articles"
 	"github.com/Molnes/Nyhetsjeger/internal/models/questions"
@@ -23,6 +24,7 @@ const (
 // If the question isNew = false, it will replace the existing question in the list.
 templ EditQuestionForm(question *questions.Question, article *articles.Article, articles *[]articles.Article, quizID string, isNew bool) {
 	<form id="edit-question-form" hx-encoding="multipart/form-data" onsubmit="return false;">
+		<input type="hidden" name="is-new" value={ strconv.FormatBool(isNew) }/>
 		<button class="absolute top-4 right-4" onclick="closeModal()" title="Lukk spørsmål" aria-label="Lukk spørsmål">
 			@icons.Cross(3, "currentColor", 30, 30)
 		</button>
