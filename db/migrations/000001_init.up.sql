@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS answer_alternatives (
     arrangement INTEGER NOT NULL,
     question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
     CONSTRAINT unique_alternative_question UNIQUE (id, question_id),
-    CONSTRAINT unique_arrangement_question UNIQUE (arrangement, question_id)
+    UNIQUE (arrangement, question_id) DEFERRABLE INITIALLY DEFERRED
 );
 
 -- Trigger to set the arrangement of answer alternatives
