@@ -306,8 +306,6 @@ func (aah *AdminApiHandler) getAiQuestion(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Retarget", "#edit-question-form")
 
-	log.Println(c.FormValue("is-new"))
-	log.Println("IS-NEW", questionId, isNew)
 	return utils.Render(c, http.StatusOK, dashboard_components.EditQuestionForm(newQuestion, chosenArticle, articleList, quizId.String(), isNew))
 }
 
