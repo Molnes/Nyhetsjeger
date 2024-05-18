@@ -59,7 +59,8 @@ templ EditQuiz(quiz *quizzes.Quiz, articles *[]articles.Article, questions *[]qu
                         // Display a 'saved' message for 3 seconds
                         if (event.detail.xhr.status < 300 && event.target.id != 'question-modal'
                                 && event.target.id != 'alternatives-table' && event.target.id != 'quiz-article-images'
-                                && event.target.id != 'question-article-images') {
+                                && event.target.id != 'question-article-images'
+																&& event.detail.target.id != 'edit-question-form') {
                                 changesSaved();
                         }
                 })

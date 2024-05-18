@@ -57,7 +57,7 @@ templ EditQuestionForm(question *questions.Question, article *articles.Article, 
 		<button
 			type="submit"
 			class="flex flex-row gap-2 items-center mt-1 mb-5 mx-auto px-4 py-2 rounded-button bg-clightindigo hover:bg-cindigo hover:text-white border border-1 border-[transparent]"
-			hx-post={ fmt.Sprintf("/api/v1/admin/question/generate?quiz-id=%s", quizID) }
+			hx-post={ fmt.Sprintf("/api/v1/admin/question/generate?quiz-id=%s&question-id=%s", quizID, question.ID) }
 			hx-swap="outerHTML"
 			hx-target="#question-list"
 			hx-target-error=".error-ai-question"
