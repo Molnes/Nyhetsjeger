@@ -30,6 +30,9 @@ templ LabelSelectorComponent(labels []labels.Label, selectedLabelID uuid.UUID) {
 			<select
 				id="label"
 				class="border-2 border-cindigo rounded-lg px-2 py-1"
+				onchange="htmx.ajax('GET', '/dashboard/leaderboard?label-id=' + this.value); history.pushState({}, '', '/dashboard/leaderboard?label-id=' + this.value);"
+				hx-swap="outerHTML"
+				hx-target="body"
 			>
 				for _, label := range labels {
 					<option
