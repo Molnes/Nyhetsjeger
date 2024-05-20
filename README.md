@@ -10,7 +10,7 @@ In order to run and develop this project, you will need a set of tools.
 
 **All tooling below must be accessible in WSL** (Excep if you are using all tools natice to your OS)
 
-- [Golang](https://go.dev/doc/install) - the project is primarily written in GO  
+- [Go](https://go.dev/doc/install) - the project is primarily written in GO  
     Remember to add go and go's binaries to your **path**!  
     file: `~/.bashrc` (or other shell's configuration file), add the following lines at the end of it
     ```bash
@@ -40,19 +40,18 @@ Example:
 ```bash
 make run
 ```
-Alternatively, you can check out the commands in the [Makefile](./Makefile) and run them manually.
+Alternatively, you can check out the commands in the [Makefile](./Makefile) and run them manually.  
 
 # Initial setup
-Before you can get started running the application you need to get a few things sorted.
+Before you can get started running the application you need to get a few things sorted.  
 
-## .env file
 Copy the `.env.example` file to `.env`.  
 ```bash
 cp .env.example .env
 ```
 Change the default passwords and secrets to your own!  
 
-Standup the services in docker-compose, and run the db migrations.  
+Standup the services in docker-compose.
 ```bash
 make initialize-docker
 ```
@@ -68,9 +67,9 @@ make migrate-up
 ```
 
 
-Setup a Goole Cloud project, generate client ID and secret, update the `.env` file.  
+Setup a Google Cloud project, generate client ID and secret, update the `.env` file. This is needed for the OAuth2 login.
 
-Setup MinIO (dashboard can be accessed at localhost:9001), generate access and secret keys, update the `.env` file.
+Setup MinIO (dashboard can be accessed at localhost:9001). Create a bucket called "images", set public read, generate access and secret keys for write. Set the secrets in the `.env` file.
 
 
 
