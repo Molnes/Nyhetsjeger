@@ -8,7 +8,7 @@ In order to run and develop this project, you will need a set of tools.
 
 - [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) - We use it for consistant developer experience, as well as development in similar environment to production. Allows us to use Linux-specific toolchains. This simplifies development of scripts.  
 
-**All tooling below must be accessible in WSL** (Excep if you are using all tools natice to your OS)
+**All tooling below must be accessible in WSL** (Excep if you are using all tools native to your OS)
 
 - [Go](https://go.dev/doc/install) - the project is primarily written in GO  
     Remember to add go and go's binaries to your **path**!  
@@ -102,8 +102,11 @@ Note: Integration tests use [Testcontainers](https://golang.testcontainers.org/)
 
 ## API testing with Bruno
 To run the Bruno tets, you need the application running locally.
+```bash
+make run
+```
 
-Then 
+Then you can run the test suite
 ```bash
 make run-bruno
 ```
