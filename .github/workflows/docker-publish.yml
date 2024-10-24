@@ -94,21 +94,3 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-  
-  run_remote_script:
-    name: Run remote update script
-    needs: build
-    runs-on: ubuntu-latest
-    environment: ssh-deploy
-    steps:
-    - name: Run remote update script
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd Nyhetsjeger
-          git pull
-          ./scripts/update-deployment.sh
