@@ -13,7 +13,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.69
 	github.com/sashabaranov/go-openai v1.22.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/net v0.28.0
+	golang.org/x/net v0.33.0
 	golang.org/x/oauth2 v0.17.0
 	golang.org/x/text v0.21.0
 )
